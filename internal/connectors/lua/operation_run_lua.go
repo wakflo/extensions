@@ -50,7 +50,7 @@ func NewRunLuaScriptOperation() *RunJSOperation {
 	}
 }
 
-func (c *RunJSOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *RunJSOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	// todo: rex implement connector
 	// fake implementation to prove test
 	return map[string]interface{}{
@@ -58,7 +58,7 @@ func (c *RunJSOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	}, nil
 }
 
-func (c *RunJSOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *RunJSOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

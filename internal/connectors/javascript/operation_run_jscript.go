@@ -54,7 +54,7 @@ func NewRunJSOperation() *RunJSOperation {
 	}
 }
 
-func (c *RunJSOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *RunJSOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[runJSOperationProps](ctx)
 
 	vm := goja.New()
@@ -92,7 +92,7 @@ func (c *RunJSOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	return res.Export(), nil
 }
 
-func (c *RunJSOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *RunJSOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

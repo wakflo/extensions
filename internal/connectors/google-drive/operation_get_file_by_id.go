@@ -55,7 +55,7 @@ func NewGetFileByIdOperation() *GetFileByIDOperation {
 	}
 }
 
-func (c *GetFileByIDOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *GetFileByIDOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Token == nil {
 		return nil, errors.New("missing google auth token")
 	}
@@ -72,7 +72,7 @@ func (c *GetFileByIDOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	return file, err
 }
 
-func (c *GetFileByIDOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *GetFileByIDOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

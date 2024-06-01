@@ -56,7 +56,7 @@ func NewListProjectCollaboratorsOperation() *ListProjectCollaboratorsOperation {
 	}
 }
 
-func (c *ListProjectCollaboratorsOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *ListProjectCollaboratorsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[listProjectUsersOperationProps](ctx)
 
 	client := fastshot.NewClient(baseApi).
@@ -88,7 +88,7 @@ func (c *ListProjectCollaboratorsOperation) Run(ctx *sdk.RunContext) (sdk.Json, 
 	return projects, nil
 }
 
-func (c *ListProjectCollaboratorsOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *ListProjectCollaboratorsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

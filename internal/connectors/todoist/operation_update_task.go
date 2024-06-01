@@ -91,14 +91,14 @@ func NewUpdateTaskOperation() *UpdateTaskOperation {
 	}
 }
 
-func (c *UpdateTaskOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *UpdateTaskOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[updateTaskOperationProps](ctx)
 
 	qu := fastshot.NewClient(baseApi).
 		Auth().BearerToken(ctx.Auth.AccessToken).
 		Header().
 		AddAccept("application/json").
-		Build().POST(fmt.Sprintf("/tasks/%s", input.TaskId)).Body().AsJSON(input.UpdateTask)
+		Build().POST(fmt.Sprintf("/tasks/%v", input.TaskId)).Body().AsJSON(input.UpdateTask)
 
 	rsp, err := qu.Send()
 	if err != nil {
@@ -123,7 +123,7 @@ func (c *UpdateTaskOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	return task, nil
 }
 
-func (c *UpdateTaskOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *UpdateTaskOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

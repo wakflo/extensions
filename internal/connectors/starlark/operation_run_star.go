@@ -36,7 +36,7 @@ func NewRunStarlarkOperation() *RunStarlarkOperation {
 	}
 }
 
-func (c *RunStarlarkOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *RunStarlarkOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	// todo: rex implement connector
 	// fake implementation to prove test
 	return map[string]interface{}{
@@ -44,7 +44,7 @@ func (c *RunStarlarkOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	}, nil
 }
 
-func (c *RunStarlarkOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *RunStarlarkOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

@@ -49,7 +49,7 @@ func NewTriggerNewFolder() *TriggerNewFolder {
 	}
 }
 
-func (t *TriggerNewFolder) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (t *TriggerNewFolder) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Token == nil {
 		return nil, errors.New("missing google auth token")
 	}
@@ -95,7 +95,7 @@ func (t *TriggerNewFolder) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	return files.Files, nil
 }
 
-func (t *TriggerNewFolder) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (t *TriggerNewFolder) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return t.Run(ctx)
 }
 

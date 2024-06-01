@@ -52,7 +52,7 @@ func NewGetActiveTaskOperation() *GetActiveTaskOperation {
 	}
 }
 
-func (c *GetActiveTaskOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *GetActiveTaskOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[getActiveTaskOperationProps](ctx)
 
 	qu := fastshot.NewClient(baseApi).
@@ -84,7 +84,7 @@ func (c *GetActiveTaskOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	return task, nil
 }
 
-func (c *GetActiveTaskOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *GetActiveTaskOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

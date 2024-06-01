@@ -68,7 +68,7 @@ func TestNewConnector(t *testing.T) {
 			Type:      "",
 			Data: sdkcore.ConnectorStepData{
 				OperationID:      nil,
-				AuthConnectionId: nil,
+				AuthConnectionID: nil,
 				Properties: sdkcore.ConnectorProperties{
 					Input:  map[string]interface{}{},
 					Output: nil,
@@ -77,7 +77,7 @@ func TestNewConnector(t *testing.T) {
 			Children:      nil,
 			Reference:     nil,
 			Metadata:      sdkcore.ConnectorStepMetadata{},
-			ParentId:      nil,
+			ParentID:      nil,
 			ErrorSettings: sdkcore.StepErrorSettings{},
 			Valid:         false,
 		},

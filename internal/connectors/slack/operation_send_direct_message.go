@@ -70,7 +70,7 @@ func NewSendDirectMessageOperation() *SendDirectMessageOperation {
 	}
 }
 
-func (c SendDirectMessageOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c SendDirectMessageOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[SendDirectMessageOperationProps](ctx)
 	message := input.Message
 	userID := input.User
@@ -89,7 +89,7 @@ func (c SendDirectMessageOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	}, nil
 }
 
-func (c SendDirectMessageOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c SendDirectMessageOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

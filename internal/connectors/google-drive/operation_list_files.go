@@ -54,7 +54,7 @@ func NewListFilesOperation() *ListFilesOperation {
 	}
 }
 
-func (c *ListFilesOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *ListFilesOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Token == nil {
 		return nil, errors.New("missing google auth token")
 	}
@@ -80,7 +80,7 @@ func (c *ListFilesOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	return file, err
 }
 
-func (c *ListFilesOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *ListFilesOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

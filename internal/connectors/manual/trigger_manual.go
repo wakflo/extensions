@@ -42,11 +42,11 @@ func NewManualTrigger() *ManualTrigger {
 	}
 }
 
-func (c *ManualTrigger) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *ManualTrigger) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return map[string]interface{}{}, nil
 }
 
-func (c *ManualTrigger) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *ManualTrigger) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

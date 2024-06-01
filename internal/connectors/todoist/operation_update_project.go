@@ -74,7 +74,7 @@ func NewUpdateProjectOperation() *UpdateProjectOperation {
 	}
 }
 
-func (c *UpdateProjectOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *UpdateProjectOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[updateProjectOperationProps](ctx)
 
 	client := fastshot.NewClient(baseApi).
@@ -106,7 +106,7 @@ func (c *UpdateProjectOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	return project, nil
 }
 
-func (c *UpdateProjectOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *UpdateProjectOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

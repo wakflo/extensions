@@ -58,7 +58,7 @@ func NewTaskCompletedTrigger() *TaskCompletedTrigger {
 	}
 }
 
-func (t TaskCompletedTrigger) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (t TaskCompletedTrigger) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Token == nil {
 		return nil, errors.New("missing todoist auth token")
 	}
@@ -67,7 +67,7 @@ func (t TaskCompletedTrigger) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	return nil, nil
 }
 
-func (t TaskCompletedTrigger) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (t TaskCompletedTrigger) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return t.Run(ctx)
 }
 

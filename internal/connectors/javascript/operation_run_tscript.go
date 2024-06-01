@@ -53,7 +53,7 @@ func NewRunTSOperation() *RunTSOperation {
 	}
 }
 
-func (c *RunTSOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *RunTSOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[runTSOperationProps](ctx)
 
 	res, err := typescript.Evaluate(
@@ -73,7 +73,7 @@ func (c *RunTSOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	return res.Export(), nil
 }
 
-func (c *RunTSOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *RunTSOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

@@ -65,7 +65,7 @@ func NewUploadFileOperation() *UploadFileOperation {
 	}
 }
 
-func (c *UploadFileOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *UploadFileOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Token == nil {
 		return nil, errors.New("missing google auth token")
 	}
@@ -98,7 +98,7 @@ func (c *UploadFileOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 		Do()
 }
 
-func (c *UploadFileOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *UploadFileOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

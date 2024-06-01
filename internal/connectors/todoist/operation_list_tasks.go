@@ -76,7 +76,7 @@ func NewListTasksOperation() *ListTasksOperation {
 	}
 }
 
-func (c *ListTasksOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *ListTasksOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	_ = sdk.InputToType[listTasksOperationProps](ctx)
 
 	client := fastshot.NewClient(baseApi).
@@ -108,7 +108,7 @@ func (c *ListTasksOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	return tasks, nil
 }
 
-func (c *ListTasksOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *ListTasksOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

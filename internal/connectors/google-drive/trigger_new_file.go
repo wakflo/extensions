@@ -113,7 +113,7 @@ func NewTriggerNewFile() *TriggerNewFile {
 	}
 }
 
-func (t TriggerNewFile) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (t TriggerNewFile) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Token == nil {
 		return nil, errors.New("missing google auth token")
 	}
@@ -159,7 +159,7 @@ func (t TriggerNewFile) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	return files.Files, nil
 }
 
-func (t TriggerNewFile) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (t TriggerNewFile) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return t.Run(ctx)
 }
 

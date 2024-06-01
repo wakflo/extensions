@@ -65,7 +65,7 @@ func NewDuplicateFileOperation() *DuplicateFileOperation {
 	}
 }
 
-func (c *DuplicateFileOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *DuplicateFileOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Token == nil {
 		return nil, errors.New("missing google auth token")
 	}
@@ -89,7 +89,7 @@ func (c *DuplicateFileOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	return driveService.Files.Copy(input.FileID, in).SupportsAllDrives(input.IncludeTeamDrives).Do()
 }
 
-func (c *DuplicateFileOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *DuplicateFileOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

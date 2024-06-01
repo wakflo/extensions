@@ -99,7 +99,7 @@ func NewCreateTaskOperation() *CreateTaskOperation {
 	}
 }
 
-func (c *CreateTaskOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *CreateTaskOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[createTaskOperationProps](ctx)
 
 	qu := fastshot.NewClient(baseApi).
@@ -131,7 +131,7 @@ func (c *CreateTaskOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	return task, nil
 }
 
-func (c *CreateTaskOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *CreateTaskOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

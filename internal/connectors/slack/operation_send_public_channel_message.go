@@ -65,7 +65,7 @@ func NewSendPublicChannelMessageOperation() *SendPublicChannelMessage {
 	}
 }
 
-func (c SendPublicChannelMessage) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c SendPublicChannelMessage) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	client := getSlackClient(ctx.Auth.AccessToken)
 	input := sdk.InputToType[sendPrivateChannelMessageProps](ctx)
 
@@ -84,7 +84,7 @@ func (c SendPublicChannelMessage) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	}, nil
 }
 
-func (c SendPublicChannelMessage) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c SendPublicChannelMessage) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

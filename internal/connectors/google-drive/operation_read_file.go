@@ -61,7 +61,7 @@ func NewReadFileOperation() *ReadFileOperation {
 	}
 }
 
-func (c *ReadFileOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *ReadFileOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Token == nil {
 		return nil, errors.New("missing google auth token")
 	}
@@ -75,7 +75,7 @@ func (c *ReadFileOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	return downloadFile(ctx, driveService, input.FileID, input.FileName)
 }
 
-func (c *ReadFileOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *ReadFileOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

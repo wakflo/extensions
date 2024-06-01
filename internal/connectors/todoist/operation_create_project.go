@@ -65,7 +65,7 @@ func NewCreateProjectOperation() *CreateProjectOperation {
 	}
 }
 
-func (c *CreateProjectOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *CreateProjectOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[CreateProject](ctx)
 
 	client := fastshot.NewClient(baseApi).
@@ -97,7 +97,7 @@ func (c *CreateProjectOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	return project, nil
 }
 
-func (c *CreateProjectOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *CreateProjectOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

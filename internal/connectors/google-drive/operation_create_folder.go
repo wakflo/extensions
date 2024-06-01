@@ -59,7 +59,7 @@ func NewCreateFolderOperation() *CreateFolderOperation {
 	}
 }
 
-func (c *CreateFolderOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *CreateFolderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Token == nil {
 		return nil, errors.New("missing google auth token")
 	}
@@ -86,7 +86,7 @@ func (c *CreateFolderOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
 	return folder, err
 }
 
-func (c *CreateFolderOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *CreateFolderOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

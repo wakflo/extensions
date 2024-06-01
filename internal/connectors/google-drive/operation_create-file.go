@@ -38,12 +38,12 @@ func NewCreateNewFileTrigger() *CreateNewFileOperation {
 	}
 }
 
-func (c *CreateNewFileOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *CreateNewFileOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	// fake implementation to prove test
 	return nil, nil
 }
 
-func (c *CreateNewFileOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *CreateNewFileOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 

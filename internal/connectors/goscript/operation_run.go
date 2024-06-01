@@ -58,7 +58,7 @@ func NewRunGoScriptOperation() *RunGoScriptOperation {
 	}
 }
 
-func (c *RunGoScriptOperation) Run(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *RunGoScriptOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[runGoScriptOperationProps](ctx)
 
 	src := fmt.Sprintf(`package main
@@ -92,7 +92,7 @@ func main() {
 	return nil, err
 }
 
-func (c *RunGoScriptOperation) Test(ctx *sdk.RunContext) (sdk.Json, error) {
+func (c *RunGoScriptOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 
