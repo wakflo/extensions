@@ -20,13 +20,14 @@ import (
 	"io"
 
 	fastshot "github.com/opus-domini/fast-shot"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
 type listTasksOperationProps struct {
-	ProjectId string `json:"projectId"`
+	ProjectID string `json:"projectId"`
 }
 
 type ListTasksOperation struct {
@@ -79,7 +80,7 @@ func NewListTasksOperation() *ListTasksOperation {
 func (c *ListTasksOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	_ = sdk.InputToType[listTasksOperationProps](ctx)
 
-	client := fastshot.NewClient(baseApi).
+	client := fastshot.NewClient(baseAPI).
 		Auth().BearerToken(ctx.Auth.AccessToken).
 		Header().
 		AddAccept("application/json").

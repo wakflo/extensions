@@ -23,7 +23,7 @@ import (
 )
 
 func TestNewConnector(t *testing.T) {
-	opsId := "run-javascript"
+	opsID := "run-javascript"
 	testCases := []struct {
 		name          string
 		operationName string
@@ -31,7 +31,7 @@ func TestNewConnector(t *testing.T) {
 	}{
 		{
 			name:          "Success",
-			operationName: opsId,
+			operationName: opsID,
 			wantErr:       false,
 		},
 	}
@@ -47,7 +47,7 @@ func TestNewConnector(t *testing.T) {
 			NodeIndex: 0,
 			Type:      "normal",
 			Data: sdkcore.ConnectorStepData{
-				OperationID:      &opsId,
+				OperationID:      &opsID,
 				AuthConnectionID: nil,
 				Properties: sdkcore.ConnectorProperties{
 					Input: map[string]interface{}{
@@ -131,14 +131,14 @@ func TestNewConnector(t *testing.T) {
 				t.Errorf("NewConnector() Operations() count = %d, want %d", len(spider.Operations()), 1)
 			}
 
-			//_, err = spider.RunOperation(testCase.operationName, ctx)
-			//if err != nil {
-			//	t.Errorf("NewConnector() RunOperation() with name %v threw an error = %v", testCase.operationName, err)
-			//}
+			/*_, err = spider.RunOperation(testCase.operationName, ctx)
+			if err != nil {
+				t.Errorf("NewConnector() RunOperation() with name %v threw an error = %v", testCase.operationName, err)
+			}
 
-			//if trigger!= "some data" {
-			//	t.Errorf("NewConnector() RunOperation() response = %v, want %v", trigger["data"], "some data")
-			//}
+			if trigger!= "some data" {
+				t.Errorf("NewConnector() RunOperation() response = %v, want %v", trigger["data"], "some data")
+			}*/
 		})
 	}
 }

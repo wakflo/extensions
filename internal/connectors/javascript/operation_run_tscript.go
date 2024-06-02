@@ -18,6 +18,7 @@ import (
 	"strings"
 
 	"github.com/clarkmcc/go-typescript"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -63,12 +64,6 @@ func (c *RunTSOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	//arg := map[string]interface{}{
-	//	"step":     ctx.Step,
-	//	"auth":     ctx.Auth,
-	//	"workflow": ctx.Workflow,
-	//}
 
 	return res.Export(), nil
 }

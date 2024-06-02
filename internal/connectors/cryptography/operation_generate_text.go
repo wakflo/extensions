@@ -78,6 +78,7 @@ func NewGenerateString() *GenerateTextOperation {
 					SetDescription("Text length").
 					SetMaximum(MaxStringLength).
 					SetMinimum(MinStringLength).
+					//nolint:mnd
 					SetDefaultValue(16).
 					SetRequired(true).
 					Build(),
@@ -136,7 +137,7 @@ func (c *GenerateTextOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	randomBytes := make([]byte, length)
 
-	for i := 0; i < length; i++ {
+	for i := range randomBytes {
 		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
 		if err != nil {
 			return nil, err

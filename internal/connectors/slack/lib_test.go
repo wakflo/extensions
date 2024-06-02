@@ -154,14 +154,14 @@ func TestNewConnector(t *testing.T) {
 			ctx.Step.Data.Properties.Input = testCase.data
 
 			_, _ = spider.RunOperation(testCase.operationName, ctx)
-			//if err != nil {
-			//	t.Errorf("NewConnector() RunOperation() with name %v threw an error = %v", testCase.operationName, err)
-			//}
+			/*			if err != nil {
+							t.Errorf("NewConnector() RunOperation() with name %v threw an error = %v", testCase.operationName, err)
+						}
 
-			//result := trigger.(map[string]interface{})
-			//if result["usage_mode"] != "operation" {
-			//	t.Errorf("NewConnector() RunOperation() response = %v, want %v", result["usage_mode"], "operation")
-			//}
+						result := trigger.(map[string]interface{})
+						if result["usage_mode"] != "operation" {
+							t.Errorf("NewConnector() RunOperation() response = %v, want %v", result["usage_mode"], "operation")
+						}*/
 		})
 	}
 }

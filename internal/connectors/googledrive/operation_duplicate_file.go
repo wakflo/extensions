@@ -12,49 +12,50 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package google_drive
+package googledrive
 
 import (
 	"context"
 	"errors"
 
+	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/option"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"google.golang.org/api/drive/v3"
-	"google.golang.org/api/option"
 )
 
-type uploadFileOperationProps struct {
+type duplicateFileOperationProps struct {
+	FileID            string  `json:"fileId"`
 	FileName          string  `json:"fileName"`
-	File              string  `json:"file"`
-	ParentFolder      *string `json:"parentFolder"`
+	FolderID          *string `json:"folderId"`
 	IncludeTeamDrives bool    `json:"includeTeamDrives"`
 }
 
-type UploadFileOperation struct {
+type DuplicateFileOperation struct {
 	options *sdk.OperationInfo
 }
 
-func NewUploadFileOperation() *UploadFileOperation {
-	return &UploadFileOperation{
+func NewDuplicateFileOperation() *DuplicateFileOperation {
+	return &DuplicateFileOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Upload file",
-			Description: "Upload a file in your Google Drive",
+			Name:        "Duplicate File",
+			Description: "Duplicate a file from Google Drive. Returns the new file ID.",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
+				"fileId": autoform.NewShortTextField().
+					SetDisplayName("File ID").
+					SetDescription("The ID of the file to duplicate").
+					SetRequired(true).
+					Build(),
 				"fileName": autoform.NewShortTextField().
 					SetDisplayName("Name").
-					SetDescription("The name of the new file").
+					SetDescription("he name of the new file").
 					SetRequired(true).
 					Build(),
-				"file": autoform.NewFileField().
-					SetDisplayName("File").
-					SetDescription("The file URL or base64 to upload").
-					SetRequired(true).
-					Build(),
-				"parentFolder":      getParentFoldersInput(),
+				"folderId":          getFoldersInput("Folder ID", "The ID of the folder where the file will be duplicated", false),
 				"includeTeamDrives": includeTeamFieldInput,
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
@@ -65,43 +66,34 @@ func NewUploadFileOperation() *UploadFileOperation {
 	}
 }
 
-func (c *UploadFileOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *DuplicateFileOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Token == nil {
 		return nil, errors.New("missing google auth token")
 	}
 
-	input := sdk.InputToType[uploadFileOperationProps](ctx)
+	input := sdk.InputToType[duplicateFileOperationProps](ctx)
 	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
 	if err != nil {
 		return nil, err
 	}
 
-	fileData, err := sdk.StringToFile(input.File)
-	if err != nil {
-		return nil, err
-	}
-
 	var parents []string
-	if input.ParentFolder != nil {
-		parents = append(parents, *input.ParentFolder)
+	if input.FolderID != nil {
+		parents = append(parents, *input.FolderID)
 	}
 
 	in := &drive.File{
-		MimeType: fileData.Mime,
-		Name:     input.FileName,
-		Parents:  parents,
+		Name:    input.FileName,
+		Parents: parents,
 	}
 
-	return driveService.Files.Create(in).
-		Media(fileData.Data).
-		SupportsAllDrives(input.IncludeTeamDrives).
-		Do()
+	return driveService.Files.Copy(input.FileID, in).SupportsAllDrives(input.IncludeTeamDrives).Do()
 }
 
-func (c *UploadFileOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *DuplicateFileOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 
-func (c *UploadFileOperation) GetInfo() *sdk.OperationInfo {
+func (c *DuplicateFileOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

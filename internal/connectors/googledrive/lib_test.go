@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package google_drive
+package googledrive
 
 import (
 	"testing"
@@ -107,14 +107,14 @@ func TestNewConnector(t *testing.T) {
 				t.Errorf("NewConnector() Operations() count = %d, want %d", len(spider.Operations()), 6)
 			}
 
-			//_, err = spider.RunOperation(testCase.operationName, ctx)
-			//if err != nil {
-			//	t.Errorf("NewConnector() RunOperation() with name %v threw an error = %v", testCase.operationName, err)
-			//}
+			/*_, err = spider.RunOperation(testCase.operationName, ctx)
+			if err != nil {
+				t.Errorf("NewConnector() RunOperation() with name %v threw an error = %v", testCase.operationName, err)
+			}
 
-			//if trigger!= "some data" {
-			//	t.Errorf("NewConnector() RunOperation() response = %v, want %v", trigger["data"], "some data")
-			//}
+			if trigger!= "some data" {
+				t.Errorf("NewConnector() RunOperation() response = %v, want %v", trigger["data"], "some data")
+			}*/
 		})
 	}
 }

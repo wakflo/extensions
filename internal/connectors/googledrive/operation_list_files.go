@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package google_drive
+package googledrive
 
 import (
 	"context"
@@ -20,10 +20,11 @@ import (
 	"fmt"
 	"strings"
 
-	sdk "github.com/wakflo/go-sdk/connector"
-	sdkcore "github.com/wakflo/go-sdk/core"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
+
+	sdk "github.com/wakflo/go-sdk/connector"
+	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
 type listFilesOperationProps struct {
@@ -43,7 +44,7 @@ func NewListFilesOperation() *ListFilesOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"folderId":          getFoldersInput("Folder Id", "Folder ID coming from | New Folder -> id | (or any other source)", false),
+				"folderId":          getFoldersInput("Folder ID", "Folder ID coming from | New Folder -> id | (or any other source)", false),
 				"includeTeamDrives": includeTeamFieldInput,
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{

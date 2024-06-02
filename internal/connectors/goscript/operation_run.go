@@ -19,6 +19,7 @@ import (
 
 	"github.com/open2b/scriggo"
 	"github.com/open2b/scriggo/native"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -71,11 +72,11 @@ func main() {
 	// Create a file system with the file of the program to run.
 	fsys := scriggo.Files{"main.go": []byte(src)}
 
-	//arg := map[string]interface{}{
-	//	"step":     ctx.Step,
-	//	"auth":     ctx.Auth,
-	//	"workflow": ctx.Workflow,
-	//}
+	/*	arg := map[string]interface{}{
+		"step":     ctx.Step,
+		"auth":     ctx.Auth,
+		"workflow": ctx.Workflow,
+	}*/
 
 	// Build the program.
 	program, err := scriggo.Build(fsys, c.vmopts)

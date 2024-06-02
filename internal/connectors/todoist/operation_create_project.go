@@ -20,6 +20,7 @@ import (
 	"io"
 
 	fastshot "github.com/opus-domini/fast-shot"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -68,7 +69,7 @@ func NewCreateProjectOperation() *CreateProjectOperation {
 func (c *CreateProjectOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[CreateProject](ctx)
 
-	client := fastshot.NewClient(baseApi).
+	client := fastshot.NewClient(baseAPI).
 		Auth().BearerToken(ctx.Auth.AccessToken).
 		Header().
 		AddAccept("application/json").

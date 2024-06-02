@@ -21,26 +21,30 @@ import (
 	"io"
 
 	fastshot "github.com/opus-domini/fast-shot"
+
 	"github.com/wakflo/go-sdk/autoform"
 )
 
-const SlackApiUrl = "https://slack.com/api"
+const SlackAPIURL = "https://slack.com/api"
 
 var sharedLongMessageAutoform = autoform.
 	NewLongTextField().
 	SetDisplayName("Message").
 	SetDescription("Message that will be sent").
 	SetMinLength(1).
+	//nolint:mnd
 	SetMaxLength(4000). // https://api.slack.com/apis/rate-limits#rtm-posting-messages
 	SetRequired(false).
 	Build()
 
 var (
-	authUrl  = fmt.Sprintf("https://slack.com/oauth/v2/authorize")
-	tokenUrl = fmt.Sprintf("https://slack.com/api/oauth.v2.access")
+	// #nosec
+	authURL = "https://slack.com/oauth/v2/authorize"
+	// #nosec
+	tokenURL = "https://slack.com/api/oauth.v2.access"
 )
 
-var sharedAuth = autoform.NewOAuthField(authUrl, &tokenUrl, []string{
+var sharedAuth = autoform.NewOAuthField(authURL, &tokenURL, []string{
 	"channels:read",
 	"chat:write",
 	"chat:write.public",
@@ -49,7 +53,7 @@ var sharedAuth = autoform.NewOAuthField(authUrl, &tokenUrl, []string{
 }).Build()
 
 func getSlackClient(accessToken string) fastshot.ClientHttpMethods {
-	return fastshot.NewClient(SlackApiUrl).
+	return fastshot.NewClient(SlackAPIURL).
 		Auth().BearerToken(accessToken).
 		Build()
 }
@@ -64,26 +68,29 @@ func getUsers(client fastshot.ClientHttpMethods) ([]SlackUser, error) {
 	}
 
 	if resp.IsError() {
-		return nil, errors.New(fmt.Sprintf("Bad HTTP request - error: %s", resp.StatusText()))
+		return nil, fmt.Errorf("bad HTTP request - error: %s", resp.StatusText())
 	}
 
 	respBytes, err := io.ReadAll(resp.RawBody())
-
-	var respJson SlackListUsersResponse
-	err = json.Unmarshal(respBytes, &respJson)
 	if err != nil {
 		return nil, err
 	}
 
-	if !respJson.Ok {
-		return nil, errors.New(fmt.Sprintf("Bad Slack request, error: '%s'", respJson.Error))
+	var respJSON SlackListUsersResponse
+	err = json.Unmarshal(respBytes, &respJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	if !respJSON.Ok {
+		return nil, errors.New(fmt.Sprintf("Bad Slack request, error: '%s'", respJSON.Error))
 	}
 
 	var users []SlackUser
-	for _, member := range respJson.Members {
+	for _, member := range respJSON.Members {
 		// SlackBot needs to be filtered out with id since IsBot flag
-		if !member.IsBot && !member.Deleted && member.Id != "USLACKBOT" {
-			users = append(users, SlackUser{Id: member.Id, Name: member.Name, RealName: member.RealName})
+		if !member.IsBot && !member.Deleted && member.ID != "USLACKBOT" {
+			users = append(users, SlackUser{ID: member.ID, Name: member.Name, RealName: member.RealName})
 		}
 	}
 
@@ -109,26 +116,29 @@ func getChannels(client fastshot.ClientHttpMethods, channelTypes string) ([]Slac
 	}
 
 	if resp.IsError() {
-		return nil, errors.New(fmt.Sprintf("Bad request - error: %s", resp.StatusText()))
+		return nil, fmt.Errorf("bad request - error: %s", resp.StatusText())
 	}
 
 	respBytes, err := io.ReadAll(resp.RawBody())
+	if err != nil {
+		return nil, err
+	}
 
-	var respJson SlackChannelsListResponse
-	err = json.Unmarshal(respBytes, &respJson)
+	var respJSON SlackChannelsListResponse
+	err = json.Unmarshal(respBytes, &respJSON)
 	if err != nil {
 		fmt.Println("Error on JSON marshal")
 		return nil, err
 	}
 
-	if !respJson.Ok {
-		return nil, errors.New(fmt.Sprintf("Bad request, error: '%s'", respJson.Error))
+	if !respJSON.Ok {
+		return nil, errors.New(fmt.Sprintf("Bad request, error: '%s'", respJSON.Error))
 	}
 
 	var channels []SlackChannel
-	for _, channel := range respJson.Channels {
+	for _, channel := range respJSON.Channels {
 		if !channel.IsArchived {
-			channels = append(channels, SlackChannel{Id: channel.Id, Name: channel.Name})
+			channels = append(channels, SlackChannel{ID: channel.ID, Name: channel.Name})
 		}
 	}
 
@@ -153,7 +163,7 @@ func sendMessage(client fastshot.ClientHttpMethods, message string, channelID st
 	}
 
 	if resp.IsError() {
-		return errors.New(fmt.Sprintf("Bad request - error: %s", resp.StatusText()))
+		return fmt.Errorf("bad request - error: %s", resp.StatusText())
 	}
 
 	respBytes, err := io.ReadAll(resp.RawBody())
@@ -161,14 +171,14 @@ func sendMessage(client fastshot.ClientHttpMethods, message string, channelID st
 		return err
 	}
 
-	var respJson SlackPostMessageResponse
-	err = json.Unmarshal(respBytes, &respJson)
+	var respJSON SlackPostMessageResponse
+	err = json.Unmarshal(respBytes, &respJSON)
 	if err != nil {
 		return err
 	}
 
-	if !respJson.Ok {
-		return errors.New(fmt.Sprintf("Bad request, error: '%s'", respJson.Error))
+	if !respJSON.Ok {
+		return fmt.Errorf("bad request, error: '%s'", respJSON.Error)
 	}
 
 	return nil

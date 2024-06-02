@@ -19,9 +19,14 @@ import (
 	"time"
 
 	"github.com/dop251/goja"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+)
+
+const (
+	timeout = 200 * time.Millisecond
 )
 
 type runJSOperationProps struct {
@@ -62,7 +67,7 @@ func (c *RunJSOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
 
 	// we want to stop processing if it takes more that 500ms
-	time.AfterFunc(200*time.Millisecond, func() {
+	time.AfterFunc(timeout, func() {
 		vm.Interrupt("ran out of time")
 	})
 

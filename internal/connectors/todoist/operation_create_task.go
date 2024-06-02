@@ -21,6 +21,7 @@ import (
 	"time"
 
 	fastshot "github.com/opus-domini/fast-shot"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -29,9 +30,9 @@ import (
 type createTaskOperationProps struct {
 	Content     string     `json:"content"`
 	Description *string    `json:"description"`
-	ProjectId   *string    `json:"project_id"`
-	SectionId   *string    `json:"section_id"`
-	ParentId    *string    `json:"parent_id"`
+	ProjectID   *string    `json:"project_id"`
+	SectionID   *string    `json:"section_id"`
+	ParentID    *string    `json:"parent_id"`
 	Labels      []string   `json:"labels"`
 	Order       *string    `json:"order"`
 	Priority    *int       `json:"priority"`
@@ -102,7 +103,7 @@ func NewCreateTaskOperation() *CreateTaskOperation {
 func (c *CreateTaskOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[createTaskOperationProps](ctx)
 
-	qu := fastshot.NewClient(baseApi).
+	qu := fastshot.NewClient(baseAPI).
 		Auth().BearerToken(ctx.Auth.AccessToken).
 		Header().
 		AddAccept("application/json").

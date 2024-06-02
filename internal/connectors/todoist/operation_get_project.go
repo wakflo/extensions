@@ -17,17 +17,17 @@ package todoist
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 
 	fastshot "github.com/opus-domini/fast-shot"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
 type getProjectOperationProps struct {
-	ProjectId string `json:"id"`
+	ProjectID string `json:"id"`
 }
 
 type GetProjectOperation struct {
@@ -59,13 +59,13 @@ func NewGetProjectOperation() *GetProjectOperation {
 func (c *GetProjectOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[getProjectOperationProps](ctx)
 
-	client := fastshot.NewClient(baseApi).
+	client := fastshot.NewClient(baseAPI).
 		Auth().BearerToken(ctx.Auth.AccessToken).
 		Header().
 		AddAccept("application/json").
 		Build()
 
-	rsp, err := client.GET(fmt.Sprintf("/projects/%s", input.ProjectId)).Send()
+	rsp, err := client.GET("/projects/" + input.ProjectID).Send()
 	if err != nil {
 		return nil, err
 	}

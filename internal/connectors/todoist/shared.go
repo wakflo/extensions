@@ -21,22 +21,24 @@ import (
 
 	"github.com/gookit/goutil/arrutil"
 	fastshot "github.com/opus-domini/fast-shot"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
 var (
-	tokenUrl   = "https://todoist.com/oauth/access_token"
-	sharedAuth = autoform.NewOAuthField("https://todoist.com/oauth/authorize", &tokenUrl, []string{
+	// #nosec
+	tokenURL   = "https://todoist.com/oauth/access_token"
+	sharedAuth = autoform.NewOAuthField("https://todoist.com/oauth/authorize", &tokenURL, []string{
 		"data:read_write",
 	}).SetRequired(true).Build()
 )
-var baseApi = "https://api.todoist.com/rest/v2"
+var baseAPI = "https://api.todoist.com/rest/v2"
 
 func getProjectsInput() *sdkcore.AutoFormSchema {
 	getProjects := func(ctx *sdkcore.DynamicOptionsContext) (interface{}, error) {
-		client := fastshot.NewClient(baseApi).
+		client := fastshot.NewClient(baseAPI).
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
 			AddAccept("application/json").
@@ -85,7 +87,7 @@ func getSectionsInput() *sdkcore.AutoFormSchema {
 	getProjects := func(ctx *sdkcore.DynamicOptionsContext) (interface{}, error) {
 		input := sdk.DynamicInputToType[getSectionsFilter](ctx)
 
-		qu := fastshot.NewClient(baseApi).
+		qu := fastshot.NewClient(baseAPI).
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
 			AddAccept("application/json").
@@ -138,7 +140,7 @@ func getTasksInput(title string, desc string, required bool) *sdkcore.AutoFormSc
 	getProjects := func(ctx *sdkcore.DynamicOptionsContext) (interface{}, error) {
 		input := sdk.DynamicInputToType[getSectionsFilter](ctx)
 
-		qu := fastshot.NewClient(baseApi).
+		qu := fastshot.NewClient(baseAPI).
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
 			AddAccept("application/json").

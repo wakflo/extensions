@@ -20,12 +20,13 @@ import (
 	"io"
 
 	fastshot "github.com/opus-domini/fast-shot"
+
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
 type listProjectsOperationProps struct {
-	ProjectId string `json:"project_id"`
+	ProjectID string `json:"project_id"`
 }
 
 type ListProjectsOperation struct {
@@ -54,7 +55,7 @@ func NewListProjectsOperation() *ListProjectsOperation {
 func (c *ListProjectsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	_ = sdk.InputToType[listProjectsOperationProps](ctx)
 
-	client := fastshot.NewClient(baseApi).
+	client := fastshot.NewClient(baseAPI).
 		Auth().BearerToken(ctx.Auth.AccessToken).
 		Header().
 		AddAccept("application/json").

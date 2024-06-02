@@ -114,7 +114,7 @@ linters-settings:
   goimports:
     # put imports beginning with prefix after 3rd-party packages;
     # it's a comma-separated list of prefixes
-    local-prefixes: github.com/dapr/
+    local-prefixes: github.com/wakflo/
   gocyclo:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
     min-complexity: 10
@@ -137,9 +137,9 @@ linters-settings:
       main:
         deny:
           - pkg: "github.com/Sirupsen/logrus"
-            desc: "you must use github.com/dapr/kit/logger"
+            desc: "you must use github.com/wakflo/kit/logger"
           - pkg: "github.com/agrea/ptr"
-            desc: "you must use github.com/dapr/kit/ptr"
+            desc: "you must use github.com/wakflo/kit/ptr"
           - pkg: "go.uber.org/atomic"
             desc: "you must use sync/atomic"
           - pkg: "github.com/pkg/errors"

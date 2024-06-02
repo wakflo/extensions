@@ -265,24 +265,24 @@ func TestNewConnector(t *testing.T) {
 			ctx.Step.Data.Properties.Input = testCase.data
 
 			_, _ = spider.RunOperation(testCase.operationName, ctx)
-			//if err != nil {
-			//	if testCase.wantErr {
-			//		fmt.Println("Successfully thrown an error")
-			//		return
-			//	}
-			//
-			//	t.Errorf("NewConnector() RunOperation() with name %v threw an error = %v", testCase.operationName, err)
-			//}
+			/*if err != nil {
+				if testCase.wantErr {
+					fmt.Println("Successfully thrown an error")
+					return
+				}
 
-			// resultJson := result.(map[string]interface{})
+				t.Errorf("NewConnector() RunOperation() with name %v threw an error = %v", testCase.operationName, err)
+			}
 
-			//if resultJson["hashed_text"] != testCase.data["expected_output"] {
-			//	t.Errorf("NewConnector() RunOperation() response = %v, want %v", resultJson["hashed_string"], testCase.data["expected_output"])
-			//}
-			//
-			//if resultJson["generated_text"] != nil {
-			//	fmt.Println(resultJson["generated_string"])
-			//}
+			resultJson := result.(map[string]interface{})
+
+			if resultJson["hashed_text"] != testCase.data["expected_output"] {
+				t.Errorf("NewConnector() RunOperation() response = %v, want %v", resultJson["hashed_string"], testCase.data["expected_output"])
+			}
+
+			if resultJson["generated_text"] != nil {
+				fmt.Println(resultJson["generated_string"])
+			}*/
 		})
 	}
 }

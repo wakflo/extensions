@@ -17,7 +17,7 @@ package extensions
 import (
 	"github.com/wakflo/extensions/internal/connectors/cryptography"
 	"github.com/wakflo/extensions/internal/connectors/delay"
-	googledrive "github.com/wakflo/extensions/internal/connectors/google-drive"
+	"github.com/wakflo/extensions/internal/connectors/googledrive"
 	"github.com/wakflo/extensions/internal/connectors/goscript"
 	"github.com/wakflo/extensions/internal/connectors/javascript"
 	"github.com/wakflo/extensions/internal/connectors/slack"

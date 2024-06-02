@@ -17,10 +17,10 @@ package todoist
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 
 	fastshot "github.com/opus-domini/fast-shot"
+
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
@@ -55,11 +55,11 @@ func NewGetActiveTaskOperation() *GetActiveTaskOperation {
 func (c *GetActiveTaskOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[getActiveTaskOperationProps](ctx)
 
-	qu := fastshot.NewClient(baseApi).
+	qu := fastshot.NewClient(baseAPI).
 		Auth().BearerToken(ctx.Auth.AccessToken).
 		Header().
 		AddAccept("application/json").
-		Build().GET(fmt.Sprintf("/tasks/%s", input.TaskID))
+		Build().GET("/tasks/" + input.TaskID)
 
 	rsp, err := qu.Send()
 	if err != nil {

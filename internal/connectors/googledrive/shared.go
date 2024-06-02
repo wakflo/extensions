@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package google_drive
+package googledrive
 
 import (
 	"bytes"
@@ -21,19 +21,21 @@ import (
 	"fmt"
 	"io"
 	"mime"
+	"net/http"
+	"slices"
 
 	fastshot "github.com/opus-domini/fast-shot"
+	"google.golang.org/api/drive/v3"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"google.golang.org/api/drive/v3"
-
-	"k8s.io/utils/strings/slices"
 )
 
 var (
-	tokenUrl   = "https://oauth2.googleapis.com/token"
-	sharedAuth = autoform.NewOAuthField("https://accounts.google.com/o/oauth2/auth", &tokenUrl, []string{
+	// #nosec
+	tokenURL   = "https://oauth2.googleapis.com/token"
+	sharedAuth = autoform.NewOAuthField("https://accounts.google.com/o/oauth2/auth", &tokenURL, []string{
 		"https://www.googleapis.com/auth/drive",
 	}).Build()
 )
@@ -49,9 +51,9 @@ type File struct {
 	// Description: A short description of the file.
 	Description string `json:"description,omitempty"`
 
-	// DriveId: Output only. ID of the shared drive the file resides in.
+	// DriveID: Output only. ID of the shared drive the file resides in.
 	// Only populated for items in shared drives.
-	DriveId string `json:"driveId,omitempty"`
+	DriveID string `json:"driveId,omitempty"`
 
 	// ExplicitlyTrashed: Output only. Whether the file has been explicitly
 	// trashed, as opposed to recursively trashed from a parent folder.
@@ -85,8 +87,8 @@ type File struct {
 	// thumbnailLink field.
 	HasThumbnail bool `json:"hasThumbnail,omitempty"`
 
-	// Id: The ID of the file.
-	Id string `json:"id,omitempty"`
+	// ID: The ID of the file.
+	ID string `json:"id,omitempty"`
 
 	// Kind: Output only. Identifies what kind of resource this is. Value:
 	// the fixed string "drive#file".
@@ -141,8 +143,8 @@ type File struct {
 	// Starred: Whether the user has starred the file.
 	Starred bool `json:"starred,omitempty"`
 
-	// TeamDriveId: Deprecated: Output only. Use `driveId` instead.
-	TeamDriveId string `json:"teamDriveId,omitempty"`
+	// TeamDriveID: Deprecated: Output only. Use `driveId` instead.
+	TeamDriveID string `json:"teamDriveId,omitempty"`
 
 	// Trashed: Whether the file has been trashed, either explicitly or from
 	// a trashed parent folder. Only the owner may trash a file, and other
@@ -199,17 +201,27 @@ var googleType = []string{
 }
 
 func handleFileContent(ctx *sdk.RunContext, files []*drive.File, driveService *drive.Service) ([]File, error) {
-	var outputs []File
-	for _, file := range files {
+	outputs := make([]File, len(files))
+
+	for i, file := range files {
 		buf := new(bytes.Buffer)
 		if slices.Contains(googleType, file.MimeType) {
 			rsp, err := driveService.Files.Export(file.Id, file.MimeType).Download()
+			if err != nil {
+				return nil, err
+			}
+			defer rsp.Body.Close()
 			_, err = buf.ReadFrom(rsp.Body)
 			if err != nil {
 				return nil, err
 			}
 		} else {
 			rsp, err := driveService.Files.Get(file.Id).Download()
+			if err != nil {
+				return nil, err
+			}
+
+			defer rsp.Body.Close()
 			_, err = buf.ReadFrom(rsp.Body)
 			if err != nil {
 				return nil, err
@@ -233,14 +245,14 @@ func handleFileContent(ctx *sdk.RunContext, files []*drive.File, driveService *d
 		}
 
 		out := File{
-			Id:                file.Id,
+			ID:                file.Id,
 			MimeType:          file.MimeType,
 			Kind:              file.Kind,
 			Name:              file.Name,
 			Version:           file.Version,
 			Description:       file.Description,
 			CreatedTime:       file.CreatedTime,
-			DriveId:           file.DriveId,
+			DriveID:           file.DriveId,
 			Trashed:           file.Trashed,
 			FileExtension:     file.FileExtension,
 			FullFileExtension: file.FullFileExtension,
@@ -249,27 +261,36 @@ func handleFileContent(ctx *sdk.RunContext, files []*drive.File, driveService *d
 			WebViewLink:       file.WebViewLink,
 			FileData:          fileData,
 		}
-		outputs = append(outputs, out)
+		outputs[i] = out
 	}
 
 	return outputs, nil
 }
 
-func downloadFile(ctx *sdk.RunContext, driveService *drive.Service, fileId string, fileName *string) (*string, error) {
-	file, err := driveService.Files.Get(fileId).Do()
+func downloadFile(ctx *sdk.RunContext, driveService *drive.Service, fileID string, fileName *string) (*string, error) {
+	file, err := driveService.Files.Get(fileID).Do()
 	if err != nil {
 		return nil, err
 	}
 
 	buf := new(bytes.Buffer)
+	var rsp *http.Response
 	if slices.Contains(googleType, file.MimeType) {
-		rsp, err := driveService.Files.Export(file.Id, file.MimeType).Download()
+		rsp, err = driveService.Files.Export(file.Id, file.MimeType).Download()
+		if err != nil {
+			return nil, err
+		}
+		defer rsp.Body.Close()
 		_, err = buf.ReadFrom(rsp.Body)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		rsp, err := driveService.Files.Get(file.Id).Download()
+		rsp, err = driveService.Files.Get(file.Id).Download()
+		if err != nil {
+			return nil, err
+		}
+		defer rsp.Body.Close()
 		_, err = buf.ReadFrom(rsp.Body)
 		if err != nil {
 			return nil, err

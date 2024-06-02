@@ -17,10 +17,10 @@ package todoist
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 
 	fastshot "github.com/opus-domini/fast-shot"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -77,13 +77,13 @@ func NewUpdateProjectOperation() *UpdateProjectOperation {
 func (c *UpdateProjectOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[updateProjectOperationProps](ctx)
 
-	client := fastshot.NewClient(baseApi).
+	client := fastshot.NewClient(baseAPI).
 		Auth().BearerToken(ctx.Auth.AccessToken).
 		Header().
 		AddAccept("application/json").
 		Build()
 
-	rsp, err := client.POST(fmt.Sprintf("/projects/%s", input.ProjectID)).Body().AsJSON(input.UpdateProject).Send()
+	rsp, err := client.POST("/projects/" + input.ProjectID).Body().AsJSON(input.UpdateProject).Send()
 	if err != nil {
 		return nil, err
 	}

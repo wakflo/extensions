@@ -15,7 +15,9 @@
 package cryptography
 
 import (
+	// #nosec
 	"crypto/md5"
+	// #nosec
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
@@ -26,6 +28,8 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+
+	//nolint:staticcheck
 	"golang.org/x/crypto/ripemd160"
 )
 
@@ -110,10 +114,12 @@ func (c *HashTextOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	switch algo {
 	case suppportedAlgorithms[0].Const:
+		// #nosec
 		hashedString = md5.New()
 		hashedString.Write([]byte(inputText))
 		break
 	case suppportedAlgorithms[1].Const:
+		// #nosec
 		hashedString = sha1.New()
 		hashedString.Write([]byte(inputText))
 		break

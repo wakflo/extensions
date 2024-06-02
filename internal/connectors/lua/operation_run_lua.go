@@ -20,10 +20,6 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-type runJSOperationProps struct {
-	Script string `json:"script"`
-}
-
 type RunJSOperation struct {
 	options *sdk.OperationInfo
 }

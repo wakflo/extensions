@@ -12,17 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package google_drive
+package googledrive
 
 import (
 	"context"
 	"errors"
 
+	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/option"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"google.golang.org/api/drive/v3"
-	"google.golang.org/api/option"
 )
 
 type readFileOperationProps struct {

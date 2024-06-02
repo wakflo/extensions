@@ -21,13 +21,14 @@ import (
 	"io"
 
 	fastshot "github.com/opus-domini/fast-shot"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
 type updateTaskOperationProps struct {
-	TaskId *string `json:"taskId"`
+	TaskID *string `json:"taskId"`
 	UpdateTask
 }
 
@@ -94,11 +95,11 @@ func NewUpdateTaskOperation() *UpdateTaskOperation {
 func (c *UpdateTaskOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[updateTaskOperationProps](ctx)
 
-	qu := fastshot.NewClient(baseApi).
+	qu := fastshot.NewClient(baseAPI).
 		Auth().BearerToken(ctx.Auth.AccessToken).
 		Header().
 		AddAccept("application/json").
-		Build().POST(fmt.Sprintf("/tasks/%v", input.TaskId)).Body().AsJSON(input.UpdateTask)
+		Build().POST(fmt.Sprintf("/tasks/%v", input.TaskID)).Body().AsJSON(input.UpdateTask)
 
 	rsp, err := qu.Send()
 	if err != nil {

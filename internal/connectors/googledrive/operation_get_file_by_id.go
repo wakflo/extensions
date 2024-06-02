@@ -12,44 +12,41 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package google_drive
+package googledrive
 
 import (
 	"context"
 	"errors"
 
+	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/option"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"google.golang.org/api/drive/v3"
-	"google.golang.org/api/option"
 )
 
-type createFileOperationProps struct {
-	FolderName        string  `json:"folderName"`
-	ParentFolder      *string `json:"parentFolder"`
-	IncludeTeamDrives bool    `json:"includeTeamDrives"`
+type getFileByIDOperationProps struct {
+	FileID string `json:"fileId"`
 }
 
-type CreateFolderOperation struct {
+type GetFileByIDOperation struct {
 	options *sdk.OperationInfo
 }
 
-func NewCreateFolderOperation() *CreateFolderOperation {
-	return &CreateFolderOperation{
+func NewGetFileByIDOperation() *GetFileByIDOperation {
+	return &GetFileByIDOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Create New Folder",
-			Description: "Create a new empty folder in your Google Drive",
+			Name:        "Get File or Folder",
+			Description: "Get a file folder for files/sub-folders",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"folderName": autoform.NewShortTextField().
-					SetDisplayName("Folder name").
-					SetDescription("The name of the new folder.").
+				"fileId": autoform.NewShortTextField().
+					SetDisplayName("File / Folder ID").
+					SetDescription("The ID of the file/folder to search for.").
 					SetRequired(true).
 					Build(),
-				"parentFolder":      getParentFoldersInput(),
-				"includeTeamDrives": includeTeamFieldInput,
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,
@@ -59,37 +56,27 @@ func NewCreateFolderOperation() *CreateFolderOperation {
 	}
 }
 
-func (c *CreateFolderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetFileByIDOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Token == nil {
 		return nil, errors.New("missing google auth token")
 	}
 
-	input := sdk.InputToType[createFileOperationProps](ctx)
+	input := sdk.InputToType[getFileByIDOperationProps](ctx)
 	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
 	if err != nil {
 		return nil, err
 	}
 
-	var parents []string
-	if input.ParentFolder != nil {
-		parents = append(parents, *input.ParentFolder)
-	}
-
-	folder, err := driveService.Files.Create(&drive.File{
-		MimeType: "application/vnd.google-apps.folder",
-		Name:     input.FolderName,
-		Parents:  parents,
-	}).
+	file, err := driveService.Files.Get(input.FileID).
 		Fields("id, name, mimeType, webViewLink, kind, createdTime").
-		SupportsAllDrives(input.IncludeTeamDrives).
 		Do()
-	return folder, err
+	return file, err
 }
 
-func (c *CreateFolderOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetFileByIDOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 
-func (c *CreateFolderOperation) GetInfo() *sdk.OperationInfo {
+func (c *GetFileByIDOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

@@ -22,7 +22,7 @@ import (
 )
 
 type taskCompletedTriggerProps struct {
-	ProjectId *string `json:"projectId"`
+	ProjectID *string `json:"projectId"`
 }
 type TaskCompletedTrigger struct {
 	options *sdk.TriggerInfo

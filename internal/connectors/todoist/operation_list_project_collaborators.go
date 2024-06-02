@@ -21,13 +21,14 @@ import (
 	"io"
 
 	fastshot "github.com/opus-domini/fast-shot"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
 type listProjectUsersOperationProps struct {
-	ProjectId string `json:"id"`
+	ProjectID string `json:"id"`
 }
 
 type ListProjectCollaboratorsOperation struct {
@@ -59,13 +60,13 @@ func NewListProjectCollaboratorsOperation() *ListProjectCollaboratorsOperation {
 func (c *ListProjectCollaboratorsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[listProjectUsersOperationProps](ctx)
 
-	client := fastshot.NewClient(baseApi).
+	client := fastshot.NewClient(baseAPI).
 		Auth().BearerToken(ctx.Auth.AccessToken).
 		Header().
 		AddAccept("application/json").
 		Build()
 
-	rsp, err := client.GET(fmt.Sprintf("/projects/%s/collaborators", input.ProjectId)).Send()
+	rsp, err := client.GET(fmt.Sprintf("/projects/%s/collaborators", input.ProjectID)).Send()
 	if err != nil {
 		return nil, err
 	}

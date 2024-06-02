@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package google_drive
+package googledrive
 
 import (
 	"context"
@@ -24,11 +24,12 @@ import (
 	"time"
 
 	fastshot "github.com/opus-domini/fast-shot"
+	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/option"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"google.golang.org/api/drive/v3"
-	"google.golang.org/api/option"
 )
 
 type triggerNewFileProps struct {
@@ -54,8 +55,8 @@ func NewTriggerNewFile() *TriggerNewFile {
 		rsp, err := client.GET("/files").Query().
 			AddParams(map[string]string{
 				"q": "mimeType='application/vnd.google-apps.folder' and trashed = false",
-				//"supportsTeamDrives": "true",
-				//"supportsAllDrives":  "true",
+				/*"supportsTeamDrives": "true",
+				"supportsAllDrives":  "true",*/
 			}).Send()
 		if err != nil {
 			return nil, err

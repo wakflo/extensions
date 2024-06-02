@@ -24,8 +24,8 @@ type SlackMetadataResponse struct {
 }
 
 type SlackUserResponse struct {
-	Id       string `json:"id"`
-	TeamId   string `json:"team_id"`
+	ID       string `json:"id"`
+	TeamID   string `json:"team_id"`
 	Name     string `json:"name"`
 	Deleted  bool   `json:"deleted"`
 	RealName string `json:"real_name"`
@@ -41,13 +41,13 @@ type SlackListUsersResponse struct {
 }
 
 type SlackUser struct {
-	Id       string `json:"id"`
+	ID       string `json:"id"`
 	Name     string `json:"name"`
 	RealName string `json:"real_name"`
 }
 
 type SlackChannelResponse struct {
-	Id         string `json:"id"`
+	ID         string `json:"id"`
 	Name       string `json:"name"`
 	IsChannel  bool   `json:"is_channel"`
 	IsGroup    bool   `json:"is_group"`
@@ -66,13 +66,13 @@ type SlackChannelsListResponse struct {
 }
 
 type SlackChannel struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
 type SlackMessage struct {
 	Text      string `json:"text"`
-	BotId     string `json:"bot_id"`
+	BotID     string `json:"bot_id"`
 	Timestamp string `json:"ts"`
 }
 
