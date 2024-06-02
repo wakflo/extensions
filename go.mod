@@ -12,7 +12,6 @@ require (
 	github.com/wakflo/go-sdk v0.2.0
 	golang.org/x/crypto v0.23.0
 	google.golang.org/api v0.181.0
-	k8s.io/utils v0.0.0-20240502163921-fe8a2dddb1d0
 )
 
 require (
