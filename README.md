@@ -1,4 +1,4 @@
-# Wakflo Automation Connectors and Integration Library
+# Wakflo Connectors and Integrations
 
 ## Overview
 
