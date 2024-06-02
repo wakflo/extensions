@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.2](https://github.com/wakflo/extensions/compare/v0.1.1...v0.1.2) (2024-06-02)
+
+
+### Bug Fixes
+
+* updated readme ([2f11ca2](https://github.com/wakflo/extensions/commit/2f11ca2b35e9be47111064196997d29579f5032f))
+* updated readme ([5a4c7c6](https://github.com/wakflo/extensions/commit/5a4c7c6d67e15a8dd4d9caeae471908aff0c6861))
+* updated readme ([58e03ff](https://github.com/wakflo/extensions/commit/58e03ff4d4e71e6e877a3c8b3d87772ef4a9af89))
+
 ## [0.1.1](https://github.com/wakflo/extensions/compare/v0.1.0...v0.1.1) (2024-06-02)
 
 
