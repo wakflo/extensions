@@ -19,7 +19,6 @@ import (
 
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/core/jobstatusenum"
 )
 
 func TestNewConnector(t *testing.T) {
@@ -81,7 +80,7 @@ func TestNewConnector(t *testing.T) {
 					},
 					Output: map[string]interface{}{},
 					Logs:   nil,
-					Status: jobstatusenum.Queued,
+					Status: sdkcore.JobStatusQueued,
 				},
 			},
 			CurrentStepID: "step-1",

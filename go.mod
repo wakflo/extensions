@@ -9,7 +9,7 @@ require (
 	github.com/gookit/goutil v0.6.15
 	github.com/open2b/scriggo v0.56.1
 	github.com/opus-domini/fast-shot v0.10.0
-	github.com/wakflo/go-sdk v0.2.1
+	github.com/wakflo/go-sdk v0.2.2
 	golang.org/x/crypto v0.23.0
 	google.golang.org/api v0.181.0
 )
