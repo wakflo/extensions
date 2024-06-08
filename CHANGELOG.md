@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.3](https://github.com/wakflo/extensions/compare/v0.1.2...v0.1.3) (2024-06-08)
+
+
+### Bug Fixes
+
+* updated sdk version ([3759cf6](https://github.com/wakflo/extensions/commit/3759cf6fe949f3a4ca10d8fc063e6fd693ca7e6c))
+* updated sdk version ([374af34](https://github.com/wakflo/extensions/commit/374af34a6a369a3efc9e6bb07e81aa966311673a))
+
 ## [0.1.2](https://github.com/wakflo/extensions/compare/v0.1.1...v0.1.2) (2024-06-02)
 
 
