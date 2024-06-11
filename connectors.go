@@ -20,6 +20,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/googledrive"
 	"github.com/wakflo/extensions/internal/connectors/goscript"
 	"github.com/wakflo/extensions/internal/connectors/javascript"
+	"github.com/wakflo/extensions/internal/connectors/manual"
 	"github.com/wakflo/extensions/internal/connectors/slack"
 	"github.com/wakflo/extensions/internal/connectors/todoist"
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -68,6 +69,12 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 	todo, err := todoist.NewConnector()
 	if err == nil {
 		connectors = append(connectors, todo)
+	}
+
+	// Manual
+	m, err := manual.NewConnector()
+	if err == nil {
+		connectors = append(connectors, m)
 	}
 
 	return connectors
