@@ -75,16 +75,16 @@ func TestNewConnector(t *testing.T) {
 				t.Fatal("NewConnector() returned nil")
 			}
 
-			if connector.DisplayName != "Google Drive" {
+			if connector.DisplayName != "Shopify" {
 				t.Errorf("NewConnector() Name = %s, want %s", connector.DisplayName, "Google Drive")
 			}
 
-			if connector.Description != "some google drive connector" {
-				t.Errorf("NewConnector() Description = %s, want %s", connector.Description, "some google drive connector")
+			if connector.Description != "interacts with Shopify API" {
+				t.Errorf("NewConnector() Description = %s, want %s", connector.Description, "interacts with Shopify API")
 			}
 
-			if connector.Logo != "logos:google-drive" {
-				t.Errorf("NewConnector() Logo = %s, want %s", connector.Logo, "logos:google-drive")
+			if connector.Logo != "logos:shopify" {
+				t.Errorf("NewConnector() Logo = %s, want %s", connector.Logo, "logos:shopify")
 			}
 
 			if connector.Version != "0.0.1" {
@@ -99,12 +99,12 @@ func TestNewConnector(t *testing.T) {
 				t.Errorf("NewConnector() Authors = %v, want %v", connector.Authors, []string{"Wakflo <integrations@wakflo.com>"})
 			}
 
-			if len(spider.Triggers()) != 2 {
-				t.Errorf("NewConnector() Triggers() count = %d, want %d", len(spider.Triggers()), 2)
+			if len(spider.Triggers()) != 0 {
+				t.Errorf("NewConnector() Triggers() count = %d, want %d", len(spider.Triggers()), 0)
 			}
 
-			if len(spider.Operations()) != 6 {
-				t.Errorf("NewConnector() Operations() count = %d, want %d", len(spider.Operations()), 6)
+			if len(spider.Operations()) != 1 {
+				t.Errorf("NewConnector() Operations() count = %d, want %d", len(spider.Operations()), 1)
 			}
 
 			/*_, err = spider.RunOperation(testCase.operationName, ctx)
