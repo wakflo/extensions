@@ -21,6 +21,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/goscript"
 	"github.com/wakflo/extensions/internal/connectors/javascript"
 	"github.com/wakflo/extensions/internal/connectors/manual"
+	"github.com/wakflo/extensions/internal/connectors/shopify"
 	"github.com/wakflo/extensions/internal/connectors/slack"
 	"github.com/wakflo/extensions/internal/connectors/todoist"
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -75,6 +76,12 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 	m, err := manual.NewConnector()
 	if err == nil {
 		connectors = append(connectors, m)
+	}
+
+	// Shopify
+	shop, err := shopify.NewConnector()
+	if err == nil {
+		connectors = append(connectors, shop)
 	}
 
 	return connectors

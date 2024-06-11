@@ -21,7 +21,6 @@ import (
 
 	"github.com/gookit/goutil/arrutil"
 	fastshot "github.com/opus-domini/fast-shot"
-
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"

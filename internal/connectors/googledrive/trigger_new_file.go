@@ -24,12 +24,11 @@ import (
 	"time"
 
 	fastshot "github.com/opus-domini/fast-shot"
-	"google.golang.org/api/drive/v3"
-	"google.golang.org/api/option"
-
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/option"
 )
 
 type triggerNewFileProps struct {

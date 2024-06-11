@@ -20,11 +20,10 @@ import (
 	"fmt"
 	"strings"
 
-	"google.golang.org/api/drive/v3"
-	"google.golang.org/api/option"
-
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/option"
 )
 
 type listFilesOperationProps struct {

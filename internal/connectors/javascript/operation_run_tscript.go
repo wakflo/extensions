@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/clarkmcc/go-typescript"
-
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"

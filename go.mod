@@ -2,6 +2,8 @@ module github.com/wakflo/extensions
 
 go 1.22.2
 
+//replace github.com/wakflo/go-sdk => ../go-sdk
+
 require (
 	github.com/clarkmcc/go-typescript v0.7.0
 	github.com/dop251/goja v0.0.0-20240516125602-ccbae20bcec2
@@ -9,7 +11,7 @@ require (
 	github.com/gookit/goutil v0.6.15
 	github.com/open2b/scriggo v0.56.1
 	github.com/opus-domini/fast-shot v0.10.0
-	github.com/wakflo/go-sdk v0.2.2
+	github.com/wakflo/go-sdk v0.2.5
 	golang.org/x/crypto v0.23.0
 	google.golang.org/api v0.181.0
 )
