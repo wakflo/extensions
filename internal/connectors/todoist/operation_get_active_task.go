@@ -20,6 +20,7 @@ import (
 	"io"
 
 	fastshot "github.com/opus-domini/fast-shot"
+
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
