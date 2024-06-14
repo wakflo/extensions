@@ -25,7 +25,7 @@ jobs:
           - "1.22"
     env:
       GOVER: ${{ matrix.gover }}
-      GOLANGCILINT_VER: v1.55.2
+      GOLANGCILINT_VER: v1.58
 
     steps:
       - name: Checkout
@@ -46,7 +46,7 @@ jobs:
       #        uses: codecov/codecov-action@v4
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v3.3.1
+        uses: golangci/golangci-lint-action@v6
         with:
           version: ${{ env.GOLANGCILINT_VER }}
           skip-cache: true
