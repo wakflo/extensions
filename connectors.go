@@ -15,9 +15,13 @@
 package extensions
 
 import (
+	"github.com/wakflo/extensions/internal/connectors/calculator"
 	"github.com/wakflo/extensions/internal/connectors/cryptography"
 	"github.com/wakflo/extensions/internal/connectors/delay"
+	googledocs "github.com/wakflo/extensions/internal/connectors/google_docs"
+	googlesheets "github.com/wakflo/extensions/internal/connectors/google_sheets"
 	"github.com/wakflo/extensions/internal/connectors/googledrive"
+	"github.com/wakflo/extensions/internal/connectors/googlemail"
 	"github.com/wakflo/extensions/internal/connectors/goscript"
 	"github.com/wakflo/extensions/internal/connectors/javascript"
 	"github.com/wakflo/extensions/internal/connectors/manual"
@@ -34,6 +38,24 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 	gd, err := googledrive.NewConnector()
 	if err == nil {
 		connectors = append(connectors, gd)
+	}
+
+	// Google Sheets
+	gs, err := googlesheets.NewConnector()
+	if err == nil {
+		connectors = append(connectors, gs)
+	}
+
+	// Google Docs
+	gdocs, err := googledocs.NewConnector()
+	if err == nil {
+		connectors = append(connectors, gdocs)
+	}
+
+	// Gmail
+	gm, err := googlemail.NewConnector()
+	if err == nil {
+		connectors = append(connectors, gm)
 	}
 
 	// Slack
@@ -76,6 +98,12 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 	m, err := manual.NewConnector()
 	if err == nil {
 		connectors = append(connectors, m)
+	}
+
+	// Calculator
+	calc, err := calculator.NewConnector()
+	if err == nil {
+		connectors = append(connectors, calc)
 	}
 
 	// Shopify
