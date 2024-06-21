@@ -28,6 +28,10 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{
+			NewGetProductVariantOperation(),
+			NewCreateProductOperation(),
+			NewGetCustomerOperation(),
+			NewGetProductOperation(),
 			NewListProductsOperation(),
 		},
 	})
