@@ -17,11 +17,7 @@ package shopify
 import (
 	"context"
 	"errors"
-	// "fmt"
 
-	// "strings"
-
-	// "github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
