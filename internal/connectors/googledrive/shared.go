@@ -311,7 +311,6 @@ func downloadFile(ctx *sdk.RunContext, driveService *drive.Service, fileID strin
 }
 
 func getParentFoldersInput() *sdkcore.AutoFormSchema {
-	fmt.Println("Hiiiiiii")
 	getParentFolders := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
 		client := fastshot.NewClient("https://www.googleapis.com/drive/v3").
 			Auth().BearerToken(ctx.Auth.AccessToken).
