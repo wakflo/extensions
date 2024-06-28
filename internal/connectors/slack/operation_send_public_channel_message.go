@@ -25,7 +25,7 @@ type SendPublicChannelMessage struct {
 }
 
 func NewSendPublicChannelMessageOperation() *SendPublicChannelMessage {
-	getPublicChannels := func(ctx *sdkcore.DynamicOptionsContext) (interface{}, error) {
+	getPublicChannels := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
 		client := getSlackClient(ctx.Auth.AccessToken)
 
 		publicChannels, err := getChannels(client, "public_channel")

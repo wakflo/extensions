@@ -39,6 +39,8 @@ func NewTaskCompletedTrigger() *TaskCompletedTrigger {
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"projectId": getProjectsInput(),
 			},
+			Type:     sdkcore.TriggerTypeCron,
+			Settings: &sdkcore.TriggerSettings{},
 			SampleOutput: map[string]interface{}{
 				"content":      "Buy Milk",
 				"meta_data":    nil,
@@ -50,7 +52,7 @@ func NewTaskCompletedTrigger() *TaskCompletedTrigger {
 				"completed_at": "2015-02-17T15:40:41.000000Z",
 				"id":           "1899066186",
 			},
-			ErrorSettings: sdkcore.StepErrorSettings{
+			ErrorSettings: &sdkcore.StepErrorSettings{
 				ContinueOnError: false,
 				RetryOnError:    false,
 			},

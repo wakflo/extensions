@@ -30,7 +30,7 @@ type SendDirectMessageOperation struct {
 }
 
 func NewSendDirectMessageOperation() *SendDirectMessageOperation {
-	getSlackUsers := func(ctx *sdkcore.DynamicOptionsContext) (interface{}, error) {
+	getSlackUsers := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
 		client := getSlackClient(ctx.Auth.AccessToken)
 
 		users, err := getUsers(client)

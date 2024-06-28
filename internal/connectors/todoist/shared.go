@@ -21,7 +21,6 @@ import (
 
 	"github.com/gookit/goutil/arrutil"
 	fastshot "github.com/opus-domini/fast-shot"
-
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -37,7 +36,7 @@ var (
 var baseAPI = "https://api.todoist.com/rest/v2"
 
 func getProjectsInput() *sdkcore.AutoFormSchema {
-	getProjects := func(ctx *sdkcore.DynamicOptionsContext) (interface{}, error) {
+	getProjects := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
 		client := fastshot.NewClient(baseAPI).
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
@@ -84,7 +83,7 @@ type getSectionsFilter struct {
 }
 
 func getSectionsInput() *sdkcore.AutoFormSchema {
-	getProjects := func(ctx *sdkcore.DynamicOptionsContext) (interface{}, error) {
+	getProjects := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
 		input := sdk.DynamicInputToType[getSectionsFilter](ctx)
 
 		qu := fastshot.NewClient(baseAPI).
@@ -137,7 +136,7 @@ var viewStyleOptions = []*sdkcore.AutoFormSchema{
 }
 
 func getTasksInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getProjects := func(ctx *sdkcore.DynamicOptionsContext) (interface{}, error) {
+	getProjects := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
 		input := sdk.DynamicInputToType[getSectionsFilter](ctx)
 
 		qu := fastshot.NewClient(baseAPI).

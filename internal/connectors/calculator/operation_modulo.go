@@ -2,7 +2,6 @@
 package calculator
 
 import (
-	"fmt"
 	"math"
 
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -37,8 +36,6 @@ func NewModulo() *MathModuloOperation {
 
 func (c *MathModuloOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[CalculatorOperationProps](ctx)
-
-	fmt.Println(input)
 
 	fNumber := input.FirstNumber
 	sNumber := input.SecondNumber

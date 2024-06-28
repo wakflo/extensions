@@ -30,12 +30,11 @@ func NewManualTrigger() *ManualTrigger {
 			Description:  "manual trigger",
 			Input:        map[string]*sdkcore.AutoFormSchema{},
 			SampleOutput: map[string]interface{}{},
-			ErrorSettings: sdkcore.StepErrorSettings{
+			Type:         sdkcore.TriggerTypeManual,
+			Settings:     &sdkcore.TriggerSettings{},
+			ErrorSettings: &sdkcore.StepErrorSettings{
 				ContinueOnError: false,
 				RetryOnError:    false,
-			},
-			Settings: &sdkcore.TriggerSettings{
-				Type: sdkcore.Manual,
 			},
 			RequireAuth: false,
 		},

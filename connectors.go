@@ -15,6 +15,7 @@
 package extensions
 
 import (
+	"github.com/rs/zerolog"
 	"github.com/wakflo/extensions/internal/connectors/calculator"
 	"github.com/wakflo/extensions/internal/connectors/cryptography"
 	"github.com/wakflo/extensions/internal/connectors/delay"
@@ -28,89 +29,52 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/shopify"
 	"github.com/wakflo/extensions/internal/connectors/slack"
 	"github.com/wakflo/extensions/internal/connectors/todoist"
+	"github.com/wakflo/extensions/internal/logger"
 	sdk "github.com/wakflo/go-sdk/connector"
 )
 
+var lvl = zerolog.DebugLevel
+var log = logger.NewDefaultLogger("connectors")
+
 func RegisterConnectors() []*sdk.ConnectorPlugin {
-	var connectors []*sdk.ConnectorPlugin
-
-	// Google Drive
-	gd, err := googledrive.NewConnector()
-	if err == nil {
-		connectors = append(connectors, gd)
+	// 🛑Do-Not-Edit
+	reg := internalRegistry{
+		connectors: []*sdk.ConnectorPlugin{},
 	}
 
-	// Google Sheets
-	gs, err := googlesheets.NewConnector()
-	if err == nil {
-		connectors = append(connectors, gs)
+	plugins := []func() (*sdk.ConnectorPlugin, error){
+		// 👋 Add connectors here
+		googledrive.NewConnector,  // Google Drive
+		googlesheets.NewConnector, // Google Sheets
+		googledocs.NewConnector,   // Google Docs
+		googlemail.NewConnector,   // Gmail
+		slack.NewConnector,        // Slack
+		javascript.NewConnector,   // Javascript
+		cryptography.NewConnector, // Cryptography
+		goscript.NewConnector,     // Go Lang
+		delay.NewConnector,        // Delay
+		todoist.NewConnector,      // Todoist
+		manual.NewConnector,       // Manual
+		calculator.NewConnector,   // Calculator
+		shopify.NewConnector,      // Shopify
 	}
 
-	// Google Docs
-	gdocs, err := googledocs.NewConnector()
-	if err == nil {
-		connectors = append(connectors, gdocs)
+	// 🛑Do-Not-Edit
+	for _, plugin := range plugins {
+		reg.insertConnector(plugin())
 	}
 
-	// Gmail
-	gm, err := googlemail.NewConnector()
-	if err == nil {
-		connectors = append(connectors, gm)
-	}
+	return reg.connectors
+}
 
-	// Slack
-	sk, err := slack.NewConnector()
-	if err == nil {
-		connectors = append(connectors, sk)
-	}
+type internalRegistry struct {
+	connectors []*sdk.ConnectorPlugin
+}
 
-	// JavaScript
-	js, err := javascript.NewConnector()
+func (i *internalRegistry) insertConnector(connector *sdk.ConnectorPlugin, err error) {
 	if err == nil {
-		connectors = append(connectors, js)
+		i.connectors = append(i.connectors, connector)
+	} else {
+		log.Error().Err(err).Msgf(err.Error())
 	}
-
-	// Cryptography
-	crp, err := cryptography.NewConnector()
-	if err == nil {
-		connectors = append(connectors, crp)
-	}
-
-	// Go Lang
-	gos, err := goscript.NewConnector()
-	if err == nil {
-		connectors = append(connectors, gos)
-	}
-
-	// Delay
-	del, err := delay.NewConnector()
-	if err == nil {
-		connectors = append(connectors, del)
-	}
-
-	// Todoist
-	todo, err := todoist.NewConnector()
-	if err == nil {
-		connectors = append(connectors, todo)
-	}
-
-	// Manual
-	m, err := manual.NewConnector()
-	if err == nil {
-		connectors = append(connectors, m)
-	}
-
-	// Calculator
-	calc, err := calculator.NewConnector()
-	if err == nil {
-		connectors = append(connectors, calc)
-	}
-
-	// Shopify
-	shop, err := shopify.NewConnector()
-	if err == nil {
-		connectors = append(connectors, shop)
-	}
-
-	return connectors
 }

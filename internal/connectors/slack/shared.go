@@ -21,7 +21,6 @@ import (
 	"io"
 
 	fastshot "github.com/opus-domini/fast-shot"
-
 	"github.com/wakflo/go-sdk/autoform"
 )
 

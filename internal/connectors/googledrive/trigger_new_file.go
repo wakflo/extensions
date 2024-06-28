@@ -24,12 +24,11 @@ import (
 	"time"
 
 	fastshot "github.com/opus-domini/fast-shot"
-	"google.golang.org/api/drive/v3"
-	"google.golang.org/api/option"
-
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/option"
 )
 
 type triggerNewFileProps struct {
@@ -45,7 +44,7 @@ type TriggerNewFile struct {
 }
 
 func NewTriggerNewFile() *TriggerNewFile {
-	getParentFolders := func(ctx *sdkcore.DynamicOptionsContext) (interface{}, error) {
+	getParentFolders := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
 		client := fastshot.NewClient("https://www.googleapis.com/drive/v3").
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
@@ -86,6 +85,8 @@ func NewTriggerNewFile() *TriggerNewFile {
 			Description: "triggers workflow when a new file is produced",
 			RequireAuth: true,
 			Auth:        sharedAuth,
+			Type:        sdkcore.TriggerTypeCron,
+			Settings:    &sdkcore.TriggerSettings{},
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"parentFolder": autoform.NewDynamicField(sdkcore.String).
 					SetDisplayName("Parent Folder").
@@ -106,7 +107,7 @@ func NewTriggerNewFile() *TriggerNewFile {
 				"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
 				"name":     "example.jpg",
 			},
-			ErrorSettings: sdkcore.StepErrorSettings{
+			ErrorSettings: &sdkcore.StepErrorSettings{
 				ContinueOnError: false,
 				RetryOnError:    false,
 			},
@@ -130,7 +131,7 @@ func (t TriggerNewFile) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		qarr = append(qarr, fmt.Sprintf("'%v' in parents", *input.ParentFolder))
 	}
 	if input.CreatedTime == nil {
-		input.CreatedTime = ctx.LastRun
+		input.CreatedTime = ctx.Metadata.LastRun
 	}
 	if input.CreatedTime != nil {
 		op := ">"

@@ -43,7 +43,7 @@ func (c *MathAdditionOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		"first_number":  fNumber,
 		"second_number": sNumber,
 		"result":        fNumber + sNumber,
-		"teste":         ctx.ResolvedInput,
+		"teste":         ctx.Input,
 	}, nil
 }
 

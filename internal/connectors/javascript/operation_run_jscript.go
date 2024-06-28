@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"github.com/dop251/goja"
-
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -37,7 +36,7 @@ type RunJSOperation struct {
 	options *sdk.OperationInfo
 }
 
-func NewRunJSOperation() *RunJSOperation {
+func NewRunJSOperation() sdk.IOperation {
 	return &RunJSOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Run JavaScript",
@@ -60,7 +59,10 @@ func NewRunJSOperation() *RunJSOperation {
 }
 
 func (c *RunJSOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
-	input := sdk.InputToType[runJSOperationProps](ctx)
+	input, err := sdk.InputToTypeSafely[runJSOperationProps](ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	vm := goja.New()
 	// map field names to JS
@@ -72,7 +74,7 @@ func (c *RunJSOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	})
 
 	// Run Script
-	_, err := vm.RunScript(ctx.Step.Name, input.Script)
+	_, err = vm.RunScript(ctx.Metadata.StepName, input.Script)
 	if err != nil {
 		return nil, err
 	}
@@ -84,8 +86,6 @@ func (c *RunJSOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	}
 
 	arg := map[string]interface{}{
-		"step":  ctx.Step,
-		"steps": ctx.State.Steps,
 		"auth":  ctx.Auth,
 		"input": input,
 	}

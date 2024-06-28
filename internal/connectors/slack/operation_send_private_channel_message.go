@@ -30,7 +30,7 @@ type SendPrivateChannelMessage struct {
 }
 
 func NewSendPrivateChannelMessageOperation() *SendPrivateChannelMessage {
-	getPrivateChannels := func(ctx *sdkcore.DynamicOptionsContext) (interface{}, error) {
+	getPrivateChannels := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
 		client := getSlackClient(ctx.Auth.AccessToken)
 
 		publicChannels, err := getChannels(client, "private_channel")

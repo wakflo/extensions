@@ -20,11 +20,10 @@ import (
 	"fmt"
 	"strings"
 
-	"google.golang.org/api/drive/v3"
-	"google.golang.org/api/option"
-
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/option"
 )
 
 type TriggerNewFolder struct {
@@ -38,11 +37,13 @@ func NewTriggerNewFolder() *TriggerNewFolder {
 			Description: "triggers workflow when a new folder is produced",
 			RequireAuth: true,
 			Auth:        sharedAuth,
+			Type:        sdkcore.TriggerTypeCron,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"parentFolder":      getParentFoldersInput(),
 				"includeTeamDrives": includeTeamFieldInput,
 			},
-			ErrorSettings: sdkcore.StepErrorSettings{
+			Settings: &sdkcore.TriggerSettings{},
+			ErrorSettings: &sdkcore.StepErrorSettings{
 				ContinueOnError: false,
 				RetryOnError:    false,
 			},
@@ -67,7 +68,7 @@ func (t *TriggerNewFolder) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	}
 
 	if input.CreatedTime == nil {
-		input.CreatedTime = ctx.LastRun
+		input.CreatedTime = ctx.Metadata.LastRun
 	}
 
 	if input.CreatedTime != nil {

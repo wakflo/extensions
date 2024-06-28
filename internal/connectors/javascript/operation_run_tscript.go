@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/clarkmcc/go-typescript"
-
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -32,7 +31,7 @@ type RunTSOperation struct {
 	options *sdk.OperationInfo
 }
 
-func NewRunTSOperation() *RunTSOperation {
+func NewRunTSOperation() sdk.IOperation {
 	return &RunTSOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Run TypeScript",

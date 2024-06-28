@@ -4,12 +4,11 @@ import (
 	"context"
 	"errors"
 
-	"google.golang.org/api/gmail/v1"
-	"google.golang.org/api/option"
-
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	"google.golang.org/api/gmail/v1"
+	"google.golang.org/api/option"
 )
 
 type getMailByIDOperationProps struct {

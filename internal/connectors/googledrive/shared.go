@@ -25,11 +25,10 @@ import (
 	"slices"
 
 	fastshot "github.com/opus-domini/fast-shot"
-	"google.golang.org/api/drive/v3"
-
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	"google.golang.org/api/drive/v3"
 )
 
 var (
@@ -239,7 +238,7 @@ func handleFileContent(ctx *sdk.RunContext, files []*drive.File, driveService *d
 			// fileName = strings.Replace()
 		}
 
-		fileData, err := ctx.Files.PutWorkflow(ctx.Workflow, fileName, buf)
+		fileData, err := ctx.Files.PutWorkflow(ctx.Metadata, fileName, buf)
 		if err != nil {
 			return nil, err
 		}
@@ -307,11 +306,12 @@ func downloadFile(ctx *sdk.RunContext, driveService *drive.Service, fileID strin
 		name = fmt.Sprintf("%s.%s", *fileName, ext)
 	}
 
-	return ctx.Files.PutWorkflow(ctx.Workflow, name, buf)
+	return ctx.Files.PutWorkflow(ctx.Metadata, name, buf)
 }
 
 func getParentFoldersInput() *sdkcore.AutoFormSchema {
-	getParentFolders := func(ctx *sdkcore.DynamicOptionsContext) (interface{}, error) {
+	fmt.Println("Hiiiiiii")
+	getParentFolders := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
 		client := fastshot.NewClient("https://www.googleapis.com/drive/v3").
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
@@ -353,7 +353,7 @@ func getParentFoldersInput() *sdkcore.AutoFormSchema {
 }
 
 func getFoldersInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getParentFolders := func(ctx *sdkcore.DynamicOptionsContext) (interface{}, error) {
+	getParentFolders := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
 		client := fastshot.NewClient("https://www.googleapis.com/drive/v3").
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().

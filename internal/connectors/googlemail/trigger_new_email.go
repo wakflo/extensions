@@ -7,12 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"google.golang.org/api/gmail/v1"
-	"google.golang.org/api/option"
-
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	"google.golang.org/api/gmail/v1"
+	"google.golang.org/api/option"
 )
 
 type triggerNewEmailProps struct {
@@ -27,7 +26,7 @@ type TriggerNewEmail struct {
 	options *sdk.TriggerInfo
 }
 
-func NewTriggerNewEmail() *TriggerNewEmail {
+func NewTriggerNewEmail() sdk.ITrigger {
 	return &TriggerNewEmail{
 		options: &sdk.TriggerInfo{
 			Name:        "New Email ",
@@ -52,7 +51,9 @@ func NewTriggerNewEmail() *TriggerNewEmail {
 					SetRequired(false).
 					Build(),
 			},
-			ErrorSettings: sdkcore.StepErrorSettings{
+			Type:     sdkcore.TriggerTypeCron,
+			Settings: &sdkcore.TriggerSettings{},
+			ErrorSettings: &sdkcore.StepErrorSettings{
 				ContinueOnError: false,
 				RetryOnError:    false,
 			},
@@ -79,7 +80,7 @@ func (t *TriggerNewEmail) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		qarr = append(qarr, fmt.Sprintf("from:%v", input.From))
 	}
 	if input.RecievedTime != nil {
-		input.RecievedTime = ctx.LastRun
+		input.RecievedTime = ctx.Metadata.LastRun
 	}
 	if input.RecievedTime != nil {
 		op := ">"

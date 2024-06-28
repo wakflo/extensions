@@ -28,7 +28,6 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
-
 	//nolint:staticcheck
 	"golang.org/x/crypto/ripemd160"
 )
