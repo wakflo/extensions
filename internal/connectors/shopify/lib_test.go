@@ -35,8 +35,6 @@ func TestNewConnector(t *testing.T) {
 	}
 
 	_ = &sdk.RunContext{
-		Workflow: nil,
-		Step:     nil,
 		Auth: &sdkcore.AuthContext{
 			AccessToken: "",
 			Token:       nil,
@@ -44,19 +42,6 @@ func TestNewConnector(t *testing.T) {
 			Username:    "",
 			Password:    "",
 			Secret:      "",
-		},
-		State: &sdkcore.StepsState{
-			Steps: map[string]*sdkcore.StepState{
-				"step-1": {
-					ConnectorName: "",
-					Version:       "",
-					Input:         map[string]interface{}{},
-					Output:        map[string]interface{}{},
-					Logs:          nil,
-					Status:        "",
-				},
-			},
-			CurrentStepID: "step-1",
 		},
 	}
 

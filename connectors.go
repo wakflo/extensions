@@ -16,6 +16,7 @@ package extensions
 
 import (
 	"github.com/rs/zerolog"
+
 	"github.com/wakflo/extensions/internal/connectors/calculator"
 	"github.com/wakflo/extensions/internal/connectors/cryptography"
 	"github.com/wakflo/extensions/internal/connectors/delay"
@@ -33,8 +34,10 @@ import (
 	sdk "github.com/wakflo/go-sdk/connector"
 )
 
-var lvl = zerolog.DebugLevel
-var log = logger.NewDefaultLogger("connectors")
+var (
+	lvl = zerolog.DebugLevel
+	log = logger.NewDefaultLogger("connectors")
+)
 
 func RegisterConnectors() []*sdk.ConnectorPlugin {
 	// 🛑Do-Not-Edit

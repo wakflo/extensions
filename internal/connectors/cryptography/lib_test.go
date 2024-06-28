@@ -177,30 +177,6 @@ func TestNewConnector(t *testing.T) {
 	}
 
 	ctx := &sdk.RunContext{
-		Workflow: nil,
-		Step: &sdkcore.ConnectorStep{
-			Label:     "",
-			Icon:      "",
-			Name:      "",
-			IsTrigger: false,
-			Path:      nil,
-			NodeIndex: 0,
-			Type:      "",
-			Data: sdkcore.ConnectorStepData{
-				OperationID:      nil,
-				AuthConnectionID: nil,
-				Properties: sdkcore.ConnectorProperties{
-					Input:  map[string]interface{}{},
-					Output: nil,
-				},
-			},
-			Children:      nil,
-			Reference:     nil,
-			Metadata:      sdkcore.ConnectorStepMetadata{},
-			ParentID:      nil,
-			ErrorSettings: sdkcore.StepErrorSettings{},
-			Valid:         false,
-		},
 		Auth: &sdkcore.AuthContext{
 			AccessToken: "",
 			Token:       nil,
@@ -208,19 +184,6 @@ func TestNewConnector(t *testing.T) {
 			Username:    "",
 			Password:    "",
 			Secret:      "",
-		},
-		State: &sdkcore.StepsState{
-			Steps: map[string]*sdkcore.StepState{
-				"step-1": {
-					ConnectorName: "",
-					Version:       "",
-					Input:         map[string]interface{}{},
-					Output:        map[string]interface{}{},
-					Logs:          nil,
-					Status:        "",
-				},
-			},
-			CurrentStepID: "step-1",
 		},
 	}
 
@@ -262,8 +225,7 @@ func TestNewConnector(t *testing.T) {
 				t.Errorf("NewConnector() Operations() count = %d, want %d", len(spider.Operations()), 2)
 			}
 
-			ctx.Step.Data.Properties.Input = testCase.data
-
+			ctx.Input = testCase.data
 			_, _ = spider.RunOperation(testCase.operationName, ctx)
 			/*if err != nil {
 				if testCase.wantErr {

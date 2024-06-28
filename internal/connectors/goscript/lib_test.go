@@ -36,32 +36,6 @@ func TestNewConnector(t *testing.T) {
 	}
 
 	_ = &sdk.RunContext{
-		Workflow: nil,
-		Step: &sdkcore.ConnectorStep{
-			Label:     "label",
-			Icon:      "logo",
-			Name:      "step-1",
-			IsTrigger: false,
-			Path:      nil,
-			NodeIndex: 0,
-			Type:      "normal",
-			Data: sdkcore.ConnectorStepData{
-				OperationID:      &opsID,
-				AuthConnectionID: nil,
-				Properties: sdkcore.ConnectorProperties{
-					Input: map[string]interface{}{
-						"script": "func execute(ctx any) map[string]interface{} {\n\treturn map[string]interface{}{}\n}",
-					},
-					Output: map[string]interface{}{},
-				},
-			},
-			Children:      nil,
-			Reference:     nil,
-			Metadata:      sdkcore.ConnectorStepMetadata{},
-			ParentID:      nil,
-			ErrorSettings: sdkcore.StepErrorSettings{},
-			Valid:         false,
-		},
 		Auth: &sdkcore.AuthContext{
 			AccessToken: "",
 			Token:       nil,
@@ -69,21 +43,6 @@ func TestNewConnector(t *testing.T) {
 			Username:    "",
 			Password:    "",
 			Secret:      "",
-		},
-		State: &sdkcore.StepsState{
-			Steps: map[string]*sdkcore.StepState{
-				"step-1": {
-					ConnectorName: "",
-					Version:       "",
-					Input: map[string]interface{}{
-						"script": "func execute(ctx any) map[string]interface{} {\n\treturn map[string]interface{}{}\n}",
-					},
-					Output: map[string]interface{}{},
-					Logs:   nil,
-					Status: sdkcore.JobStatusQueued,
-				},
-			},
-			CurrentStepID: "step-1",
 		},
 	}
 
