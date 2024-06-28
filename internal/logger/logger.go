@@ -31,15 +31,14 @@ func NewDefaultLogger(service string) zerolog.Logger {
 }
 
 func NewStdErr(level string, service string) zerolog.Logger {
-	lvl := zerolog.DebugLevel
 	var err error
 
-	lvl, err = zerolog.ParseLevel(level)
+	lvl, err := zerolog.ParseLevel(level)
 	if err != nil {
 		panic(err)
 	}
 
-	var out io.Writer = os.Stderr
+	var out io.Writer
 	out = zerolog.ConsoleWriter{
 		Out:        os.Stderr,
 		TimeFormat: "2006-01-02T15:04:05.999Z07:00",
