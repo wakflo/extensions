@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.5](https://github.com/wakflo/extensions/compare/v0.1.4...v0.1.5) (2024-06-28)
+
+
+### Bug Fixes
+
+* refactored connectors setup ([87db84c](https://github.com/wakflo/extensions/commit/87db84c1bcebb13c5224d904217436a4f3b672fe))
+* refactored connectors setup ([fdf95c4](https://github.com/wakflo/extensions/commit/fdf95c418a320420dd4c256bd1521d30bef794ca))
+* refactored connectors setup ([a353380](https://github.com/wakflo/extensions/commit/a3533809dc132b6601ff6f8d48d4142f28b858d6))
+* updated sdk version ([e1d042f](https://github.com/wakflo/extensions/commit/e1d042f3e1d8771c72542a9b99af024ce6ea8557))
+* updated sdk version ([1ef5d8c](https://github.com/wakflo/extensions/commit/1ef5d8c2a0b37f5bf1ef6a1f801a82424f5f7060))
+* updated sdk version ([47c8e2a](https://github.com/wakflo/extensions/commit/47c8e2a3d26c9eed91ef33c2dfa2c06cde623eef))
+
 ## [0.1.4](https://github.com/wakflo/extensions/compare/v0.1.3...v0.1.4) (2024-06-12)
 
 
