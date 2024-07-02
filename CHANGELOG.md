@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.8](https://github.com/wakflo/extensions/compare/v0.1.7...v0.1.8) (2024-07-02)
+
+
+### Bug Fixes
+
+* refactored connectors setup ([9b7b801](https://github.com/wakflo/extensions/commit/9b7b801730be7ed21eeb4d0a99d165ab8a8ca806))
+* refactored connectors setup ([3009307](https://github.com/wakflo/extensions/commit/3009307b75320dc8b5ccce42eb09552b6e85221c))
+* refactored connectors setup ([07000f4](https://github.com/wakflo/extensions/commit/07000f4fcce768cddef7610b1a6c412e18efd510))
+
 ## [0.1.7](https://github.com/wakflo/extensions/compare/v0.1.6...v0.1.7) (2024-06-29)
 
 
