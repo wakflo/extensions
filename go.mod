@@ -12,7 +12,7 @@ require (
 	github.com/open2b/scriggo v0.56.1
 	github.com/opus-domini/fast-shot v0.10.0
 	github.com/rs/zerolog v1.33.0
-	github.com/wakflo/go-sdk v0.4.0
+	github.com/wakflo/go-sdk v0.4.1
 	golang.org/x/crypto v0.24.0
 	google.golang.org/api v0.181.0
 )
