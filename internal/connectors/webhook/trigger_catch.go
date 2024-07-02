@@ -73,11 +73,11 @@ func (c *CatchTrigger) GetInfo() *sdk.TriggerInfo {
 }
 
 func (c *CatchTrigger) OnEnabled(ctx *sdk.RunContext) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (c *CatchTrigger) OnDisabled(ctx *sdk.RunContext) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
