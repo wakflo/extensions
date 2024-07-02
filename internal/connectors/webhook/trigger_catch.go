@@ -15,15 +15,9 @@
 package webhook
 
 import (
-	"time"
-
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
-)
-
-const (
-	timeout = 200 * time.Millisecond
 )
 
 type runJSOperationProps struct {
