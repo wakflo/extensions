@@ -15,6 +15,7 @@
 package shopify
 
 import (
+	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
@@ -30,6 +31,13 @@ func NewListProductsOperation() *ListProductsOperation {
 			Description: "operation creates new google drive file",
 			RequireAuth: true,
 			Auth:        sharedAuth,
+			Input: map[string]*sdkcore.AutoFormSchema{
+				"projectId": autoform.NewLongTextField().
+					SetDisplayName("Project ID").
+					SetDescription("project id").
+					SetRequired(true).
+					Build(),
+			},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,
 				RetryOnError:    false,
@@ -39,8 +47,13 @@ func NewListProductsOperation() *ListProductsOperation {
 }
 
 func (c *ListProductsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+	auth, err := ctx.Auth.GetCustomAuth()
+	if err != nil {
+		return nil, err
+	}
+
 	// fake implementation to prove test
-	return nil, nil
+	return auth, nil
 }
 
 func (c *ListProductsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
