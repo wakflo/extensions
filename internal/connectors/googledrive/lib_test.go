@@ -16,32 +16,43 @@ package googledrive
 
 import (
 	"testing"
+	"time"
 
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	"golang.org/x/oauth2"
 )
+
+var testToken = oauth2.StaticTokenSource(&oauth2.Token{})
+var lastFourHours = time.Now().Add(-4 * time.Hour)
 
 func TestNewConnector(t *testing.T) {
 	testCases := []struct {
 		name          string
 		operationName string
 		wantErr       bool
+		isTrigger     bool
+		ctx           *sdk.RunContext
 	}{
 		{
 			name:          "Success",
 			operationName: "create-new-file",
 			wantErr:       false,
-		},
-	}
-
-	_ = &sdk.RunContext{
-		Auth: &sdkcore.AuthContext{
-			AccessToken: "",
-			Token:       nil,
-			TokenType:   "",
-			Username:    "",
-			Password:    "",
-			Secret:      "",
+			isTrigger:     true,
+			ctx: &sdk.RunContext{
+				Auth: &sdkcore.AuthContext{
+					AccessToken: "some-token",
+					Token:       nil,
+					TokenType:   "",
+					Username:    "",
+					Password:    "",
+					Secret:      "",
+					TokenSource: &testToken,
+				},
+				Metadata: &sdkcore.WorkflowRunMetadata{
+					LastRun: &lastFourHours,
+				},
+			},
 		},
 	}
 
@@ -92,14 +103,27 @@ func TestNewConnector(t *testing.T) {
 				t.Errorf("NewConnector() Operations() count = %d, want %d", len(spider.Operations()), 6)
 			}
 
-			/*_, err = spider.RunOperation(testCase.operationName, ctx)
-			if err != nil {
-				t.Errorf("NewConnector() RunOperation() with name %v threw an error = %v", testCase.operationName, err)
-			}
+			//if testCase.isTrigger {
+			//	_, err = spider.RunTrigger(testCase.operationName, testCase.ctx)
+			//	if err != nil {
+			//		t.Errorf("NewConnector() RunTrigger() with name %v threw an error = %v", testCase.operationName, err)
+			//	}
+			//} else {
+			//	_, err = spider.RunOperation(testCase.operationName, testCase.ctx)
+			//	if err != nil {
+			//		t.Errorf("NewConnector() RunOperation() with name %v threw an error = %v", testCase.operationName, err)
+			//	}
+			//}
 
-			if trigger!= "some data" {
-				t.Errorf("NewConnector() RunOperation() response = %v, want %v", trigger["data"], "some data")
-			}*/
+			/*
+				/*_, err = spider.RunOperation(testCase.operationName, ctx)
+				if err != nil {
+					t.Errorf("NewConnector() RunOperation() with name %v threw an error = %v", testCase.operationName, err)
+				}
+
+				if trigger!= "some data" {
+					t.Errorf("NewConnector() RunOperation() response = %v, want %v", trigger["data"], "some data")
+				}*/
 		})
 	}
 }
