@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.9](https://github.com/wakflo/extensions/compare/v0.1.8...v0.1.9) (2024-07-05)
+
+
+### Bug Fixes
+
+* fixed nil error for custom auth type with shopify connector ([a8f4afd](https://github.com/wakflo/extensions/commit/a8f4afd096a4efa44a343d0fc36459b8dc4de9a0))
+
 ## [0.1.8](https://github.com/wakflo/extensions/compare/v0.1.7...v0.1.8) (2024-07-02)
 
 
