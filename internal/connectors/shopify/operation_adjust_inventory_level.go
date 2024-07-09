@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	goshopify "github.com/bold-commerce/go-shopify/v4"
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -64,6 +65,7 @@ func NewAdjustInventoryLevelOperation() *AdjustInventoryLevelOperation {
 		},
 	}
 }
+
 func (c *AdjustInventoryLevelOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
@@ -88,9 +90,11 @@ func (c *AdjustInventoryLevelOperation) Run(ctx *sdk.RunContext) (sdk.JSON, erro
 		"adjustedInventoryLevel": inventoryLevel,
 	}), nil
 }
+
 func (c *AdjustInventoryLevelOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
+
 func (c *AdjustInventoryLevelOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

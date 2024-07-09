@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	goshopify "github.com/bold-commerce/go-shopify/v4"
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -89,6 +90,7 @@ func NewUpdateProductOperation() *UpdateProductOperation {
 		},
 	}
 }
+
 func (c *UpdateProductOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
@@ -99,7 +101,6 @@ func (c *UpdateProductOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
 
 	existingProduct, err := client.Product.Get(context.Background(), input.ProductID, nil)
-
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +124,6 @@ func (c *UpdateProductOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	}
 
 	updatedProduct, err := client.Product.Update(context.Background(), *existingProduct)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to update product: %w", err)
 	}
@@ -131,9 +131,11 @@ func (c *UpdateProductOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		"updated_product": updatedProduct,
 	}, nil
 }
+
 func (c *UpdateProductOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
+
 func (c *UpdateProductOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -51,6 +52,7 @@ func NewGetCustomerOperation() *GetCustomerOperation {
 		},
 	}
 }
+
 func (c *GetCustomerOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
@@ -70,13 +72,14 @@ func (c *GetCustomerOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	}
 
 	return sdk.JSON(map[string]interface{}{
-
 		"raw_customer": customer,
 	}), nil
 }
+
 func (c *GetCustomerOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
+
 func (c *GetCustomerOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

@@ -60,7 +60,6 @@ func NewGetTransactionOperation() *GetTransactionOperation {
 }
 
 func (c *GetTransactionOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
-
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
 	}
@@ -83,7 +82,6 @@ func (c *GetTransactionOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return sdk.JSON(map[string]interface{}{
 		"transaction": transaction,
 	}), nil
-
 }
 
 func (c *GetTransactionOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {

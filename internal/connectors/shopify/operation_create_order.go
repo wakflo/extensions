@@ -94,6 +94,7 @@ func NewCreateOrderOperation() *CreateOrderOperation {
 		},
 	}
 }
+
 func (c *CreateOrderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
@@ -126,9 +127,11 @@ func (c *CreateOrderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		"new_order": order,
 	}, nil
 }
+
 func (c *CreateOrderOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
+
 func (c *CreateOrderOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

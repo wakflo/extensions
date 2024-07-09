@@ -59,6 +59,7 @@ func NewCreateCollectOperation() *CreateCollectOperation {
 		},
 	}
 }
+
 func (c *CreateCollectOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
@@ -85,9 +86,11 @@ func (c *CreateCollectOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		"collection details": newCollect,
 	}), nil
 }
+
 func (c *CreateCollectOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
+
 func (c *CreateCollectOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

@@ -18,11 +18,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	goshopify "github.com/bold-commerce/go-shopify/v4"
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"time"
 )
 
 type TriggerNewCustomer struct {
@@ -62,7 +63,7 @@ func (t *TriggerNewCustomer) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	shopName := domain + ".myshopify.com"
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
 
-	//Get the last run time from metadata, or use a default if it's the first run
+	// Get the last run time from metadata, or use a default if it's the first run
 	lastRunTime := ctx.Metadata.LastRun
 	if lastRunTime == nil {
 		defaultTime := time.Now().Add(-24 * time.Hour)

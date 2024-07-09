@@ -93,6 +93,7 @@ func NewCreateDraftOrderOperation() *CreateDraftOrderOperation {
 		},
 	}
 }
+
 func (c *CreateDraftOrderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
@@ -122,9 +123,11 @@ func (c *CreateDraftOrderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		"new_draft_order": order,
 	}, nil
 }
+
 func (c *CreateDraftOrderOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
+
 func (c *CreateDraftOrderOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

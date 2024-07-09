@@ -23,8 +23,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var testToken = oauth2.StaticTokenSource(&oauth2.Token{})
-var lastFourHours = time.Now().Add(-4 * time.Hour)
+var (
+	testToken     = oauth2.StaticTokenSource(&oauth2.Token{})
+	lastFourHours = time.Now().Add(-4 * time.Hour)
+)
 
 func TestNewConnector(t *testing.T) {
 	testCases := []struct {

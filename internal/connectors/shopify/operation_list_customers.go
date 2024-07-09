@@ -17,6 +17,7 @@ package shopify
 import (
 	"context"
 	"errors"
+
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
@@ -46,19 +47,17 @@ func NewListCustomersOperation() *ListCustomersOperation {
 }
 
 func (c *ListCustomersOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
-
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
 	}
 
-	//input := sdk.InputToType[listCustomersOperationProps](ctx)
+	// input := sdk.InputToType[listCustomersOperationProps](ctx)
 
 	domain := ctx.Auth.Extra["domain"]
 	shopName := domain + ".myshopify.com"
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
 
 	customers, err := client.Customer.List(context.Background(), nil)
-
 	if err != nil {
 		return nil, err
 	}

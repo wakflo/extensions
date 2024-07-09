@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	goshopify "github.com/bold-commerce/go-shopify/v4"
 	"github.com/shopspring/decimal"
 	"github.com/wakflo/go-sdk/autoform"
@@ -86,6 +87,7 @@ func NewCreateTransactionOperation() *CreateTransactionOperation {
 		},
 	}
 }
+
 func (c *CreateTransactionOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
@@ -116,9 +118,11 @@ func (c *CreateTransactionOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) 
 		"new_transaction": transaction,
 	}, nil
 }
+
 func (c *CreateTransactionOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
+
 func (c *CreateTransactionOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

@@ -17,6 +17,7 @@ package shopify
 import (
 	"context"
 	"errors"
+
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
@@ -39,6 +40,7 @@ func NewGetLocationsOperation() *GetLocationsOperation {
 		},
 	}
 }
+
 func (c *GetLocationsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
@@ -68,9 +70,11 @@ func (c *GetLocationsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		"locations": simplifiedLocations,
 	}, nil
 }
+
 func (c *GetLocationsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
+
 func (c *GetLocationsOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

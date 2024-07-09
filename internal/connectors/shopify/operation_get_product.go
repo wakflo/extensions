@@ -67,7 +67,6 @@ func (c *GetProductOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
 
 	product, err := client.Product.Get(context.Background(), input.ProductID, nil)
-
 	if err != nil {
 		return nil, err
 	}

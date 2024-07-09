@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	goshopify "github.com/bold-commerce/go-shopify/v4"
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -52,6 +53,7 @@ func NewGetCustomerOrdersOperation() *GetCustomerOrdersOperation {
 		},
 	}
 }
+
 func (c *GetCustomerOrdersOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
@@ -83,6 +85,7 @@ func (c *GetCustomerOrdersOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) 
 		"customer_orders": simplifiedOrders,
 	}, nil
 }
+
 func filterOrdersByCustomerID(orders []goshopify.Order, customerID uint64) []goshopify.Order {
 	var customerOrders []goshopify.Order
 	for _, order := range orders {
@@ -92,9 +95,11 @@ func filterOrdersByCustomerID(orders []goshopify.Order, customerID uint64) []gos
 	}
 	return customerOrders
 }
+
 func (c *GetCustomerOrdersOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
+
 func (c *GetCustomerOrdersOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

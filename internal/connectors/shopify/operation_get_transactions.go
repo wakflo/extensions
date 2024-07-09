@@ -17,6 +17,7 @@ package shopify
 import (
 	"context"
 	"errors"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -50,6 +51,7 @@ func NewGetTransactionsOperation() *GetTransactionsOperation {
 		},
 	}
 }
+
 func (c *GetTransactionsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
@@ -61,7 +63,6 @@ func (c *GetTransactionsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
 
 	transactions, err := client.Transaction.List(context.Background(), input.OrderID, nil)
-
 	if err != nil {
 		return nil, err
 	}
@@ -73,9 +74,11 @@ func (c *GetTransactionsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		"transactions_details": transactions,
 	}), nil
 }
+
 func (c *GetTransactionsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
+
 func (c *GetTransactionsOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

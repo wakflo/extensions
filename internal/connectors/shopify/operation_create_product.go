@@ -83,6 +83,7 @@ func NewCreateProductOperation() *CreateProductOperation {
 		},
 	}
 }
+
 func (c *CreateProductOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
@@ -112,9 +113,11 @@ func (c *CreateProductOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		"new product": product,
 	}, nil
 }
+
 func (c *CreateProductOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
+
 func (c *CreateProductOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }
