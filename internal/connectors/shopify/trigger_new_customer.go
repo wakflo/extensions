@@ -74,7 +74,6 @@ func (t *TriggerNewCustomer) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	// Set up the search options
 	options := &goshopify.CustomerSearchOptions{
-		Limit: 100,
 		Query: query,
 	}
 
@@ -83,19 +82,7 @@ func (t *TriggerNewCustomer) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, err
 	}
 
-	// Convert customers to a format suitable for return
-	var result []map[string]interface{}
-	for _, customer := range customers {
-		result = append(result, map[string]interface{}{
-			"id":         customer.Id,
-			"email":      customer.Email,
-			"first_name": customer.FirstName,
-			"last_name":  customer.LastName,
-			"created_at": customer.CreatedAt,
-		})
-	}
-
-	return result, nil
+	return customers, nil
 }
 
 func (t *TriggerNewCustomer) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
