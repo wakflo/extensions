@@ -16,6 +16,7 @@ package extensions
 
 import (
 	"github.com/wakflo/extensions/internal/connectors/calculator"
+	"github.com/wakflo/extensions/internal/connectors/cin7"
 	"github.com/wakflo/extensions/internal/connectors/cryptography"
 	"github.com/wakflo/extensions/internal/connectors/delay"
 	googledocs "github.com/wakflo/extensions/internal/connectors/google_docs"
@@ -57,6 +58,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		calculator.NewConnector,   // Calculator
 		shopify.NewConnector,      // Shopify
 		webhook.NewConnector,      // Webhook
+		cin7.NewConnector,         // Cin7
 	}
 
 	// 🛑Do-Not-Edit
