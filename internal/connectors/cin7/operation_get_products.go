@@ -41,7 +41,6 @@ func NewGetProductsOperation() *GetProductsOperation {
 				"page-limit": autoform.NewNumberField().
 					SetDisplayName("Product limit").
 					SetDescription(" Specifies the page limit for getting products.").
-					SetDefaultValue(100).
 					Build(),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
@@ -58,7 +57,13 @@ func (c *GetProductsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	endpoint := "/ExternalApi/Products"
 	accountID := ctx.Auth.Extra["account_id"]
 	applicationKey := ctx.Auth.Extra["key"]
+
+	if input.PageLimit == 0 {
+		input.PageLimit = 100
+	}
+
 	queryParams := map[string]interface{}{
+		"Page":  1,
 		"Limit": input.PageLimit,
 	}
 
