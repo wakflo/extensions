@@ -54,7 +54,7 @@ func NewGetSalesListOperation() *GetSalesListOperation {
 }
 
 func (c *GetSalesListOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
-	input := sdk.InputToType[getProductsOperationProps](ctx)
+	input := sdk.InputToType[getSalesListOperationProps](ctx)
 
 	endpoint := "/ExternalApi/SaleList"
 	accountID := ctx.Auth.Extra["account_id"]

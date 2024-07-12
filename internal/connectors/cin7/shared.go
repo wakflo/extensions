@@ -2,7 +2,7 @@ package cin7
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -48,14 +48,14 @@ func fetchData(endpoint, accountID, applicationKey string, queryParams map[strin
 	fullURL := fmt.Sprintf("%s%s?%s", baseURL, endpoint, params.Encode())
 
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", fullURL, nil)
+	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("api-auth-accountid", accountID)
-	req.Header.Set("api-auth-applicationkey", applicationKey)
+	req.Header.Set("Api-Auth-Accountid", accountID)
+	req.Header.Set("Api-Auth-Applicationkey", applicationKey)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -63,7 +63,7 @@ func fetchData(endpoint, accountID, applicationKey string, queryParams map[strin
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("failed to read response body: %w", err)
 	}

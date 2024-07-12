@@ -14,6 +14,7 @@ require (
 	github.com/rs/zerolog v1.33.0
 	github.com/wakflo/go-sdk v0.4.2
 	golang.org/x/crypto v0.24.0
+	golang.org/x/oauth2 v0.20.0
 	google.golang.org/api v0.181.0
 )
 
@@ -62,7 +63,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.27.0 // indirect
 	golang.org/x/exp v0.0.0-20240531132922-fd00a4e0eefc // indirect
 	golang.org/x/net v0.26.0 // indirect
-	golang.org/x/oauth2 v0.20.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240521202816-d264139d666e // indirect

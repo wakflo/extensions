@@ -54,7 +54,7 @@ func NewGetCustomersOperation() *GetCustomersOperation {
 }
 
 func (c *GetCustomersOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
-	input := sdk.InputToType[getProductsOperationProps](ctx)
+	input := sdk.InputToType[getCustomerOperationProps](ctx)
 
 	endpoint := "/ExternalApi/Customers"
 	accountID := ctx.Auth.Extra["account_id"]
