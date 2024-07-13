@@ -18,7 +18,7 @@ import (
 	"context"
 	"errors"
 
-	goshopify "github.com/bold-commerce/go-shopify/v4"
+	shopify "github.com/bold-commerce/go-shopify/v4"
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -88,7 +88,7 @@ func (c *CreateCustomerOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	shopName := domain + ".myshopify.com"
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
 
-	customer := goshopify.Customer{
+	customer := shopify.Customer{
 		FirstName: input.FirstName,
 		LastName:  input.LastName,
 		Email:     input.Email,

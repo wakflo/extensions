@@ -19,7 +19,7 @@ import (
 	"errors"
 	"fmt"
 
-	goshopify "github.com/bold-commerce/go-shopify/v4"
+	shopify "github.com/bold-commerce/go-shopify/v4"
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -75,7 +75,7 @@ func (c *AdjustInventoryLevelOperation) Run(ctx *sdk.RunContext) (sdk.JSON, erro
 	shopName := domain + ".myshopify.com"
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
 
-	options := goshopify.InventoryLevelAdjustOptions{
+	options := shopify.InventoryLevelAdjustOptions{
 		InventoryItemId: input.InventoryItemID,
 		LocationId:      input.LocationID,
 		Adjust:          input.AvailableAdjustment,

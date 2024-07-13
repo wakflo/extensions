@@ -22,10 +22,6 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-//type listCustomersOperationProps struct {
-//	ProductID uint64 `json:"productId"`
-//}
-
 type ListCustomersOperation struct {
 	options *sdk.OperationInfo
 }

@@ -13,6 +13,7 @@ require (
 	github.com/open2b/scriggo v0.56.1
 	github.com/opus-domini/fast-shot v0.10.0
 	github.com/rs/zerolog v1.33.0
+	github.com/shopspring/decimal v0.0.0-20200105231215-408a2507e114
 	github.com/wakflo/go-sdk v0.4.2
 	golang.org/x/crypto v0.24.0
 	golang.org/x/oauth2 v0.20.0
@@ -58,7 +59,6 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/shopspring/decimal v0.0.0-20200105231215-408a2507e114 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.52.0 // indirect
 	go.opentelemetry.io/otel v1.27.0 // indirect

@@ -105,12 +105,12 @@ func TestNewConnector(t *testing.T) {
 				t.Errorf("NewConnector() Operations() count = %d, want %d", len(spider.Operations()), 6)
 			}
 
-			//if testCase.isTrigger {
+			//  if testCase.isTrigger {
 			//	_, err = spider.RunTrigger(testCase.operationName, testCase.ctx)
 			//	if err != nil {
 			//		t.Errorf("NewConnector() RunTrigger() with name %v threw an error = %v", testCase.operationName, err)
 			//	}
-			//} else {
+			//  } else {
 			//	_, err = spider.RunOperation(testCase.operationName, testCase.ctx)
 			//	if err != nil {
 			//		t.Errorf("NewConnector() RunOperation() with name %v threw an error = %v", testCase.operationName, err)

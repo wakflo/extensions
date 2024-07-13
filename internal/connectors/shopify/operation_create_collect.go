@@ -18,8 +18,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	// "strings"
-	goshopify "github.com/bold-commerce/go-shopify/v4"
+
+	shopify "github.com/bold-commerce/go-shopify/v4"
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -70,7 +70,7 @@ func (c *CreateCollectOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
 
-	collect := goshopify.Collect{
+	collect := shopify.Collect{
 		CollectionId: input.CollectionID,
 		ProductId:    input.ProductID,
 	}
