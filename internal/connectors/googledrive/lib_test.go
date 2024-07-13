@@ -111,7 +111,7 @@ func TestNewConnector(t *testing.T) {
 			//	if err != nil {
 			//		t.Errorf("NewConnector() RunTrigger() with name %v threw an error = %v", testCase.operationName, err)
 			//	}
-			//} else {
+			//	} else {
 			//	_, err = spider.RunOperation(testCase.operationName, testCase.ctx)
 			//	if err != nil {
 			//		t.Errorf("NewConnector() RunOperation() with name %v threw an error = %v", testCase.operationName, err)
