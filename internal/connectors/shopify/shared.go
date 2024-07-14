@@ -2,6 +2,7 @@ package shopify
 
 import (
 	goshopify "github.com/bold-commerce/go-shopify/v4"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
 	// 	"os"

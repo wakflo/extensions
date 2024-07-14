@@ -16,9 +16,9 @@ package shopify
 import (
 	"context"
 	"errors"
-	// "fmt"
-	// "strings"
+
 	goshopify "github.com/bold-commerce/go-shopify/v4"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
