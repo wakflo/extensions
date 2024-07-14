@@ -18,9 +18,10 @@ import (
 	"testing"
 	"time"
 
+	"golang.org/x/oauth2"
+
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"golang.org/x/oauth2"
 )
 
 var (
@@ -105,7 +106,8 @@ func TestNewConnector(t *testing.T) {
 				t.Errorf("NewConnector() Operations() count = %d, want %d", len(spider.Operations()), 6)
 			}
 
-			//  if testCase.isTrigger {
+
+			// if testCase.isTrigger {
 			//	_, err = spider.RunTrigger(testCase.operationName, testCase.ctx)
 			//	if err != nil {
 			//		t.Errorf("NewConnector() RunTrigger() with name %v threw an error = %v", testCase.operationName, err)
