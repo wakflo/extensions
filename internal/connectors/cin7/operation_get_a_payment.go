@@ -39,8 +39,8 @@ func NewGetPaymentOperation() *GetPaymentOperation {
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"id": autoform.NewShortTextField().
-					SetDisplayName("Payment ID").
-					SetDescription("The paymentId of the payment").
+					SetDisplayName("Task ID").
+					SetDescription("The task Id of the payment").
 					SetRequired(true).
 					Build(),
 			},
@@ -55,11 +55,11 @@ func NewGetPaymentOperation() *GetPaymentOperation {
 func (c *GetPaymentOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[getPaymentOperationProps](ctx)
 
-	endpoint := "/ExternalApi/"
+	endpoint := "/ExternalApi/SalePayments"
 	accountID := ctx.Auth.Extra["account_id"]
 	applicationKey := ctx.Auth.Extra["key"]
 	queryParams := map[string]interface{}{
-		"ID": input.PaymentID,
+		"taskId": input.PaymentID,
 	}
 
 	response, err := fetchData(endpoint, accountID, applicationKey, queryParams)

@@ -40,7 +40,7 @@ func NewGetSalesListOperation() *GetSalesListOperation {
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"page-limit": autoform.NewNumberField().
-					SetDisplayName("Product limit").
+					SetDisplayName("Page limit").
 					SetDescription(" Specifies the page limit for getting sales list.").
 					Build(),
 			},

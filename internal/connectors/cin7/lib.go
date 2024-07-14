@@ -30,6 +30,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 			NewTriggerNewSales(),
 		},
 		Operations: []sdk.IOperation{
+			NewGetPaymentOperation(),
 			NewGetProductsOperation(),
 			NewGetCustomersOperation(),
 			NewGetSalesOrderOperation(),

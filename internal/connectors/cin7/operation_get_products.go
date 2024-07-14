@@ -39,8 +39,8 @@ func NewGetProductsOperation() *GetProductsOperation {
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"page-limit": autoform.NewNumberField().
-					SetDisplayName("Product limit").
-					SetDescription(" Specifies the page limit for getting products.").
+					SetDisplayName("Page limit").
+					SetDescription(" Specifies the page limit for products.").
 					Build(),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{

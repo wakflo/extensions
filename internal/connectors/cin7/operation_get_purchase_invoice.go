@@ -40,7 +40,7 @@ func NewGetPurchaseInvoiceOperation() *GetPurchaseInvoiceOperation {
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"id": autoform.NewShortTextField().
 					SetDisplayName("Task ID").
-					SetDescription("The ID of Task").
+					SetDescription("The ID of the invoice to retrieve.").
 					SetRequired(true).
 					Build(),
 			},
