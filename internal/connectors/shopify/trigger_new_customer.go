@@ -17,7 +17,6 @@ package shopify
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	goshopify "github.com/bold-commerce/go-shopify/v4"
@@ -35,7 +34,7 @@ func NewTriggerNewCustomer() *TriggerNewCustomer {
 	return &TriggerNewCustomer{
 		options: &sdk.TriggerInfo{
 			Name:        "New Customer",
-			Description: "Triggers workflow when a new customer is created",
+			Description: "Triggers when a new customer is created",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Type:        sdkcore.TriggerTypeCron,
@@ -65,20 +64,18 @@ func (t *TriggerNewCustomer) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
 
 	// Get the last run time from metadata, or use a default if it's the first run
-	lastRunTime := ctx.Metadata.LastRun
-	if lastRunTime == nil {
-		defaultTime := time.Now().Add(-24 * time.Hour)
-		lastRunTime = &defaultTime
+	var lastRunTime time.Time
+	if ctx.Metadata.LastRun != nil {
+		lastRunTime = *ctx.Metadata.LastRun
+	} else {
+		lastRunTime = time.Now().Add(-24 * time.Hour)
 	}
 
-	query := fmt.Sprintf("created_at:>='%s'", lastRunTime.Format("2006-01-02T15:04:05-07:00"))
-
-	// Set up the search options
-	options := &goshopify.CustomerSearchOptions{
-		Query: query,
+	options := &goshopify.ListOptions{
+		CreatedAtMin: lastRunTime,
 	}
 
-	customers, err := client.Customer.Search(context.Background(), options)
+	customers, err := client.Customer.List(context.Background(), options)
 	if err != nil {
 		return nil, err
 	}
