@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package shopify
+package woocommerce
 
 import (
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -20,34 +20,14 @@ import (
 
 func NewConnector() (*sdk.ConnectorPlugin, error) {
 	return sdk.CreateConnector(&sdk.CreateConnectorArgs{
-		Name:        "Shopify",
-		Description: "Ecommerce platform for online stores",
-		Logo:        "logos:shopify",
+		Name:        "Woocommerce",
+		Description: "E-commerce platform built on WordPress",
+		Logo:        "devicon:woocommerce",
 		Version:     "0.0.1",
 		Category:    sdk.Apps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
-		Triggers:    []sdk.ITrigger{NewTriggerNewCustomer(), NewTriggerNewOrder()},
+		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{
-			NewGetLocationsOperation(),
-			NewAdjustInventoryLevelOperation(),
-			NewCreateProductOperation(),
-			NewUpdateProductOperation(),
-			NewUpdateOrderOperation(),
-			NewUpdateCustomerOperation(),
-			NewCreateDraftOrderOperation(),
-			NewCreateOrderOperation(),
-			NewCreateTransactionOperation(),
-			NewCreateCustomerOperation(),
-			NewCreateCollectOperation(),
-			NewGetOrderOperation(),
-			NewGetCustomerOrdersOperation(),
-			NewGetTransactionOperation(),
-			NewGetTransactionsOperation(),
-			NewListCustomersOperation(),
-			NewCloseOrderOperation(),
-			NewCancelOrderOperation(),
-			NewGetCustomerOperation(),
-			NewGetProductOperation(),
 			NewListProductsOperation(),
 		},
 	})

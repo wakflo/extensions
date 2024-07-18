@@ -21,31 +21,24 @@ import (
 
 	goshopify "github.com/bold-commerce/go-shopify/v4"
 
-	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-type TriggerNewCustomer struct {
+type TriggerNewOrder struct {
 	options *sdk.TriggerInfo
 }
 
-func NewTriggerNewCustomer() *TriggerNewCustomer {
+func NewTriggerNewOrder() *TriggerNewCustomer {
 	return &TriggerNewCustomer{
 		options: &sdk.TriggerInfo{
-			Name:        "New Customer",
-			Description: "Triggers when a new customer is created",
+			Name:        "New Order",
+			Description: "Triggers when a new order is created",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Type:        sdkcore.TriggerTypeCron,
-			Input: map[string]*sdkcore.AutoFormSchema{
-				"tag": autoform.NewShortTextField().
-					SetDisplayName("Tag").
-					SetDescription("Only trigger for customers with this tag").
-					SetRequired(false).
-					Build(),
-			},
-			Settings: &sdkcore.TriggerSettings{},
+			Input:       map[string]*sdkcore.AutoFormSchema{},
+			Settings:    &sdkcore.TriggerSettings{},
 			ErrorSettings: &sdkcore.StepErrorSettings{
 				ContinueOnError: false,
 				RetryOnError:    false,
@@ -54,7 +47,7 @@ func NewTriggerNewCustomer() *TriggerNewCustomer {
 	}
 }
 
-func (t *TriggerNewCustomer) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (t *TriggerNewOrder) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
 	}
@@ -75,26 +68,26 @@ func (t *TriggerNewCustomer) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		CreatedAtMin: lastRunTime,
 	}
 
-	customers, err := client.Customer.List(context.Background(), options)
+	orders, err := client.Order.List(context.Background(), options)
 	if err != nil {
 		return nil, err
 	}
 
-	return customers, nil
+	return orders, nil
 }
 
-func (t *TriggerNewCustomer) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (t *TriggerNewOrder) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return t.Run(ctx)
 }
 
-func (t *TriggerNewCustomer) OnEnabled(ctx *sdk.RunContext) error {
+func (t *TriggerNewOrder) OnEnabled(ctx *sdk.RunContext) error {
 	return nil
 }
 
-func (t *TriggerNewCustomer) OnDisabled(ctx *sdk.RunContext) error {
+func (t *TriggerNewOrder) OnDisabled(ctx *sdk.RunContext) error {
 	return nil
 }
 
-func (t *TriggerNewCustomer) GetInfo() *sdk.TriggerInfo {
+func (t *TriggerNewOrder) GetInfo() *sdk.TriggerInfo {
 	return t.options
 }

@@ -17,6 +17,7 @@ package shopify
 import (
 	"context"
 	"errors"
+	"github.com/wakflo/go-sdk/autoform"
 
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -33,7 +34,12 @@ func NewListCustomersOperation() *ListCustomersOperation {
 			Description: "List all Customers in store",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Input:       map[string]*sdkcore.AutoFormSchema{},
+			Input: map[string]*sdkcore.AutoFormSchema{
+				"orderId": autoform.NewNumberField().
+					SetDisplayName("").
+					SetDescription("").
+					Build(),
+			},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,
 				RetryOnError:    false,
