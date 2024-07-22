@@ -15,6 +15,9 @@
 package shopify
 
 import (
+	"context"
+	"errors"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -27,15 +30,14 @@ type ListProductsOperation struct {
 func NewListProductsOperation() *ListProductsOperation {
 	return &ListProductsOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Create New File",
-			Description: "operation creates new google drive file",
+			Name:        "List Products",
+			Description: "Count total amount of products in store",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"projectId": autoform.NewLongTextField().
-					SetDisplayName("Project ID").
-					SetDescription("project id").
-					SetRequired(true).
+				"projectId": autoform.NewShortTextField().
+					SetDisplayName("").
+					SetDescription("").
 					Build(),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
@@ -47,13 +49,25 @@ func NewListProductsOperation() *ListProductsOperation {
 }
 
 func (c *ListProductsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
-	auth, err := ctx.Auth.GetCustomAuth()
+	if ctx.Auth.Extra["token"] == "" {
+		return nil, errors.New("missing shopify auth token")
+	}
+
+	domain := ctx.Auth.Extra["domain"]
+	shopName := domain + ".myshopify.com"
+	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
+
+	products, err := client.Product.List(context.Background(), nil)
 	if err != nil {
 		return nil, err
 	}
+	if products == nil {
+		return nil, errors.New("no products found")
+	}
 
-	// fake implementation to prove test
-	return auth, nil
+	return sdk.JSON(map[string]interface{}{
+		"Total count of products": products,
+	}), err
 }
 
 func (c *ListProductsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {

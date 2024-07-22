@@ -76,7 +76,7 @@ func (c *GetProductVariantOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) 
 		return nil, err
 	}
 	if product == nil {
-		return nil, fmt.Errorf("no product found with ID '%d'", input.ProductID)
+		return nil, fmt.Errorf("no product variant found with ID '%d'", input.ProductID)
 	}
 	for _, variant := range product.Variants {
 		if variant.Id == input.VariantID {

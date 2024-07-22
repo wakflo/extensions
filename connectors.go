@@ -29,7 +29,6 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/slack"
 	"github.com/wakflo/extensions/internal/connectors/todoist"
 	"github.com/wakflo/extensions/internal/connectors/webhook"
-	"github.com/wakflo/extensions/internal/connectors/woocommerce"
 	"github.com/wakflo/extensions/internal/logger"
 	sdk "github.com/wakflo/go-sdk/connector"
 )
@@ -58,7 +57,6 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		calculator.NewConnector,   // Calculator
 		shopify.NewConnector,      // Shopify
 		webhook.NewConnector,      // Webhook
-		woocommerce.NewConnector,  // Woocommerce
 	}
 
 	// 🛑Do-Not-Edit

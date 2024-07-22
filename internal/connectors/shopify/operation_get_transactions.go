@@ -68,7 +68,7 @@ func (c *GetTransactionsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	}
 
 	if transactions == nil {
-		return nil, errors.New("no transaction found with ID ")
+		return nil, errors.New("no transactions found with ID ")
 	}
 	return sdk.JSON(map[string]interface{}{
 		"transactions_details": transactions,

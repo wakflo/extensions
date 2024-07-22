@@ -19,24 +19,23 @@ import (
 	"errors"
 
 	"github.com/wakflo/go-sdk/autoform"
-
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-type ListCustomersOperation struct {
+type ListDraftOrdersOperation struct {
 	options *sdk.OperationInfo
 }
 
-func NewListCustomersOperation() *ListCustomersOperation {
-	return &ListCustomersOperation{
+func NewListDraftOrdersOperation() *ListDraftOrdersOperation {
+	return &ListDraftOrdersOperation{
 		options: &sdk.OperationInfo{
-			Name:        "List Customers",
-			Description: "List all Customers in store",
+			Name:        "List Draft Orders",
+			Description: "List Draft Orders",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"orderId": autoform.NewNumberField().
+				"projectId": autoform.NewShortTextField().
 					SetDisplayName("").
 					SetDescription("").
 					Build(),
@@ -49,7 +48,7 @@ func NewListCustomersOperation() *ListCustomersOperation {
 	}
 }
 
-func (c *ListCustomersOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *ListDraftOrdersOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
 	}
@@ -58,23 +57,23 @@ func (c *ListCustomersOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	shopName := domain + ".myshopify.com"
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
 
-	customers, err := client.Customer.List(context.Background(), nil)
+	darftOrders, err := client.DraftOrder.List(context.Background(), nil)
 	if err != nil {
 		return nil, err
 	}
-	if customers == nil {
-		return nil, errors.New("no customer found")
+	if darftOrders == nil {
+		return nil, errors.New("no draft orders found")
 	}
 
 	return sdk.JSON(map[string]interface{}{
-		"customers details": customers,
+		"Draft orders": darftOrders,
 	}), err
 }
 
-func (c *ListCustomersOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *ListDraftOrdersOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 
-func (c *ListCustomersOperation) GetInfo() *sdk.OperationInfo {
+func (c *ListDraftOrdersOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

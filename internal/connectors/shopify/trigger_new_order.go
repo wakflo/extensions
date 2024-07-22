@@ -29,8 +29,8 @@ type TriggerNewOrder struct {
 	options *sdk.TriggerInfo
 }
 
-func NewTriggerNewOrder() *TriggerNewCustomer {
-	return &TriggerNewCustomer{
+func NewTriggerNewOrder() *TriggerNewOrder {
+	return &TriggerNewOrder{
 		options: &sdk.TriggerInfo{
 			Name:        "New Order",
 			Description: "Triggers when a new order is created",
@@ -56,12 +56,9 @@ func (t *TriggerNewOrder) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	shopName := domain + ".myshopify.com"
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
 
-	// Get the last run time from metadata, or use a default if it's the first run
 	var lastRunTime time.Time
 	if ctx.Metadata.LastRun != nil {
 		lastRunTime = *ctx.Metadata.LastRun
-	} else {
-		lastRunTime = time.Now().Add(-24 * time.Hour)
 	}
 
 	options := &goshopify.ListOptions{
@@ -73,7 +70,9 @@ func (t *TriggerNewOrder) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, err
 	}
 
-	return orders, nil
+	return sdk.JSON(map[string]interface{}{
+		"order details": orders,
+	}), err
 }
 
 func (t *TriggerNewOrder) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
