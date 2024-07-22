@@ -56,19 +56,15 @@ func (t *TriggerNewSales) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	applicationKey := ctx.Auth.Extra["key"]
 
 	lastRunTime := ctx.Metadata.LastRun
-	if lastRunTime == nil {
-		defaultTime := time.Now().Add(-24 * time.Hour).Format(time.RFC3339)
-		parsedTime, err := time.Parse(time.RFC3339, defaultTime)
-		if err != nil {
-			log.Fatalf("Error parsing default time: %v", err)
-		}
-		lastRunTime = &parsedTime
+
+	var fromDate string
+	if lastRunTime != nil {
+		fromDate = lastRunTime.Format(time.RFC3339)
 	}
 
 	queryParams := map[string]interface{}{
-		"Page":         "1",
-		"Limit":        "100",
-		"CreatedSince": lastRunTime.Format(time.RFC3339),
+		"Page":         1,
+		"CreatedSince": fromDate,
 	}
 
 	response, err := fetchData(endpoint, accountID, applicationKey, queryParams)
