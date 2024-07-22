@@ -17,12 +17,13 @@ package zohoinventory
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/wakflo/go-sdk/autoform"
-	sdk "github.com/wakflo/go-sdk/connector"
-	sdkcore "github.com/wakflo/go-sdk/core"
 	"io"
 	"net/http"
 	"net/url"
+
+	"github.com/wakflo/go-sdk/autoform"
+	sdk "github.com/wakflo/go-sdk/connector"
+	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
 type TriggerNewPayment struct {
