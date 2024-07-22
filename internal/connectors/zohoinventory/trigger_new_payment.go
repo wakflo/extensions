@@ -17,14 +17,12 @@ package zohoinventory
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"net/url"
-	"time"
-
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	"io"
+	"net/http"
+	"net/url"
 )
 
 type TriggerNewPayment struct {
@@ -57,14 +55,12 @@ func NewTriggerNewPayment() *TriggerNewPayment {
 func (t *TriggerNewPayment) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[getPaymentListOperationProps](ctx)
 
-	// Get the last run time or use a default
+	var fromDate string
 	lastRunTime := ctx.Metadata.LastRun
-	if lastRunTime == nil {
-		defaultTime := time.Now().Add(-24 * time.Hour)
-		lastRunTime = &defaultTime
-	}
 
-	fromDate := lastRunTime.Format("2006-01-02")
+	if lastRunTime != nil {
+		fromDate = lastRunTime.Format("2006-01-02")
+	}
 
 	baseURL := "https://www.zohoapis.com/inventory/v1/customerpayments"
 
