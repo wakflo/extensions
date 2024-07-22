@@ -63,12 +63,9 @@ func (t *TriggerNewCustomer) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	shopName := domain + ".myshopify.com"
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
 
-	// Get the last run time from metadata, or use a default if it's the first run
 	var lastRunTime time.Time
 	if ctx.Metadata.LastRun != nil {
 		lastRunTime = *ctx.Metadata.LastRun
-	} else {
-		lastRunTime = time.Now().Add(-24 * time.Hour)
 	}
 
 	options := &goshopify.ListOptions{
