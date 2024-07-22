@@ -48,7 +48,6 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 			NewCancelOrderOperation(),
 			NewGetCustomerOperation(),
 			NewGetProductOperation(),
-			NewListProductsOperation(),
 		},
 	})
 }

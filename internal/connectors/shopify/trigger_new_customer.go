@@ -40,8 +40,8 @@ func NewTriggerNewCustomer() *TriggerNewCustomer {
 			Type:        sdkcore.TriggerTypeCron,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"tag": autoform.NewShortTextField().
-					SetDisplayName("Tag").
-					SetDescription("Only trigger for customers with this tag").
+					SetDisplayName("").
+					SetDescription("").
 					SetRequired(false).
 					Build(),
 			},
