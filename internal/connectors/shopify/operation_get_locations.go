@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,28 +18,21 @@ import (
 	"context"
 	"errors"
 
-	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-type ListProductsOperation struct {
+type GetLocationsOperation struct {
 	options *sdk.OperationInfo
 }
 
-func NewListProductsOperation() *ListProductsOperation {
-	return &ListProductsOperation{
+func NewGetLocationsOperation() *GetLocationsOperation {
+	return &GetLocationsOperation{
 		options: &sdk.OperationInfo{
-			Name:        "List Products",
-			Description: "Count total amount of products in store",
+			Name:        "Get Locations",
+			Description: "get locations",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Input: map[string]*sdkcore.AutoFormSchema{
-				"projectId": autoform.NewShortTextField().
-					SetDisplayName("").
-					SetDescription("").
-					Build(),
-			},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,
 				RetryOnError:    false,
@@ -48,32 +41,40 @@ func NewListProductsOperation() *ListProductsOperation {
 	}
 }
 
-func (c *ListProductsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetLocationsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
 	}
-
 	domain := ctx.Auth.Extra["domain"]
 	shopName := domain + ".myshopify.com"
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
-
-	products, err := client.Product.List(context.Background(), nil)
+	locations, err := client.Location.List(context.Background(), nil)
 	if err != nil {
 		return nil, err
 	}
-	if products == nil {
-		return nil, errors.New("no products found")
+	simplifiedLocations := make([]map[string]interface{}, len(locations))
+	for i, location := range locations {
+		simplifiedLocations[i] = map[string]interface{}{
+			"Id":       location.Id,
+			"Name":     location.Name,
+			"Address1": location.Address1,
+			"Address2": location.Address2,
+			"City":     location.City,
+			"Zip":      location.Zip,
+			"Country":  location.Country,
+			"Phone":    location.Phone,
+			"Active":   location.Active,
+		}
 	}
-
-	return sdk.JSON(map[string]interface{}{
-		"Total count of products": products,
-	}), err
+	return map[string]interface{}{
+		"locations": simplifiedLocations,
+	}, nil
 }
 
-func (c *ListProductsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetLocationsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 
-func (c *ListProductsOperation) GetInfo() *sdk.OperationInfo {
+func (c *GetLocationsOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

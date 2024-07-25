@@ -17,30 +17,29 @@ package shopify
 import (
 	"context"
 	"errors"
+	"time"
 
-	"github.com/wakflo/go-sdk/autoform"
+	goshopify "github.com/bold-commerce/go-shopify/v4"
+
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-type ListProductsOperation struct {
-	options *sdk.OperationInfo
+type TriggerNewOrder struct {
+	options *sdk.TriggerInfo
 }
 
-func NewListProductsOperation() *ListProductsOperation {
-	return &ListProductsOperation{
-		options: &sdk.OperationInfo{
-			Name:        "List Products",
-			Description: "Count total amount of products in store",
+func NewTriggerNewOrder() *TriggerNewOrder {
+	return &TriggerNewOrder{
+		options: &sdk.TriggerInfo{
+			Name:        "New Order",
+			Description: "Triggers when a new order is created",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Input: map[string]*sdkcore.AutoFormSchema{
-				"projectId": autoform.NewShortTextField().
-					SetDisplayName("").
-					SetDescription("").
-					Build(),
-			},
-			ErrorSettings: sdkcore.StepErrorSettings{
+			Type:        sdkcore.TriggerTypeCron,
+			Input:       map[string]*sdkcore.AutoFormSchema{},
+			Settings:    &sdkcore.TriggerSettings{},
+			ErrorSettings: &sdkcore.StepErrorSettings{
 				ContinueOnError: false,
 				RetryOnError:    false,
 			},
@@ -48,7 +47,7 @@ func NewListProductsOperation() *ListProductsOperation {
 	}
 }
 
-func (c *ListProductsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (t *TriggerNewOrder) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
 	}
@@ -57,23 +56,37 @@ func (c *ListProductsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	shopName := domain + ".myshopify.com"
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
 
-	products, err := client.Product.List(context.Background(), nil)
+	var lastRunTime time.Time
+	if ctx.Metadata.LastRun != nil {
+		lastRunTime = *ctx.Metadata.LastRun
+	}
+
+	options := &goshopify.ListOptions{
+		CreatedAtMin: lastRunTime,
+	}
+
+	orders, err := client.Order.List(context.Background(), options)
 	if err != nil {
 		return nil, err
 	}
-	if products == nil {
-		return nil, errors.New("no products found")
-	}
 
 	return sdk.JSON(map[string]interface{}{
-		"Total count of products": products,
+		"order details": orders,
 	}), err
 }
 
-func (c *ListProductsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
-	return c.Run(ctx)
+func (t *TriggerNewOrder) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+	return t.Run(ctx)
 }
 
-func (c *ListProductsOperation) GetInfo() *sdk.OperationInfo {
-	return c.options
+func (t *TriggerNewOrder) OnEnabled(ctx *sdk.RunContext) error {
+	return nil
+}
+
+func (t *TriggerNewOrder) OnDisabled(ctx *sdk.RunContext) error {
+	return nil
+}
+
+func (t *TriggerNewOrder) GetInfo() *sdk.TriggerInfo {
+	return t.options
 }
