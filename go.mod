@@ -5,6 +5,7 @@ go 1.22.2
 //replace github.com/wakflo/go-sdk => ../go-sdk
 
 require (
+	github.com/bold-commerce/go-shopify/v4 v4.5.0
 	github.com/clarkmcc/go-typescript v0.7.0
 	github.com/dop251/goja v0.0.0-20240516125602-ccbae20bcec2
 	github.com/gocarina/gocsv v0.0.0-20240520201108-78e41c74b4b1
@@ -12,8 +13,10 @@ require (
 	github.com/open2b/scriggo v0.56.1
 	github.com/opus-domini/fast-shot v0.10.0
 	github.com/rs/zerolog v1.33.0
+	github.com/shopspring/decimal v0.0.0-20200105231215-408a2507e114
 	github.com/wakflo/go-sdk v0.4.2
 	golang.org/x/crypto v0.24.0
+	golang.org/x/oauth2 v0.20.0
 	google.golang.org/api v0.181.0
 )
 
@@ -37,6 +40,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/pprof v0.0.0-20230207041349-798e818bf904 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -62,7 +66,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.27.0 // indirect
 	golang.org/x/exp v0.0.0-20240531132922-fd00a4e0eefc // indirect
 	golang.org/x/net v0.26.0 // indirect
-	golang.org/x/oauth2 v0.20.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240521202816-d264139d666e // indirect
