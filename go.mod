@@ -5,6 +5,7 @@ go 1.22.2
 //replace github.com/wakflo/go-sdk => ../go-sdk
 
 require (
+	github.com/bold-commerce/go-shopify/v4 v4.5.0
 	github.com/clarkmcc/go-typescript v0.7.0
 	github.com/dop251/goja v0.0.0-20240516125602-ccbae20bcec2
 	github.com/gocarina/gocsv v0.0.0-20240520201108-78e41c74b4b1
@@ -13,6 +14,7 @@ require (
 	github.com/open2b/scriggo v0.56.1
 	github.com/opus-domini/fast-shot v0.10.0
 	github.com/rs/zerolog v1.33.0
+	github.com/shopspring/decimal v0.0.0-20200105231215-408a2507e114
 	github.com/wakflo/go-sdk v0.4.2
 	golang.org/x/crypto v0.24.0
 	golang.org/x/oauth2 v0.20.0

@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,27 +17,33 @@ package shopify
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-type ListProductsOperation struct {
+type cancelOrderOperationProps struct {
+	OrderID uint64 `json:"orderId"`
+	Reason  string `json:"reason,omitempty"`
+}
+type CancelOrderOperation struct {
 	options *sdk.OperationInfo
 }
 
-func NewListProductsOperation() *ListProductsOperation {
-	return &ListProductsOperation{
+func NewCancelOrderOperation() *CancelOrderOperation {
+	return &CancelOrderOperation{
 		options: &sdk.OperationInfo{
-			Name:        "List Products",
-			Description: "Count total amount of products in store",
+			Name:        "Cancel Order",
+			Description: "Cancel an existing order by ID.",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"projectId": autoform.NewShortTextField().
-					SetDisplayName("").
-					SetDescription("").
+				"orderId": autoform.NewNumberField().
+					SetDisplayName("Order").
+					SetDescription("The ID of the order to cancel.").
+					SetRequired(true).
 					Build(),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
@@ -48,32 +54,33 @@ func NewListProductsOperation() *ListProductsOperation {
 	}
 }
 
-func (c *ListProductsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *CancelOrderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
 	}
+	input := sdk.InputToType[cancelOrderOperationProps](ctx)
 
 	domain := ctx.Auth.Extra["domain"]
 	shopName := domain + ".myshopify.com"
+
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
 
-	products, err := client.Product.List(context.Background(), nil)
+	order, err := client.Order.Cancel(context.Background(), input.OrderID, nil)
 	if err != nil {
 		return nil, err
 	}
-	if products == nil {
-		return nil, errors.New("no products found")
+	if order == nil {
+		return nil, fmt.Errorf("no order found with ID '%d'", input.OrderID)
 	}
-
 	return sdk.JSON(map[string]interface{}{
-		"Total count of products": products,
-	}), err
+		"Result": "Order Successfully cancelled!",
+	}), nil
 }
 
-func (c *ListProductsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *CancelOrderOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 
-func (c *ListProductsOperation) GetInfo() *sdk.OperationInfo {
+func (c *CancelOrderOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

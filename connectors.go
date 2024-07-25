@@ -16,6 +16,7 @@ package extensions
 
 import (
 	"github.com/wakflo/extensions/internal/connectors/calculator"
+	"github.com/wakflo/extensions/internal/connectors/cin7"
 	"github.com/wakflo/extensions/internal/connectors/cryptography"
 	"github.com/wakflo/extensions/internal/connectors/delay"
 	googledocs "github.com/wakflo/extensions/internal/connectors/google_docs"
@@ -30,6 +31,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/todoist"
 	"github.com/wakflo/extensions/internal/connectors/webhook"
 	"github.com/wakflo/extensions/internal/connectors/woocommerce"
+	"github.com/wakflo/extensions/internal/connectors/zohoinventory"
 	"github.com/wakflo/extensions/internal/logger"
 	sdk "github.com/wakflo/go-sdk/connector"
 )
@@ -44,21 +46,23 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 
 	plugins := []func() (*sdk.ConnectorPlugin, error){
 		// 👋 Add connectors here
-		googledrive.NewConnector,  // Google Drive
-		googlesheets.NewConnector, // Google Sheets
-		googledocs.NewConnector,   // Google Docs
-		googlemail.NewConnector,   // Gmail
-		slack.NewConnector,        // Slack
-		javascript.NewConnector,   // Javascript
-		cryptography.NewConnector, // Cryptography
-		goscript.NewConnector,     // Go Lang
-		delay.NewConnector,        // Delay
-		todoist.NewConnector,      // Todoist
-		manual.NewConnector,       // Manual
-		calculator.NewConnector,   // Calculator
-		shopify.NewConnector,      // Shopify
-		webhook.NewConnector,      // Webhook
-		woocommerce.NewConnector,  // Woocommerce
+		googledrive.NewConnector,   // Google Drive
+		googlesheets.NewConnector,  // Google Sheets
+		googledocs.NewConnector,    // Google Docs
+		googlemail.NewConnector,    // Gmail
+		slack.NewConnector,         // Slack
+		javascript.NewConnector,    // Javascript
+		cryptography.NewConnector,  // Cryptography
+		goscript.NewConnector,      // Go Lang
+		delay.NewConnector,         // Delay
+		todoist.NewConnector,       // Todoist
+		manual.NewConnector,        // Manual
+		calculator.NewConnector,    // Calculator
+		shopify.NewConnector,       // Shopify
+		webhook.NewConnector,       // Webhook
+		zohoinventory.NewConnector, // Zoho Inventory
+		cin7.NewConnector,          // Cin7
+		woocommerce.NewConnector,   // Woocommerce
 	}
 
 	// 🛑Do-Not-Edit
