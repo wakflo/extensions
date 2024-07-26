@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.2.0](https://github.com/wakflo/extensions/compare/v0.1.9...v0.2.0) (2024-07-25)
+
+
+### Features
+
+* implement cin7 connector ([80912db](https://github.com/wakflo/extensions/commit/80912db9b774354a17f20ee28799d0460c479816))
+* implement shopify connector ([a6d42e5](https://github.com/wakflo/extensions/commit/a6d42e5e563cf3e7a739cb18de50ed7fae785f50))
+* implement woocommerce connector ([a76bba5](https://github.com/wakflo/extensions/commit/a76bba529e5d509df64f821418323f2431852be0))
+* implement zoho inventory connector ([0891bdb](https://github.com/wakflo/extensions/commit/0891bdb8f0c1d41010311d4bc1067aa8dbfe7fbb))
+* implement zoho inventory connector ([4f1438e](https://github.com/wakflo/extensions/commit/4f1438eb87f07266b3cd6d0157b4949726b4018b))
+* run lint-fix ([0186fd4](https://github.com/wakflo/extensions/commit/0186fd4d9e596d38d2ed6b2bcc5e0f63f1a3417f))
+* run lint-fix ([b46a80e](https://github.com/wakflo/extensions/commit/b46a80e5a3cf04aab544da981f5e00a617a0ef93))
+* update files ([c2b2734](https://github.com/wakflo/extensions/commit/c2b27343902116c705baaad6db460f1d31df633e))
+* update files ([4985d7c](https://github.com/wakflo/extensions/commit/4985d7c0b925c137c7937309ee0aa38dcc9eed48))
+* update mod file ([365447d](https://github.com/wakflo/extensions/commit/365447d4092f0a44854c4d2c7f2f60637f770972))
+* update trigger_new_payment.go file ([feb99f2](https://github.com/wakflo/extensions/commit/feb99f231471648c21a24fd37c75429b745270e6))
+* update trigger_new_payment.go file ([3e67fd5](https://github.com/wakflo/extensions/commit/3e67fd5ae5f484e8fc151973bba01ba025b90cd6))
+* update trigger_new_sales.go file ([f6a5410](https://github.com/wakflo/extensions/commit/f6a541079d43413b5c4c63e831b5d382673e9bf4))
+* update trigger_new_sales.go file ([588c9f3](https://github.com/wakflo/extensions/commit/588c9f3096c23fbf3fc4f31d7cb8534b3606bf6d))
+
+
+### Bug Fixes
+
+* change response body format ([fae3948](https://github.com/wakflo/extensions/commit/fae3948ec40a706890234bcabed57838eadc21e7))
+* lint code ([e6ee3f3](https://github.com/wakflo/extensions/commit/e6ee3f344054f564830fcb9527dbf46fdfd92ad8))
+* remove unused packages ([bb7b9bd](https://github.com/wakflo/extensions/commit/bb7b9bd58652b74eba3769e090ce6f6b5f3ac0cf))
+* update go.mod file ([ac9db7e](https://github.com/wakflo/extensions/commit/ac9db7e73df246137b48dc61a25d8c29f7ffab4a))
+* update imports organization ([858c2d5](https://github.com/wakflo/extensions/commit/858c2d54ee9ac94a62f721c023d4387c26acb240))
+* update shopify trigger ([0d51745](https://github.com/wakflo/extensions/commit/0d517453f048664c53aba445d821c8fc07145fbe))
+
 ## [0.1.9](https://github.com/wakflo/extensions/compare/v0.1.8...v0.1.9) (2024-07-05)
 
 
