@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"google.golang.org/api/gmail/v1"
@@ -124,11 +123,6 @@ func (c *SendMailOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	}
 
 	return "Message sent successfully!", nil
-}
-
-func isValidEmail(email string) bool {
-	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
-	return emailRegex.MatchString(email)
 }
 
 func (c *SendMailOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {

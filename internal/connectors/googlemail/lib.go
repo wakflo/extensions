@@ -19,6 +19,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 			NewGetMailByIDOperation(),
 			NewSendMailOperation(),
 			NewGetThreadOperation(),
+			NewSendTemplateMailOperation(),
 			NewListMailsOperation(),
 		},
 	})

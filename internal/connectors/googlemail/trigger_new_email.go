@@ -3,8 +3,6 @@ package googlemail
 import (
 	"context"
 	"errors"
-	"fmt"
-	"strings"
 	"time"
 
 	"google.golang.org/api/gmail/v1"
@@ -15,19 +13,11 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-type triggerNewEmailProps struct {
-	Subject        string     `json:"subject"`
-	From           string     `json:"from"`
-	MaxResults     int        `json:"maxResults"`
-	RecievedTime   *time.Time `json:"receivedTime"`
-	RecievedTimeOp *string    `json:"receivedTimeOp"`
-}
-
 type TriggerNewEmail struct {
 	options *sdk.TriggerInfo
 }
 
-func NewTriggerNewEmail() sdk.ITrigger {
+func NewTriggerNewEmail() *TriggerNewEmail {
 	return &TriggerNewEmail{
 		options: &sdk.TriggerInfo{
 			Name:        "New Email ",
@@ -67,55 +57,56 @@ func (t *TriggerNewEmail) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, errors.New("missing google auth token")
 	}
 
-	input := sdk.InputToType[triggerNewEmailProps](ctx)
 	gmailService, err := gmail.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
 	if err != nil {
 		return nil, err
 	}
 
-	var qarr []string
-	if input.Subject != "" {
-		qarr = append(qarr, fmt.Sprintf("subject:%v", input.Subject))
-	}
-	if input.From != "" {
-		qarr = append(qarr, fmt.Sprintf("from:%v", input.From))
-	}
-	if input.RecievedTime != nil {
-		input.RecievedTime = ctx.Metadata.LastRun
-	}
-	if input.RecievedTime != nil {
-		op := ">"
-		if input.RecievedTimeOp != nil {
-			op = *input.RecievedTimeOp
-		}
-		qarr = append(qarr, fmt.Sprintf(`received time %v '%v'`, op, input.RecievedTime.UTC().Format("2006-01-02T15:04:05Z")))
+	var lastRunTime time.Time
+	if ctx.Metadata.LastRun != nil {
+		lastRunTime = *ctx.Metadata.LastRun
 	}
 
-	q := strings.Join(qarr, " ")
+	query := "after:" + lastRunTime.Format("2006/01/02")
 
-	req := gmailService.Users.Messages.List("me").
-		Q(q).MaxResults(int64(input.MaxResults))
-
-	res, err := req.Do()
+	messages, err := gmailService.Users.Messages.List("me").Q(query).Do()
 	if err != nil {
 		return nil, err
 	}
 
-	return res.Messages, nil
+	newEmails := make([]map[string]interface{}, 0, len(messages.Messages))
+	for _, msg := range messages.Messages {
+		email, err := gmailService.Users.Messages.Get("me", msg.Id).Do()
+		if err != nil {
+			continue
+		}
+
+		emailData := map[string]interface{}{
+			"id":      email.Id,
+			"subject": getHeader(email.Payload.Headers, "Subject"),
+			"from":    getHeader(email.Payload.Headers, "From"),
+			"date":    getHeader(email.Payload.Headers, "Date"),
+		}
+		newEmails = append(newEmails, emailData)
+	}
+
+	return sdk.JSON(map[string]interface{}{
+		"new_emails": newEmails,
+	}), nil
 }
 
-func (t TriggerNewEmail) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (t *TriggerNewEmail) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return t.Run(ctx)
 }
 
-func (t TriggerNewEmail) OnEnabled(ctx *sdk.RunContext) error {
+func (t *TriggerNewEmail) OnEnabled(ctx *sdk.RunContext) error {
 	return nil
 }
 
-func (t TriggerNewEmail) OnDisabled(ctx *sdk.RunContext) error {
+func (t *TriggerNewEmail) OnDisabled(ctx *sdk.RunContext) error {
 	return nil
 }
 
-func (t TriggerNewEmail) GetInfo() *sdk.TriggerInfo {
+func (t *TriggerNewEmail) GetInfo() *sdk.TriggerInfo {
 	return t.options
 }
