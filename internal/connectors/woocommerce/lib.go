@@ -23,6 +23,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 			NewUpdateProductOperation(),
 			NewListOrdersOperation(),
 			NewCreateProductOperation(),
+			NewGetCustomerOperation(),
 			NewCreateCustomerOperation(),
 			NewFindCustomerOperation(),
 		},
