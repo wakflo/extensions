@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.0](https://github.com/wakflo/extensions/compare/v0.2.0...v0.3.0) (2024-08-03)
+
+
+### Features
+
+* implement google-mail template ([9525d01](https://github.com/wakflo/extensions/commit/9525d01c1263f70dfaa4866175c712598040dd8f))
+* implement mailchimp connector. ([7a089ae](https://github.com/wakflo/extensions/commit/7a089ae5cef801ec6d7d18482858b04a3badc26e))
+
+
+### Bug Fixes
+
+* fixed files and added get customer operation. ([9651e8c](https://github.com/wakflo/extensions/commit/9651e8c68eb4e92f519d318fa706f1f5ff418370))
+* trigger_new_email.go file ([9525d01](https://github.com/wakflo/extensions/commit/9525d01c1263f70dfaa4866175c712598040dd8f))
+
 ## [0.2.0](https://github.com/wakflo/extensions/compare/v0.1.9...v0.2.0) (2024-07-25)
 
 
