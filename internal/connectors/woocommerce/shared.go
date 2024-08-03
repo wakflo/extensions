@@ -1,8 +1,6 @@
 package woocommerce
 
 import (
-	"time"
-
 	"github.com/hiscaler/woocommerce-go"
 	"github.com/hiscaler/woocommerce-go/config"
 
@@ -26,7 +24,7 @@ var sharedAuth = autoform.NewCustomAuthField().
 	Build()
 
 func initializeWooCommerceClient(baseURL, consumerKey, consumerSecret string) *woocommerce.WooCommerce {
-	const defaultTimeout = 10 * time.Second
+	const defaultTimeout = 10
 
 	con := config.Config{
 		Debug:                  true,
