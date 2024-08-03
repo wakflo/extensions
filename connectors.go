@@ -25,6 +25,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/googlemail"
 	"github.com/wakflo/extensions/internal/connectors/goscript"
 	"github.com/wakflo/extensions/internal/connectors/javascript"
+	"github.com/wakflo/extensions/internal/connectors/mailchimp"
 	"github.com/wakflo/extensions/internal/connectors/manual"
 	"github.com/wakflo/extensions/internal/connectors/shopify"
 	"github.com/wakflo/extensions/internal/connectors/slack"
@@ -63,6 +64,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		zohoinventory.NewConnector, // Zoho Inventory
 		cin7.NewConnector,          // Cin7
 		woocommerce.NewConnector,   // Woocommerce
+		mailchimp.NewConnector,     // MailChimp
 	}
 
 	// 🛑Do-Not-Edit
