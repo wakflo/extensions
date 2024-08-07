@@ -32,6 +32,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/todoist"
 	"github.com/wakflo/extensions/internal/connectors/webhook"
 	"github.com/wakflo/extensions/internal/connectors/woocommerce"
+	"github.com/wakflo/extensions/internal/connectors/xero"
 	"github.com/wakflo/extensions/internal/connectors/zohoinventory"
 	"github.com/wakflo/extensions/internal/logger"
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -65,6 +66,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		cin7.NewConnector,          // Cin7
 		woocommerce.NewConnector,   // Woocommerce
 		mailchimp.NewConnector,     // MailChimp
+		xero.NewConnector,          // Xero
 	}
 
 	// 🛑Do-Not-Edit
