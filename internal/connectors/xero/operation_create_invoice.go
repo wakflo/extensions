@@ -42,8 +42,8 @@ type CreateInvoiceOperation struct {
 func NewCreateInvoiceOperation() sdk.IOperation {
 	return &CreateInvoiceOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Create Xero Invoice'",
-			Description: "Create or Update Invoice'",
+			Name:        "Create Xero Invoice",
+			Description: "Create or Update Invoice",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
