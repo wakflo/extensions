@@ -12,30 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package shopify
+package woocommerce
 
 import (
-	"context"
 	"errors"
+	"fmt"
+
+	"github.com/hiscaler/woocommerce-go"
 
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-type ListProductsOperation struct {
+type ListOrdersOperation struct {
 	options *sdk.OperationInfo
 }
 
-func NewListProductsOperation() *ListProductsOperation {
-	return &ListProductsOperation{
+func NewListOrdersOperation() *ListOrdersOperation {
+	return &ListOrdersOperation{
 		options: &sdk.OperationInfo{
-			Name:        "List Products",
-			Description: "Count total amount of products in store",
+			Name:        "List orders",
+			Description: "List all orders in store",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"projectId": autoform.NewShortTextField().
+				"projectId": autoform.NewLongTextField().
 					SetDisplayName("").
 					SetDescription("").
 					Build(),
@@ -48,32 +50,31 @@ func NewListProductsOperation() *ListProductsOperation {
 	}
 }
 
-func (c *ListProductsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
-	if ctx.Auth.Extra["token"] == "" {
-		return nil, errors.New("missing shopify auth token")
+func (c *ListOrdersOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+	baseURL := ctx.Auth.Extra["shop-url"]
+	consumerKey := ctx.Auth.Extra["consumer-key"]
+	consumerSecret := ctx.Auth.Extra["consumer-secret"]
+
+	if baseURL == "" || consumerKey == "" || consumerSecret == "" {
+		return nil, errors.New("missing WooCommerce authentication credentials")
 	}
 
-	domain := ctx.Auth.Extra["domain"]
-	shopName := domain + ".myshopify.com"
-	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
+	wooClient := initializeWooCommerceClient(baseURL, consumerKey, consumerSecret)
 
-	products, err := client.Product.List(context.Background(), nil)
+	params := woocommerce.OrdersQueryParams{}
+
+	orders, total, totalPages, isLastPage, err := wooClient.Services.Order.All(params)
 	if err != nil {
 		return nil, err
 	}
-	if products == nil {
-		return nil, errors.New("no products found")
-	}
-
-	return sdk.JSON(map[string]interface{}{
-		"Total count of products": products,
-	}), err
+	fmt.Println(totalPages, total, isLastPage)
+	return orders, nil
 }
 
-func (c *ListProductsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *ListOrdersOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 
-func (c *ListProductsOperation) GetInfo() *sdk.OperationInfo {
+func (c *ListOrdersOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

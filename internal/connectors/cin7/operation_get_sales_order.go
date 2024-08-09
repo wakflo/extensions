@@ -12,32 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package shopify
+package cin7
 
 import (
-	"context"
-	"errors"
+	"log"
 
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-type ListProductsOperation struct {
+type getSalesOrderOperationProps struct {
+	SaleID string `json:"id"`
+}
+
+type GetSalesOrderOperation struct {
 	options *sdk.OperationInfo
 }
 
-func NewListProductsOperation() *ListProductsOperation {
-	return &ListProductsOperation{
+func NewGetSalesOrderOperation() *GetSalesOrderOperation {
+	return &GetSalesOrderOperation{
 		options: &sdk.OperationInfo{
-			Name:        "List Products",
-			Description: "Count total amount of products in store",
+			Name:        "Get Sale Order",
+			Description: "Retrieves sales order",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"projectId": autoform.NewShortTextField().
-					SetDisplayName("").
-					SetDescription("").
+				"id": autoform.NewShortTextField().
+					SetDisplayName("Sales ID").
+					SetDescription("The ID of the sale order to retrieve.").
+					SetRequired(true).
 					Build(),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
@@ -48,32 +52,30 @@ func NewListProductsOperation() *ListProductsOperation {
 	}
 }
 
-func (c *ListProductsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
-	if ctx.Auth.Extra["token"] == "" {
-		return nil, errors.New("missing shopify auth token")
+func (c *GetSalesOrderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+	input := sdk.InputToType[getSalesOrderOperationProps](ctx)
+
+	endpoint := "/ExternalApi/Sale"
+	accountID := ctx.Auth.Extra["account_id"]
+	applicationKey := ctx.Auth.Extra["key"]
+	queryParams := map[string]interface{}{
+		"ID": input.SaleID,
 	}
 
-	domain := ctx.Auth.Extra["domain"]
-	shopName := domain + ".myshopify.com"
-	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
-
-	products, err := client.Product.List(context.Background(), nil)
+	response, err := fetchData(endpoint, accountID, applicationKey, queryParams)
 	if err != nil {
-		return nil, err
-	}
-	if products == nil {
-		return nil, errors.New("no products found")
+		log.Fatalf("Error fetching data: %v", err)
 	}
 
 	return sdk.JSON(map[string]interface{}{
-		"Total count of products": products,
-	}), err
+		"data": response,
+	}), nil
 }
 
-func (c *ListProductsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetSalesOrderOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 
-func (c *ListProductsOperation) GetInfo() *sdk.OperationInfo {
+func (c *GetSalesOrderOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

@@ -17,27 +17,32 @@ package shopify
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-type ListProductsOperation struct {
+type getOrderOperationProps struct {
+	OrderID uint64 `json:"orderId"`
+}
+type GetOrderOperation struct {
 	options *sdk.OperationInfo
 }
 
-func NewListProductsOperation() *ListProductsOperation {
-	return &ListProductsOperation{
+func NewGetOrderOperation() *GetOrderOperation {
+	return &GetOrderOperation{
 		options: &sdk.OperationInfo{
-			Name:        "List Products",
-			Description: "Count total amount of products in store",
+			Name:        "Get Order",
+			Description: "Get an existing order",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"projectId": autoform.NewShortTextField().
-					SetDisplayName("").
-					SetDescription("").
+				"orderId": autoform.NewNumberField().
+					SetDisplayName("Order ID").
+					SetDescription("The ID of the order.").
+					SetRequired(true).
 					Build(),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
@@ -48,32 +53,33 @@ func NewListProductsOperation() *ListProductsOperation {
 	}
 }
 
-func (c *ListProductsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetOrderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
 	}
+	input := sdk.InputToType[getOrderOperationProps](ctx)
 
 	domain := ctx.Auth.Extra["domain"]
 	shopName := domain + ".myshopify.com"
+
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
 
-	products, err := client.Product.List(context.Background(), nil)
+	order, err := client.Order.Get(context.Background(), input.OrderID, nil)
 	if err != nil {
 		return nil, err
 	}
-	if products == nil {
-		return nil, errors.New("no products found")
+	if order == nil {
+		return nil, fmt.Errorf("no order found with ID '%d'", input.OrderID)
 	}
-
 	return sdk.JSON(map[string]interface{}{
-		"Total count of products": products,
-	}), err
+		"order details": order,
+	}), nil
 }
 
-func (c *ListProductsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetOrderOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 
-func (c *ListProductsOperation) GetInfo() *sdk.OperationInfo {
+func (c *GetOrderOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

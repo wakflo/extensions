@@ -17,27 +17,40 @@ package shopify
 import (
 	"context"
 	"errors"
+	"fmt"
+
+	shopify "github.com/bold-commerce/go-shopify/v4"
 
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-type ListProductsOperation struct {
+type createCollectOperationProps struct {
+	ProductID    uint64 `json:"productId"`
+	CollectionID uint64 `json:"collectionId"`
+}
+type CreateCollectOperation struct {
 	options *sdk.OperationInfo
 }
 
-func NewListProductsOperation() *ListProductsOperation {
-	return &ListProductsOperation{
+func NewCreateCollectOperation() *CreateCollectOperation {
+	return &CreateCollectOperation{
 		options: &sdk.OperationInfo{
-			Name:        "List Products",
-			Description: "Count total amount of products in store",
+			Name:        "Create Collect",
+			Description: "Add a product to a collection.",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"projectId": autoform.NewShortTextField().
-					SetDisplayName("").
-					SetDescription("").
+				"productId": autoform.NewNumberField().
+					SetDisplayName("Product ID").
+					SetDescription("The ID of the product.").
+					SetRequired(true).
+					Build(),
+				"collectionID": autoform.NewNumberField().
+					SetDisplayName("Collection ID").
+					SetDescription("The ID of the product.").
+					SetRequired(true).
 					Build(),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
@@ -48,32 +61,37 @@ func NewListProductsOperation() *ListProductsOperation {
 	}
 }
 
-func (c *ListProductsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *CreateCollectOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
 	}
-
+	input := sdk.InputToType[createCollectOperationProps](ctx)
 	domain := ctx.Auth.Extra["domain"]
 	shopName := domain + ".myshopify.com"
+
 	client := getShopifyClient(shopName, ctx.Auth.Extra["token"])
 
-	products, err := client.Product.List(context.Background(), nil)
+	collect := shopify.Collect{
+		CollectionId: input.CollectionID,
+		ProductId:    input.ProductID,
+	}
+
+	newCollect, err := client.Collect.Create(context.Background(), collect)
 	if err != nil {
 		return nil, err
 	}
-	if products == nil {
-		return nil, errors.New("no products found")
+	if newCollect == nil {
+		return nil, fmt.Errorf("no collection found with ID '%d'", input.CollectionID)
 	}
-
 	return sdk.JSON(map[string]interface{}{
-		"Total count of products": products,
-	}), err
+		"collection details": newCollect,
+	}), nil
 }
 
-func (c *ListProductsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *CreateCollectOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 
-func (c *ListProductsOperation) GetInfo() *sdk.OperationInfo {
+func (c *CreateCollectOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }
