@@ -62,17 +62,20 @@ func NewTriggerNewFile() *TriggerNewFile {
 			return nil, err
 		}
 
-		if rsp.IsError() {
-			return nil, errors.New(rsp.StatusText())
+		defer rsp.Body().Close()
+
+		if rsp.Status().IsError() {
+			return nil, errors.New(rsp.Status().Text())
 		}
 
-		bytes, err := io.ReadAll(rsp.RawBody())
+		defer rsp.Body().Close()
+		byts, err := io.ReadAll(rsp.Body().Raw())
 		if err != nil {
 			return nil, err
 		}
 
 		var body ListFileResponse
-		err = json.Unmarshal(bytes, &body)
+		err = json.Unmarshal(byts, &body)
 		if err != nil {
 			return nil, err
 		}

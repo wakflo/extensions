@@ -89,6 +89,7 @@ func (c *RunJSOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	arg := map[string]interface{}{
 		"auth":  ctx.Auth,
 		"input": input,
+		"steps": ctx.GetStepsState(),
 	}
 	res, err := execute(goja.Undefined(), vm.ToValue(arg))
 	if err != nil {
