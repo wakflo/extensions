@@ -3,7 +3,7 @@
 ## Overview
 
 This is a collection of automation connectors and integration tools that will help you seamlessly integrate your
-applications developed on Go using Wakflo platform.
+applications developed on Go using Wakflo platform. Thank you.
 
 ## Key Features
 
