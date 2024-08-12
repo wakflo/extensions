@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3](https://github.com/wakflo/extensions/compare/v0.3.2...v0.3.3) (2024-08-12)
+
+
+### Bug Fixes
+
+* added google-drive docs setup ([872c810](https://github.com/wakflo/extensions/commit/872c810e4b8ca110f9eba278f4f10b689f73a2ec))
+
 ## [0.3.2](https://github.com/wakflo/extensions/compare/v0.3.1...v0.3.2) (2024-08-09)
 
 
