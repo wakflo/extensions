@@ -17,6 +17,7 @@ package extensions
 import (
 	"github.com/wakflo/extensions/internal/connectors/calculator"
 	"github.com/wakflo/extensions/internal/connectors/cin7"
+	"github.com/wakflo/extensions/internal/connectors/clickup"
 	"github.com/wakflo/extensions/internal/connectors/cryptography"
 	"github.com/wakflo/extensions/internal/connectors/delay"
 	googledocs "github.com/wakflo/extensions/internal/connectors/google_docs"
@@ -65,6 +66,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		cin7.NewConnector,          // Cin7
 		woocommerce.NewConnector,   // Woocommerce
 		mailchimp.NewConnector,     // MailChimp
+		clickup.NewConnector,       // Clickup
 	}
 
 	// 🛑Do-Not-Edit
