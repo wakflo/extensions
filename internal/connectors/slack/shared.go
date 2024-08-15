@@ -67,11 +67,11 @@ func getUsers(client fastshot.ClientHttpMethods) ([]SlackUser, error) {
 		return nil, err
 	}
 
-	if resp.IsError() {
-		return nil, fmt.Errorf("bad HTTP request - error: %s", resp.StatusText())
+	if resp.Status().IsError() {
+		return nil, fmt.Errorf("bad HTTP request - error: %s", resp.Status().Text())
 	}
 
-	respBytes, err := io.ReadAll(resp.RawBody())
+	respBytes, err := io.ReadAll(resp.Raw().Body)
 	if err != nil {
 		return nil, err
 	}
@@ -115,11 +115,11 @@ func getChannels(client fastshot.ClientHttpMethods, channelTypes string) ([]Slac
 		return nil, err
 	}
 
-	if resp.IsError() {
-		return nil, fmt.Errorf("bad request - error: %s", resp.StatusText())
+	if resp.Status().IsError() {
+		return nil, fmt.Errorf("bad request - error: %s", resp.Status().Text())
 	}
 
-	respBytes, err := io.ReadAll(resp.RawBody())
+	respBytes, err := io.ReadAll(resp.Raw().Body)
 	if err != nil {
 		return nil, err
 	}
@@ -162,11 +162,11 @@ func sendMessage(client fastshot.ClientHttpMethods, message string, channelID st
 		return err
 	}
 
-	if resp.IsError() {
-		return fmt.Errorf("bad request - error: %s", resp.StatusText())
+	if resp.Status().IsError() {
+		return fmt.Errorf("bad request - error: %s", resp.Status().Text())
 	}
 
-	respBytes, err := io.ReadAll(resp.RawBody())
+	respBytes, err := io.ReadAll(resp.Raw().Body)
 	if err != nil {
 		return err
 	}

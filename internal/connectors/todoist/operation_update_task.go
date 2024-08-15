@@ -106,11 +106,11 @@ func (c *UpdateTaskOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, err
 	}
 
-	if rsp.IsError() {
-		return nil, errors.New(rsp.StatusText())
+	if rsp.Status().IsError() {
+		return nil, errors.New(rsp.Status().Text())
 	}
 
-	bytes, err := io.ReadAll(rsp.RawBody())
+	bytes, err := io.ReadAll(rsp.Raw().Body)
 	if err != nil {
 		return nil, err
 	}
