@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.4](https://github.com/wakflo/extensions/compare/v0.3.3...v0.3.4) (2024-08-15)
+
+
+### Bug Fixes
+
+* implement clickup connector. ([b1ed4ac](https://github.com/wakflo/extensions/commit/b1ed4ac65995b4f319cfca9c26ca4ceeb9bef976))
+* refactor zoho connector. ([253a873](https://github.com/wakflo/extensions/commit/253a8737ddcd8d5fa76c1b53eeffc06967d56523))
+
 ## [0.3.3](https://github.com/wakflo/extensions/compare/v0.3.2...v0.3.3) (2024-08-12)
 
 
