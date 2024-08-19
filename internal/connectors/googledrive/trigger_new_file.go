@@ -142,14 +142,14 @@ func (t TriggerNewFile) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		if input.CreatedTimeOp != nil {
 			op = *input.CreatedTimeOp
 		}
-		qarr = append(qarr, fmt.Sprintf(`createdTime %v '%v'`, op, input.CreatedTime.UTC().Format("2006-01-02T15:04:05Z")))
+		qarr = append(qarr, fmt.Sprintf(`createdTime %v '%v'`, op, input.CreatedTime.UTC().Format(time.RFC3339)))
 	}
 
 	qarr = append(qarr, "trashed = false")
 	q := fmt.Sprintf("%v %v", "mimeType!='application/vnd.google-apps.folder'  and ", strings.Join(qarr, " and "))
 
 	req := driveService.Files.List().
-		IncludeTeamDriveItems(input.IncludeTeamDrives).
+		IncludeItemsFromAllDrives(input.IncludeTeamDrives).
 		SupportsAllDrives(input.IncludeTeamDrives).
 		Fields("files(id, name, mimeType, webViewLink, kind, createdTime)").
 		Q(q)
