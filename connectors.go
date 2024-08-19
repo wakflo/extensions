@@ -30,6 +30,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/manual"
 	"github.com/wakflo/extensions/internal/connectors/shopify"
 	"github.com/wakflo/extensions/internal/connectors/slack"
+	"github.com/wakflo/extensions/internal/connectors/square"
 	"github.com/wakflo/extensions/internal/connectors/todoist"
 	"github.com/wakflo/extensions/internal/connectors/webhook"
 	"github.com/wakflo/extensions/internal/connectors/woocommerce"
@@ -69,6 +70,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		mailchimp.NewConnector,     // MailChimp
 		xero.NewConnector,          // Xero
 		clickup.NewConnector,       // Clickup
+		square.NewConnector,        // Square
 	}
 
 	// 🛑Do-Not-Edit
