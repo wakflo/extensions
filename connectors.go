@@ -70,6 +70,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		mailchimp.NewConnector,     // MailChimp
 		xero.NewConnector,          // Xero
 		clickup.NewConnector,       // Clickup
+		square.NewConnector,        // Square
 		asana.NewConnector,         // Asana
 	}
 
