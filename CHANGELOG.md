@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.5](https://github.com/wakflo/extensions/compare/v0.3.4...v0.3.5) (2024-08-19)
+
+
+### Bug Fixes
+
+* added google-drive docs setup ([d658274](https://github.com/wakflo/extensions/commit/d658274a1c27c22fb7e4246a7512d8400ce0dfe6))
+* implement square connector. ([6ae4f61](https://github.com/wakflo/extensions/commit/6ae4f617e4672395eb5e4ee0190aedff73c27656))
+
 ## [0.3.4](https://github.com/wakflo/extensions/compare/v0.3.3...v0.3.4) (2024-08-15)
 
 
