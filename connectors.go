@@ -26,6 +26,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/googlemail"
 	"github.com/wakflo/extensions/internal/connectors/goscript"
 	"github.com/wakflo/extensions/internal/connectors/javascript"
+	"github.com/wakflo/extensions/internal/connectors/jsonconverter"
 	"github.com/wakflo/extensions/internal/connectors/mailchimp"
 	"github.com/wakflo/extensions/internal/connectors/manual"
 	"github.com/wakflo/extensions/internal/connectors/shopify"
@@ -71,6 +72,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		xero.NewConnector,          // Xero
 		clickup.NewConnector,       // Clickup
 		square.NewConnector,        // Square
+		jsonconverter.NewConnector, // Json Converter
 	}
 
 	// 🛑Do-Not-Edit
