@@ -331,7 +331,11 @@ func getParentFoldersInput() *sdkcore.AutoFormSchema {
 			Q(q)
 
 		file, err := req.Do()
-		return file, err
+		if err != nil {
+			return nil, err
+		}
+
+		return file.Files, err
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
