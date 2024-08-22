@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.0](https://github.com/wakflo/extensions/compare/v0.3.5...v0.4.0) (2024-08-22)
+
+
+### Features
+
+* implement asana connector. ([ea4b40d](https://github.com/wakflo/extensions/commit/ea4b40dd538031ab59621d685a1167bf648f8d0a))
+* implement freshdesk connector ([13c1d00](https://github.com/wakflo/extensions/commit/13c1d00ed77393319785c673a7776b9cc8529500))
+
+
+### Bug Fixes
+
+* update connectors.go file ([13e2038](https://github.com/wakflo/extensions/commit/13e2038d60571013aaa424615cfcb0f4a53675b1))
+* updated sdk to 0.4.5 ([858e717](https://github.com/wakflo/extensions/commit/858e717a3cd06b08a67d573ab437b77dd9f8fd54))
+* updated sdk to 0.4.5 ([c865a6b](https://github.com/wakflo/extensions/commit/c865a6b6967a0aa94f9987909c50d335f00fbc4a))
+
 ## [0.3.5](https://github.com/wakflo/extensions/compare/v0.3.4...v0.3.5) (2024-08-19)
 
 
