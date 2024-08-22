@@ -322,9 +322,7 @@ func getParentFoldersInput() *sdkcore.AutoFormSchema {
 		if err != nil {
 			return nil, err
 		}
-		var qarr []string
 
-		qarr = append(qarr, "trashed = false")
 		q := "mimeType='application/vnd.google-apps.folder' and trashed = false"
 
 		req := driveService.Files.List().
