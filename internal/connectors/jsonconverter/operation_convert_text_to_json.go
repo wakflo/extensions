@@ -49,7 +49,7 @@ func NewConvertToJSONOperation() *ConvertToJSONOperation {
 				ContinueOnError: false,
 				RetryOnError:    false,
 			},
-			RequireAuth: true,
+			RequireAuth: false,
 		},
 	}
 }
