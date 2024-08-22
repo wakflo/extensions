@@ -16,6 +16,7 @@ package googledrive
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,6 +27,7 @@ import (
 
 	fastshot "github.com/opus-domini/fast-shot"
 	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/option"
 
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -312,37 +314,24 @@ func downloadFile(ctx *sdk.RunContext, driveService *drive.Service, fileID strin
 
 func getParentFoldersInput() *sdkcore.AutoFormSchema {
 	getParentFolders := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
-		client := fastshot.NewClient("https://www.googleapis.com/drive/v3").
-			Auth().BearerToken(ctx.Auth.AccessToken).
-			Header().
-			AddAccept("application/json").
-			Build()
+		input := sdk.DynamicInputToType[struct {
+			IncludeTeamDrives bool `json:"includeTeamDrives"`
+		}](ctx)
 
-		rsp, err := client.GET("/files").Query().
-			AddParams(map[string]string{
-				"q": "mimeType='application/vnd.google-apps.folder' and trashed = false",
-			}).Send()
+		driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
 		if err != nil {
 			return nil, err
 		}
 
-		if rsp.Status().IsError() {
-			return nil, errors.New(rsp.Status().Text())
-		}
+		q := "mimeType='application/vnd.google-apps.folder' and trashed = false"
 
-		defer rsp.Body().Close()
-		byts, err := io.ReadAll(rsp.Body().Raw())
-		if err != nil {
-			return nil, err
-		}
+		req := driveService.Files.List().
+			Fields("files(id, name, mimeType, webViewLink, kind, createdTime)").
+			SupportsAllDrives(input.IncludeTeamDrives).
+			Q(q)
 
-		var body ListFileResponse
-		err = json.Unmarshal(byts, &body)
-		if err != nil {
-			return nil, err
-		}
-
-		return body.Files, nil
+		file, err := req.Do()
+		return file, err
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

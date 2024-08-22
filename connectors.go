@@ -21,6 +21,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/clickup"
 	"github.com/wakflo/extensions/internal/connectors/cryptography"
 	"github.com/wakflo/extensions/internal/connectors/delay"
+	"github.com/wakflo/extensions/internal/connectors/freshdesk"
 	googledocs "github.com/wakflo/extensions/internal/connectors/google_docs"
 	googlesheets "github.com/wakflo/extensions/internal/connectors/google_sheets"
 	"github.com/wakflo/extensions/internal/connectors/googledrive"
@@ -73,6 +74,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		clickup.NewConnector,       // Clickup
 		square.NewConnector,        // Square
 		asana.NewConnector,         // Asana
+		freshdesk.NewConnector,     // Freshdesk
 	}
 
 	// 🛑Do-Not-Edit
