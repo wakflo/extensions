@@ -15,6 +15,7 @@
 package extensions
 
 import (
+	"github.com/wakflo/extensions/internal/connectors/asana"
 	"github.com/wakflo/extensions/internal/connectors/calculator"
 	"github.com/wakflo/extensions/internal/connectors/cin7"
 	"github.com/wakflo/extensions/internal/connectors/clickup"
@@ -72,6 +73,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		xero.NewConnector,          // Xero
 		clickup.NewConnector,       // Clickup
 		square.NewConnector,        // Square
+		asana.NewConnector,         // Asana
 		freshdesk.NewConnector,     // Freshdesk
 	}
 
