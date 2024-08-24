@@ -2,13 +2,11 @@ package linear
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 
-	"github.com/Khan/genqlient/graphql"
 	"github.com/gookit/goutil/arrutil"
 
 	"github.com/wakflo/go-sdk/autoform"
@@ -205,51 +203,6 @@ func getIssuesInput(title, description string) *sdkcore.AutoFormSchema {
 		SetRequired(true).Build()
 }
 
-type authedTransport struct {
-	key     string
-	wrapped http.RoundTripper
-}
-
-func (t *authedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("Authorization", t.key)
-	return t.wrapped.RoundTrip(req)
-}
-
-func getLabelsInput(title, description string) *sdkcore.AutoFormSchema {
-	getLabels := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
-		httpClient := http.Client{
-			Transport: &authedTransport{
-				key:     ctx.Auth.Extra["api-key"],
-				wrapped: http.DefaultTransport,
-			},
-		}
-
-		clientGQL := graphql.NewClient(baseURL, &httpClient)
-
-		variables := &IssueLabelFilter{}
-
-		//  if len(input.TeamID) > 0 {
-		//	variables.Team = &NullableTeamFilter{
-		//		Id: &IDComparator{Eq: input.TeamID},
-		//	}
-		//
-		// }
-
-		labels, err := IssueLabels(context.Background(), clientGQL, variables)
-		if err != nil {
-			return nil, err
-		}
-
-		return labels.IssueLabels.Nodes, nil
-	}
-
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(description).
-		SetDynamicOptions(&getLabels).
-		SetRequired(false).Build()
-}
-
 func getPriorityInput(title, description string) *sdkcore.AutoFormSchema {
 	getPriorities := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
 		query := `
@@ -326,6 +279,70 @@ func getPriorityInput(title, description string) *sdkcore.AutoFormSchema {
 		SetDisplayName(title).
 		SetDescription(description).
 		SetDynamicOptions(&getPriorities).
+		SetRequired(false).Build()
+}
+
+func getLabelsInput(title, description string) *sdkcore.AutoFormSchema {
+	getLabels := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+		query := `{
+          issueLabels {
+    		nodes {
+              id
+              name
+            }
+		  }
+        }`
+
+		queryBody := map[string]string{
+			"query": query,
+		}
+		jsonQuery, err := json.Marshal(queryBody)
+		if err != nil {
+			return nil, err
+		}
+
+		req, err := http.NewRequest(http.MethodPost, baseURL, bytes.NewBuffer(jsonQuery))
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request: %w", err)
+		}
+
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", ctx.Auth.Extra["api-key"])
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to make request: %w", err)
+		}
+		defer resp.Body.Close()
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read response body: %w", err)
+		}
+
+		var response struct {
+			Data struct {
+				IssueLabels struct {
+					Nodes []Label `json:"nodes"`
+				} `json:"issueLabels"`
+			} `json:"data"`
+		}
+
+		err = json.Unmarshal(body, &response)
+		if err != nil {
+			return nil, err
+		}
+
+		labels := response.Data.IssueLabels.Nodes
+
+		return &labels, nil
+	}
+
+	return autoform.NewDynamicField(sdkcore.String).
+		SetDisplayName(title).
+		SetDescription(description).
+		SetDynamicOptions(&getLabels).
 		SetRequired(false).Build()
 }
 
