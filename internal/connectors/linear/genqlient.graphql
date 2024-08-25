@@ -1,0 +1,9 @@
+query IssueLabels($filter: IssueLabelFilter) {
+  issueLabels(filter: $filter) {
+
+    nodes {
+      id
+      name
+    }
+  }
+}

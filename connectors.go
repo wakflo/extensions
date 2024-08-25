@@ -28,6 +28,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/googlemail"
 	"github.com/wakflo/extensions/internal/connectors/goscript"
 	"github.com/wakflo/extensions/internal/connectors/javascript"
+	"github.com/wakflo/extensions/internal/connectors/linear"
 	"github.com/wakflo/extensions/internal/connectors/mailchimp"
 	"github.com/wakflo/extensions/internal/connectors/manual"
 	"github.com/wakflo/extensions/internal/connectors/shopify"
@@ -75,6 +76,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		square.NewConnector,        // Square
 		asana.NewConnector,         // Asana
 		freshdesk.NewConnector,     // Freshdesk
+		linear.NewConnector,        // Linear
 	}
 
 	// 🛑Do-Not-Edit
