@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.5.0](https://github.com/wakflo/extensions/compare/v0.4.4...v0.5.0) (2024-08-26)
+
+
+### Features
+
+* implement JSON connector ([96e42d8](https://github.com/wakflo/extensions/commit/96e42d83098f89b2065eb808583f1a3fa4e9490b))
+* implement linear connector ([43559b5](https://github.com/wakflo/extensions/commit/43559b50701a99107727cfd07039ea8748fe0501))
+
+
+### Bug Fixes
+
+* file issues ([cc9387f](https://github.com/wakflo/extensions/commit/cc9387ff0bd6d3f25b75ceaa3e83b8212b81c272))
+* file issues ([aa68fde](https://github.com/wakflo/extensions/commit/aa68fde4266874aaf8801e16ed3cc7f55477f2c4))
+* updated sdk to 0.4.6 ([43f5d1c](https://github.com/wakflo/extensions/commit/43f5d1c9d37bed071f19b44ce73b14b66960fe95))
+* updated sdk to 0.4.9 ([c7f5191](https://github.com/wakflo/extensions/commit/c7f5191ac33688de959fee8543bcd1d76bb575d8))
+
 ## [0.4.4](https://github.com/wakflo/extensions/compare/v0.4.3...v0.4.4) (2024-08-24)
 
 
