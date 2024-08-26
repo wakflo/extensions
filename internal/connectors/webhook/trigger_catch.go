@@ -34,11 +34,10 @@ func NewCatchTrigger() sdk.ITrigger {
 			Name:        "Catch",
 			Description: "Receive incoming HTTP/webhooks using any HTTP method such as GET, POST, PUT, DELETE, etc. ",
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"script": autoform.NewCodeEditorField(sdkcore.Javascript).
-					SetDisplayName("Javascript Code").
-					SetDescription("Enter your javascript code").
-					SetDefaultValue("function execute(ctx){\n    return {}\n}").
-					SetRequired(true).Build(),
+				"Public": autoform.NewBooleanField().
+					SetDisplayName("Public").
+					SetDescription("Whether the webhook endpoint does not require authentication and is public (a true or false value).").
+					SetRequired(false).Build(),
 			},
 			Type:         sdkcore.TriggerTypeWebhook,
 			SampleOutput: map[string]interface{}{},
@@ -48,7 +47,7 @@ func NewCatchTrigger() sdk.ITrigger {
 				RetryOnError:    false,
 			},
 			RequireAuth:   false,
-			Documentation: &catchDocs,
+			Documentation: &triggerCatchDocs,
 		},
 	}
 }
