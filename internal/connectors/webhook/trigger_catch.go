@@ -48,6 +48,7 @@ func NewCatchTrigger() sdk.ITrigger {
 			},
 			RequireAuth:   false,
 			Documentation: &triggerCatchDocs,
+			HelpText:      &helpText,
 		},
 	}
 }

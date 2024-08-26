@@ -9,3 +9,6 @@ var webhookDocs string
 
 //go:embed docs/trigger_catch.mdx
 var triggerCatchDocs string
+
+//go:embed help-text.mdx
+var helpText string
