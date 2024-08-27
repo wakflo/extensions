@@ -16,7 +16,6 @@ package freshdesk
 
 import (
 	"errors"
-	"fmt"
 	"log"
 
 	"github.com/wakflo/go-sdk/autoform"
@@ -64,8 +63,6 @@ func (c *GetTicketOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	domain := ctx.Auth.Extra["domain"]
 	freshdeskDomain := "https://" + domain + ".freshdesk.com"
-	fmt.Println(freshdeskDomain)
-
 	ticket, err := GetTicket(freshdeskDomain, ctx.Auth.Extra["api-key"], input.TicketID)
 	if err != nil {
 		log.Fatalf("error fetching data: %v", err)

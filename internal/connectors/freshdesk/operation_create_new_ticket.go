@@ -92,7 +92,6 @@ func (c *CreateNewTicketOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	domain := ctx.Auth.Extra["domain"]
 	freshdeskDomain := "https://" + domain + ".freshdesk.com"
-	fmt.Println(freshdeskDomain)
 
 	priority, err := strconv.Atoi(input.Priority)
 	if err != nil {

@@ -16,7 +16,6 @@ package freshdesk
 
 import (
 	"errors"
-	"fmt"
 	"log"
 
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -50,7 +49,6 @@ func (c *ListTicketsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	domain := ctx.Auth.Extra["domain"]
 	freshdeskDomain := "https://" + domain + ".freshdesk.com"
-	fmt.Println(freshdeskDomain)
 
 	response, err := GetTickets(freshdeskDomain, ctx.Auth.Extra["api-key"])
 	if err != nil {

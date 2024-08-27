@@ -16,7 +16,6 @@ package freshdesk
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -57,7 +56,6 @@ func (t *TriggerNewTicket) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	domain := ctx.Auth.Extra["domain"]
 	freshdeskDomain := "https://" + domain + ".freshdesk.com"
-	fmt.Println(freshdeskDomain)
 
 	lastRunTime := ctx.Metadata.LastRun
 
