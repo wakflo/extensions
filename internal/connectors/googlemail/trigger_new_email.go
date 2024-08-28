@@ -67,7 +67,7 @@ func (t *TriggerNewEmail) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		lastRunTime = *ctx.Metadata.LastRun
 	}
 
-	query := "after:" + lastRunTime.Format("2006/01/02")
+	query := "after:" + lastRunTime.UTC().Format(time.RFC3339)
 
 	messages, err := gmailService.Users.Messages.List("me").Q(query).Do()
 	if err != nil {

@@ -17,6 +17,7 @@ package freshdesk
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -63,7 +64,7 @@ func (t *TriggerNewTicket) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	var fromDate string
 	if lastRunTime != nil {
-		fromDate = lastRunTime.Format("2006-01-02")
+		fromDate = lastRunTime.UTC().Format(time.RFC3339)
 	} else {
 		fromDate = ""
 	}

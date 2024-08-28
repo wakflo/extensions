@@ -79,7 +79,7 @@ func (t *TriggerIssueUpdated) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 						updatedAt
 					}
 				}
-			}`, lastRunTime.Format(time.RFC3339))
+			}`, lastRunTime.UTC().Format(time.RFC3339))
 	}
 
 	response, err := MakeGraphQLRequest(apiKEY, query)

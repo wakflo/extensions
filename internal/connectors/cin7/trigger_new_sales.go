@@ -59,7 +59,7 @@ func (t *TriggerNewSales) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	var fromDate string
 	if lastRunTime != nil {
-		fromDate = lastRunTime.Format(time.RFC3339)
+		fromDate = lastRunTime.UTC().Format(time.RFC3339)
 	}
 
 	queryParams := map[string]interface{}{

@@ -50,10 +50,10 @@ func (t *TriggerNewPayment) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	lastRunTime := ctx.Metadata.LastRun
 
 	if lastRunTime != nil {
-		fromDate = lastRunTime.Format(time.RFC3339)
+		fromDate = lastRunTime.UTC().Format(time.RFC3339)
 	} else {
 		defaultStartDate := time.Date(2006, 1, 1, 0, 0, 0, 0, time.UTC)
-		fromDate = defaultStartDate.Format(time.RFC3339)
+		fromDate = defaultStartDate.UTC().Format(time.RFC3339)
 
 		fmt.Println("DEFAULT", fromDate)
 	}

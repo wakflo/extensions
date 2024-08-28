@@ -62,7 +62,7 @@ func (t *TriggerNewOrder) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	}
 
 	options := &goshopify.ListOptions{
-		CreatedAtMin: lastRunTime,
+		CreatedAtMin: lastRunTime.UTC(),
 	}
 
 	orders, err := client.Order.List(context.Background(), options)
