@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.1](https://github.com/wakflo/extensions/compare/v0.5.0...v0.5.1) (2024-08-30)
+
+
+### Bug Fixes
+
+* append text to document operation ([bcf919b](https://github.com/wakflo/extensions/commit/bcf919b701da59c242bf9bad08601e359a7c7c30))
+* updated sdk to 0.4.9 ([8e69236](https://github.com/wakflo/extensions/commit/8e69236a7f9ad97f84c73e5e901880e4d5c0106d))
+* updated sdk to 0.4.9 ([d3cd8f8](https://github.com/wakflo/extensions/commit/d3cd8f8e4c31ef99159edab8c1c5bbefed7a428c))
+
 ## [0.5.0](https://github.com/wakflo/extensions/compare/v0.4.4...v0.5.0) (2024-08-26)
 
 
