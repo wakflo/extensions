@@ -13,8 +13,8 @@ import (
 )
 
 type appendTextToDocumentOperationProps struct {
-	DocumentID string `JSON:"id"`
-	Text       string `JSON:"text"`
+	DocumentID string `json:"id"`
+	Text       string `json:"text"`
 }
 
 type AppendTextToDocumentOperation struct {
