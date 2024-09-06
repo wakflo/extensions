@@ -16,7 +16,6 @@ package freshdesk
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/wakflo/go-sdk/autoform"
