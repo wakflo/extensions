@@ -23,7 +23,7 @@ var sharedAuth = autoform.NewCustomAuthField().
 			SetRequired(true).
 			Build(),
 		"api-key": autoform.NewShortTextField().SetDisplayName("Api Key").
-			SetDescription("The api key used to authenticate freshworks.").
+			SetDescription("The api key used to authenticate freshworks crm.").
 			SetRequired(true).
 			Build(),
 	}).
