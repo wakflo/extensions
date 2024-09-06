@@ -17,6 +17,7 @@ package woocommerce
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/hiscaler/woocommerce-go"
 
@@ -67,7 +68,7 @@ func (t *TriggerNewOrder) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	var formattedTime string
 	if lastRunTime != nil {
 		utcTime := lastRunTime.UTC()
-		formattedTime = utcTime.Format("2006-01-02T15:04:05")
+		formattedTime = utcTime.Format(time.RFC3339)
 	}
 
 	params := woocommerce.OrdersQueryParams{

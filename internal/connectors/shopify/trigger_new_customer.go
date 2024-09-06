@@ -69,7 +69,7 @@ func (t *TriggerNewCustomer) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	}
 
 	options := &goshopify.ListOptions{
-		CreatedAtMin: lastRunTime,
+		CreatedAtMin: lastRunTime.UTC(),
 	}
 
 	customers, err := client.Customer.List(context.Background(), options)

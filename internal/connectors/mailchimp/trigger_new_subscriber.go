@@ -71,7 +71,7 @@ func (t *TriggerNewSubscriber) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	lastRunTime := ctx.Metadata.LastRun
 
 	if lastRunTime != nil {
-		fromDate = lastRunTime.Format(time.RFC3339)
+		fromDate = lastRunTime.UTC().Format(time.RFC3339)
 	}
 
 	var newSubscribers interface{}
