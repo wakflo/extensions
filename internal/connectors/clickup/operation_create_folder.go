@@ -39,14 +39,11 @@ func NewCreateFolderOperation() *CreateFolderOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"space-id": autoform.NewShortTextField().
-					SetDisplayName("Space ID").
-					SetDescription("Space ID ").
-					SetRequired(true).
-					Build(),
+				"workspace-id": getWorkSpaceInput("Workspaces", "select a workspace", true),
+				"space-id":     getSpacesInput("Spaces", "select a space", true),
 				"name": autoform.NewShortTextField().
 					SetDisplayName("Folder Name").
-					SetDescription("The name of the folder").
+					SetDescription("The name of the folder to create").
 					SetRequired(true).
 					Build(),
 			},
@@ -67,7 +64,10 @@ func (c *CreateFolderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[createFolderOperationProps](ctx)
 	reqURL := "https://api.clickup.com/api/v2/space/" + input.SpaceID + "/folder"
 
-	folder, _ := createItem(accessToken, input.Name, reqURL)
+	folder, err := createItem(accessToken, input.Name, reqURL)
+	if err != nil {
+		return nil, err
+	}
 
 	return folder, nil
 }

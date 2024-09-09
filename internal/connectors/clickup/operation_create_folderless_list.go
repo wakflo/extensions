@@ -39,14 +39,11 @@ func NewCreateFolderlessListOperation() *CreateFolderlessListOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"space-id": autoform.NewShortTextField().
-					SetDisplayName("Space ID").
-					SetDescription("The ID of the Space").
-					SetRequired(true).
-					Build(),
+				"workspace-id": getWorkSpaceInput("Workspaces", "select a workspace", true),
+				"space-id":     getSpacesInput("Spaces", "select a space", true),
 				"name": autoform.NewShortTextField().
 					SetDisplayName("List Name").
-					SetDescription("The name of the list").
+					SetDescription("The name of the list to create").
 					SetRequired(true).
 					Build(),
 			},
@@ -67,7 +64,10 @@ func (c *CreateFolderlessListOperation) Run(ctx *sdk.RunContext) (sdk.JSON, erro
 	input := sdk.InputToType[createFolderlesslistOperationProps](ctx)
 	reqURL := "https://api.clickup.com/api/v2/space/" + input.SpaceID + "/list"
 
-	response, _ := createItem(accessToken, input.Name, reqURL)
+	response, err := createItem(accessToken, input.Name, reqURL)
+	if err != nil {
+		return nil, err
+	}
 
 	return response, nil
 }

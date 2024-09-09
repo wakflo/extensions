@@ -17,7 +17,6 @@ package clickup
 import (
 	"errors"
 
-	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
@@ -38,11 +37,8 @@ func NewGetFolderlesslistOperation() *GetFolderlesslistOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"space-id": autoform.NewShortTextField().
-					SetDisplayName("Space ID").
-					SetDescription("Space ID ").
-					SetRequired(true).
-					Build(),
+				"workspace-id": getWorkSpaceInput("Workspace", "select workspace", true),
+				"space-id":     getSpacesInput("Spaces", "Select space", true),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,

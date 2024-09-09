@@ -58,7 +58,6 @@ func (c *ReadDocumentOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	}
 
 	document, err := docService.Documents.Get(input.DocumentID).
-		// Fields("id, name, mimeType, webViewLink, kind, createdTime").
 		Do()
 	return document, err
 }

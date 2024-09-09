@@ -25,6 +25,7 @@ import (
 )
 
 type createInvoiceOperationProps struct {
+	TenantID  string                   `json:"tenant_id"`
 	ContactID string                   `json:"contact-id"`
 	Contact   string                   `json:"contact"`
 	LineItems []map[string]interface{} `json:"line_items"`
@@ -47,6 +48,7 @@ func NewCreateInvoiceOperation() sdk.IOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
+				"tenant_id": getTenantInput("Organization", "select organization", true),
 				"contact-id": autoform.NewShortTextField().
 					SetDisplayName("Contact ID").
 					SetDescription("Contact ID").
@@ -142,7 +144,7 @@ func (c *CreateInvoiceOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		},
 	}
 
-	response, err := createDraftInvoice(ctx.Auth.AccessToken, body)
+	response, err := createDraftInvoice(ctx.Auth.AccessToken, input.TenantID, body)
 	fmt.Println(response, err)
 
 	return map[string]interface{}{

@@ -40,7 +40,7 @@ func NewGetTaskOperation() *GetTaskOperation {
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"task-id": autoform.NewShortTextField().
 					SetDisplayName("Task ID").
-					SetDescription("Task ID").
+					SetDescription("Task ID ").
 					SetRequired(true).
 					Build(),
 			},

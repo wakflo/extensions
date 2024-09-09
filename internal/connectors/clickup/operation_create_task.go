@@ -18,8 +18,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -28,9 +30,13 @@ import (
 
 type createTaskOperationProps struct {
 	ListID      string `json:"list-id"`
+	WorkspaceID string `json:"workspace-id"`
+	SpaceID     string `json:"space-id"`
+	FolderID    string `json:"folder-id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Priority    string `json:"priority"`
+	AssigneeID  string `json:"assignee-id"`
 }
 
 type CreateTaskOperation struct {
@@ -45,11 +51,11 @@ func NewCreateTaskOperation() *CreateTaskOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"list-id": autoform.NewShortTextField().
-					SetDisplayName("List ID").
-					SetDescription("The ID of the list where the task will be created").
-					SetRequired(true).
-					Build(),
+				"workspace-id": getWorkSpaceInput("Workspaces", "select a workspace", true),
+				"space-id":     getSpacesInput("Spaces", "select a space", true),
+				"folder-id":    getFoldersInput("Folders", "select a folder", true),
+				"list-id":      getListsInput("Lists", "select a list to create task in", true),
+				"assignee-id":  getAssigneeInput("Assignees", "select a assignee", true),
 				"name": autoform.NewShortTextField().
 					SetDisplayName("Task Name").
 					SetDescription("The name of the task").
@@ -79,17 +85,37 @@ func (c *CreateTaskOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	}
 	accessToken := ctx.Auth.AccessToken
 
-	input := sdk.InputToType[createTaskOperationProps](ctx)
-
-	priority, err := strconv.Atoi(input.Priority)
-	if err != nil {
-		return nil, err
+	input, errs := sdk.InputToTypeSafely[createTaskOperationProps](ctx)
+	if errs != nil {
+		return nil, errs
 	}
 
 	taskData := map[string]interface{}{
 		"name":        input.Name,
 		"description": input.Description,
-		"priority":    priority,
+	}
+
+	if input.Priority != "" {
+		priority, err := strconv.Atoi(input.Priority)
+		if err != nil {
+			return nil, err
+		}
+		taskData["priority"] = priority
+	}
+
+	if input.AssigneeID != "" {
+		assigneeStrings := strings.Split(input.AssigneeID, ",")
+		assignees := make([]int, len(assigneeStrings))
+
+		for i, assigneeStr := range assigneeStrings {
+			assignee, err := strconv.Atoi(strings.TrimSpace(assigneeStr))
+			if err != nil {
+				fmt.Println("Assignee conversion error:", err)
+				return nil, err
+			}
+			assignees[i] = assignee
+		}
+		taskData["assignees"] = assignees
 	}
 
 	taskJSON, err := json.Marshal(taskData)

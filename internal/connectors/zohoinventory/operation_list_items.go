@@ -1,9 +1,12 @@
 package zohoinventory
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
+	"net/http"
 
-	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
@@ -24,11 +27,7 @@ func NewListItemsOperation() sdk.IOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"organization_id": autoform.NewShortTextField().
-					SetDisplayName("Organization ID").
-					SetDescription("The Zoho Inventory organization ID").
-					SetRequired(true).
-					Build(),
+				"organization_id": getOrganizationsInput(),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,
@@ -39,20 +38,45 @@ func NewListItemsOperation() sdk.IOperation {
 }
 
 func (c *ListItemsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
-	if ctx.Auth.AccessToken == "" {
+	if ctx.Auth.Token == nil {
 		return nil, errors.New("missing Zoho auth token")
 	}
 
 	input := sdk.InputToType[listItemsOperationProps](ctx)
 
-	url := "https://inventory.zoho.com/api/v1/items?organization_id=" + input.OrganizationID
+	url := "https://www.zohoapis.com/inventory/v1/items?organization_id=" + input.OrganizationID
 
-	listItems, err := getZohoClient(ctx.Auth.AccessToken, url)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 
-	return listItems, nil
+	req.Header.Set("Authorization", "Zoho-oauthtoken "+ctx.Auth.Token.AccessToken)
+	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error sending request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body: %v", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API request failed with status code %d: %s", resp.StatusCode, string(body))
+	}
+
+	var result map[string]interface{}
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshaling response: %v", err)
+	}
+
+	return result, nil
 }
 
 func (c *ListItemsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {

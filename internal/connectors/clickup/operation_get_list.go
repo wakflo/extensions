@@ -34,13 +34,13 @@ func NewGetListOperation() *GetListOperation {
 	return &GetListOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Get a list",
-			Description: "The ID of the List",
+			Description: "Gets a list in a ClickUp",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"list-id": autoform.NewShortTextField().
 					SetDisplayName("List ID").
-					SetDescription("List ID").
+					SetDescription("The id of the list to get").
 					SetRequired(true).
 					Build(),
 			},
@@ -60,7 +60,10 @@ func (c *GetListOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	input := sdk.InputToType[getListOperationProps](ctx)
 
-	list, _ := getList(accessToken, input.ListID)
+	list, err := getList(accessToken, input.ListID)
+	if err != nil {
+		return nil, err
+	}
 
 	return list, nil
 }

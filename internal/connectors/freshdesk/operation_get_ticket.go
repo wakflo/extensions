@@ -71,9 +71,7 @@ func (c *GetTicketOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		log.Fatalf("error fetching data: %v", err)
 	}
 
-	return sdk.JSON(map[string]interface{}{
-		"data": ticket,
-	}), nil
+	return ticket, nil
 }
 
 func (c *GetTicketOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {

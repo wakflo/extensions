@@ -94,23 +94,31 @@ func (c *CreateNewTicketOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	freshdeskDomain := "https://" + domain + ".freshdesk.com"
 	fmt.Println(freshdeskDomain)
 
-	priority, err := strconv.Atoi(input.Priority)
-	if err != nil {
-		return nil, err
-	}
-
-	status, err := strconv.Atoi(input.Status)
-	if err != nil {
-		return nil, err
-	}
-
 	ticketData := map[string]interface{}{
 		"description": input.Description,
 		"subject":     input.Subject,
 		"email":       input.Email,
-		"priority":    priority,
-		"status":      status,
-		"cc_emails":   []string{input.CCEmails},
+	}
+
+	if input.Status != "" {
+		status, err := strconv.Atoi(input.Status)
+		if err != nil {
+			return nil, err
+		}
+		ticketData["status"] = status
+	}
+
+	if input.Priority != "" {
+		priority, err := strconv.Atoi(input.Priority)
+		if err != nil {
+			return nil, err
+		}
+
+		ticketData["priority"] = priority
+	}
+
+	if input.CCEmails != "" {
+		ticketData["cc_emails"] = []string{input.CCEmails}
 	}
 
 	response, err := CreateTicket(freshdeskDomain, ctx.Auth.Extra["api-key"], ticketData)

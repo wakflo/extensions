@@ -57,16 +57,11 @@ func (c *CreateSheetOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, errors.New("name is required")
 	}
 
-	// if input.Body == "" {
-	// 	return nil, errors.New("name is required")
-	// }
-
 	document, err := sheetService.Spreadsheets.Create(&sheets.Spreadsheet{
 		Properties: &sheets.SpreadsheetProperties{
 			Title: input.Name,
 		},
 	}).
-		// Fields("id, name, mimeType, webViewLink, kind, createdTime").
 		Do()
 	return document, err
 }

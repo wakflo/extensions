@@ -17,7 +17,6 @@ package clickup
 import (
 	"errors"
 
-	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
@@ -38,11 +37,9 @@ func NewGetFolderOperation() *GetFolderOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"folder-id": autoform.NewShortTextField().
-					SetDisplayName("Folder ID").
-					SetDescription("Folder ID ").
-					SetRequired(true).
-					Build(),
+				"workspace-id": getWorkSpaceInput("Workspaces", "select a workspace", true),
+				"space-id":     getSpacesInput("Spaces", "select a space", true),
+				"folder-id":    getFoldersInput("Folders", "select a folder", true),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,

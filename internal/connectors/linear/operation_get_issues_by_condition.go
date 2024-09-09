@@ -29,7 +29,7 @@ type getIssuesByConditionOperationProps struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	AssigneeID  string `json:"assignee-id"`
-	LabelID     string `json:"labelID"`
+	LabelID     string `json:"label-id"`
 	StateID     string `json:"state-id"`
 }
 
@@ -46,12 +46,12 @@ func NewGetIssuesByConditionOperation() *GetIssuesByConditionOperation {
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"title": autoform.NewShortTextField().
-					SetDisplayName("Issue Name").
-					SetDescription("Filter by the issue name").
+					SetDisplayName("Filter by Issue Name").
+					SetDescription("Returns issues specified by the name").
 					Build(),
 				"description": autoform.NewLongTextField().
-					SetDisplayName("Description").
-					SetDescription("Filter Issue by description").
+					SetDisplayName("Filter by Description").
+					SetDescription("Return issues wth certain keywords in the issue description").
 					Build(),
 				"label-id":    getLabelsInput("Filter by label", "Filter issue by label"),
 				"assignee-id": getAssigneesInput("Filter by assignees", "Filter issue by assignees"),
@@ -138,9 +138,12 @@ func (c *GetIssuesByConditionOperation) Run(ctx *sdk.RunContext) (sdk.JSON, erro
 		log.Fatalf("Error making GraphQL request: %v", err)
 	}
 
-	return map[string]interface{}{
-		"Result": response,
-	}, nil
+	nodes, ok := response["data"].(map[string]interface{})["issues"]
+	if !ok {
+		return nil, errors.New("failed to extract issues from response")
+	}
+
+	return nodes, nil
 }
 
 func (c *GetIssuesByConditionOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {

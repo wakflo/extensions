@@ -36,14 +36,6 @@ type CreateSpaceOperation struct {
 }
 
 func NewCreateSpaceOperation() *CreateSpaceOperation {
-	getAuthenticTeams := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
-		authorizedTeams, err := getTeams(ctx.Auth.AccessToken)
-		if err != nil {
-			return nil, err
-		}
-
-		return authorizedTeams, nil
-	}
 	return &CreateSpaceOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Create Space",
@@ -51,13 +43,7 @@ func NewCreateSpaceOperation() *CreateSpaceOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"team-id": autoform.NewDynamicField(sdkcore.String).
-					SetDisplayName("Team Id").
-					SetDescription("Team ID to create space").
-					SetDynamicOptions(&getAuthenticTeams).
-					SetDependsOn([]string{"connection"}).
-					SetRequired(true).
-					Build(),
+				"team-id": getWorkSpaceInput("Workspaces", "select workspace", true),
 				"space-name": autoform.NewShortTextField().
 					SetDisplayName("Space Name").
 					SetDescription("The space name").

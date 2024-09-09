@@ -29,7 +29,6 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{
 			NewGetSpaceOperation(),
-			NewGetTeamsOperation(),
 			NewGetSpacesOperation(),
 			NewGetTasksOperation(),
 			NewGetTaskOperation(),

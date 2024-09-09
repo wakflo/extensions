@@ -17,7 +17,6 @@ package clickup
 import (
 	"errors"
 
-	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
@@ -31,28 +30,14 @@ type GetSpacesOperation struct {
 }
 
 func NewGetSpacesOperation() *GetSpacesOperation {
-	getAuthTeams := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
-		authorizedTeams, err := getTeams(ctx.Auth.AccessToken)
-		if err != nil {
-			return nil, err
-		}
-
-		return authorizedTeams, nil
-	}
 	return &GetSpacesOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Gets Spaces in a ClickUp workspace",
-			Description: "Get Spaces",
+			Name:        "Gets Spaces",
+			Description: "Gets Spaces in a ClickUp workspace",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"team-id": autoform.NewDynamicField(sdkcore.String).
-					SetDisplayName("Team ID").
-					SetDescription("Team ID to get the spaces on").
-					SetDynamicOptions(&getAuthTeams).
-					SetDependsOn([]string{"connection"}).
-					SetRequired(true).
-					Build(),
+				"team-id": getWorkSpaceInput("Workspaces", "Select workspace", true),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,
@@ -70,7 +55,7 @@ func (c *GetSpacesOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	input := sdk.InputToType[getSpacesOperationProps](ctx)
 
-	spaces, _ := getSpaces(accessToken, input.TeamID)
+	spaces, _ := getAllSpaces(accessToken, input.TeamID)
 
 	return map[string]interface{}{
 		"Spaces": spaces,

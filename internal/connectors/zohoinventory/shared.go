@@ -1,12 +1,31 @@
+// Copyright 2022-present Wakflo
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package zohoinventory
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 
+	"github.com/gookit/goutil/arrutil"
+	fastshot "github.com/opus-domini/fast-shot"
+
 	"github.com/wakflo/go-sdk/autoform"
+	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
 var (
@@ -51,4 +70,49 @@ func getZohoClient(accessToken, url string) (map[string]interface{}, error) {
 	}
 
 	return result, nil
+}
+
+func getOrganizationsInput() *sdkcore.AutoFormSchema {
+	getOrganizations := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+		client := fastshot.NewClient("https://www.zohoapis.com/inventory").
+			Auth().BearerToken(ctx.Auth.AccessToken).
+			Header().
+			AddAccept("application/json").
+			Build()
+
+		rsp, err := client.GET("/v1/organizations").Send()
+		if err != nil {
+			return nil, err
+		}
+
+		if rsp.Status().IsError() {
+			return nil, errors.New(rsp.Status().Text())
+		}
+
+		bytes, err := io.ReadAll(rsp.Raw().Body) //nolint:bodyclose
+		if err != nil {
+			return nil, err
+		}
+
+		var organizations Organizations
+		err = json.Unmarshal(bytes, &organizations)
+		if err != nil {
+			return nil, err
+		}
+
+		organization := organizations.Organizations
+		return arrutil.Map[Organization, map[string]any](organization, func(input Organization) (target map[string]any, find bool) {
+			return map[string]any{
+				"id":   input.OrganizationID,
+				"name": input.Name,
+			}, true
+		}), nil
+	}
+
+	return autoform.NewDynamicField(sdkcore.String).
+		SetDisplayName("Organizations").
+		SetDescription("Select organization").
+		SetDependsOn([]string{"connection"}).
+		SetDynamicOptions(&getOrganizations).
+		SetRequired(true).Build()
 }

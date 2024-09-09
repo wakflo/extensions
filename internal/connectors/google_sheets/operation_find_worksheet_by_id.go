@@ -7,14 +7,14 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 
-	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
 type findWorkSheetByIDOperationProps struct {
-	SpreadSheetID string `json:"spreadSheetId"`
-	SheetID       string `json:"sheetId"`
+	SpreadSheetID     string `json:"spreadsheetId,omitempty"`
+	SheetID           string `json:"sheetId"`
+	IncludeTeamDrives bool   `json:"includeTeamDrives"`
 }
 
 type FindWorkSheetByIDOperation struct {
@@ -29,16 +29,9 @@ func NewFindWorkSheetByIDOperation() *FindWorkSheetByIDOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"spreadSheetId": autoform.NewShortTextField().
-					SetDisplayName("Spreadsheet ID").
-					SetDescription("The ID of the spreadsheet.").
-					SetRequired(true).
-					Build(),
-				"sheetId": autoform.NewShortTextField().
-					SetDisplayName("Sheet ID").
-					SetDescription("The ID of the sheet.").
-					SetRequired(true).
-					Build(),
+				"spreadsheetId":     getSpreadsheetsInput("Spreadsheet", "spreadsheet ID", true),
+				"sheetId":           getSheetIDInput("Sheet", "select sheet", true),
+				"includeTeamDrives": includeTeamFieldInput,
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,
@@ -68,7 +61,6 @@ func (c *FindWorkSheetByIDOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) 
 	}
 
 	spreadsheet, err := sheetService.Spreadsheets.Get(input.SpreadSheetID).
-		// Fields("id, name, mimeType, webViewLink, kind, createdTime").
 		Do()
 
 	for _, sheet := range spreadsheet.Sheets {

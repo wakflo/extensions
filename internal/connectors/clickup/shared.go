@@ -9,7 +9,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gookit/goutil/arrutil"
+	fastshot "github.com/opus-domini/fast-shot"
+
 	"github.com/wakflo/go-sdk/autoform"
+	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
@@ -21,7 +25,7 @@ var (
 
 const baseURL = "https://api.clickup.com/api"
 
-func getSpaces(accessToken, param string) (*Space, error) {
+func getAllSpaces(accessToken, param string) (interface{}, error) {
 	reqURL := "https://api.clickup.com/api/v2/team/" + param + "/space"
 	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 
@@ -43,24 +47,20 @@ func getSpaces(accessToken, param string) (*Space, error) {
 		return nil, err
 	}
 
-	var respData Space
+	var respData SpacesResponse
 	err = json.Unmarshal(body, &respData)
 	if err != nil {
 		return nil, err
 	}
-	var parsedResponse struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
-	}
 
-	if err := json.Unmarshal(body, &parsedResponse); err != nil {
-		return nil, err
-	}
+	space := respData.Spaces
 
-	return &Space{
-		SpaceID: parsedResponse.ID,
-		Name:    parsedResponse.Name,
-	}, nil
+	return arrutil.Map[Space, map[string]any](space, func(input Space) (target map[string]any, find bool) {
+		return map[string]any{
+			"id":   input.ID,
+			"name": input.Name,
+		}, true
+	}), nil
 }
 
 func getData(accessToken, url string) (map[string]interface{}, error) {
@@ -153,15 +153,6 @@ func searchTask(accessToken, url string, page int, orderBy string, reverseOrder,
 	return response, nil
 }
 
-type Team struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-type Space struct {
-	SpaceID string `json:"id"`
-	Name    string `json:"name"`
-}
-
 func getTeams(accessToken string) ([]Team, error) {
 	url := baseURL + "/v2/team"
 
@@ -197,6 +188,294 @@ func getTeams(accessToken string) ([]Team, error) {
 	}
 
 	return parsedResponse.Teams, nil
+}
+
+func getWorkSpaceInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
+	getWorkspaces := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+		client := fastshot.NewClient(baseURL).
+			Auth().BearerToken(ctx.Auth.AccessToken).
+			Header().
+			AddAccept("application/json").
+			Build()
+
+		rsp, err := client.GET("/v2/team").Send()
+		if err != nil {
+			return nil, err
+		}
+
+		defer rsp.Body().Close()
+
+		if rsp.Status().IsError() {
+			return nil, errors.New(rsp.Status().Text())
+		}
+
+		defer rsp.Body().Close()
+		byts, err := io.ReadAll(rsp.Body().Raw())
+		if err != nil {
+			return nil, err
+		}
+
+		var body TeamsResponse
+
+		err = json.Unmarshal(byts, &body)
+		if err != nil {
+			return nil, err
+		}
+
+		teams := body.Teams
+
+		return teams, nil
+	}
+
+	return autoform.NewDynamicField(sdkcore.String).
+		SetDisplayName(title).
+		SetDescription(desc).
+		SetDynamicOptions(&getWorkspaces).
+		SetRequired(required).Build()
+}
+
+func getSpacesInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
+	getSpaces := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+		input := sdk.DynamicInputToType[struct {
+			WorkspaceID string `json:"workspace-id,omitempty"`
+		}](ctx)
+
+		client := fastshot.NewClient(baseURL).
+			Auth().BearerToken(ctx.Auth.AccessToken).
+			Header().
+			AddAccept("application/json").
+			Build()
+
+		rsp, err := client.GET(fmt.Sprintf("/v2/team/%s/space", input.WorkspaceID)).Send()
+		if err != nil {
+			return nil, err
+		}
+
+		defer rsp.Body().Close()
+
+		if rsp.Status().IsError() {
+			return nil, errors.New(rsp.Status().Text())
+		}
+
+		defer rsp.Body().Close()
+		byts, err := io.ReadAll(rsp.Body().Raw())
+		if err != nil {
+			return nil, err
+		}
+
+		var body SpacesResponse
+
+		err = json.Unmarshal(byts, &body)
+		if err != nil {
+			return nil, err
+		}
+
+		spaces := body.Spaces
+
+		return spaces, nil
+	}
+
+	return autoform.NewDynamicField(sdkcore.String).
+		SetDisplayName(title).
+		SetDescription(desc).
+		SetDynamicOptions(&getSpaces).
+		SetRequired(required).Build()
+}
+
+func getFoldersInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
+	getFolders := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+		input := sdk.DynamicInputToType[struct {
+			SpaceID string `json:"space-id,omitempty"`
+		}](ctx)
+
+		client := fastshot.NewClient(baseURL).
+			Auth().BearerToken(ctx.Auth.AccessToken).
+			Header().
+			AddAccept("application/json").
+			Build()
+
+		rsp, err := client.GET(fmt.Sprintf("/v2/space/%s/folder", input.SpaceID)).Send()
+		if err != nil {
+			return nil, err
+		}
+
+		defer rsp.Body().Close()
+
+		if rsp.Status().IsError() {
+			return nil, errors.New(rsp.Status().Text())
+		}
+
+		defer rsp.Body().Close()
+		byts, err := io.ReadAll(rsp.Body().Raw())
+		if err != nil {
+			return nil, err
+		}
+
+		var body FoldersResponse
+
+		err = json.Unmarshal(byts, &body)
+		if err != nil {
+			return nil, err
+		}
+
+		folders := body.Folders
+
+		return folders, nil
+	}
+
+	return autoform.NewDynamicField(sdkcore.String).
+		SetDisplayName(title).
+		SetDescription(desc).
+		SetDynamicOptions(&getFolders).
+		SetRequired(required).Build()
+}
+
+func getListsInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
+	getLists := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+		input := sdk.DynamicInputToType[struct {
+			FolderID string `json:"folder-id,omitempty"`
+		}](ctx)
+
+		client := fastshot.NewClient(baseURL).
+			Auth().BearerToken(ctx.Auth.AccessToken).
+			Header().
+			AddAccept("application/json").
+			Build()
+
+		rsp, err := client.GET(fmt.Sprintf("/v2/folder/%s/list", input.FolderID)).Send()
+		if err != nil {
+			return nil, err
+		}
+
+		defer rsp.Body().Close()
+
+		if rsp.Status().IsError() {
+			return nil, errors.New(rsp.Status().Text())
+		}
+
+		defer rsp.Body().Close()
+		byts, err := io.ReadAll(rsp.Body().Raw())
+		if err != nil {
+			return nil, err
+		}
+
+		var body ListsResponse
+
+		err = json.Unmarshal(byts, &body)
+		if err != nil {
+			return nil, err
+		}
+
+		lists := body.Lists
+
+		return lists, nil
+	}
+
+	return autoform.NewDynamicField(sdkcore.String).
+		SetDisplayName(title).
+		SetDescription(desc).
+		SetDynamicOptions(&getLists).
+		SetRequired(required).Build()
+}
+
+func getTasksInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
+	getTasks := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+		input := sdk.DynamicInputToType[struct {
+			ListID string `json:"list-id,omitempty"`
+		}](ctx)
+
+		client := fastshot.NewClient(baseURL).
+			Auth().BearerToken(ctx.Auth.AccessToken).
+			Header().
+			AddAccept("application/json").
+			Build()
+		rsp, err := client.GET(fmt.Sprintf("/v2/list/%s/task", input.ListID)).Send()
+		if err != nil {
+			return nil, err
+		}
+
+		defer rsp.Body().Close()
+
+		if rsp.Status().IsError() {
+			return nil, errors.New(rsp.Status().Text())
+		}
+
+		defer rsp.Body().Close()
+		byts, err := io.ReadAll(rsp.Body().Raw())
+		if err != nil {
+			return nil, err
+		}
+
+		var body TaskResponse
+
+		err = json.Unmarshal(byts, &body)
+		if err != nil {
+			return nil, err
+		}
+
+		tasks := body.Tasks
+
+		return tasks, nil
+	}
+
+	return autoform.NewDynamicField(sdkcore.String).
+		SetDisplayName(title).
+		SetDescription(desc).
+		SetDynamicOptions(&getTasks).
+		SetRequired(required).Build()
+}
+
+func getAssigneeInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
+	getAssignees := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+		input := sdk.DynamicInputToType[struct {
+			ListID string `json:"list-id,omitempty"`
+		}](ctx)
+
+		client := fastshot.NewClient(baseURL).
+			Auth().BearerToken(ctx.Auth.AccessToken).
+			Header().
+			AddAccept("application/json").
+			Build()
+
+		rsp, err := client.GET(fmt.Sprintf("/v2/list/%s/member", input.ListID)).Send()
+		if err != nil {
+			return nil, err
+		}
+
+		defer rsp.Body().Close()
+
+		if rsp.Status().IsError() {
+			return nil, errors.New(rsp.Status().Text())
+		}
+
+		defer rsp.Body().Close()
+		byts, err := io.ReadAll(rsp.Body().Raw())
+		if err != nil {
+			return nil, err
+		}
+
+		var body MembersResponse
+
+		err = json.Unmarshal(byts, &body)
+		if err != nil {
+			return nil, err
+		}
+
+		members := body.Members
+
+		return arrutil.Map[Member, map[string]any](members, func(input Member) (target map[string]any, find bool) {
+			return map[string]any{
+				"id":   input.ID,
+				"name": input.Username,
+			}, true
+		}), nil
+	}
+
+	return autoform.NewDynamicField(sdkcore.String).
+		SetDisplayName(title).
+		SetDescription(desc).
+		SetDynamicOptions(&getAssignees).
+		SetRequired(required).Build()
 }
 
 func createItem(accessToken, name, url string) (map[string]interface{}, error) {

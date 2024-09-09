@@ -18,12 +18,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
 type getInvoiceOperationProps struct {
+	TenantID  string `json:"tenant_id"`
 	InvoiceID string `json:"invoice_id"`
 }
 
@@ -39,11 +39,8 @@ func NewGetInvoiceOperation() sdk.IOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"invoice_id": autoform.NewShortTextField().
-					SetDisplayName("Invoice Id").
-					SetDescription("The ID of the invoice to retrieve.").
-					SetRequired(true).
-					Build(),
+				"tenant_id":  getTenantInput("Organization", "select organization", true),
+				"invoice_id": getInvoiceInput("invoices", "invoices", false),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,
@@ -62,7 +59,7 @@ func (c *GetInvoiceOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	endpoint := "/Invoices/" + input.InvoiceID
 
-	invoice, err := getXeroNewClient(ctx.Auth.AccessToken, endpoint)
+	invoice, err := getXeroNewClient(ctx.Auth.AccessToken, endpoint, input.TenantID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch invoice: %v", err)
 	}

@@ -1,3 +1,17 @@
+// Copyright 2022-present Wakflo
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package googlesheets
 
 import (
@@ -7,13 +21,12 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 
-	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
 type findWorkSheetByTitleOperationProps struct {
-	SpreadSheetID string `json:"spreadSheetId"`
+	SpreadSheetID string `json:"spreadsheetId,omitempty"`
 	SheetTitle    string `json:"sheetTitle"`
 }
 
@@ -29,16 +42,8 @@ func NewFindWorkSheetByTitleOperation() *FindWorkSheetByTitleOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"spreadSheetId": autoform.NewShortTextField().
-					SetDisplayName("Spreadsheet ID").
-					SetDescription("The ID of the spreadsheet.").
-					SetRequired(true).
-					Build(),
-				"sheetTitle": autoform.NewShortTextField().
-					SetDisplayName("Sheet Title").
-					SetDescription("The title of the sheet.").
-					SetRequired(true).
-					Build(),
+				"spreadsheetId": getSpreadsheetsInput("Spreadsheet", "spreadsheet ID", true),
+				"sheetTitle":    getSheetTitleInput("Sheet", "select sheet", true),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,
@@ -68,7 +73,6 @@ func (c *FindWorkSheetByTitleOperation) Run(ctx *sdk.RunContext) (sdk.JSON, erro
 	}
 
 	spreadsheet, err := sheetService.Spreadsheets.Get(input.SpreadSheetID).
-		// Fields("id, name, mimeType, webViewLink, kind, createdTime").
 		Do()
 
 	for _, sheet := range spreadsheet.Sheets {

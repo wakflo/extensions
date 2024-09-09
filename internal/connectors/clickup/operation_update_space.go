@@ -46,11 +46,8 @@ func NewUpdateSpaceOperation() *UpdateSpaceOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"space-id": autoform.NewShortTextField().
-					SetDisplayName("SpaceId").
-					SetDescription("Space ID to update space").
-					SetRequired(true).
-					Build(),
+				"workspace-id": getWorkSpaceInput("Workspaces", "select a workspace", true),
+				"space-id":     getSpacesInput("Spaces", "select a space", true),
 				"space-name": autoform.NewShortTextField().
 					SetDisplayName("Update space Name").
 					SetDescription("The space name to update").
