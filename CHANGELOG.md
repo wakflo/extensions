@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.2](https://github.com/wakflo/extensions/compare/v0.5.1...v0.5.2) (2024-09-10)
+
+
+### Bug Fixes
+
+* connector updates ([0c4cc57](https://github.com/wakflo/extensions/commit/0c4cc57326c40e8a74d0d27394d5de7d8d59e49c))
+* update shared.go file ([e99d0ff](https://github.com/wakflo/extensions/commit/e99d0ffd98e92a0790245129e38adf4e4ff3d08f))
+* update trigger_new_ticket.go file ([c32b3c4](https://github.com/wakflo/extensions/commit/c32b3c4ecbc4b07a6d41c0404b32d1382d5e0697))
+
 ## [0.5.1](https://github.com/wakflo/extensions/compare/v0.5.0...v0.5.1) (2024-08-30)
 
 
