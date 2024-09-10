@@ -22,6 +22,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/cryptography"
 	"github.com/wakflo/extensions/internal/connectors/delay"
 	"github.com/wakflo/extensions/internal/connectors/freshdesk"
+	"github.com/wakflo/extensions/internal/connectors/freshworkscrm"
 	googledocs "github.com/wakflo/extensions/internal/connectors/google_docs"
 	googlesheets "github.com/wakflo/extensions/internal/connectors/google_sheets"
 	"github.com/wakflo/extensions/internal/connectors/googledrive"
@@ -79,6 +80,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		freshdesk.NewConnector,     // Freshdesk
 		linear.NewConnector,        // Linear
 		jsonconverter.NewConnector, // Json
+		freshworkscrm.NewConnector, // Freshworks CRM
 	}
 
 	// 🛑Do-Not-Edit
