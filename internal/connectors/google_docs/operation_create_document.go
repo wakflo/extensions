@@ -1,3 +1,17 @@
+// Copyright 2022-present Wakflo
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package googledocs
 
 import (
@@ -34,17 +48,6 @@ func NewCreateDocumentOperation() *CreateDocumentOperation {
 					SetDescription("The name of the document.").
 					SetRequired(true).
 					Build(),
-				// "body": autoform.NewLongTextField().
-				// SetDisplayName("Document Body").
-				// SetDescription("The initial content of the document.").
-				// SetRequired(true).
-				// Build(),
-
-				// "name": autoform.NewShortTextField().
-				// SetDisplayName("Document Name").
-				// SetDescription("The name of the new folder.").
-				// SetRequired(true).
-				// Build(),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,
@@ -69,15 +72,9 @@ func (c *CreateDocumentOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, errors.New("name is required")
 	}
 
-	// if input.Body == "" {
-	// 	return nil, errors.New("name is required")
-	// }
-
 	document, err := docService.Documents.Create(&docs.Document{
 		Title: input.Name,
-		// Body: input.Body,
 	}).
-		// Fields("id, name, mimeType, webViewLink, kind, createdTime").
 		Do()
 	return document, err
 }

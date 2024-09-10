@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -29,9 +30,14 @@ import (
 
 type updateTaskOperationProps struct {
 	TaskID      string `json:"task-id"`
+	ListID      string `json:"list-id"`
+	WorkspaceID string `json:"workspace-id"`
+	SpaceID     string `json:"space-id"`
+	FolderID    string `json:"folder-id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Priority    string `json:"priority"`
+	AssigneeID  string `json:"assignee-id"`
 }
 
 type UpdateTaskOperation struct {
@@ -46,11 +52,12 @@ func NewUpdateTaskOperation() *UpdateTaskOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"task-id": autoform.NewShortTextField().
-					SetDisplayName("Task ID").
-					SetDescription("The task Id to be updated, without the '#' symbol. e.g, if the ID is #8235ck99n, just enter 8235ck99n. ").
-					SetRequired(true).
-					Build(),
+				"workspace-id": getWorkSpaceInput("Workspaces", "select a workspace", true),
+				"space-id":     getSpacesInput("Spaces", "select a space", true),
+				"folder-id":    getFoldersInput("Folders", "select a folder", true),
+				"list-id":      getListsInput("Lists", "select a list to create task in", true),
+				"task-id":      getTasksInput("Tasks", "select a task to update", true),
+				"assignee-id":  getAssigneeInput("Assignees", "select a assignee", true),
 				"name": autoform.NewShortTextField().
 					SetDisplayName("Task Name").
 					SetDescription("The name of task to update").
@@ -79,17 +86,44 @@ func (c *UpdateTaskOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	}
 	accessToken := ctx.Auth.AccessToken
 
-	input := sdk.InputToType[updateTaskOperationProps](ctx)
+	input, errs := sdk.InputToTypeSafely[updateTaskOperationProps](ctx)
+	if errs != nil {
+		return nil, errs
+	}
+	updatedTaskData := map[string]interface{}{}
 
-	priority, err := strconv.Atoi(input.Priority)
-	if err != nil {
-		return nil, err
+	if input.Name != "" {
+		updatedTaskData["name"] = input.Name
+	}
+	if input.Description != "" {
+		updatedTaskData["description"] = input.Name
 	}
 
-	updatedTaskData := map[string]interface{}{
-		"name":        input.Name,
-		"description": input.Description,
-		"priority":    priority,
+	if input.Priority != "" {
+		priority, err := strconv.Atoi(input.Priority)
+		if err != nil {
+			return nil, err
+		}
+		updatedTaskData["priority"] = priority
+	}
+
+	if input.AssigneeID != "" {
+		assigneeStrings := strings.Split(input.AssigneeID, ",")
+		assignees := make([]int, len(assigneeStrings))
+
+		for i, assigneeStr := range assigneeStrings {
+			assignee, err := strconv.Atoi(strings.TrimSpace(assigneeStr))
+			if err != nil {
+				return nil, err
+			}
+			assignees[i] = assignee
+		}
+		assigneesObject := map[string][]int{
+			"add": assignees,
+			"rem": {},
+		}
+
+		updatedTaskData["assignees"] = assigneesObject
 	}
 
 	taskJSON, err := json.Marshal(updatedTaskData)

@@ -10,14 +10,13 @@ import (
 
 var sharedAuth = autoform.NewCustomAuthField().
 	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"shop-url": autoform.NewShortTextField().SetDisplayName("ShopUrl").
+		"shop-url": autoform.NewShortTextField().SetDisplayName("ShopUrl (Required)").
 			SetDescription("The base URL of your app (e.g https://mystore.com) and it should start with HTTPS only").
-			SetRequired(true).
 			Build(),
-		"consumer-key": autoform.NewShortTextField().SetDisplayName("Consumer Key").
+		"consumer-key": autoform.NewShortTextField().SetDisplayName("Consumer Key (Required)").
 			SetDescription("The consumer key generated from your app.").
 			Build(),
-		"consumer-secret": autoform.NewShortTextField().SetDisplayName("Consumer Secret").
+		"consumer-secret": autoform.NewShortTextField().SetDisplayName("Consumer Secret (Required)").
 			SetDescription("The consumer secret generated from your app.").
 			Build(),
 	}).

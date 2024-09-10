@@ -20,7 +20,6 @@ import (
 
 	"github.com/hiscaler/woocommerce-go"
 
-	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
@@ -36,17 +35,11 @@ type findCustomerOperationProps struct {
 func NewFindCustomerOperation() *FindCustomerOperation {
 	return &FindCustomerOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Find a customer",
-			Description: "Find a customer",
+			Name:        "List customers",
+			Description: "List all customer",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Input: map[string]*sdkcore.AutoFormSchema{
-				"email": autoform.NewShortTextField().
-					SetDisplayName("Customer Email").
-					SetDescription("Enter the email address of the customer.").
-					SetRequired(true).
-					Build(),
-			},
+			Input:       map[string]*sdkcore.AutoFormSchema{},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,
 				RetryOnError:    false,

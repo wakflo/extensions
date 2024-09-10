@@ -32,6 +32,8 @@ type createIssueOperationProps struct {
 	Description string `json:"description"`
 	Priority    string `json:"priority"`
 	AssigneeID  string `json:"assignee-id"`
+	LabelID     string `json:"label-id"`
+	StateID     string `json:"state-id"`
 }
 
 type CreateIssueOperation struct {
@@ -56,8 +58,9 @@ func NewCreateIssueOperation() *CreateIssueOperation {
 					SetDescription("Issue description").
 					Build(),
 				"team-id":     getTeamsInput(),
-				"priority":    getPriorityInput("Select Priority", "select issue priority"),
-				"assignee-id": getAssigneesInput("Select Assignee", "select an assignee for the issue"),
+				"priority":    getPriorityInput("Priority", "select issue priority"),
+				"assignee-id": getAssigneesInput("Assignee", "select an assignee for the issue"),
+				"label-id":    getTeamLabelsInput("Labels", "select an issue label"),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,
@@ -83,38 +86,64 @@ func (c *CreateIssueOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, err
 	}
 
-	priority, err := strconv.Atoi(input.Priority)
-	if err != nil {
-		return nil, err
+	// Create a map to store fields conditionally
+	fields := make(map[string]string)
+	fields["title"] = fmt.Sprintf(`"%s"`, input.Title)
+	fields["teamId"] = fmt.Sprintf(`"%s"`, input.TeamID)
+
+	if input.Description != "" {
+		fields["description"] = fmt.Sprintf(`"%s"`, input.Description)
+	}
+	if input.AssigneeID != "" {
+		fields["assigneeId"] = fmt.Sprintf(`"%s"`, input.AssigneeID)
+	}
+	if input.AssigneeID != "" {
+		fields["labelIds"] = fmt.Sprintf(`"%s"`, input.LabelID)
+	}
+
+	if input.StateID != "" {
+		fields["stateId"] = fmt.Sprintf(`"%s"`, input.StateID)
+	}
+
+	if input.Priority != "" {
+		priority, err := strconv.Atoi(input.Priority)
+		if err != nil {
+			return nil, err
+		}
+		fields["priority"] = strconv.Itoa(priority)
+	}
+
+	fieldStrings := make([]string, 0, len(fields))
+	for key, value := range fields {
+		fieldStrings = append(fieldStrings, fmt.Sprintf("%s: %s", key, value))
 	}
 
 	query := fmt.Sprintf(`
-    mutation IssueCreate{
-      issueCreate(input: {
-        title: "%s"
-        description: "%s"
-        teamId: "%s"
-        assigneeId: "%s"
-		priority: %d
-      }) {
-        success
-        issue {
-          id
-          title
-	      priorityLabel
-          priority
-        }
-      }
-    }`, input.Title, input.Description, input.TeamID, input.AssigneeID, priority)
+		mutation IssueCreate {
+			issueCreate(input: {
+				%s
+			}) {
+				success
+				issue {
+					id
+					title
+					description
+					priorityLabel
+				}
+			}
+		}`, strings.Join(fieldStrings, "\n"))
 
 	response, err := MakeGraphQLRequest(apiKEY, query)
 	if err != nil {
 		log.Fatalf("Error making GraphQL request: %v", err)
 	}
 
-	return map[string]interface{}{
-		"Result": response,
-	}, nil
+	issue, ok := response["data"].(map[string]interface{})["issueCreate"].(map[string]interface{})["issue"].(map[string]interface{})
+	if !ok {
+		return nil, errors.New("failed to extract issue from response")
+	}
+
+	return issue, nil
 }
 
 func (c *CreateIssueOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {

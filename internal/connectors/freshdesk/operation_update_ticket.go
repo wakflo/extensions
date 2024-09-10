@@ -30,7 +30,6 @@ type updateTicketOperationProps struct {
 	Description string `json:"description"`
 	Priority    string `json:"priority"`
 	Status      string `json:"status"`
-	CCEmails    string `json:"cc_emails"`
 }
 
 type UpdateTicketOperation struct {
@@ -83,24 +82,33 @@ func (c *UpdateTicketOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	domain := ctx.Auth.Extra["domain"]
 	freshdeskDomain := "https://" + domain + ".freshdesk.com"
 
-	priority, err := strconv.Atoi(input.Priority)
-	if err != nil {
-		return nil, err
+	ticketData := TicketUpdate{}
+
+	if input.Subject != "" {
+		ticketData.Subject = input.Subject
 	}
 
-	status, err := strconv.Atoi(input.Status)
-	if err != nil {
-		return nil, err
+	if input.Description != "" {
+		ticketData.Description = input.Description
 	}
 
-	ticketData := TicketUpdate{
-		Description: input.Description,
-		Subject:     input.Subject,
-		Priority:    priority,
-		Status:      status,
+	if input.Status != "" {
+		status, err := strconv.Atoi(input.Status)
+		if err != nil {
+			return nil, err
+		}
+		ticketData.Status = status
 	}
 
-	err = UpdateTicket(freshdeskDomain, ctx.Auth.Extra["api-key"], input.TicketID, ticketData)
+	if input.Priority != "" {
+		priority, err := strconv.Atoi(input.Priority)
+		if err != nil {
+			return nil, err
+		}
+		ticketData.Priority = priority
+	}
+
+	err := UpdateTicket(freshdeskDomain, ctx.Auth.Extra["api-key"], input.TicketID, ticketData)
 	if err != nil {
 		return nil, fmt.Errorf("error creating ticket:  %v", err)
 	}

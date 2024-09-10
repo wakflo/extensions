@@ -1,3 +1,17 @@
+// Copyright 2022-present Wakflo
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package googlesheets
 
 import (
@@ -32,16 +46,8 @@ func NewUpdateRowInWorkSheetOperation() *UpdateRowInWorkSheetOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"spreadSheetId": autoform.NewShortTextField().
-					SetDisplayName("Spreadsheet ID").
-					SetDescription("The ID of the spreadsheet.").
-					SetRequired(true).
-					Build(),
-				"sheetTitle": autoform.NewShortTextField().
-					SetDisplayName("Sheet Title").
-					SetDescription("The Title of the sheet.").
-					SetRequired(true).
-					Build(),
+				"spreadsheetId": getSpreadsheetsInput("Spreadsheet", "spreadsheet ID", true),
+				"sheetTitle":    getSheetTitleInput("Sheet", "select sheet", true),
 				"sheetRow": autoform.NewShortTextField().
 					SetDisplayName("Sheet Row").
 					SetDescription("The row range of the sheet in the format of A1 notation.").
@@ -50,10 +56,17 @@ func NewUpdateRowInWorkSheetOperation() *UpdateRowInWorkSheetOperation {
 				"values": autoform.NewArrayField().
 					SetDisplayName("Values").
 					SetItems(
-						autoform.NewShortTextField().
-							SetDisplayName("Label").
-							SetDescription("Label").
-							SetRequired(true).
+						autoform.NewArrayField().
+							SetDisplayName("Values").
+							SetItems(
+								autoform.NewShortTextField().
+									SetDisplayName("Value").
+									SetDescription("value").
+									SetRequired(true).
+									Build(),
+							).
+							SetDescription("The values to be updated in the row.").
+							SetRequired(false).
 							Build(),
 					).
 					SetDescription("The values to be updated in the row.").
@@ -73,7 +86,10 @@ func (c *UpdateRowInWorkSheetOperation) Run(ctx *sdk.RunContext) (sdk.JSON, erro
 		return nil, errors.New("missing google auth token")
 	}
 
-	input := sdk.InputToType[updateRowInWorkSheetOperationProps](ctx)
+	input, errs := sdk.InputToTypeSafely[updateRowInWorkSheetOperationProps](ctx)
+	if errs != nil {
+		return nil, errs
+	}
 	sheetService, err := sheets.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
 	if err != nil {
 		return nil, err
@@ -91,24 +107,16 @@ func (c *UpdateRowInWorkSheetOperation) Run(ctx *sdk.RunContext) (sdk.JSON, erro
 		return nil, errors.New("sheet row range is required")
 	}
 
-	// if len(input.Values) <= 0 {
-	// 	return nil, errors.New("values are required")
-	// }
-
-	// this variable concatenates the sheet ID and the sheet row range since we want to update a particular row in a sheet
-	// range_ := input.SheetID + input.SheetRow
 	range_ := fmt.Sprintf("%s!%s", input.SheetTitle, input.SheetRow)
 
-	// sample array data to add as new row
-	sampleData := [][]interface{}{{"john", "mary", "sophia", "james", "victor"}}
+	// sampleData := [][]interface{}{{"apple", "banana", "orange", "pineapple", "mango"}}
 
 	spreadsheet, err := sheetService.Spreadsheets.Values.Update(input.SpreadSheetID, range_, &sheets.ValueRange{
 		Range:          range_,
 		MajorDimension: "ROWS",
-		Values:         sampleData,
+		Values:         input.Values,
 	}).
 		ValueInputOption("RAW").
-		// Fields("id, name, mimeType, webViewLink, kind, createdTime").
 		Do()
 	return spreadsheet, err
 }

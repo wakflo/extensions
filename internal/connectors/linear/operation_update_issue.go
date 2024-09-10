@@ -33,6 +33,7 @@ type updateIssueOperationProps struct {
 	Description string `json:"description"`
 	Priority    string `json:"priority"`
 	StateID     string `json:"state-id"`
+	LabelID     string `json:"label-id"`
 }
 
 type UpdateIssueOperation struct {
@@ -50,7 +51,7 @@ func NewUpdateIssueOperation() *UpdateIssueOperation {
 				"title": autoform.NewShortTextField().
 					SetDisplayName("Issue Name").
 					SetDescription("The issue name").
-					SetRequired(true).
+					SetRequired(false).
 					Build(),
 				"description": autoform.NewLongTextField().
 					SetDisplayName("Description").
@@ -60,6 +61,7 @@ func NewUpdateIssueOperation() *UpdateIssueOperation {
 				"issue-id":    getIssuesInput("Select issue", "select an issue to update"),
 				"assignee-id": getAssigneesInput("Assignee", "Select assignee"),
 				"priority":    getPriorityInput("Priority", "Select priority"),
+				"label-id":    getTeamLabelsInput("Label", "Select label"),
 				"state-id":    getIssueStatesInput("Issue State", "select issue state", false),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
@@ -82,17 +84,32 @@ func (c *UpdateIssueOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	input := sdk.InputToType[updateIssueOperationProps](ctx)
 
-	query := fmt.Sprintf(`
-    mutation IssueUpdate {
+	mutation := fmt.Sprintf(`mutation IssueUpdate {
       issueUpdate(
         id: "%s",
-        input: {
-          title: "%s"
-	      stateId: "%s"
-          description: "%s"
-          priority: %s
-		  assigneeId: "%s"
-        }) {
+        input: {`, input.IssueID)
+
+	if input.Title != "" {
+		mutation += fmt.Sprintf(`title: "%s",`, input.Title)
+	}
+	if input.StateID != "" {
+		mutation += fmt.Sprintf(`stateId: "%s",`, input.StateID)
+	}
+	if input.Description != "" {
+		mutation += fmt.Sprintf(`description: "%s",`, input.Description)
+	}
+	if input.LabelID != "" {
+		mutation += fmt.Sprintf(`labelIds: "%s",`, input.LabelID)
+	}
+	if input.Priority != "" {
+		mutation += fmt.Sprintf(`priority: %s,`, input.Priority)
+	}
+	if input.AssigneeID != "" {
+		mutation += fmt.Sprintf(`assigneeId: "%s",`, input.AssigneeID)
+	}
+
+	mutation = strings.TrimSuffix(mutation, ",")
+	mutation += `}) {
         success
         issue {
           id
@@ -101,16 +118,19 @@ func (c *UpdateIssueOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
           priority
         }
       }
-    }`, input.IssueID, input.Title, input.StateID, input.Description, input.Priority, input.AssigneeID)
+    }`
 
-	response, err := MakeGraphQLRequest(apiKEY, query)
+	response, err := MakeGraphQLRequest(apiKEY, mutation)
 	if err != nil {
 		log.Fatalf("Error making GraphQL request: %v", err)
 	}
 
-	return map[string]interface{}{
-		"Result": response,
-	}, nil
+	issue, ok := response["data"].(map[string]interface{})["issueUpdate"]
+	if !ok {
+		return nil, errors.New("failed to extract issue from response")
+	}
+
+	return issue, nil
 }
 
 func (c *UpdateIssueOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {

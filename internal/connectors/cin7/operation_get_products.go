@@ -72,9 +72,7 @@ func (c *GetProductsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		log.Fatalf("Error fetching data: %v", err)
 	}
 
-	return sdk.JSON(map[string]interface{}{
-		"products": response,
-	}), nil
+	return response, nil
 }
 
 func (c *GetProductsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {

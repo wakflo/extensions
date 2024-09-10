@@ -72,9 +72,7 @@ func (t *TriggerNewSales) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		log.Fatalf("Error fetching data: %v", err)
 	}
 
-	return sdk.JSON(map[string]interface{}{
-		"data": response,
-	}), nil
+	return response, nil
 }
 
 func (t *TriggerNewSales) Test(ctx *sdk.RunContext) (sdk.JSON, error) {

@@ -22,6 +22,10 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
+type getListInvoicesProps struct {
+	TenantID string `json:"tenant_id"`
+}
+
 type GetInvoiceListOperation struct {
 	options *sdk.OperationInfo
 }
@@ -33,7 +37,9 @@ func NewGetInvoiceListOperation() sdk.IOperation {
 			Description: "Retrieve a list of Invoices",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Input:       map[string]*sdkcore.AutoFormSchema{},
+			Input: map[string]*sdkcore.AutoFormSchema{
+				"tenant_id": getTenantInput("Organization", "select organization", true),
+			},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,
 				RetryOnError:    false,
@@ -46,7 +52,10 @@ func (c *GetInvoiceListOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.AccessToken == "" {
 		return nil, errors.New("missing Xero access token")
 	}
-	invoices, err := getXeroNewClient(ctx.Auth.AccessToken, "/Invoices")
+
+	input := sdk.InputToType[getListInvoicesProps](ctx)
+
+	invoices, err := getXeroNewClient(ctx.Auth.AccessToken, "/Invoices", input.TenantID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch invoices: %v", err)
 	}

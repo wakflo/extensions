@@ -40,8 +40,8 @@ func NewGetCustomersOperation() *GetCustomersOperation {
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"page-limit": autoform.NewNumberField().
-					SetDisplayName("Product limit").
-					SetDescription(" Specifies the page limit for getting products.").
+					SetDisplayName("").
+					SetDescription("").
 					Build(),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
@@ -72,9 +72,7 @@ func (c *GetCustomersOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		log.Fatalf("Error fetching data: %v", err)
 	}
 
-	return sdk.JSON(map[string]interface{}{
-		"customers": response,
-	}), nil
+	return response, nil
 }
 
 func (c *GetCustomersOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {

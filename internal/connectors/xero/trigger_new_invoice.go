@@ -24,6 +24,10 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
+type triggerNewInvoiceProps struct {
+	TenantID string `json:"tenant_id"`
+}
+
 type TriggerNewInvoice struct {
 	options *sdk.TriggerInfo
 }
@@ -36,8 +40,10 @@ func NewTriggerNewInvoice() *TriggerNewInvoice {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Type:        sdkcore.TriggerTypeCron,
-			Input:       map[string]*sdkcore.AutoFormSchema{},
-			Settings:    &sdkcore.TriggerSettings{},
+			Input: map[string]*sdkcore.AutoFormSchema{
+				"tenant_id": getTenantInput("Organization", "select organization", true),
+			},
+			Settings: &sdkcore.TriggerSettings{},
 			ErrorSettings: &sdkcore.StepErrorSettings{
 				ContinueOnError: false,
 				RetryOnError:    false,
@@ -50,6 +56,8 @@ func (t *TriggerNewInvoice) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.AccessToken == "" {
 		return nil, errors.New("missing Xero access token")
 	}
+	input := sdk.InputToType[triggerNewInvoiceProps](ctx)
+
 	var endpoint string
 
 	lastRunTime := ctx.Metadata.LastRun
@@ -62,7 +70,7 @@ func (t *TriggerNewInvoice) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		endpoint = "/Invoices"
 	}
 
-	invoices, err := getXeroNewClient(ctx.Auth.AccessToken, endpoint)
+	invoices, err := getXeroNewClient(ctx.Auth.AccessToken, endpoint, input.TenantID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch invoices: %v", err)
 	}

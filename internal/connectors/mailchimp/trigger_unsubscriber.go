@@ -19,7 +19,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
@@ -41,10 +40,7 @@ func NewTriggerUnSubscriber() *TriggerUnSubscriber {
 			Auth:        sharedAuth,
 			Type:        sdkcore.TriggerTypeCron,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"list_id": autoform.NewShortTextField().
-					SetDisplayName("List (Audience) ID").
-					SetDescription("List ID").
-					Build(),
+				"list_id": getListInput(),
 			},
 			Settings: &sdkcore.TriggerSettings{},
 			ErrorSettings: &sdkcore.StepErrorSettings{

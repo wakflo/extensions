@@ -35,14 +35,6 @@ type SearchTaskOperation struct {
 }
 
 func NewSearchTaskOperation() *SearchTaskOperation {
-	getAuthorizedTeams := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
-		authorizedTeams, err := getTeams(ctx.Auth.AccessToken)
-		if err != nil {
-			return nil, err
-		}
-
-		return authorizedTeams, nil
-	}
 	return &SearchTaskOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Search Team tasks",
@@ -50,13 +42,7 @@ func NewSearchTaskOperation() *SearchTaskOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"team-id": autoform.NewDynamicField(sdkcore.String).
-					SetDisplayName("Team Id").
-					SetDescription("Team ID to create space").
-					SetDynamicOptions(&getAuthorizedTeams).
-					SetDependsOn([]string{"connection"}).
-					SetRequired(true).
-					Build(),
+				"team-id": getWorkSpaceInput("Workspaces", "select workspace", true),
 				"page": autoform.NewNumberField().
 					SetDisplayName("Page").
 					SetDescription("Page to fetch (starts at 0).").

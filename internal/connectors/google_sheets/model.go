@@ -12,16 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package googledocs
+package googlesheets
 
-import (
-	"github.com/wakflo/go-sdk/autoform"
-)
+type File struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
 
-var (
-	// #nosec
-	tokenURL   = "https://oauth2.googleapis.com/token"
-	sharedAuth = autoform.NewOAuthField("https://accounts.google.com/o/oauth2/auth", &tokenURL, []string{
-		"https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.readonly",
-	}).Build()
-)
+type FileList struct {
+	Files []File `json:"files"`
+}
+
+type SheetProperties struct {
+	SheetID int64  `json:"sheetId"`
+	Title   string `json:"title"`
+}
+
+type Sheet struct {
+	Properties SheetProperties `json:"properties"`
+}
+
+type Spreadsheet struct {
+	SpreadsheetID string  `json:"spreadsheetId"`
+	Sheets        []Sheet `json:"sheets"`
+}

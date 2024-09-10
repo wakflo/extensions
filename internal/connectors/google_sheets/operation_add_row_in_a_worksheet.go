@@ -39,16 +39,8 @@ func NewAddRowInWorkSheetOperation() *AddRowInWorkSheetOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"spreadSheetId": autoform.NewShortTextField().
-					SetDisplayName("Spreadsheet ID").
-					SetDescription("The ID of the spreadsheet.").
-					SetRequired(true).
-					Build(),
-				"sheetTitle": autoform.NewShortTextField().
-					SetDisplayName("Sheet Title").
-					SetDescription("The Title of the sheet.").
-					SetRequired(true).
-					Build(),
+				"spreadsheetId": getSpreadsheetsInput("Spreadsheet", "spreadsheet ID", true),
+				"sheetTitle":    getSheetTitleInput("Sheet", "select sheet", true),
 				"sheetRow": autoform.NewShortTextField().
 					SetDisplayName("Sheet Row").
 					SetDescription("The row range of the sheet in the format of A1 notation where you want to append the new row.").
@@ -116,7 +108,6 @@ func (c *AddRowInWorkSheetOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) 
 	}).
 		ValueInputOption("RAW").
 		InsertDataOption("INSERT_ROWS").
-		// Fields("id, name, mimeType, webViewLink, kind, createdTime").
 		Do()
 	return spreadsheet, err
 }

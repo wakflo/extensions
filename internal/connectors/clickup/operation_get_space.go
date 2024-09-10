@@ -17,7 +17,6 @@ package clickup
 import (
 	"errors"
 
-	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
@@ -38,11 +37,8 @@ func NewGetSpaceOperation() *GetSpaceOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"space-id": autoform.NewShortTextField().
-					SetDisplayName("Space ID").
-					SetDescription("Space ID ").
-					SetRequired(true).
-					Build(),
+				"workspace-id": getWorkSpaceInput("Workspaces", "Get workspaces", true),
+				"space-id":     getSpacesInput("Spaces", "get a space", true),
 			},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,
@@ -60,7 +56,10 @@ func (c *GetSpaceOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	input := sdk.InputToType[getSpaceOperationProps](ctx)
 
-	space, _ := getSpace(accessToken, input.SpaceID)
+	space, err := getSpace(accessToken, input.SpaceID)
+	if err != nil {
+		return nil, err
+	}
 
 	return space, nil
 }

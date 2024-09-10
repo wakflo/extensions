@@ -29,7 +29,7 @@ import (
 
 var sharedAuth = autoform.NewCustomAuthField().
 	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"account_id": autoform.NewShortTextField().SetDisplayName("Domain Name").
+		"account_id": autoform.NewShortTextField().SetDisplayName("Account ID").
 			SetDescription("Your Account ID").
 			Build(),
 		"key": autoform.NewShortTextField().SetDisplayName("Authentication Token").
