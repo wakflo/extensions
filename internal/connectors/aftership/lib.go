@@ -32,7 +32,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 			NewCreateATrackingOperation(),
 			NewRetrackATrackingOperation(),
 			NewMarkTrackingAsCompletedOperation(),
-			NewRetrackATrackingOperation(),
+			NewGetUserCouriersOperation(),
 			NewDetectCourierOperation(),
 		},
 	})
