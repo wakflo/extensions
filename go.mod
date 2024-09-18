@@ -6,6 +6,7 @@ go 1.22.2
 
 require (
 	github.com/Khan/genqlient v0.7.0
+	github.com/aftership/tracking-sdk-go/v5 v5.0.2
 	github.com/bold-commerce/go-shopify/v4 v4.5.0
 	github.com/clarkmcc/go-typescript v0.7.0
 	github.com/dop251/goja v0.0.0-20240806095544-3491d4a58fbe

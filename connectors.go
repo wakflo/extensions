@@ -15,6 +15,7 @@
 package extensions
 
 import (
+	"github.com/wakflo/extensions/internal/connectors/aftership"
 	"github.com/wakflo/extensions/internal/connectors/asana"
 	"github.com/wakflo/extensions/internal/connectors/calculator"
 	"github.com/wakflo/extensions/internal/connectors/cin7"
@@ -81,6 +82,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		linear.NewConnector,        // Linear
 		jsonconverter.NewConnector, // Json
 		freshworkscrm.NewConnector, // Freshworks CRM
+		aftership.NewConnector,     // AfterShip
 	}
 
 	// 🛑Do-Not-Edit
