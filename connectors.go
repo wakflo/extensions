@@ -4,14 +4,13 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 package extensions
 
 import (
@@ -25,6 +24,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/freshworkscrm"
 	googledocs "github.com/wakflo/extensions/internal/connectors/google_docs"
 	googlesheets "github.com/wakflo/extensions/internal/connectors/google_sheets"
+	"github.com/wakflo/extensions/internal/connectors/googlecalendar"
 	"github.com/wakflo/extensions/internal/connectors/googledrive"
 	"github.com/wakflo/extensions/internal/connectors/googlemail"
 	"github.com/wakflo/extensions/internal/connectors/goscript"
@@ -55,32 +55,33 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 
 	plugins := []func() (*sdk.ConnectorPlugin, error){
 		// 👋 Add connectors here
-		googledrive.NewConnector,   // Google Drive
-		googlesheets.NewConnector,  // Google Sheets
-		googledocs.NewConnector,    // Google Docs
-		googlemail.NewConnector,    // Gmail
-		slack.NewConnector,         // Slack
-		javascript.NewConnector,    // Javascript
-		cryptography.NewConnector,  // Cryptography
-		goscript.NewConnector,      // Go Lang
-		delay.NewConnector,         // Delay
-		todoist.NewConnector,       // Todoist
-		manual.NewConnector,        // Manual
-		calculator.NewConnector,    // Calculator
-		shopify.NewConnector,       // Shopify
-		webhook.NewConnector,       // Webhook
-		zohoinventory.NewConnector, // Zoho Inventory
-		cin7.NewConnector,          // Cin7
-		woocommerce.NewConnector,   // Woocommerce
-		mailchimp.NewConnector,     // MailChimp
-		xero.NewConnector,          // Xero
-		clickup.NewConnector,       // Clickup
-		square.NewConnector,        // Square
-		asana.NewConnector,         // Asana
-		freshdesk.NewConnector,     // Freshdesk
-		linear.NewConnector,        // Linear
-		jsonconverter.NewConnector, // Json
-		freshworkscrm.NewConnector, // Freshworks CRM
+		googledrive.NewConnector,    // Google Drive
+		googlesheets.NewConnector,   // Google Sheets
+		googledocs.NewConnector,     // Google Docs
+		googlemail.NewConnector,     // Gmail
+		slack.NewConnector,          // Slack
+		javascript.NewConnector,     // Javascript
+		cryptography.NewConnector,   // Cryptography
+		goscript.NewConnector,       // Go Lang
+		delay.NewConnector,          // Delay
+		todoist.NewConnector,        // Todoist
+		manual.NewConnector,         // Manual
+		calculator.NewConnector,     // Calculator
+		shopify.NewConnector,        // Shopify
+		webhook.NewConnector,        // Webhook
+		zohoinventory.NewConnector,  // Zoho Inventory
+		cin7.NewConnector,           // Cin7
+		woocommerce.NewConnector,    // Woocommerce
+		mailchimp.NewConnector,      // MailChimp
+		xero.NewConnector,           // Xero
+		clickup.NewConnector,        // Clickup
+		square.NewConnector,         // Square
+		asana.NewConnector,          // Asana
+		freshdesk.NewConnector,      // Freshdesk
+		linear.NewConnector,         // Linear
+		jsonconverter.NewConnector,  // Json
+		freshworkscrm.NewConnector,  // Freshworks CRM
+		googlecalendar.NewConnector, // Google Calendar
 	}
 
 	// 🛑Do-Not-Edit
