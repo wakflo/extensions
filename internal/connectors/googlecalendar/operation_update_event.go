@@ -108,10 +108,10 @@ func (c *UpdateEventOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		Description: input.Description,
 		Location:    input.Location,
 		Start: &calendar.EventDateTime{
-			DateTime: input.Start,
+			DateTime: formatTimeString(input.Start),
 		},
 		End: &calendar.EventDateTime{
-			DateTime: input.End,
+			DateTime: formatTimeString(input.End),
 		},
 	}).Do()
 	return event, err
