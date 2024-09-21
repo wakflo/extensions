@@ -17,6 +17,7 @@ package extensions
 import (
 	"github.com/wakflo/extensions/internal/connectors/asana"
 	"github.com/wakflo/extensions/internal/connectors/calculator"
+	"github.com/wakflo/extensions/internal/connectors/calendly"
 	"github.com/wakflo/extensions/internal/connectors/cin7"
 	"github.com/wakflo/extensions/internal/connectors/clickup"
 	"github.com/wakflo/extensions/internal/connectors/cryptography"
@@ -81,6 +82,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		linear.NewConnector,        // Linear
 		jsonconverter.NewConnector, // Json
 		freshworkscrm.NewConnector, // Freshworks CRM
+		calendly.NewConnector,      // Calendly
 	}
 
 	// 🛑Do-Not-Edit
