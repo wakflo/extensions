@@ -13,7 +13,8 @@ import (
 )
 
 type createEventOperationProps struct {
-	Summary     string `json:"summary"`
+	CalendarId  string `json:"calendar_id"`
+	Title       string `json:"title"`
 	Description string `json:"description"`
 	Location    string `json:"location"`
 	Start       string `json:"start"`
@@ -32,9 +33,10 @@ func NewCreateEventOperation() *CreateEventOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"summary": autoform.NewShortTextField().
-					SetDisplayName("Event Summary").
-					SetDescription("The name of the event.").
+				"calendar_id": getCalendarInput("Calendar", "select calendar", true),
+				"title": autoform.NewShortTextField().
+					SetDisplayName("Event Title").
+					SetDescription("The title of the event.").
 					SetRequired(true).
 					Build(),
 				"description": autoform.NewLongTextField().
@@ -77,8 +79,12 @@ func (c *CreateEventOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, err
 	}
 
-	if input.Summary == "" {
-		return nil, errors.New("summary is required")
+	if input.CalendarId == "" {
+		return nil, errors.New("calendar id is required")
+	}
+
+	if input.Title == "" {
+		return nil, errors.New("title is required")
 	}
 
 	if input.Description == "" {
@@ -97,8 +103,8 @@ func (c *CreateEventOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, errors.New("end time is required")
 	}
 
-	event, err := eventService.Events.Insert("primary", &calendar.Event{
-		Summary:     input.Summary,
+	event, err := eventService.Events.Insert(input.CalendarId, &calendar.Event{
+		Summary:     input.Title,
 		Description: input.Description,
 		Location:    input.Location,
 		Start: &calendar.EventDateTime{

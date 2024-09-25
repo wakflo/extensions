@@ -13,8 +13,9 @@ import (
 )
 
 type updateEventOperationProps struct {
+	CalendarId  string `json:"calendar_id"`
 	EventId     string `json:"event_id"`
-	Summary     string `json:"summary"`
+	Title       string `json:"title"`
 	Description string `json:"description"`
 	Location    string `json:"location"`
 	Start       string `json:"start"`
@@ -33,14 +34,11 @@ func NewUpdateEventOperation() *UpdateEventOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"event_id": autoform.NewShortTextField().
-					SetDisplayName("Event Id").
-					SetDescription("The ID of the event.").
-					SetRequired(true).
-					Build(),
-				"summary": autoform.NewShortTextField().
-					SetDisplayName("Event Summary").
-					SetDescription("The name of the event.").
+				"calendar_id": getCalendarInput("Calendar", "select calendar", true),
+				"event_id":    getCalendarEventIDInput("Event Id", "select event", true),
+				"title": autoform.NewShortTextField().
+					SetDisplayName("Event Title").
+					SetDescription("The title of the event.").
 					SetRequired(true).
 					Build(),
 				"description": autoform.NewLongTextField().
@@ -83,7 +81,15 @@ func (c *UpdateEventOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, err
 	}
 
-	if input.Summary == "" {
+	if input.CalendarId == "" {
+		return nil, errors.New("calendar is required")
+	}
+
+	if input.EventId == "" {
+		return nil, errors.New("event id is required")
+	}
+
+	if input.Title == "" {
 		return nil, errors.New("summary is required")
 	}
 
@@ -103,8 +109,8 @@ func (c *UpdateEventOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, errors.New("end time is required")
 	}
 
-	event, err := eventService.Events.Update("primary", input.EventId, &calendar.Event{
-		Summary:     input.Summary,
+	event, err := eventService.Events.Update(input.CalendarId, input.EventId, &calendar.Event{
+		Summary:     input.Title,
 		Description: input.Description,
 		Location:    input.Location,
 		Start: &calendar.EventDateTime{
