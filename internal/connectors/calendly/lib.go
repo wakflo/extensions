@@ -27,23 +27,8 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Category:    sdk.Apps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
-		Operations:  []sdk.IOperation{
-			//NewGetSpaceOperation(),
-			//NewGetSpacesOperation(),
-			//NewGetTasksOperation(),
-			//NewGetTaskOperation(),
-			//NewCreateTaskOperation(),
-			//NewCreateSpaceOperation(),
-			//NewSearchTaskOperation(),
-			//NewGetListOperation(),
-			//NewUpdateTaskOperation(),
-			//NewDeleteTaskOperation(),
-			//NewCreateFolderlessListOperation(),
-			//NewGetFolderlesslistOperation(),
-			//NewCreateFolderOperation(),
-			//NewGetFolderOperation(),
-			//NewGetFoldersOperation(),
-			//NewUpdateSpaceOperation(),
+		Operations: []sdk.IOperation{
+			NewListEventsOperation(),
 		},
 	})
 }
