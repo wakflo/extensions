@@ -13,7 +13,7 @@ import (
 )
 
 type createEventOperationProps struct {
-	CalendarId  string `json:"calendar_id"`
+	CalendarID  string `json:"calendar_id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Location    string `json:"location"`
@@ -79,7 +79,7 @@ func (c *CreateEventOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, err
 	}
 
-	if input.CalendarId == "" {
+	if input.CalendarID == "" {
 		return nil, errors.New("calendar id is required")
 	}
 
@@ -103,7 +103,7 @@ func (c *CreateEventOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, errors.New("end time is required")
 	}
 
-	event, err := eventService.Events.Insert(input.CalendarId, &calendar.Event{
+	event, err := eventService.Events.Insert(input.CalendarID, &calendar.Event{
 		Summary:     input.Title,
 		Description: input.Description,
 		Location:    input.Location,
@@ -115,7 +115,6 @@ func (c *CreateEventOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		},
 	}).Do()
 	return event, err
-
 }
 
 func (c *CreateEventOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {

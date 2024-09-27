@@ -74,7 +74,6 @@ func getCalendarInput(title string, desc string, required bool) *sdkcore.AutoFor
 				"name": input.Summary,
 			}, true
 		}), nil
-
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -82,13 +81,12 @@ func getCalendarInput(title string, desc string, required bool) *sdkcore.AutoFor
 		SetDescription(desc).
 		SetDynamicOptions(&getCalendarID).
 		SetRequired(required).Build()
-
 }
 
 func getCalendarEventIDInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
 	getEventIDs := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
 		input := sdk.DynamicInputToType[struct {
-			CalendarId string `json:"calendar_id"`
+			CalendarID string `json:"calendar_id"`
 		}](ctx)
 
 		client := fastshot.NewClient("https://www.googleapis.com/calendar/v3/calendars").
@@ -97,7 +95,7 @@ func getCalendarEventIDInput(title string, desc string, required bool) *sdkcore.
 			AddAccept("application/json").
 			Build()
 
-		rsp, err := client.GET("/" + input.CalendarId + "/events").Send()
+		rsp, err := client.GET("/" + input.CalendarID + "/events").Send()
 		if err != nil {
 			return nil, err
 		}
