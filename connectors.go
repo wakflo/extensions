@@ -37,6 +37,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/slack"
 	"github.com/wakflo/extensions/internal/connectors/square"
 	"github.com/wakflo/extensions/internal/connectors/todoist"
+	"github.com/wakflo/extensions/internal/connectors/trackingmore"
 	"github.com/wakflo/extensions/internal/connectors/webhook"
 	"github.com/wakflo/extensions/internal/connectors/woocommerce"
 	"github.com/wakflo/extensions/internal/connectors/xero"
@@ -80,6 +81,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		freshdesk.NewConnector,     // Freshdesk
 		linear.NewConnector,        // Linear
 		jsonconverter.NewConnector, // Json
+		trackingmore.NewConnector,  // TrackingMore
 		freshworkscrm.NewConnector, // Freshworks CRM
 	}
 
