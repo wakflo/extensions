@@ -21,6 +21,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/clickup"
 	"github.com/wakflo/extensions/internal/connectors/cryptography"
 	"github.com/wakflo/extensions/internal/connectors/delay"
+	"github.com/wakflo/extensions/internal/connectors/easyship"
 	"github.com/wakflo/extensions/internal/connectors/freshdesk"
 	"github.com/wakflo/extensions/internal/connectors/freshworkscrm"
 	googledocs "github.com/wakflo/extensions/internal/connectors/google_docs"
@@ -33,6 +34,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/linear"
 	"github.com/wakflo/extensions/internal/connectors/mailchimp"
 	"github.com/wakflo/extensions/internal/connectors/manual"
+	"github.com/wakflo/extensions/internal/connectors/shippo"
 	"github.com/wakflo/extensions/internal/connectors/shopify"
 	"github.com/wakflo/extensions/internal/connectors/slack"
 	"github.com/wakflo/extensions/internal/connectors/square"
@@ -83,6 +85,8 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		jsonconverter.NewConnector, // Json
 		trackingmore.NewConnector,  // TrackingMore
 		freshworkscrm.NewConnector, // Freshworks CRM
+		shippo.NewConnector,        // Shippo
+		easyship.NewConnector,      // EasyShip
 	}
 
 	// 🛑Do-Not-Edit
