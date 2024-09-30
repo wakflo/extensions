@@ -15,12 +15,14 @@
 package extensions
 
 import (
+	"github.com/wakflo/extensions/internal/connectors/airtable"
 	"github.com/wakflo/extensions/internal/connectors/asana"
 	"github.com/wakflo/extensions/internal/connectors/calculator"
 	"github.com/wakflo/extensions/internal/connectors/cin7"
 	"github.com/wakflo/extensions/internal/connectors/clickup"
 	"github.com/wakflo/extensions/internal/connectors/cryptography"
 	"github.com/wakflo/extensions/internal/connectors/delay"
+	"github.com/wakflo/extensions/internal/connectors/dropbox"
 	"github.com/wakflo/extensions/internal/connectors/easyship"
 	"github.com/wakflo/extensions/internal/connectors/freshdesk"
 	"github.com/wakflo/extensions/internal/connectors/freshworkscrm"
@@ -29,6 +31,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/googledrive"
 	"github.com/wakflo/extensions/internal/connectors/googlemail"
 	"github.com/wakflo/extensions/internal/connectors/goscript"
+	"github.com/wakflo/extensions/internal/connectors/harvest"
 	"github.com/wakflo/extensions/internal/connectors/javascript"
 	"github.com/wakflo/extensions/internal/connectors/jsonconverter"
 	"github.com/wakflo/extensions/internal/connectors/linear"
@@ -39,6 +42,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/slack"
 	"github.com/wakflo/extensions/internal/connectors/square"
 	"github.com/wakflo/extensions/internal/connectors/todoist"
+	"github.com/wakflo/extensions/internal/connectors/toggl"
 	"github.com/wakflo/extensions/internal/connectors/trackingmore"
 	"github.com/wakflo/extensions/internal/connectors/webhook"
 	"github.com/wakflo/extensions/internal/connectors/woocommerce"
@@ -87,6 +91,10 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		freshworkscrm.NewConnector, // Freshworks CRM
 		shippo.NewConnector,        // Shippo
 		easyship.NewConnector,      // EasyShip
+		dropbox.NewConnector,       // Dropbox
+		harvest.NewConnector,       // HubStaff
+		toggl.NewConnector,         // Toggl
+		airtable.NewConnector,      // Airtable
 	}
 
 	// 🛑Do-Not-Edit
