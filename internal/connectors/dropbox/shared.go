@@ -45,7 +45,7 @@ func dropBoxClient(reqURL, accessToken string, request []byte) (interface{}, err
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	defer res.Body.Close()
 
