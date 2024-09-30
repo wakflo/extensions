@@ -238,20 +238,19 @@ func airtableRequest(accessToken, reqURL, requestType string) (interface{}, erro
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Authorization", "Bearer "+accessToken)
 	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		return err, nil
+	res, errs := client.Do(req)
+	if errs != nil {
+		return nil, errs
 	}
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println("Error reading response:", err)
-		return nil, nil
+		return nil, err
 	}
 
 	var response interface{}
-	if errs := json.Unmarshal(body, &response); errs != nil {
+	if newErrs := json.Unmarshal(body, &response); newErrs != nil {
 		return nil, errors.New("error parsing response")
 	}
 

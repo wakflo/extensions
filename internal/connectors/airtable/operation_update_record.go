@@ -17,6 +17,7 @@ package airtable
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -66,7 +67,7 @@ func (c *UpdateRecordOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, errors.New("missing airtable access token")
 	}
 	accessToken := ctx.Auth.Extra["api-key"]
-	_ = sdk.InputToType[updateRecordOperationProps](ctx)
+	input := sdk.InputToType[updateRecordOperationProps](ctx)
 
 	// data := map[string]interface{}{
 	//	"records": map[string]interface{}{
@@ -82,7 +83,7 @@ func (c *UpdateRecordOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	//	return nil, err
 	// }
 
-	reqURL := "https://api.airtable.com/v0/meta/bases/apphx4aliBvvTd6IF/tables"
+	reqURL := fmt.Sprintf("https://api.airtable.com/v0/meta/bases/%s/tables", input.Bases)
 
 	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 	if err != nil {
@@ -95,13 +96,13 @@ func (c *UpdateRecordOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	var response interface{}

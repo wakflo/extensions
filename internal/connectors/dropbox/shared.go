@@ -51,7 +51,7 @@ func dropBoxClient(reqURL, accessToken string, request []byte) (interface{}, err
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 	var dropboxResponse interface{}
 	err = json.Unmarshal(body, &dropboxResponse)
@@ -74,7 +74,7 @@ func listFolderContent(reqURL, accessToken string, request []byte) (interface{},
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 	defer res.Body.Close()
 
