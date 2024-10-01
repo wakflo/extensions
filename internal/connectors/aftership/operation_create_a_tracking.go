@@ -47,9 +47,10 @@ func NewCreateATrackingOperation() *GetATrackingOperation {
 					SetDescription("tracking number of the shipment").
 					SetRequired(true).
 					Build(),
-				"slug": autoform.NewShortTextField().
+				"slug": autoform.NewSelectField().
 					SetDisplayName("Slug").
 					SetDescription("Unique courier code.").
+					SetOptions(courierCodes).
 					SetRequired(true).
 					Build(),
 			},

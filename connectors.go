@@ -89,7 +89,6 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		shippo.NewConnector,        // Shippo
 		easyship.NewConnector,      // EasyShip
 		aftership.NewConnector,     // AfterShip
-		aftership.NewConnector,     // AfterShip
 	}
 
 	// 🛑Do-Not-Edit
