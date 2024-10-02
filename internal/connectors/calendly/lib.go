@@ -30,6 +30,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Operations: []sdk.IOperation{
 			NewListEventsOperation(),
 			NewGetEventOperation(),
+			NewCreateSingleUseScheduleLinkOperation(),
 		},
 	})
 }

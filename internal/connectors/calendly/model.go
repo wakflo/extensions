@@ -32,3 +32,15 @@ type Event struct {
 	StartTime time.Time `json:"start_time"`
 	EndTime   time.Time `json:"end_time"`
 }
+
+type EventTypesResponse struct {
+	Collection []EventType `json:"collection"`
+}
+
+type EventType struct {
+	URI         string `json:"uri"`
+	Name        string `json:"name"`
+	Slug        string `json:"slug"`
+	Description string `json:"description"`
+	Duration    int    `json:"duration"`
+}

@@ -1,6 +1,7 @@
 package calendly
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -127,6 +128,60 @@ func getCalendlyEventInput(title string, desc string, required bool) *sdkcore.Au
 		Build()
 }
 
+func getCalendlyEventTypeInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
+	getEventTypes := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+		input := sdk.DynamicInputToType[struct {
+			User string `json:"user"`
+		}](ctx)
+
+		client := fastshot.NewClient(baseURL).
+			Auth().BearerToken(ctx.Auth.AccessToken).
+			Header().
+			AddAccept("application/json").
+			Build()
+
+		req := client.GET("/event_types")
+		req.Query().AddParam("user", input.User)
+
+		rsp, err := req.Send()
+		if err != nil {
+			return nil, err
+		}
+
+		defer rsp.Body().Close()
+
+		if rsp.Status().IsError() {
+			return nil, errors.New(rsp.Status().Text())
+		}
+
+		byts, err := io.ReadAll(rsp.Body().Raw())
+		if err != nil {
+			return nil, err
+		}
+
+		var body EventTypesResponse
+
+		err = json.Unmarshal(byts, &body)
+		if err != nil {
+			return nil, err
+		}
+
+		return arrutil.Map[EventType, map[string]any](body.Collection, func(input EventType) (target map[string]any, find bool) {
+			return map[string]any{
+				"id":   input.URI,
+				"name": input.Name,
+			}, true
+		}), nil
+	}
+
+	return autoform.NewDynamicField(sdkcore.String).
+		SetDisplayName(title).
+		SetDescription(desc).
+		SetDynamicOptions(&getEventTypes).
+		SetRequired(required).
+		Build()
+}
+
 func listEvents(accessToken, url string, status string, user string) (map[string]interface{}, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -185,6 +240,52 @@ func getEvent(accessToken, eventId string) (map[string]interface{}, error) {
 	}
 
 	return response, nil
+}
+
+func createSingleUseLink(accessToken, eventTypeUri string, maxEventCount int) (map[string]interface{}, error) {
+	url := baseURL + "/scheduling_links"
+	payload := map[string]interface{}{
+		"max_event_count": maxEventCount,
+		"owner":           eventTypeUri,
+		"owner_type":      "EventType",
+	}
+
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonPayload))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Authorization", "Bearer "+accessToken)
+	req.Header.Add("Content-Type", "application/json")
+
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var response map[string]interface{}
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return response, fmt.Errorf("error: %v", response)
+	}
+
+	return response, nil
+
 }
 
 var calendlyEventStatusType = []*sdkcore.AutoFormSchema{
