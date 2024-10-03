@@ -95,7 +95,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		calendly.NewConnector,       // Calendly
 		shippo.NewConnector,         // Shippo
 		easyship.NewConnector,       // EasyShip
-		aftership.NewConnector,     // AfterShip
+		aftership.NewConnector,      // AfterShip
 		dropbox.NewConnector,        // Dropbox
 		harvest.NewConnector,        // HubStaff
 		toggl.NewConnector,          // Toggl
@@ -103,6 +103,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		stripe.NewConnector,         // Stripe
 		openai.NewConnector,         // OpenAI
 		googlecalendar.NewConnector, // Google Calendar
+
 	}
 
 	// 🛑Do-Not-Edit
