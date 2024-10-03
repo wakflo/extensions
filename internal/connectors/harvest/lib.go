@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package jsonconverter
+package harvest
 
 import (
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -20,15 +20,18 @@ import (
 
 func NewConnector() (*sdk.ConnectorPlugin, error) {
 	return sdk.CreateConnector(&sdk.CreateConnectorArgs{
-		Name:        "JSON",
-		Description: "Convert JSON to text and vice versa",
-		Logo:        "mdi:code-json",
+		Name:        "Harvest",
+		Description: "An easy way to track time across projects",
+		Logo:        "noto:red-square",
 		Version:     "0.0.1",
-		Category:    sdk.Tools,
+		Category:    sdk.Apps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
-		Triggers:    []sdk.ITrigger{},
+		Triggers: []sdk.ITrigger{
+			NewInvoiceUpdate(),
+		},
 		Operations: []sdk.IOperation{
-			NewConvertToJSONOperation(),
+			NewGetInvoiceOperation(),
+			NewListInvoicesOperation(),
 		},
 	})
 }

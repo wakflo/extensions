@@ -15,6 +15,7 @@
 package extensions
 
 import (
+	"github.com/wakflo/extensions/internal/connectors/airtable"
 	"github.com/wakflo/extensions/internal/connectors/asana"
 	"github.com/wakflo/extensions/internal/connectors/calculator"
 	"github.com/wakflo/extensions/internal/connectors/calendly"
@@ -22,6 +23,8 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/clickup"
 	"github.com/wakflo/extensions/internal/connectors/cryptography"
 	"github.com/wakflo/extensions/internal/connectors/delay"
+	"github.com/wakflo/extensions/internal/connectors/dropbox"
+	"github.com/wakflo/extensions/internal/connectors/easyship"
 	"github.com/wakflo/extensions/internal/connectors/freshdesk"
 	"github.com/wakflo/extensions/internal/connectors/freshworkscrm"
 	googledocs "github.com/wakflo/extensions/internal/connectors/google_docs"
@@ -29,16 +32,21 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/googledrive"
 	"github.com/wakflo/extensions/internal/connectors/googlemail"
 	"github.com/wakflo/extensions/internal/connectors/goscript"
+	"github.com/wakflo/extensions/internal/connectors/harvest"
 	"github.com/wakflo/extensions/internal/connectors/javascript"
 	"github.com/wakflo/extensions/internal/connectors/jsonconverter"
 	"github.com/wakflo/extensions/internal/connectors/linear"
 	"github.com/wakflo/extensions/internal/connectors/mailchimp"
 	"github.com/wakflo/extensions/internal/connectors/manual"
+	"github.com/wakflo/extensions/internal/connectors/openai"
+	"github.com/wakflo/extensions/internal/connectors/shippo"
 	"github.com/wakflo/extensions/internal/connectors/shopify"
 	"github.com/wakflo/extensions/internal/connectors/slack"
 	"github.com/wakflo/extensions/internal/connectors/square"
+	"github.com/wakflo/extensions/internal/connectors/stripe"
 	"github.com/wakflo/extensions/internal/connectors/todoist"
-	"github.com/wakflo/extensions/internal/connectors/webhook"
+	"github.com/wakflo/extensions/internal/connectors/toggl"
+	"github.com/wakflo/extensions/internal/connectors/trackingmore"
 	"github.com/wakflo/extensions/internal/connectors/woocommerce"
 	"github.com/wakflo/extensions/internal/connectors/xero"
 	"github.com/wakflo/extensions/internal/connectors/zohoinventory"
@@ -69,7 +77,6 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		manual.NewConnector,        // Manual
 		calculator.NewConnector,    // Calculator
 		shopify.NewConnector,       // Shopify
-		webhook.NewConnector,       // Webhook
 		zohoinventory.NewConnector, // Zoho Inventory
 		cin7.NewConnector,          // Cin7
 		woocommerce.NewConnector,   // Woocommerce
@@ -81,8 +88,17 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		freshdesk.NewConnector,     // Freshdesk
 		linear.NewConnector,        // Linear
 		jsonconverter.NewConnector, // Json
+		trackingmore.NewConnector,  // TrackingMore
 		freshworkscrm.NewConnector, // Freshworks CRM
 		calendly.NewConnector,      // Calendly
+		shippo.NewConnector,        // Shippo
+		easyship.NewConnector,      // EasyShip
+		dropbox.NewConnector,       // Dropbox
+		harvest.NewConnector,       // HubStaff
+		toggl.NewConnector,         // Toggl
+		airtable.NewConnector,      // Airtable
+		stripe.NewConnector,        // Stripe
+		openai.NewConnector,        // OpenAI
 	}
 
 	// 🛑Do-Not-Edit

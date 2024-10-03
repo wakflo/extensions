@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.6.0](https://github.com/wakflo/extensions/compare/v0.5.2...v0.6.0) (2024-10-03)
+
+
+### Features
+
+* implement airtable, dropbox, harvest and toggl connectors ([589617c](https://github.com/wakflo/extensions/commit/589617cbd3405e86fcb600680d735ca4a6145c6a))
+* implement easyship and shippo connectors ([5b3d84a](https://github.com/wakflo/extensions/commit/5b3d84a8f402ebbf6c535a2f0d7b729c4161ca78))
+* implement stripe connector ([99cedb1](https://github.com/wakflo/extensions/commit/99cedb161a8c2f285710e5e41d5a2545c094c408))
+* implement trackingmore connector ([e66d5c7](https://github.com/wakflo/extensions/commit/e66d5c721bfb4274086de46c38cb39d8b2ae5c04))
+
+
+### Bug Fixes
+
+* code refactor ([f092e93](https://github.com/wakflo/extensions/commit/f092e93d7850942e30da09e12b325e57d7b934be))
+* code refactoring ([3d49834](https://github.com/wakflo/extensions/commit/3d498349dd2163de9a4d6fc8faf871bf81c0c4cd))
+* updated sdk to 0.6.0 ([d86dff3](https://github.com/wakflo/extensions/commit/d86dff3e1871359ee8efed84386d6772c391cb68))
+* updated sdk to 0.6.0 ([c7b595a](https://github.com/wakflo/extensions/commit/c7b595a6bced7a6e0a15e8cdbdb64eb3c136076c))
+* updated sdk to 0.6.0 ([7678ba9](https://github.com/wakflo/extensions/commit/7678ba9d323d53b57825db27a6137d7fd27bd460))
+
 ## [0.5.2](https://github.com/wakflo/extensions/compare/v0.5.1...v0.5.2) (2024-09-10)
 
 
