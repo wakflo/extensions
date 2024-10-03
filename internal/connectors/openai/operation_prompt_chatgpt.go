@@ -29,7 +29,6 @@ type PromptChatGPTOperationInput struct {
 func NewPromptChatGPT() *PromptChatGPTOperation {
 	getGPTModels := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
 		models, err := getModels(ctx.Auth.Secret, "gpt")
-
 		if err != nil {
 			return nil, err
 		}
@@ -166,7 +165,6 @@ func (c *PromptChatGPTOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	}
 
 	client, err := getOpenAiClient(ctx.Auth.Secret)
-
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +173,6 @@ func (c *PromptChatGPTOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		Header().AddContentType("application/json").
 		Body().AsJSON(requestBody).
 		Send()
-
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +182,6 @@ func (c *PromptChatGPTOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	}
 
 	bodyBytes, err := io.ReadAll(res.Body().Raw())
-
 	if err != nil {
 		return nil, err
 	}

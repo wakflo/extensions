@@ -18,13 +18,11 @@ func getOpenAiClient(token string) (fastshot.ClientHttpMethods, error) {
 
 func getModels(token string, modelPrefix string) (interface{}, error) {
 	client, err := getOpenAiClient(token)
-
 	if err != nil {
 		return nil, err
 	}
 
 	res, err := client.GET("/models").Send()
-
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +32,6 @@ func getModels(token string, modelPrefix string) (interface{}, error) {
 	}
 
 	bodyBytes, err := io.ReadAll(res.Body().Raw())
-
 	if err != nil {
 		return nil, err
 	}

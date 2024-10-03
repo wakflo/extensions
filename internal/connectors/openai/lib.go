@@ -29,7 +29,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{
 			NewPromptChatGPT(),
-			//NewPromptDallE(),
+			// NewPromptDallE(),
 		},
 	})
 }
