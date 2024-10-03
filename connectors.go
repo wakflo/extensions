@@ -42,6 +42,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/shopify"
 	"github.com/wakflo/extensions/internal/connectors/slack"
 	"github.com/wakflo/extensions/internal/connectors/square"
+	"github.com/wakflo/extensions/internal/connectors/stripe"
 	"github.com/wakflo/extensions/internal/connectors/todoist"
 	"github.com/wakflo/extensions/internal/connectors/toggl"
 	"github.com/wakflo/extensions/internal/connectors/trackingmore"
@@ -94,6 +95,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		harvest.NewConnector,       // HubStaff
 		toggl.NewConnector,         // Toggl
 		airtable.NewConnector,      // Airtable
+		stripe.NewConnector,        // Stripe
 		openai.NewConnector,        // OpenAI
 	}
 
