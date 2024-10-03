@@ -1,3 +1,5 @@
+package extensions
+
 // Copyright 2022-present Wakflo
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,7 +13,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package extensions
 
 import (
 	"github.com/wakflo/extensions/internal/connectors/airtable"
@@ -64,41 +65,41 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 
 	plugins := []func() (*sdk.ConnectorPlugin, error){
 		// 👋 Add connectors here
-		googledrive.NewConnector,   // Google Drive
-		googlesheets.NewConnector,  // Google Sheets
-		googledocs.NewConnector,    // Google Docs
-		googlemail.NewConnector,    // Gmail
-		slack.NewConnector,         // Slack
-		javascript.NewConnector,    // Javascript
-		cryptography.NewConnector,  // Cryptography
-		goscript.NewConnector,      // Go Lang
-		delay.NewConnector,         // Delay
-		todoist.NewConnector,       // Todoist
-		manual.NewConnector,        // Manual
-		calculator.NewConnector,    // Calculator
-		shopify.NewConnector,       // Shopify
-		zohoinventory.NewConnector, // Zoho Inventory
-		cin7.NewConnector,          // Cin7
-		woocommerce.NewConnector,   // Woocommerce
-		mailchimp.NewConnector,     // MailChimp
-		xero.NewConnector,          // Xero
-		clickup.NewConnector,       // Clickup
-		square.NewConnector,        // Square
-		asana.NewConnector,         // Asana
-		freshdesk.NewConnector,     // Freshdesk
-		linear.NewConnector,        // Linear
-		jsonconverter.NewConnector, // Json
-		trackingmore.NewConnector,  // TrackingMore
-		freshworkscrm.NewConnector, // Freshworks CRM
-		calendly.NewConnector,      // Calendly
-		shippo.NewConnector,        // Shippo
-		easyship.NewConnector,      // EasyShip
-		dropbox.NewConnector,       // Dropbox
-		harvest.NewConnector,       // HubStaff
-		toggl.NewConnector,         // Toggl
-		airtable.NewConnector,      // Airtable
-		stripe.NewConnector,        // Stripe
-		openai.NewConnector,        // OpenAI
+		googledrive.NewConnector,    // Google Drive
+		googlesheets.NewConnector,   // Google Sheets
+		googledocs.NewConnector,     // Google Docs
+		googlemail.NewConnector,     // Gmail
+		slack.NewConnector,          // Slack
+		javascript.NewConnector,     // Javascript
+		cryptography.NewConnector,   // Cryptography
+		goscript.NewConnector,       // Go Lang
+		delay.NewConnector,          // Delay
+		todoist.NewConnector,        // Todoist
+		manual.NewConnector,         // Manual
+		calculator.NewConnector,     // Calculator
+		shopify.NewConnector,        // Shopify
+		zohoinventory.NewConnector,  // Zoho Inventory
+		cin7.NewConnector,           // Cin7
+		woocommerce.NewConnector,    // Woocommerce
+		mailchimp.NewConnector,      // MailChimp
+		xero.NewConnector,           // Xero
+		clickup.NewConnector,        // Clickup
+		square.NewConnector,         // Square
+		asana.NewConnector,          // Asana
+		freshdesk.NewConnector,      // Freshdesk
+		linear.NewConnector,         // Linear
+		jsonconverter.NewConnector,  // Json
+		trackingmore.NewConnector,   // TrackingMore
+		freshworkscrm.NewConnector,  // Freshworks CRM
+		calendly.NewConnector,       // Calendly
+		shippo.NewConnector,         // Shippo
+		easyship.NewConnector,       // EasyShip
+		dropbox.NewConnector,        // Dropbox
+		harvest.NewConnector,        // HubStaff
+		toggl.NewConnector,          // Toggl
+		airtable.NewConnector,       // Airtable
+		stripe.NewConnector,         // Stripe
+		openai.NewConnector,         // OpenAI
 		googlecalendar.NewConnector, // Google Calendar
 	}
 
