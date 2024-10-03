@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package jsonconverter
+package dropbox
 
 import (
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -20,15 +20,23 @@ import (
 
 func NewConnector() (*sdk.ConnectorPlugin, error) {
 	return sdk.CreateConnector(&sdk.CreateConnectorArgs{
-		Name:        "JSON",
-		Description: "Convert JSON to text and vice versa",
-		Logo:        "mdi:code-json",
+		Name:        "Dropbox",
+		Description: "Cloud storage and file synchronization",
+		Logo:        "logos:dropbox",
 		Version:     "0.0.1",
-		Category:    sdk.Tools,
+		Category:    sdk.Apps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{
-			NewConvertToJSONOperation(),
+			NewCopyFileOperation(),
+			NewCreateFolderOperation(),
+			NewDeleteFileOperation(),
+			NewListFolderOperation(),
+			NewMoveFileOperation(),
+			NewCopyFolderOperation(),
+			NewMoveFolderOperation(),
+			NewDeleteFolderOperation(),
+			NewGetFileLinkOperation(),
 		},
 	})
 }

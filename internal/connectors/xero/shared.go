@@ -51,8 +51,6 @@ func getXeroNewClient(accessToken, endpoint, tenant string) (map[string]interfac
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 
-	fmt.Println("Tenant idddddddddd", tenant)
-
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 	req.Header.Set("Grant_type", "refresh_token")

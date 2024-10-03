@@ -12,24 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package webhook
+package toggl
 
-import (
-	sdk "github.com/wakflo/go-sdk/connector"
-)
+import sdk "github.com/wakflo/go-sdk/connector"
 
 func NewConnector() (*sdk.ConnectorPlugin, error) {
 	return sdk.CreateConnector(&sdk.CreateConnectorArgs{
-		Name:          "Webhook",
-		Description:   "webhook connector interacting with wakflo from external api",
-		Logo:          "logos:webhooks",
-		Version:       "0.0.1",
-		Category:      sdk.Tools,
-		Documentation: webhookDocs,
-		Authors:       []string{"Wakflo <integrations@wakflo.com>"},
-		Triggers: []sdk.ITrigger{
-			NewCatchTrigger(),
+		Name:        "Toggl",
+		Description: "Time tracking software to drive every decision.",
+		Logo:        "fxemoji:pinkwallet",
+		Version:     "0.0.1",
+		Category:    sdk.Apps,
+		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
+		Triggers:    []sdk.ITrigger{},
+		Operations: []sdk.IOperation{
+			NewListTicketsOperation(),
 		},
-		Operations: []sdk.IOperation{},
 	})
 }
