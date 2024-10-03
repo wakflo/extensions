@@ -15,6 +15,7 @@ package extensions
 // limitations under the License.
 
 import (
+	"github.com/wakflo/extensions/internal/connectors/aftership"
 	"github.com/wakflo/extensions/internal/connectors/airtable"
 	"github.com/wakflo/extensions/internal/connectors/asana"
 	"github.com/wakflo/extensions/internal/connectors/calculator"
@@ -94,6 +95,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		calendly.NewConnector,       // Calendly
 		shippo.NewConnector,         // Shippo
 		easyship.NewConnector,       // EasyShip
+		aftership.NewConnector,     // AfterShip
 		dropbox.NewConnector,        // Dropbox
 		harvest.NewConnector,        // HubStaff
 		toggl.NewConnector,          // Toggl
