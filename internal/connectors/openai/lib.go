@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+//	http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package jsonconverter
+package openai
 
 import (
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -20,15 +20,16 @@ import (
 
 func NewConnector() (*sdk.ConnectorPlugin, error) {
 	return sdk.CreateConnector(&sdk.CreateConnectorArgs{
-		Name:        "JSON",
-		Description: "Convert JSON to text and vice versa",
-		Logo:        "mdi:code-json",
+		Name:        "OpenAI",
+		Description: "Interact with ChatGPT, Dall-E and other apps from OpenAI",
+		Logo:        "simple-icons:openai",
 		Version:     "0.0.1",
-		Category:    sdk.Tools,
+		Category:    sdk.Core,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{
-			NewConvertToJSONOperation(),
+			NewPromptChatGPT(),
+			// NewPromptDallE(),
 		},
 	})
 }

@@ -56,7 +56,7 @@ func NewListTasksOperation() *ListTasksOperation {
 					SetDescription("IETF language tag defining what language filter is written in, if differs from default English.").
 					SetRequired(false).Build(),
 				"ids": autoform.NewArrayField().
-					SetDisplayName("IDs").
+					SetDisplayName("IDsss").
 					SetDescription("A list of the task IDs to retrieve, this should be a comma separated list.").
 					SetItems(
 						autoform.NewShortTextField().

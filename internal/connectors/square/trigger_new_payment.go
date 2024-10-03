@@ -15,7 +15,6 @@
 package square
 
 import (
-	"fmt"
 	"time"
 
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -54,8 +53,6 @@ func (t *TriggerNewPayment) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	} else {
 		defaultStartDate := time.Date(2006, 1, 1, 0, 0, 0, 0, time.UTC)
 		fromDate = defaultStartDate.UTC().Format(time.RFC3339)
-
-		fmt.Println("DEFAULT", fromDate)
 	}
 
 	baseURL := "https://connect.squareup.com/v2/payments?begin_time=" + fromDate
