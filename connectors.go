@@ -38,6 +38,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/shopify"
 	"github.com/wakflo/extensions/internal/connectors/slack"
 	"github.com/wakflo/extensions/internal/connectors/square"
+	"github.com/wakflo/extensions/internal/connectors/stripe"
 	"github.com/wakflo/extensions/internal/connectors/todoist"
 	"github.com/wakflo/extensions/internal/connectors/trackingmore"
 	"github.com/wakflo/extensions/internal/connectors/webhook"
@@ -87,6 +88,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		freshworkscrm.NewConnector, // Freshworks CRM
 		shippo.NewConnector,        // Shippo
 		easyship.NewConnector,      // EasyShip
+		stripe.NewConnector,        // Stripe
 	}
 
 	// 🛑Do-Not-Edit
