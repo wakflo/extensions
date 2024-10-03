@@ -37,6 +37,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/linear"
 	"github.com/wakflo/extensions/internal/connectors/mailchimp"
 	"github.com/wakflo/extensions/internal/connectors/manual"
+	"github.com/wakflo/extensions/internal/connectors/openai"
 	"github.com/wakflo/extensions/internal/connectors/shippo"
 	"github.com/wakflo/extensions/internal/connectors/shopify"
 	"github.com/wakflo/extensions/internal/connectors/slack"
@@ -44,7 +45,6 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/todoist"
 	"github.com/wakflo/extensions/internal/connectors/toggl"
 	"github.com/wakflo/extensions/internal/connectors/trackingmore"
-	"github.com/wakflo/extensions/internal/connectors/webhook"
 	"github.com/wakflo/extensions/internal/connectors/woocommerce"
 	"github.com/wakflo/extensions/internal/connectors/xero"
 	"github.com/wakflo/extensions/internal/connectors/zohoinventory"
@@ -75,7 +75,6 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		manual.NewConnector,        // Manual
 		calculator.NewConnector,    // Calculator
 		shopify.NewConnector,       // Shopify
-		webhook.NewConnector,       // Webhook
 		zohoinventory.NewConnector, // Zoho Inventory
 		cin7.NewConnector,          // Cin7
 		woocommerce.NewConnector,   // Woocommerce
@@ -95,6 +94,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		harvest.NewConnector,       // HubStaff
 		toggl.NewConnector,         // Toggl
 		airtable.NewConnector,      // Airtable
+		openai.NewConnector,        // OpenAI
 	}
 
 	// 🛑Do-Not-Edit

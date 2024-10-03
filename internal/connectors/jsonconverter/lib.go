@@ -24,7 +24,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "Convert JSON to text and vice versa",
 		Logo:        "mdi:code-json",
 		Version:     "0.0.1",
-		Category:    sdk.Apps,
+		Category:    sdk.Tools,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{
