@@ -18,6 +18,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/airtable"
 	"github.com/wakflo/extensions/internal/connectors/asana"
 	"github.com/wakflo/extensions/internal/connectors/calculator"
+	"github.com/wakflo/extensions/internal/connectors/calendly"
 	"github.com/wakflo/extensions/internal/connectors/cin7"
 	"github.com/wakflo/extensions/internal/connectors/clickup"
 	"github.com/wakflo/extensions/internal/connectors/cryptography"
@@ -89,6 +90,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		jsonconverter.NewConnector, // Json
 		trackingmore.NewConnector,  // TrackingMore
 		freshworkscrm.NewConnector, // Freshworks CRM
+		calendly.NewConnector,      // Calendly
 		shippo.NewConnector,        // Shippo
 		easyship.NewConnector,      // EasyShip
 		dropbox.NewConnector,       // Dropbox
