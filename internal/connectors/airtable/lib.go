@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package jsonconverter
+package airtable
 
 import (
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -20,15 +20,17 @@ import (
 
 func NewConnector() (*sdk.ConnectorPlugin, error) {
 	return sdk.CreateConnector(&sdk.CreateConnectorArgs{
-		Name:        "JSON",
-		Description: "Convert JSON to text and vice versa",
-		Logo:        "mdi:code-json",
+		Name:        "Airtable",
+		Description: "Low‒code platform to build apps.",
+		Logo:        "logos:airtable",
 		Version:     "0.0.1",
-		Category:    sdk.Tools,
+		Category:    sdk.Apps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{
-			NewConvertToJSONOperation(),
+			// NewUpdateRecordOperation(),
+			NewDeleteRecordOperation(),
+			NewFindRecordOperation(),
 		},
 	})
 }
