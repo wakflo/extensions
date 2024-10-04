@@ -5,14 +5,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gookit/goutil/arrutil"
-	fastshot "github.com/opus-domini/fast-shot"
-	"github.com/wakflo/go-sdk/autoform"
-	sdk "github.com/wakflo/go-sdk/connector"
-	sdkcore "github.com/wakflo/go-sdk/core"
 	"io"
 	"net/http"
 	"regexp"
+
+	"github.com/gookit/goutil/arrutil"
+	fastshot "github.com/opus-domini/fast-shot"
+
+	"github.com/wakflo/go-sdk/autoform"
+	sdk "github.com/wakflo/go-sdk/connector"
+	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
 var (
@@ -210,8 +212,8 @@ func listEvents(accessToken, url string, status string, user string) (map[string
 	return response, nil
 }
 
-func getEvent(accessToken, eventId string) (map[string]interface{}, error) {
-	url := baseURL + "/scheduled_events/" + getEventID(eventId)
+func getEvent(accessToken, eventID string) (map[string]interface{}, error) {
+	url := baseURL + "/scheduled_events/" + getEventID(eventID)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -242,11 +244,11 @@ func getEvent(accessToken, eventId string) (map[string]interface{}, error) {
 	return response, nil
 }
 
-func createSingleUseLink(accessToken, eventTypeUri string, maxEventCount int) (map[string]interface{}, error) {
+func createSingleUseLink(accessToken, eventTypeURI string, maxEventCount int) (map[string]interface{}, error) {
 	url := baseURL + "/scheduling_links"
 	payload := map[string]interface{}{
 		"max_event_count": maxEventCount,
-		"owner":           eventTypeUri,
+		"owner":           eventTypeURI,
 		"owner_type":      "EventType",
 	}
 
@@ -285,7 +287,6 @@ func createSingleUseLink(accessToken, eventTypeUri string, maxEventCount int) (m
 	}
 
 	return response, nil
-
 }
 
 var calendlyEventStatusType = []*sdkcore.AutoFormSchema{

@@ -1,7 +1,7 @@
 package openai
 
 type ModelResponse struct {
-	Id      string `json:"id"`
+	ID      string `json:"id"`
 	Object  string `json:"object"`
 	Created int64  `json:"created"`
 	OwnedBy string `json:"owned_by"`
@@ -31,7 +31,7 @@ type ChatCompletionChoiceResponse struct {
 }
 
 type ChatCompletionResponse struct {
-	Id                string                         `json:"id"`
+	ID                string                         `json:"id"`
 	Object            string                         `json:"object"`
 	Created           int64                          `json:"created"`
 	Model             string                         `json:"model"`
@@ -41,7 +41,7 @@ type ChatCompletionResponse struct {
 }
 
 type GeneratedImageResponse struct {
-	Url string `json:"url"`
+	URL string `json:"url"`
 }
 
 type ImageGenerationResponse struct {
