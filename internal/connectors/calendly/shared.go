@@ -200,7 +200,12 @@ func listEvents(accessToken, url string, status string, user string) (map[string
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(res.Body)
 
 	var response map[string]interface{}
 	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
@@ -223,7 +228,12 @@ func getEvent(accessToken, eventId string) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error sending request: %w", err)
 	}
-	defer res.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(res.Body)
 
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("API returned non-OK status: %s", res.Status)
@@ -268,7 +278,12 @@ func createSingleUseLink(accessToken, eventTypeUri string, maxEventCount int) (m
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(res.Body)
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
