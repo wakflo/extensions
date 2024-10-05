@@ -41,7 +41,11 @@ func NewUpdateSubscriberStatusOperation() sdk.IOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"list-id": getListInput(),
+				"list-id": autoform.NewShortTextField().
+					SetDisplayName(" List ID").
+					SetDescription("").
+					SetRequired(true).
+					Build(),
 				"email": autoform.NewShortTextField().
 					SetDisplayName("Email").
 					SetDescription("Email of the subscriber").

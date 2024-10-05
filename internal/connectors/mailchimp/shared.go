@@ -9,11 +9,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
-
-	fastshot "github.com/opus-domini/fast-shot"
 
 	// #nosec
 
@@ -74,52 +71,52 @@ func getMailChimpServerPrefix(accessToken string) (string, error) {
 	return metadata.DC, nil
 }
 
-func getListInput() *sdkcore.AutoFormSchema {
-	getLists := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
-		dc, err := getMailChimpServerPrefix(ctx.Auth.AccessToken)
-		if err != nil {
-			log.Fatalf("Error getting MailChimp server prefix: %v", err)
-		}
-
-		url := fmt.Sprintf("https://%s.api.mailchimp.com/3.0", dc)
-
-		client := fastshot.NewClient(url).
-			Auth().BearerToken(ctx.Auth.AccessToken).
-			Header().
-			AddAccept("application/json").
-			Build()
-
-		rsp, err := client.GET("/lists").Send()
-		if err != nil {
-			return nil, err
-		}
-
-		if rsp.Status().IsError() {
-			return nil, errors.New(rsp.Status().Text())
-		}
-
-		body, err := io.ReadAll(rsp.Raw().Body) //nolint:bodyclose
-		if err != nil {
-			return nil, err
-		}
-
-		var lists ListResponse
-		err = json.Unmarshal(body, &lists)
-		if err != nil {
-			return nil, err
-		}
-
-		list := lists.Lists
-		return list, nil
-	}
-
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Lists").
-		SetDescription("Select a list").
-		SetDependsOn([]string{"connection"}).
-		SetDynamicOptions(&getLists).
-		SetRequired(true).Build()
-}
+//  func getListInput() *sdkcore.AutoFormSchema {
+//	getLists := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+//		dc, err := getMailChimpServerPrefix(ctx.Auth.AccessToken)
+//		if err != nil {
+//			log.Fatalf("Error getting MailChimp server prefix: %v", err)
+//		}
+//
+//		url := fmt.Sprintf("https://%s.api.mailchimp.com/3.0", dc)
+//
+//		client := fastshot.NewClient(url).
+//			Auth().BearerToken(ctx.Auth.AccessToken).
+//			Header().
+//			AddAccept("application/json").
+//			Build()
+//
+//		rsp, err := client.GET("/lists").Send()
+//		if err != nil {
+//			return nil, err
+//		}
+//
+//		if rsp.Status().IsError() {
+//			return nil, errors.New(rsp.Status().Text())
+//		}
+//
+//		body, err := io.ReadAll(rsp.Raw().Body) //nolint:bodyclose
+//		if err != nil {
+//			return nil, err
+//		}
+//
+//		var lists ListResponse
+//		err = json.Unmarshal(body, &lists)
+//		if err != nil {
+//			return nil, err
+//		}
+//
+//		list := lists.Lists
+//		return list, nil
+//	}
+//
+//	return autoform.NewDynamicField(sdkcore.String).
+//		SetDisplayName("Lists").
+//		SetDescription("Select a list").
+//		SetDependsOn([]string{"connection"}).
+//		SetDynamicOptions(&getLists).
+//		SetRequired(true).Build()
+//  }
 
 func addContactToList(accessToken, server, listID, email, firstName, status, lastName string) error {
 	url := fmt.Sprintf("https://%s.api.mailchimp.com/3.0/lists/%s/members", server, listID)
