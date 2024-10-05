@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.3](https://github.com/wakflo/extensions/compare/v0.6.2...v0.6.3) (2024-10-05)
+
+
+### Bug Fixes
+
+* lint errors ([45c1505](https://github.com/wakflo/extensions/commit/45c1505d290f3fb7dad1a2bddf9d79ae8656434c))
+
 ## [0.6.2](https://github.com/wakflo/extensions/compare/v0.6.1...v0.6.2) (2024-10-03)
 
 
