@@ -24,7 +24,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "csv reader utils and functions",
 		Logo:        "iwwa:file-csv",
 		Version:     "0.0.1",
-		Category:    sdk.Tools,
+		Category:    sdk.Core,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{
