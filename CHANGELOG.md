@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.7.0](https://github.com/wakflo/extensions/compare/v0.6.2...v0.7.0) (2024-10-14)
+
+
+### Features
+
+* implement zoom connector ([2fc6bf4](https://github.com/wakflo/extensions/commit/2fc6bf4c80dede120c5b350be53eb1c72332f661))
+
+
+### Bug Fixes
+
+* fixed test ([f74d547](https://github.com/wakflo/extensions/commit/f74d5470dde6099bbd9be435de9e0d365d4972fb))
+* lint errors ([45c1505](https://github.com/wakflo/extensions/commit/45c1505d290f3fb7dad1a2bddf9d79ae8656434c))
+* updated sdk to 0.6.1 ([48d0db5](https://github.com/wakflo/extensions/commit/48d0db5b6ed5821d03aa98a10c08c3ca776ee206))
+
 ## [0.6.2](https://github.com/wakflo/extensions/compare/v0.6.1...v0.6.2) (2024-10-03)
 
 
