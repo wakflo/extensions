@@ -40,6 +40,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/linear"
 	"github.com/wakflo/extensions/internal/connectors/mailchimp"
 	"github.com/wakflo/extensions/internal/connectors/manual"
+	"github.com/wakflo/extensions/internal/connectors/monday"
 	"github.com/wakflo/extensions/internal/connectors/openai"
 	"github.com/wakflo/extensions/internal/connectors/shippo"
 	"github.com/wakflo/extensions/internal/connectors/shopify"
@@ -105,6 +106,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		openai.NewConnector,         // OpenAI
 		googlecalendar.NewConnector, // Google Calendar
 		zoom.NewConnector,           // Zoom
+		monday.NewConnector,         // Monday.com
 	}
 
 	// 🛑Do-Not-Edit
