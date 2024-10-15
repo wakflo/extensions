@@ -53,7 +53,6 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/woocommerce"
 	"github.com/wakflo/extensions/internal/connectors/xero"
 	"github.com/wakflo/extensions/internal/connectors/zohoinventory"
-	"github.com/wakflo/extensions/internal/connectors/zoom"
 	"github.com/wakflo/extensions/internal/logger"
 	sdk "github.com/wakflo/go-sdk/connector"
 )
@@ -105,8 +104,8 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		stripe.NewConnector,         // Stripe
 		openai.NewConnector,         // OpenAI
 		googlecalendar.NewConnector, // Google Calendar
-		zoom.NewConnector,           // Zoom
 		monday.NewConnector,         // Monday.com
+
 	}
 
 	// 🛑Do-Not-Edit
