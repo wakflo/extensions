@@ -99,12 +99,12 @@ func (c *CreateColumnOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		// return nil, errors.New("request not successful")
 	}
 
-	column, ok := response["data"].(map[string]interface{})
+	newColumn, ok := response["data"].(map[string]interface{})
 	if !ok {
 		return nil, errors.New("failed to extract column from response")
 	}
 
-	return column, nil
+	return newColumn, nil
 }
 
 func (c *CreateColumnOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
