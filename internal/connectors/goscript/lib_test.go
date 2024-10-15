@@ -77,8 +77,8 @@ func TestNewConnector(t *testing.T) {
 				t.Errorf("NewConnector() Version = %s, want %s", connector.Version, "0.0.1")
 			}
 
-			if connector.Category != sdk.Tools {
-				t.Errorf("NewConnector() Category = %v, want %v", connector.Category, sdk.Tools)
+			if connector.Category != sdk.Core {
+				t.Errorf("NewConnector() Category = %v, want %v", connector.Category, sdk.Core)
 			}
 
 			if len(connector.Authors) != 1 || connector.Authors[0] != "Wakflo <integrations@wakflo.com>" {

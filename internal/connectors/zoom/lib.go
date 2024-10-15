@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package starlark
+package zoom
 
 import (
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -20,15 +20,16 @@ import (
 
 func NewConnector() (*sdk.ConnectorPlugin, error) {
 	return sdk.CreateConnector(&sdk.CreateConnectorArgs{
-		Name:        "Starlark",
-		Description: "starlark connector for running starlark codes",
-		Logo:        "logos:starlark",
+		Name:        "Zoom",
+		Description: "Video conferencing, web conferencing, webinars, screen sharing",
+		Logo:        "logos:zoom",
 		Version:     "0.0.1",
-		Category:    sdk.Core,
+		Category:    sdk.Apps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{
-			NewRunStarlarkOperation(),
+			NewCreateMeetingOperation(),
+			NewCreateMeetingRegistrantOperation(),
 		},
 	})
 }
