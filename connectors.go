@@ -26,6 +26,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/delay"
 	"github.com/wakflo/extensions/internal/connectors/dropbox"
 	"github.com/wakflo/extensions/internal/connectors/easyship"
+	"github.com/wakflo/extensions/internal/connectors/flexport"
 	"github.com/wakflo/extensions/internal/connectors/freshdesk"
 	"github.com/wakflo/extensions/internal/connectors/freshworkscrm"
 	googledocs "github.com/wakflo/extensions/internal/connectors/google_docs"
@@ -105,6 +106,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		openai.NewConnector,         // OpenAI
 		googlecalendar.NewConnector, // Google Calendar
 		zoom.NewConnector,           // Zoom
+		flexport.NewConnector,       // Flexport
 	}
 
 	// 🛑Do-Not-Edit
