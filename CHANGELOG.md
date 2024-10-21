@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.7.0](https://github.com/wakflo/extensions/compare/v0.6.2...v0.7.0) (2024-10-21)
+
+
+### Features
+
+* implement monday.com connector ([08b3c5b](https://github.com/wakflo/extensions/commit/08b3c5b6ad13b2e43318a4c51dcab8aef6624caa))
+* implement monday.com connector ([088585e](https://github.com/wakflo/extensions/commit/088585efcce3d782ce9f194789950a7e7ba42c1d))
+* implement zoom connector ([2fc6bf4](https://github.com/wakflo/extensions/commit/2fc6bf4c80dede120c5b350be53eb1c72332f661))
+
+
+### Bug Fixes
+
+* connectors.go file ([b418ab7](https://github.com/wakflo/extensions/commit/b418ab74a65f35b854c7f7e8a00d495b6986691b))
+* create_column_file ([abbf855](https://github.com/wakflo/extensions/commit/abbf855908a7e481840fda059a20d5a988e6cdc2))
+* fixed test ([f74d547](https://github.com/wakflo/extensions/commit/f74d5470dde6099bbd9be435de9e0d365d4972fb))
+* implement flexport connector ([790e4ae](https://github.com/wakflo/extensions/commit/790e4ae5102e131d3d5c5395f02e662a8f501960))
+* lint errors ([45c1505](https://github.com/wakflo/extensions/commit/45c1505d290f3fb7dad1a2bddf9d79ae8656434c))
+* updated sdk to 0.6.1 ([48d0db5](https://github.com/wakflo/extensions/commit/48d0db5b6ed5821d03aa98a10c08c3ca776ee206))
+
 ## [0.6.2](https://github.com/wakflo/extensions/compare/v0.6.1...v0.6.2) (2024-10-03)
 
 
