@@ -24,7 +24,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "Payment solutions for every business",
 		Logo:        "simple-icons:square",
 		Version:     "0.0.1",
-		Category:    sdk.Apps,
+		Group:       sdk.ConnectorGroupApps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers: []sdk.ITrigger{
 			NewTriggerNewPayment(),

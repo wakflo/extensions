@@ -24,7 +24,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "An easy way to track time across projects",
 		Logo:        "noto:red-square",
 		Version:     "0.0.1",
-		Category:    sdk.Apps,
+		Group:       sdk.ConnectorGroupApps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers: []sdk.ITrigger{
 			NewInvoiceUpdate(),

@@ -24,7 +24,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "Work operating system for businesses",
 		Logo:        "logos:monday-icon",
 		Version:     "0.0.1",
-		Category:    sdk.Apps,
+		Group:       sdk.ConnectorGroupApps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{

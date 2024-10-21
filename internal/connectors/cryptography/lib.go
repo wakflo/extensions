@@ -24,7 +24,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "Generate strings and hash strings",
 		Logo:        "tabler:circle-key-filled",
 		Version:     "0.0.1",
-		Category:    sdk.Core,
+		Group:       sdk.ConnectorGroupCore,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{

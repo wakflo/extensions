@@ -22,7 +22,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "easy-to-use package tracker with which you will know when your parcel will arrive.",
 		Logo:        "openmoji:red-hexagon",
 		Version:     "0.0.1",
-		Category:    sdk.Apps,
+		Group:       sdk.ConnectorGroupApps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{

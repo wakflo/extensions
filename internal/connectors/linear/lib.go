@@ -26,7 +26,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "Issue tracking for modern software teams",
 		Logo:        "simple-icons:linear",
 		Version:     "0.0.1",
-		Category:    sdk.Apps,
+		Group:       sdk.ConnectorGroupApps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers: []sdk.ITrigger{
 			NewTriggerIssueUpdated(),

@@ -24,7 +24,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "platform that coordinates global logistics from factory to customer door ",
 		Logo:        "twemoji:small-airplane",
 		Version:     "0.0.1",
-		Category:    sdk.Apps,
+		Group:       sdk.ConnectorGroupApps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{

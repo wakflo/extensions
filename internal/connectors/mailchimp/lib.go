@@ -24,7 +24,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "All-in-One integrated marketing platform",
 		Logo:        "logos:mailchimp-freddie",
 		Version:     "0.0.1",
-		Category:    sdk.Apps,
+		Group:       sdk.ConnectorGroupApps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers: []sdk.ITrigger{
 			NewTriggerNewSubscriber(),

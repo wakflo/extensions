@@ -24,7 +24,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "Lua connector for running lua codes",
 		Logo:        "logos:lua",
 		Version:     "0.0.1",
-		Category:    sdk.Core,
+		Group:       sdk.ConnectorGroupCore,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{

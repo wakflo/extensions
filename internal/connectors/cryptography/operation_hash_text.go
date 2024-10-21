@@ -29,7 +29,7 @@ import (
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 
-	//nolint:staticcheck
+	//nolint:staticcheck,gosec
 	"golang.org/x/crypto/ripemd160"
 )
 
@@ -132,6 +132,7 @@ func (c *HashTextOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		hashedString.Write([]byte(inputText))
 		break
 	case suppportedAlgorithms[4].Const:
+		//nolint:gosec
 		hashedString = ripemd160.New()
 		hashedString.Write([]byte(inputText))
 		break

@@ -10,7 +10,8 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "Make simple math operations",
 		Logo:        "ion:calculator",
 		Version:     "0.0.1",
-		Category:    sdk.Core,
+		Group:       sdk.ConnectorGroupCore,
+		Categories:  make([]string, 0),
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{

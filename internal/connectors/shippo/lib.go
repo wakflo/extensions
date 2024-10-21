@@ -22,7 +22,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "Multi-carrier shipping software for e-commerce businesses.",
 		Logo:        "icon-park-solid:hippo",
 		Version:     "0.0.1",
-		Category:    sdk.Apps,
+		Group:       sdk.ConnectorGroupApps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{
