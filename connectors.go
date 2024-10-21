@@ -41,6 +41,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/linear"
 	"github.com/wakflo/extensions/internal/connectors/mailchimp"
 	"github.com/wakflo/extensions/internal/connectors/manual"
+	"github.com/wakflo/extensions/internal/connectors/monday"
 	"github.com/wakflo/extensions/internal/connectors/openai"
 	"github.com/wakflo/extensions/internal/connectors/shippo"
 	"github.com/wakflo/extensions/internal/connectors/shopify"
@@ -105,6 +106,8 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		stripe.NewConnector,         // Stripe
 		openai.NewConnector,         // OpenAI
 		googlecalendar.NewConnector, // Google Calendar
+		monday.NewConnector,         // Monday.com
+		monday.NewConnector,         // Monday.com
 		zoom.NewConnector,           // Zoom
 		flexport.NewConnector,       // Flexport
 	}
