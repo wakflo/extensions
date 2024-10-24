@@ -3,6 +3,7 @@ package notion
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/wakflo/go-sdk/autoform"
@@ -10,6 +11,7 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/core"
 	"io"
 	"net/http"
+	"time"
 )
 
 var (
@@ -20,7 +22,7 @@ var (
 
 const baseURL = "https://api.notion.com/v1"
 
-func getNotionPagesInput(title string, desc string, required bool, databaseID string) *sdkcore.AutoFormSchema {
+func getNotionPagesInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
 	getPages := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
 
 		input := sdk.DynamicInputToType[struct {
@@ -159,8 +161,8 @@ func getNotionDatabasesInput(title string, desc string, required bool) *sdkcore.
 			}
 
 			return map[string]any{
-				"id":    input.ID,
-				"title": title,
+				"id":   input.ID,
+				"name": title,
 			}, true
 		}), nil
 	}
@@ -172,4 +174,248 @@ func getNotionDatabasesInput(title string, desc string, required bool) *sdkcore.
 		SetDynamicOptions(&getDatabases).
 		SetRequired(required).
 		Build()
+}
+
+func createNotionPage(accessToken, parentPageID, title string, content string) (map[string]interface{}, error) {
+	url := baseURL + "/pages"
+
+	// Create the payload with parent page ID and properties
+	payload := map[string]interface{}{
+		"parent": map[string]interface{}{
+			"type":    "page_id",
+			"page_id": parentPageID,
+		},
+		"properties": map[string]interface{}{
+			"title": map[string]interface{}{
+				"title": []map[string]interface{}{
+					{
+						"type": "text",
+						"text": map[string]interface{}{
+							"content": title,
+						},
+					},
+				},
+			},
+		},
+		"children": []map[string]interface{}{
+			{
+				"object": "block",
+				"type":   "paragraph",
+				"paragraph": map[string]interface{}{
+					"rich_text": []map[string]interface{}{
+						{
+							"type": "text",
+							"text": map[string]interface{}{
+								"content": content,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// Marshal the payload to JSON
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	// Print the payload to see what's being sent
+	fmt.Println("Payload being sent to Notion API:")
+	fmt.Println(string(jsonPayload))
+
+	// Create a new POST request
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonPayload))
+	if err != nil {
+		return nil, err
+	}
+
+	// Set the required headers
+	req.Header.Add("Authorization", "Bearer "+accessToken)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Notion-Version", "2022-06-28")
+
+	// Create an HTTP client and send the request
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	// Print the status code for debugging
+	fmt.Println("HTTP Status Code:", res.StatusCode)
+
+	// Read and parse the response body
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// Print the response body for debugging
+	fmt.Println("Response from Notion API:")
+	fmt.Println(string(body))
+
+	var response map[string]interface{}
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, err
+	}
+
+	// Check if the status code is not successful
+	if res.StatusCode != http.StatusOK {
+		return response, fmt.Errorf("error: %v", response)
+	}
+
+	return response, nil
+}
+
+func updateNotionPage(accessToken, pageID, title, content string) (map[string]interface{}, error) {
+	url := fmt.Sprintf("https://api.notion.com/v1/pages/%s", pageID)
+
+	// Define the properties for title and content
+	properties := map[string]interface{}{
+		"Name": map[string]interface{}{
+			"title": []map[string]interface{}{
+				{
+					"text": map[string]string{
+						"content": title,
+					},
+				},
+			},
+		},
+		"Content": map[string]interface{}{
+			"rich_text": []map[string]interface{}{
+				{
+					"text": map[string]string{
+						"content": content,
+					},
+				},
+			},
+		},
+	}
+
+	// Create the payload for updating the page
+	payload := map[string]interface{}{
+		"properties": properties,
+	}
+
+	// Convert the payload to JSON
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the HTTP request
+	req, err := http.NewRequest(http.MethodPatch, url, bytes.NewBuffer(jsonPayload))
+	if err != nil {
+		return nil, err
+	}
+
+	// Add headers
+	req.Header.Add("Authorization", "Bearer "+accessToken)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Notion-Version", "2022-06-28") // Use the correct Notion API version
+
+	// Send the request
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	// Read the response
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse the response
+	var response map[string]interface{}
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, err
+	}
+
+	// Check if the API returned an error
+	if res.StatusCode != http.StatusOK {
+		return response, fmt.Errorf("error: %v", response)
+	}
+
+	return response, nil
+}
+
+func queryNewPages(accessToken, databaseID string, lastChecked time.Time) ([]map[string]interface{}, error) {
+	url := fmt.Sprintf("https://api.notion.com/v1/databases/%s/query", databaseID)
+
+	payload := map[string]interface{}{
+		"filter": map[string]interface{}{
+			"property": "Created time",
+			"date": map[string]interface{}{
+				"after": lastChecked.Format(time.RFC3339),
+			},
+		},
+		"sorts": []map[string]interface{}{
+			{
+				"property":  "Created time",
+				"direction": "ascending",
+			},
+		},
+	}
+
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonPayload))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Authorization", "Bearer "+accessToken)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Notion-Version", "2022-06-28")
+
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var response map[string]interface{}
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error: %v", response)
+	}
+
+	results, ok := response["results"].([]interface{})
+	if !ok {
+		return nil, errors.New("unexpected response format")
+	}
+
+	newPages := make([]map[string]interface{}, 0, len(results))
+	for _, result := range results {
+		page, ok := result.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		newPages = append(newPages, map[string]interface{}{
+			"id":               page["id"],
+			"created_time":     page["created_time"],
+			"last_edited_time": page["last_edited_time"],
+			"url":              page["url"],
+		})
+	}
+
+	return newPages, nil
 }

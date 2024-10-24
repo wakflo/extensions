@@ -7,22 +7,22 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-type createPageOperationProps struct {
+type updatePageOperationProps struct {
 	Title      string `json:"title"`
 	Content    string `json:"content"`
 	DatabaseID string `json:"database"`
 	PageID     string `json:"page_id"`
 }
 
-type CreatePageOperation struct {
+type UpdatePageOperation struct {
 	options *sdk.OperationInfo
 }
 
-func NewCreatePageOperation() *CreatePageOperation {
-	return &CreatePageOperation{
+func NewUpdatePageOperation() *UpdatePageOperation {
+	return &UpdatePageOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Create a Notion Page",
-			Description: "Create a new page in a Notion database",
+			Name:        "Update a Notion Page",
+			Description: "Update a page in a Notion database",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
@@ -37,19 +37,19 @@ func NewCreatePageOperation() *CreatePageOperation {
 					SetRequired(true).
 					Build(),
 				"database": getNotionDatabasesInput("Database", "Select a database", true),
-				"page_id":  getNotionPagesInput("Parent Page", "Select a parent page", false),
+				"page_id":  getNotionPagesInput("Page", "Select a page", true),
 			},
 		},
 	}
 }
 
-func (c *CreatePageOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *UpdatePageOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if ctx.Auth.AccessToken == "" {
 		return nil, errors.New("missing calendly auth token")
 	}
 	accessToken := ctx.Auth.AccessToken
 
-	input := sdk.InputToType[createPageOperationProps](ctx)
+	input := sdk.InputToType[updatePageOperationProps](ctx)
 
 	if input.Title == "" {
 		return nil, errors.New("title is required")
@@ -63,16 +63,16 @@ func (c *CreatePageOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, errors.New("parent page is required")
 	}
 
-	notionPage, _ := createNotionPage(accessToken, input.PageID, input.Title, input.Content)
+	notionPage, _ := updateNotionPage(accessToken, input.PageID, input.Title, input.Content)
 
 	return notionPage, nil
 
 }
 
-func (c *CreatePageOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *UpdatePageOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 
-func (c *CreatePageOperation) GetInfo() *sdk.OperationInfo {
+func (c *UpdatePageOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

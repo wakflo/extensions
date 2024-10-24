@@ -24,11 +24,12 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Version:     "0.0.1",
 		Category:    sdk.Apps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
-		Triggers:    []sdk.ITrigger{},
-		Operations:  []sdk.IOperation{
-			//NewListEventsOperation(),
-			//NewGetEventOperation(),
-			//NewCreateSingleUseScheduleLinkOperation(),
+		Triggers: []sdk.ITrigger{
+			NewTriggerNewPageCreated(),
+		},
+		Operations: []sdk.IOperation{
+			NewCreatePageOperation(),
+			NewUpdatePageOperation(),
 		},
 	})
 }
