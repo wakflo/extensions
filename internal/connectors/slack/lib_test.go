@@ -99,8 +99,8 @@ func TestNewConnector(t *testing.T) {
 				t.Errorf("NewConnector() Version = %s, want %s", connector.Version, "0.0.1")
 			}
 
-			if connector.Category != sdk.Apps {
-				t.Errorf("NewConnector() Category = %v, want %v", connector.Category, sdk.Apps)
+			if connector.Group != sdk.ConnectorGroupApps {
+				t.Errorf("NewConnector() Group = %v, want %v", connector.Group, sdk.ConnectorGroupApps)
 			}
 
 			if len(connector.Authors) != 1 || connector.Authors[0] != "Wakflo <integrations@wakflo.com>" {

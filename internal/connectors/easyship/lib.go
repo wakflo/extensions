@@ -22,7 +22,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "shipping platform that connects sellers and marketplaces to couriers.",
 		Logo:        "fxemoji:diamondshapewithdotinside",
 		Version:     "0.0.1",
-		Category:    sdk.Apps,
+		Group:       sdk.ConnectorGroupApps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{

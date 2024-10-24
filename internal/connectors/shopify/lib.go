@@ -24,7 +24,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "Ecommerce platform for online stores",
 		Logo:        "logos:shopify",
 		Version:     "0.0.1",
-		Category:    sdk.Apps,
+		Group:       sdk.ConnectorGroupApps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{NewTriggerNewCustomer(), NewTriggerNewOrder()},
 		Operations: []sdk.IOperation{

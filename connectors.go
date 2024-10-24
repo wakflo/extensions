@@ -26,6 +26,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/delay"
 	"github.com/wakflo/extensions/internal/connectors/dropbox"
 	"github.com/wakflo/extensions/internal/connectors/easyship"
+	"github.com/wakflo/extensions/internal/connectors/flexport"
 	"github.com/wakflo/extensions/internal/connectors/freshdesk"
 	"github.com/wakflo/extensions/internal/connectors/freshworkscrm"
 	googledocs "github.com/wakflo/extensions/internal/connectors/google_docs"
@@ -40,7 +41,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/linear"
 	"github.com/wakflo/extensions/internal/connectors/mailchimp"
 	"github.com/wakflo/extensions/internal/connectors/manual"
-	"github.com/wakflo/extensions/internal/connectors/notion"
+	"github.com/wakflo/extensions/internal/connectors/monday"
 	"github.com/wakflo/extensions/internal/connectors/openai"
 	"github.com/wakflo/extensions/internal/connectors/shippo"
 	"github.com/wakflo/extensions/internal/connectors/shopify"
@@ -53,6 +54,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/woocommerce"
 	"github.com/wakflo/extensions/internal/connectors/xero"
 	"github.com/wakflo/extensions/internal/connectors/zohoinventory"
+	"github.com/wakflo/extensions/internal/connectors/zoom"
 	"github.com/wakflo/extensions/internal/logger"
 	sdk "github.com/wakflo/go-sdk/connector"
 )
@@ -104,8 +106,10 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		stripe.NewConnector,         // Stripe
 		openai.NewConnector,         // OpenAI
 		googlecalendar.NewConnector, // Google Calendar
-		notion.NewConnector,         // Notion
-
+		monday.NewConnector,         // Monday.com
+		monday.NewConnector,         // Monday.com
+		zoom.NewConnector,           // Zoom
+		flexport.NewConnector,       // Flexport
 	}
 
 	// 🛑Do-Not-Edit

@@ -44,7 +44,11 @@ func NewAddMemberToListOperation() sdk.IOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"list-id": getListInput(),
+				"list-id": autoform.NewShortTextField().
+					SetDisplayName(" List ID").
+					SetDescription("").
+					SetRequired(true).
+					Build(),
 				"first-name": autoform.NewShortTextField().
 					SetDisplayName(" First Name").
 					SetDescription("First name of the new contact").

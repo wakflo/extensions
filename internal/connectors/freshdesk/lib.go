@@ -22,7 +22,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "Customer support software",
 		Logo:        "logos:fresh",
 		Version:     "0.0.1",
-		Category:    sdk.Apps,
+		Group:       sdk.ConnectorGroupApps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{NewTriggerNewTicket()},
 		Operations: []sdk.IOperation{

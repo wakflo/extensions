@@ -10,7 +10,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "some google calendar connector",
 		Logo:        "logos:google-calendar",
 		Version:     "0.0.1",
-		Category:    sdk.Apps,
+		Group:       sdk.ConnectorGroupApps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers: []sdk.ITrigger{
 			NewTriggerNewEventCreated(),

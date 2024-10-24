@@ -14,7 +14,7 @@ import (
 
 type updateEventOperationProps struct {
 	CalendarID  string `json:"calendar_id"`
-	EventId     string `json:"event_id"`
+	EventID     string `json:"event_id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Location    string `json:"location"`
@@ -76,7 +76,6 @@ func (c *UpdateEventOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	input := sdk.InputToType[updateEventOperationProps](ctx)
 	eventService, err := calendar.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
-
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +84,7 @@ func (c *UpdateEventOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, errors.New("calendar is required")
 	}
 
-	if input.EventId == "" {
+	if input.EventID == "" {
 		return nil, errors.New("event id is required")
 	}
 
@@ -109,7 +108,7 @@ func (c *UpdateEventOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, errors.New("end time is required")
 	}
 
-	event, err := eventService.Events.Update(input.CalendarID, input.EventId, &calendar.Event{
+	event, err := eventService.Events.Update(input.CalendarID, input.EventID, &calendar.Event{
 		Summary:     input.Title,
 		Description: input.Description,
 		Location:    input.Location,

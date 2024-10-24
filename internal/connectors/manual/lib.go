@@ -24,7 +24,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "Manual workflow trigger",
 		Logo:        "material-symbols-light:not-started-outline-rounded",
 		Version:     "0.0.1",
-		Category:    sdk.Core,
+		Group:       sdk.ConnectorGroupCore,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers: []sdk.ITrigger{
 			NewManualTrigger(),

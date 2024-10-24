@@ -2,6 +2,7 @@ package calendly
 
 import (
 	"errors"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -64,7 +65,6 @@ func (c *CreateSingleUseScheduleLinkOperation) Run(ctx *sdk.RunContext) (sdk.JSO
 	scheduleLink, _ := createSingleUseLink(accessToken, input.Owner, input.MaxEventCount)
 
 	return scheduleLink, nil
-
 }
 
 func (c *CreateSingleUseScheduleLinkOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {

@@ -24,7 +24,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "Use it to delay the execution of the next action",
 		Logo:        "game-icons:sands-of-time",
 		Version:     "0.0.1",
-		Category:    sdk.Core,
+		Group:       sdk.ConnectorGroupCore,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{

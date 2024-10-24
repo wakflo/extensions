@@ -41,7 +41,11 @@ func NewRemoveSubscriberToTagOperation() sdk.IOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"list-id": getListInput(),
+				"list-id": autoform.NewShortTextField().
+					SetDisplayName(" List ID").
+					SetDescription("").
+					SetRequired(true).
+					Build(),
 				"tag-names": autoform.NewLongTextField().
 					SetDisplayName(" Tag name").
 					SetDescription("Tag name to remove from the subscriber").

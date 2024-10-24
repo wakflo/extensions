@@ -15,7 +15,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description:   "Connect to Google Mail to read, send and manage emails",
 		Logo:          "logos:google-gmail",
 		Version:       "0.0.1",
-		Category:      sdk.Apps,
+		Group:         sdk.ConnectorGroupApps,
 		Authors:       []string{"Wakflo <integrations@wakflo.com>"},
 		Documentation: doc,
 		Triggers: []sdk.ITrigger{

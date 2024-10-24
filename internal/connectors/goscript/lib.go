@@ -24,7 +24,7 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "Golang connector for running go codes",
 		Logo:        "skill-icons:golang",
 		Version:     "0.0.1",
-		Category:    sdk.Tools,
+		Group:       sdk.ConnectorGroupCore,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers:    []sdk.ITrigger{},
 		Operations: []sdk.IOperation{

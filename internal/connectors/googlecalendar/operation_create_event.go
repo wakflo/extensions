@@ -74,7 +74,6 @@ func (c *CreateEventOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	input := sdk.InputToType[createEventOperationProps](ctx)
 	eventService, err := calendar.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
-
 	if err != nil {
 		return nil, err
 	}

@@ -42,7 +42,11 @@ func NewAddNoteToSubscriberOperation() sdk.IOperation {
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"list-id": getListInput(),
+				"list-id": autoform.NewShortTextField().
+					SetDisplayName(" List ID").
+					SetDescription("").
+					SetRequired(true).
+					Build(),
 				"note": autoform.NewLongTextField().
 					SetDisplayName(" Note").
 					SetDescription("Note to add to the subscriber").
