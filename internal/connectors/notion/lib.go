@@ -22,14 +22,15 @@ func NewConnector() (*sdk.ConnectorPlugin, error) {
 		Description: "productivity and note-taking platform",
 		Logo:        "devicon:notion",
 		Version:     "0.0.1",
-		Category:    sdk.Apps,
+		Group:       sdk.ConnectorGroupApps,
 		Authors:     []string{"Wakflo <integrations@wakflo.com>"},
 		Triggers: []sdk.ITrigger{
 			NewTriggerNewPageCreated(),
 		},
 		Operations: []sdk.IOperation{
 			NewCreatePageOperation(),
-			NewUpdatePageOperation(),
+			// NewUpdatePageOperation(),
+			NewRetrievePageOperation(),
 		},
 	})
 }

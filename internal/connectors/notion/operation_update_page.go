@@ -2,6 +2,7 @@ package notion
 
 import (
 	"errors"
+
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -66,7 +67,6 @@ func (c *UpdatePageOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	notionPage, _ := updateNotionPage(accessToken, input.PageID, input.Title, input.Content)
 
 	return notionPage, nil
-
 }
 
 func (c *UpdatePageOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {

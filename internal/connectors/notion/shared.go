@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"time"
+
 	"github.com/gookit/goutil/arrutil"
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"io"
-	"net/http"
-	"time"
 )
 
 var (
@@ -24,7 +25,6 @@ const baseURL = "https://api.notion.com/v1"
 
 func getNotionPagesInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
 	getPages := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
-
 		input := sdk.DynamicInputToType[struct {
 			DatabaseID string `json:"database"`
 		}](ctx)
@@ -98,10 +98,6 @@ func getNotionDatabasesInput(title string, desc string, required bool) *sdkcore.
 	getDatabases := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
 		// Define the Notion API URL
 		url := "https://api.notion.com/v1/search"
-
-		//input := sdk.DynamicInputToType[struct {
-		//	User string `json:"user"`
-		//}](ctx)
 
 		// Create the request body with the filter to only get databases
 		requestBody, err := json.Marshal(map[string]interface{}{
@@ -221,10 +217,6 @@ func createNotionPage(accessToken, parentPageID, title string, content string) (
 		return nil, err
 	}
 
-	// Print the payload to see what's being sent
-	fmt.Println("Payload being sent to Notion API:")
-	fmt.Println(string(jsonPayload))
-
 	// Create a new POST request
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonPayload))
 	if err != nil {
@@ -244,18 +236,11 @@ func createNotionPage(accessToken, parentPageID, title string, content string) (
 	}
 	defer res.Body.Close()
 
-	// Print the status code for debugging
-	fmt.Println("HTTP Status Code:", res.StatusCode)
-
 	// Read and parse the response body
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
-
-	// Print the response body for debugging
-	fmt.Println("Response from Notion API:")
-	fmt.Println(string(body))
 
 	var response map[string]interface{}
 	if err := json.Unmarshal(body, &response); err != nil {
@@ -418,4 +403,33 @@ func queryNewPages(accessToken, databaseID string, lastChecked time.Time) ([]map
 	}
 
 	return newPages, nil
+}
+
+func getNotionPage(accessToken, pageID string) (sdk.JSON, error) {
+	url := "https://api.notion.com/v1/pages/" + pageID
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	req.Header.Set("Notion-Version", "2022-06-28") // replace with the latest Notion API version
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("failed to retrieve page from Notion")
+	}
+
+	var pageData sdk.JSON
+	if err := json.NewDecoder(resp.Body).Decode(&pageData); err != nil {
+		return nil, err
+	}
+
+	return pageData, nil
 }
