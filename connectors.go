@@ -36,6 +36,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/googlemail"
 	"github.com/wakflo/extensions/internal/connectors/goscript"
 	"github.com/wakflo/extensions/internal/connectors/harvest"
+	"github.com/wakflo/extensions/internal/connectors/hubspot"
 	"github.com/wakflo/extensions/internal/connectors/javascript"
 	"github.com/wakflo/extensions/internal/connectors/jsonconverter"
 	"github.com/wakflo/extensions/internal/connectors/linear"
@@ -110,6 +111,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		monday.NewConnector,         // Monday.com
 		zoom.NewConnector,           // Zoom
 		flexport.NewConnector,       // Flexport
+		hubspot.NewConnector,        // Hubspot
 	}
 
 	// 🛑Do-Not-Edit
