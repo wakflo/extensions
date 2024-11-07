@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.8.0](https://github.com/wakflo/extensions/compare/v0.7.0...v0.8.0) (2024-11-07)
+
+
+### Features
+
+* implement github connector ([bd62d33](https://github.com/wakflo/extensions/commit/bd62d335ca271280673abf21e4d4c5e1a407d55c))
+* implement hubspot connector ([afd123a](https://github.com/wakflo/extensions/commit/afd123a1a3e47ddbb99bb426a532b21d29dd4ff9))
+* implement jira and prisync connectors ([63e2fba](https://github.com/wakflo/extensions/commit/63e2fba05aee882c1b2d985d91c78fa52d592151))
+
+
+### Bug Fixes
+
+* fix merge conflicts ([71fc52c](https://github.com/wakflo/extensions/commit/71fc52cfd3296006bff5cf3e18d0603eefa607c9))
+* go.mod file ([450fd6a](https://github.com/wakflo/extensions/commit/450fd6adb67b32d9ca0e6a7c1af6d252b979375b))
+* linear connector: create issue operation ([bd62d33](https://github.com/wakflo/extensions/commit/bd62d335ca271280673abf21e4d4c5e1a407d55c))
+* lint files ([741640b](https://github.com/wakflo/extensions/commit/741640b765bafad0b1f98630c997c8adb85e4478))
+* merge conflict ([407b1cb](https://github.com/wakflo/extensions/commit/407b1cb519adedebd0a8cbfd16392903aa3ac4b8))
+* update shared.go file ([8fb2f21](https://github.com/wakflo/extensions/commit/8fb2f21e8f5b6aca61065e3d02fb700f0017b39f))
+
 ## [0.7.0](https://github.com/wakflo/extensions/compare/v0.6.2...v0.7.0) (2024-10-21)
 
 
