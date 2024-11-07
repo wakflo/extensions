@@ -55,7 +55,7 @@ func NewListTicketsOperation() *ListTicketsOperation {
 func (c *ListTicketsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	_ = sdk.InputToType[listTicketsOperationProps](ctx)
 
-	reqURL := "https://api.hubapi.com/crm/v3/objects/tickets"
+	reqURL := "/crm/v3/objects/tickets"
 
 	resp, err := hubspotClient(reqURL, ctx.Auth.AccessToken, http.MethodGet, nil)
 	if err != nil {

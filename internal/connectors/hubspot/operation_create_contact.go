@@ -85,7 +85,7 @@ func (c *CreateContactOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, err
 	}
 
-	reqURL := "https://api.hubapi.com/crm/v3/objects/contacts"
+	reqURL := "/crm/v3/objects/contacts"
 
 	resp, err := hubspotClient(reqURL, ctx.Auth.AccessToken, http.MethodPost, newContact)
 	if err != nil {

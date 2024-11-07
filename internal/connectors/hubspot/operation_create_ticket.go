@@ -83,7 +83,7 @@ func (c *CreateTicketOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, err
 	}
 
-	reqURL := "https://api.hubapi.com/crm/v3/objects/tickets"
+	reqURL := "/crm/v3/objects/tickets"
 
 	resp, err := hubspotClient(reqURL, ctx.Auth.AccessToken, http.MethodPost, newTicket)
 	if err != nil {

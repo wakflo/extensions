@@ -47,10 +47,11 @@ var (
 	}).SetRequired(true).Build()
 )
 
-// var baseAPI = "https://api.hubapi.com"
+var baseAPI = "https://api.hubapi.com"
 
 func hubspotClient(reqURL, accessToken, method string, request []byte) (interface{}, error) {
-	req, err := http.NewRequest(method, reqURL, bytes.NewBuffer(request))
+	fullURL := baseAPI + reqURL
+	req, err := http.NewRequest(method, fullURL, bytes.NewBuffer(request))
 	if err != nil {
 		return nil, err
 	}
@@ -167,6 +168,7 @@ func hubspotClient(reqURL, accessToken, method string, request []byte) (interfac
 //			SetDynamicOptions(&getPipelines).
 //			SetRequired(true).Build()
 //	}
+
 var hubspotPriority = []*sdkcore.AutoFormSchema{
 	{Const: "HIGH", Title: "High"},
 	{Const: "MEDIUM", Title: "Medium"},

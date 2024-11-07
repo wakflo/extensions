@@ -56,7 +56,7 @@ func NewRetrieveContactOperation() *RetrieveContactOperation {
 func (c *RetrieveContactOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[retrieveContactProps](ctx)
 
-	reqURL := fmt.Sprintf("https://api.hubapi.com/crm/v3/objects/contacts/%s?idProperty=email", input.Email)
+	reqURL := fmt.Sprintf("/v3/objects/contacts/%s?idProperty=email", input.Email)
 
 	resp, err := hubspotClient(reqURL, ctx.Auth.AccessToken, http.MethodGet, nil)
 	if err != nil {

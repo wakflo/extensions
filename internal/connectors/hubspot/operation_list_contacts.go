@@ -55,7 +55,7 @@ func NewListContactsOperation() *ListContactsOperation {
 func (c *ListContactsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	_ = sdk.InputToType[listContactsProps](ctx)
 
-	reqURL := "https://api.hubapi.com/crm/v3/objects/contacts"
+	reqURL := "/crm/v3/objects/contacts"
 
 	resp, err := hubspotClient(reqURL, ctx.Auth.AccessToken, http.MethodGet, nil)
 	if err != nil {

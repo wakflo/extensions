@@ -56,7 +56,7 @@ func NewSearchOwnerByEmailOperation() *SearchOwnerByEmailOperation {
 func (c *SearchOwnerByEmailOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[searchOwnerByEmailProps](ctx)
 
-	reqURL := fmt.Sprintf("https://api.hubapi.com/crm/v3/owners/?email=%s&limit=100&archived=false", input.Email)
+	reqURL := fmt.Sprintf("/crm/v3/owners/?email=%s&limit=100&archived=false", input.Email)
 
 	resp, err := hubspotClient(reqURL, ctx.Auth.AccessToken, http.MethodGet, nil)
 	if err != nil {

@@ -51,7 +51,7 @@ func NewDealCreated() *TicketCreated {
 }
 
 func (t *DealCreated) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
-	reqURL := "https://api.hubapi.com/crm/v3/objects/deals?limit=50&archived=false&properties=createdAt,updatedAt"
+	reqURL := "/crm/v3/objects/deals?limit=50&archived=false&properties=createdAt,updatedAt"
 
 	if ctx.Metadata.LastRun != nil {
 		createdAfter := ctx.Metadata.LastRun.UTC().Format(time.RFC3339)
