@@ -29,6 +29,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/flexport"
 	"github.com/wakflo/extensions/internal/connectors/freshdesk"
 	"github.com/wakflo/extensions/internal/connectors/freshworkscrm"
+	"github.com/wakflo/extensions/internal/connectors/github"
 	googledocs "github.com/wakflo/extensions/internal/connectors/google_docs"
 	googlesheets "github.com/wakflo/extensions/internal/connectors/google_sheets"
 	"github.com/wakflo/extensions/internal/connectors/googlecalendar"
@@ -113,6 +114,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		flexport.NewConnector,       // Flexport
 		jiracloud.NewConnector,      // Jira Cloud
 		prisync.NewConnector,        // Prisync
+		github.NewConnector,         // Github
 	}
 
 	// 🛑Do-Not-Edit
