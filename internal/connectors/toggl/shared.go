@@ -127,7 +127,6 @@ func getProjects(apiKey, workspaceID string, sinceDate int64) (interface{}, erro
 
 func getWorkSpaceInput() *sdkcore.AutoFormSchema {
 	getWorkspaces := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
-
 		qu := fastshot.NewClient(baseURL).
 			Auth().BasicAuth(ctx.Auth.Extra["api-key"], "api_token").
 			Header().

@@ -16,6 +16,7 @@ package zohoinventory
 
 import (
 	"errors"
+
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
