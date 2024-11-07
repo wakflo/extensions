@@ -1,17 +1,3 @@
-// Copyright 2022-present Wakflo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package cryptography
 
 import (
@@ -28,9 +14,6 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
-
-	//nolint:staticcheck,gosec
-	"golang.org/x/crypto/ripemd160"
 )
 
 type CryptographyAlgorithm struct {
@@ -55,10 +38,7 @@ var suppportedAlgorithms = []*sdkcore.AutoFormSchema{
 		Const: "SHA512",
 		Title: "SHA512",
 	},
-	{
-		Const: "RIPEMD160",
-		Title: "RIPEMD160",
-	},
+	// RIPEMD160 removed due to deprecation
 }
 
 type hashTextOperationProps struct {
@@ -129,11 +109,6 @@ func (c *HashTextOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		break
 	case suppportedAlgorithms[3].Const:
 		hashedString = sha512.New()
-		hashedString.Write([]byte(inputText))
-		break
-	case suppportedAlgorithms[4].Const:
-		//nolint:gosec
-		hashedString = ripemd160.New()
 		hashedString.Write([]byte(inputText))
 		break
 	default:

@@ -59,7 +59,7 @@ func (c *ListInvoicesOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	_ = sdk.InputToType[listInvoicesOperationProps](ctx)
 
-	url := "https://api.harvestapp.com/v2/invoices"
+	url := "/v2/invoices"
 
 	invoices, err := getHarvestClient(ctx.Auth.AccessToken, url)
 	if err != nil {

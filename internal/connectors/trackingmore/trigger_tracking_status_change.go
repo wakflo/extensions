@@ -51,7 +51,7 @@ func NewTrackingStatusChange() *TrackingStatusChange {
 }
 
 func (t *TrackingStatusChange) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
-	endpoint := "https://api.trackingmore.com/v4/trackings/get"
+	endpoint := "/v4/trackings/get"
 	applicationKey := ctx.Auth.Extra["key"]
 
 	lastRunTime := ctx.Metadata.LastRun

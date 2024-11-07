@@ -58,7 +58,7 @@ func (c *GetTasksOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	input := sdk.InputToType[getTasksOperationProps](ctx)
 
-	url := "https://api.clickup.com/api/v2/list/" + input.ListID + "/task"
+	url := "/v2/list/" + input.ListID + "/task"
 
 	tasks, err := getData(accessToken, url)
 	if err != nil {

@@ -64,10 +64,9 @@ func (t *TriggerNewPayment) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		fromDate = lastRunTime.UTC().Format(time.RFC3339)
 	}
 
-	baseURL := "https://www.zohoapis.com/inventory/v1/customerpayments"
+	endpoint := baseURL + "/v1/customerpayments"
 
-	// Create URL with query parameters
-	u, err := url.Parse(baseURL)
+	u, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing URL: %v", err)
 	}

@@ -65,7 +65,7 @@ func (c *DeleteRecordOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	apiKey := ctx.Auth.Extra["api-key"]
 	input := sdk.InputToType[deleteRecordOperationProps](ctx)
 
-	reqURL := fmt.Sprintf("https://api.airtable.com/v0/%s/%s/%s", input.Bases, input.Table, input.RecordID)
+	reqURL := fmt.Sprintf("%s/v0/%s/%s/%s", baseAPI, input.Bases, input.Table, input.RecordID)
 
 	response, err := airtableRequest(apiKey, reqURL, http.MethodDelete)
 	if err != nil {

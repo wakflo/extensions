@@ -30,8 +30,12 @@ var (
 	sharedAuth = autoform.NewOAuthField("https://zoom.us/oauth/authorize", &tokenURL, []string{}).SetRequired(true).Build()
 )
 
+const baseURL = "https://api.zoom.us"
+
 func zoomRequest(accessToken, reqURL string, request []byte) (interface{}, error) {
-	req, err := http.NewRequest(http.MethodPost, reqURL, bytes.NewBuffer(request))
+	fullURL := baseURL + reqURL
+
+	req, err := http.NewRequest(http.MethodPost, fullURL, bytes.NewBuffer(request))
 	if err != nil {
 		return nil, err
 	}

@@ -53,7 +53,7 @@ func NewGetProductsOperation() *GetProductsOperation {
 func (c *GetProductsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	_ = sdk.InputToType[createMeetingOperationProps](ctx)
 
-	reqURL := "https://logistics-api.flexport.com/logistics/api/2024-07/products"
+	reqURL := "/api/2024-07/products"
 
 	resp, err := flexportRequest(ctx.Auth.Extra["api-key"], reqURL, http.MethodGet, nil)
 	if err != nil {

@@ -55,7 +55,7 @@ func (c *GetFoldersOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	accessToken := ctx.Auth.AccessToken
 
 	input := sdk.InputToType[getFoldersOperationProps](ctx)
-	url := "https://api.clickup.com/api/v2/space/" + input.SpaceID + "/folder"
+	url := "/v2/space/" + input.SpaceID + "/folder"
 
 	folders, err := getData(accessToken, url)
 	if err != nil {

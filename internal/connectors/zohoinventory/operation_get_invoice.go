@@ -62,7 +62,7 @@ func (c *GetInvoiceOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	input := sdk.InputToType[getInvoiceOperationProps](ctx)
 
-	url := fmt.Sprintf("https://www.zohoapis.com/inventory/v1/invoices/%s?organization_id=%s",
+	url := fmt.Sprintf("/v1/invoices/%s?organization_id=%s",
 		input.InvoiceID, input.OrganizationID)
 	invoice, err := getZohoClient(ctx.Auth.AccessToken, url)
 	if err != nil {

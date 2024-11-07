@@ -33,8 +33,11 @@ var (
 	}).SetRequired(true).Build()
 )
 
+const baseURL = "https://api.dropboxapi.com"
+
 func dropBoxClient(reqURL, accessToken string, request []byte) (interface{}, error) {
-	req, err := http.NewRequest(http.MethodPost, reqURL, bytes.NewBuffer(request))
+	fullURL := baseURL + reqURL
+	req, err := http.NewRequest(http.MethodPost, fullURL, bytes.NewBuffer(request))
 	if err != nil {
 		return nil, err
 	}
