@@ -39,6 +39,8 @@ var sharedAuth = autoform.NewCustomAuthField().
 	}).
 	Build()
 
+const baseURL = "https://api.track.toggl.com/api"
+
 func createProject(apiKey, workspaceID, name string, activeValue bool) (interface{}, error) {
 	projectData := map[string]interface{}{
 		"name":   name,
@@ -49,7 +51,7 @@ func createProject(apiKey, workspaceID, name string, activeValue bool) (interfac
 		return nil, fmt.Errorf("failed to marshal JSON: %v", err)
 	}
 
-	url := fmt.Sprintf("https://api.track.toggl.com/api/v9/workspaces/%s/projects", workspaceID)
+	url := fmt.Sprintf("%s/v9/workspaces/%s/projects", baseURL, workspaceID)
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -87,7 +89,7 @@ func createProject(apiKey, workspaceID, name string, activeValue bool) (interfac
 
 func getProjects(apiKey, workspaceID string, sinceDate int64) (interface{}, error) {
 	lastUpdate := strconv.FormatInt(sinceDate, 10)
-	url := fmt.Sprintf("https://api.track.toggl.com/api/v9/workspaces/%s/projects?query=since=%s", workspaceID, lastUpdate)
+	url := fmt.Sprintf("%s/v9/workspaces/%s/projects?query=since=%s", baseURL, workspaceID, lastUpdate)
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -125,12 +127,11 @@ func getProjects(apiKey, workspaceID string, sinceDate int64) (interface{}, erro
 
 func getWorkSpaceInput() *sdkcore.AutoFormSchema {
 	getWorkspaces := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
-		baseAPI := "https://api.track.toggl.com"
-		qu := fastshot.NewClient(baseAPI).
+		qu := fastshot.NewClient(baseURL).
 			Auth().BasicAuth(ctx.Auth.Extra["api-key"], "api_token").
 			Header().
 			AddAccept("application/json").
-			Build().GET("/api/v9/workspaces")
+			Build().GET("/v9/workspaces")
 
 		rsp, err := qu.Send()
 		if err != nil {

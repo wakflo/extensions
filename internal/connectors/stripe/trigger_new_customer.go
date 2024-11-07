@@ -65,7 +65,7 @@ func (t *TriggerNewCustomer) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	params := url.Values{}
 	params.Add("query", "created:'"+stringValue+"'")
 
-	reqURL := "https://api.stripe.com/v1/customers"
+	reqURL := "/v1/customers"
 
 	resp, err := stripClient(apiKey, reqURL, http.MethodGet, nil, params)
 	if err != nil {

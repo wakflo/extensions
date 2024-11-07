@@ -149,7 +149,7 @@ func (c *CreateMeetingOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, err
 	}
 
-	reqURL := "https://api.zoom.us/v2/users/me/meetings"
+	reqURL := "/v2/users/me/meetings"
 
 	resp, err := zoomRequest(ctx.Auth.AccessToken, reqURL, meeting)
 	if err != nil {

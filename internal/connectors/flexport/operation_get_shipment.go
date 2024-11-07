@@ -55,7 +55,7 @@ func NewGetShipmentOperation() *GetShipmentOperation {
 func (c *GetShipmentOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[getShipmentOperationProps](ctx)
 
-	reqURL := "https://logistics-api.flexport.com/logistics/api/2024-07/inbounds/shipments/" + input.ShipmentID
+	reqURL := "/api/2024-07/inbounds/shipments/" + input.ShipmentID
 
 	resp, err := flexportRequest(ctx.Auth.Extra["api-key"], reqURL, http.MethodGet, nil)
 	if err != nil {

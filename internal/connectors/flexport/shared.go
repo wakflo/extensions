@@ -35,8 +35,12 @@ var sharedAuth = autoform.NewCustomAuthField().
 	}).
 	Build()
 
+const baseURL = "https://logistics-api.flexport.com/logistics"
+
 func flexportRequest(accessToken, reqURL, method string, request []byte) (interface{}, error) {
-	req, err := http.NewRequest(method, reqURL, bytes.NewBuffer(request))
+	fullURL := baseURL + reqURL
+
+	req, err := http.NewRequest(method, fullURL, bytes.NewBuffer(request))
 	if err != nil {
 		return nil, err
 	}

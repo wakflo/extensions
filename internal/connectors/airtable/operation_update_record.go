@@ -83,7 +83,7 @@ func (c *UpdateRecordOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	//	return nil, err
 	// }
 
-	reqURL := fmt.Sprintf("https://api.airtable.com/v0/meta/bases/%s/tables", input.Bases)
+	reqURL := fmt.Sprintf("%s/v0/meta/bases/%s/tables", baseAPI, input.Bases)
 
 	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 	if err != nil {

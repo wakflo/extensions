@@ -62,7 +62,7 @@ func (c *CreateFolderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	accessToken := ctx.Auth.AccessToken
 
 	input := sdk.InputToType[createFolderOperationProps](ctx)
-	reqURL := "https://api.clickup.com/api/v2/space/" + input.SpaceID + "/folder"
+	reqURL := "/v2/space/" + input.SpaceID + "/folder"
 
 	folder, err := createItem(accessToken, input.Name, reqURL)
 	if err != nil {

@@ -65,7 +65,7 @@ func (c *SearchCustomerOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	params := url.Values{}
 	params.Add("query", "email:'"+input.Email+"'")
 
-	reqURL := "https://api.stripe.com/v1/customers/search"
+	reqURL := "/v1/customers/search"
 
 	resp, err := stripClient(apiKey, reqURL, http.MethodGet, nil, params)
 	if err != nil {

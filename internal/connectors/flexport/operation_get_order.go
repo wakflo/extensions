@@ -55,7 +55,7 @@ func NewGetOrderOperation() *GetOrderOperation {
 func (c *GetOrderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[getOrderOperationProps](ctx)
 
-	reqURL := "https://logistics-api.flexport.com/logistics/api/2024-07/orders/" + input.OrderID
+	reqURL := "/api/2024-07/orders/" + input.OrderID
 	resp, err := flexportRequest(ctx.Auth.Extra["api-key"], reqURL, http.MethodGet, nil)
 	if err != nil {
 		return nil, err

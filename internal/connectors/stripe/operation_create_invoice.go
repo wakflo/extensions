@@ -83,7 +83,7 @@ func (c *CreateInvoiceOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	payload := []byte(data.Encode())
 
-	reqURL := "https://api.stripe.com/v1/invoices"
+	reqURL := "/v1/invoices"
 
 	resp, err := stripClient(apiKey, reqURL, http.MethodPost, payload, nil)
 	if err != nil {

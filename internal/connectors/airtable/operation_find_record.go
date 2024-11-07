@@ -67,7 +67,7 @@ func (c *FindRecordOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	apiKey := ctx.Auth.Extra["api-key"]
 	input := sdk.InputToType[findRecordOperationProps](ctx)
 
-	reqURL := fmt.Sprintf("https://api.airtable.com/v0/%s/%s/%s", input.Bases, input.Table, input.RecordID)
+	reqURL := fmt.Sprintf("%s/v0/%s/%s/%s", baseAPI, input.Bases, input.Table, input.RecordID)
 
 	response, err := airtableRequest(apiKey, reqURL, http.MethodGet)
 	if err != nil {

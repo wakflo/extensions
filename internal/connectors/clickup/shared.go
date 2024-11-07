@@ -26,7 +26,7 @@ var (
 const baseURL = "https://api.clickup.com/api"
 
 func getAllSpaces(accessToken, param string) (interface{}, error) {
-	reqURL := "https://api.clickup.com/api/v2/team/" + param + "/space"
+	reqURL := baseURL + "/v2/team/" + param + "/space"
 	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 
 	query := req.URL.Query()
@@ -64,7 +64,7 @@ func getAllSpaces(accessToken, param string) (interface{}, error) {
 }
 
 func getData(accessToken, url string) (map[string]interface{}, error) {
-	reqURL := url
+	reqURL := baseURL + url
 	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 
 	query := req.URL.Query()
@@ -93,7 +93,7 @@ func getData(accessToken, url string) (map[string]interface{}, error) {
 }
 
 func getList(accessToken, listID string) (map[string]interface{}, error) {
-	reqURL := "https://api.clickup.com/api/v2/list/" + listID
+	reqURL := baseURL + "/v2/list/" + listID
 	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 	if err != nil {
 		panic(err)
@@ -124,7 +124,9 @@ func getList(accessToken, listID string) (map[string]interface{}, error) {
 }
 
 func searchTask(accessToken, url string, page int, orderBy string, reverseOrder, includeClosed bool) (map[string]interface{}, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	fullURL := baseURL + url
+
+	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +185,7 @@ func getTeams(accessToken string) ([]Team, error) {
 		Teams []Team `json:"teams"`
 	}
 
-	if err := json.Unmarshal(body, &parsedResponse); err != nil {
+	if errs := json.Unmarshal(body, &parsedResponse); errs != nil {
 		return nil, err
 	}
 
@@ -479,11 +481,12 @@ func getAssigneeInput(title string, desc string, required bool) *sdkcore.AutoFor
 }
 
 func createItem(accessToken, name, url string) (map[string]interface{}, error) {
+	fullURL := baseURL + url
 	data := []byte(fmt.Sprintf(`{
 		"name": "%s"
 	}`, name))
 
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(data))
+	req, err := http.NewRequest(http.MethodPost, fullURL, bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
@@ -504,7 +507,7 @@ func createItem(accessToken, name, url string) (map[string]interface{}, error) {
 	fmt.Println(string(body))
 
 	var response map[string]interface{}
-	if err := json.Unmarshal(body, &response); err != nil {
+	if errs := json.Unmarshal(body, &response); errs != nil {
 		return nil, err
 	}
 
