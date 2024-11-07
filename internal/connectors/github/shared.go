@@ -50,7 +50,6 @@ func githubGQL(accessToken, query string) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Set("X-Github-Api-Version", "2022-11-28")
 	req.Header.Add("Accept", "application/vnd.github+json")
 	req.Header.Add("Authorization", "Bearer "+accessToken)
 
@@ -100,7 +99,6 @@ func getRepositoryInput() *sdkcore.AutoFormSchema {
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 
-		req.Header.Set("X-Github-Api-Version", "2022-11-28")
 		req.Header.Add("Accept", "application/vnd.github+json")
 		req.Header.Add("Authorization", "Bearer "+ctx.Auth.AccessToken)
 
