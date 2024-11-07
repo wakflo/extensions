@@ -62,7 +62,7 @@ func (c *CreateFolderlessListOperation) Run(ctx *sdk.RunContext) (sdk.JSON, erro
 	accessToken := ctx.Auth.AccessToken
 
 	input := sdk.InputToType[createFolderlesslistOperationProps](ctx)
-	reqURL := "https://api.clickup.com/api/v2/space/" + input.SpaceID + "/list"
+	reqURL := "/v2/space/" + input.SpaceID + "/list"
 
 	response, err := createItem(accessToken, input.Name, reqURL)
 	if err != nil {

@@ -64,7 +64,7 @@ func (t *RecordTrigger) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if lastRunTime != nil {
 		createdTime = lastRunTime.UTC().Format(time.RFC3339)
 	}
-	reqURL := fmt.Sprintf("https://api.airtable.com/v0/meta/bases/%s/tables?updated_since=%s", input.Bases, createdTime)
+	reqURL := fmt.Sprintf("%s/v0/meta/bases/%s/tables?updated_since=%s", baseAPI, input.Bases, createdTime)
 
 	response, err := airtableRequest(apiKey, reqURL, http.MethodGet)
 	if err != nil {

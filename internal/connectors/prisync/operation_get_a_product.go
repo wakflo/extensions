@@ -54,8 +54,8 @@ func NewGetProductOperation() *GetProductOperation {
 func (c *GetProductOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[getProductOperationProps](ctx)
 
-	reqURL := "https://prisync.com/api/v2/get/product/" + input.ProductID
-	resp, err := prisyncRequest(ctx.Auth.Extra["api-key"], ctx.Auth.Extra["api-token"], reqURL, http.MethodGet, nil)
+	endpoint := "/api/v2/get/product/" + input.ProductID
+	resp, err := prisyncRequest(ctx.Auth.Extra["api-key"], ctx.Auth.Extra["api-token"], endpoint, http.MethodGet, nil)
 	if err != nil {
 		return nil, err
 	}

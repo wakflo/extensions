@@ -55,8 +55,8 @@ func NewGetProductsSmartPricesOperation() *GetProductsSmartPricesOperation {
 func (c *GetProductsSmartPricesOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	_ = sdk.InputToType[getProductsSmartPricesOperationProps](ctx)
 
-	reqURL := "https://prisync.com/api/v2/list/smartprice/startFrom/0"
-	resp, err := prisyncRequest(ctx.Auth.Extra["api-key"], ctx.Auth.Extra["api-token"], reqURL, http.MethodGet, nil)
+	endpoint := "/api/v2/list/smartprice/startFrom/0"
+	resp, err := prisyncRequest(ctx.Auth.Extra["api-key"], ctx.Auth.Extra["api-token"], endpoint, http.MethodGet, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -57,9 +57,7 @@ func (c *GetSpacesOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	spaces, _ := getAllSpaces(accessToken, input.TeamID)
 
-	return map[string]interface{}{
-		"Spaces": spaces,
-	}, nil
+	return spaces, nil
 }
 
 func (c *GetSpacesOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {

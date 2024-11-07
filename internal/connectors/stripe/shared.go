@@ -35,8 +35,12 @@ var sharedAuth = autoform.NewCustomAuthField().
 	}).
 	Build()
 
+const baseURL = "https://api.stripe.com"
+
 func stripClient(apiKey, url, httpType string, payload []byte, params url.Values) (map[string]interface{}, error) {
-	req, err := http.NewRequest(httpType, url, bytes.NewBuffer(payload))
+	fullURL := baseURL + url
+
+	req, err := http.NewRequest(httpType, fullURL, bytes.NewBuffer(payload))
 	if err != nil {
 		return nil, err
 	}

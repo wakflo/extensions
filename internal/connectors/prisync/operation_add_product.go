@@ -40,7 +40,7 @@ func NewAddProductOperation() *AddProductOperation {
 	return &AddProductOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Add Product",
-			Description: "Add Product",
+			Description: "Add a product",
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"name": autoform.NewShortTextField().
@@ -106,8 +106,8 @@ func (c *AddProductOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		formData["tags"] = input.Tags
 	}
 
-	reqURL := "https://prisync.com/api/v2/add/product/"
-	resp, err := prisyncRequest(ctx.Auth.Extra["api-key"], ctx.Auth.Extra["api-token"], reqURL, http.MethodPost, formData)
+	endpoint := "/api/v2/add/product/"
+	resp, err := prisyncRequest(ctx.Auth.Extra["api-key"], ctx.Auth.Extra["api-token"], endpoint, http.MethodPost, formData)
 	if err != nil {
 		return nil, err
 	}

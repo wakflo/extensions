@@ -43,8 +43,11 @@ var (
 		Build()
 )
 
+const baseURL = "https://connect.squareup.com"
+
 func getSquareClient(accessToken, url string) (map[string]interface{}, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	fullURL := baseURL + url
+	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}

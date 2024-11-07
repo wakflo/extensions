@@ -54,7 +54,7 @@ func (c *GetPaymentListOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	input := sdk.InputToType[getPaymentListOperationProps](ctx)
 
-	url := "https://www.zohoapis.com/inventory/v1/customerpayments/?organization_id=" + input.OrganizationID
+	url := "/v1/customerpayments/?organization_id=" + input.OrganizationID
 
 	paymentList, err := getZohoClient(ctx.Auth.AccessToken, url)
 	if err != nil {

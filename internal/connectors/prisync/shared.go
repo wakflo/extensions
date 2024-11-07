@@ -41,7 +41,10 @@ var sharedAuth = autoform.NewCustomAuthField().
 	}).
 	Build()
 
+const baseAPI = "https://prisync.com"
+
 func prisyncRequest(apiKey, apiToken, reqURL, method string, formData map[string]string) (interface{}, error) {
+	fullRequest := baseAPI + reqURL
 	var body bytes.Buffer
 	writer := multipart.NewWriter(&body)
 
@@ -53,7 +56,7 @@ func prisyncRequest(apiKey, apiToken, reqURL, method string, formData map[string
 
 	writer.Close()
 
-	req, err := http.NewRequest(method, reqURL, &body)
+	req, err := http.NewRequest(method, fullRequest, &body)
 	if err != nil {
 		return nil, err
 	}
@@ -83,6 +86,8 @@ func prisyncRequest(apiKey, apiToken, reqURL, method string, formData map[string
 }
 
 func prisyncBatchRequest(apiKey, apiToken, reqURL string, products []map[string]string, cancelOnPackageLimitExceeding bool) (interface{}, error) {
+	fullRequest := baseAPI + reqURL
+
 	var body bytes.Buffer
 	writer := multipart.NewWriter(&body)
 
@@ -102,7 +107,7 @@ func prisyncBatchRequest(apiKey, apiToken, reqURL string, products []map[string]
 
 	writer.Close()
 
-	req, err := http.NewRequest(http.MethodPost, reqURL, &body)
+	req, err := http.NewRequest(http.MethodPost, fullRequest, &body)
 	if err != nil {
 		return nil, err
 	}

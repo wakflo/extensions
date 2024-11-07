@@ -37,6 +37,7 @@ var sharedAuth = autoform.NewCustomAuthField().
 			Build(),
 	}).
 	Build()
+
 var baseAPI = "https://api.airtable.com"
 
 func getBasesInput() *sdkcore.AutoFormSchema {

@@ -60,7 +60,7 @@ func (c *DeleteTaskOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	input := sdk.InputToType[deleteTaskOperationProps](ctx)
 
-	reqURL := "https://api.clickup.com/api/v2/task/" + input.TaskID
+	reqURL := baseURL + "/v2/task/" + input.TaskID
 	req, err := http.NewRequest(http.MethodDelete, reqURL, nil)
 	if err != nil {
 		return nil, err

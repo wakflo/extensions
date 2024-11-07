@@ -56,7 +56,7 @@ func NewCancelOrderOperation() *CancelOrderOperation {
 func (c *CancelOrderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[cancelOrderOperationProps](ctx)
 
-	reqURL := fmt.Sprintf("https://logistics-api.flexport.com/logistics/api/2024-07/orders/%s/cancel", input.OrderID)
+	reqURL := fmt.Sprintf("/api/2024-07/orders/%s/cancel", input.OrderID)
 	resp, err := flexportRequest(ctx.Auth.Extra["api-key"], reqURL, http.MethodPost, nil)
 	if err != nil {
 		return nil, err

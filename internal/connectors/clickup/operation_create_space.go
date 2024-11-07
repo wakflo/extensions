@@ -66,7 +66,7 @@ func (c *CreateSpaceOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	input := sdk.InputToType[createSpaceOperationProps](ctx)
 
-	reqURL := "https://api.clickup.com/api/v2/team/" + input.TeamID + "/space"
+	reqURL := baseURL + "/v2/team/" + input.TeamID + "/space"
 	data := []byte(fmt.Sprintf(`{
 		"name": "%s",
 		"multiple_assignees": true,

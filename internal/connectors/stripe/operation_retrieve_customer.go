@@ -61,7 +61,7 @@ func (c *RetrieveCustomerOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	input := sdk.InputToType[retrieveCustomerOperationProps](ctx)
 
-	reqURL := "https://api.stripe.com/v1/customers/" + input.CustomerID
+	reqURL := "/v1/customers/" + input.CustomerID
 
 	resp, err := stripClient(apiKey, reqURL, http.MethodGet, nil, nil)
 	if err != nil {

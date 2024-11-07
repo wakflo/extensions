@@ -128,7 +128,7 @@ func (c *CreateCustomerOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	payload := []byte(data.Encode())
 
-	reqURL := "https://api.stripe.com/v1/customers"
+	reqURL := "/v1/customers"
 
 	resp, err := stripClient(apiKey, reqURL, http.MethodPost, payload, nil)
 	if err != nil {

@@ -62,7 +62,7 @@ func (c *GetPaymentOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	input := sdk.InputToType[getPaymentOperationProps](ctx)
 
-	url := fmt.Sprintf("https://www.zohoapis.com/inventory/v1/customerpayments/%s?organization_id=%s",
+	url := fmt.Sprintf("/v1/customerpayments/%s?organization_id=%s",
 		input.PaymentID, input.OrganizationID)
 
 	payments, err := getZohoClient(ctx.Auth.AccessToken, url)

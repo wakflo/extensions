@@ -88,8 +88,8 @@ func (c *AddBatchProductOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		})
 	}
 
-	reqURL := "https://prisync.com/api/v2/add/batch/"
-	resp, err := prisyncBatchRequest(ctx.Auth.Extra["api-key"], ctx.Auth.Extra["api-token"], reqURL, formData, false)
+	endpoint := "/api/v2/add/batch/"
+	resp, err := prisyncBatchRequest(ctx.Auth.Extra["api-key"], ctx.Auth.Extra["api-token"], endpoint, formData, false)
 	if err != nil {
 		return nil, err
 	}
