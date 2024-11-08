@@ -58,7 +58,7 @@ func (c *GetPaymentsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	_ = sdk.InputToType[getPaymentsOperationProps](ctx)
 
-	url := "https://connect.squareup.com/v2/payments"
+	url := "/v2/payments"
 
 	payments, err := getSquareClient(ctx.Auth.AccessToken, url)
 	if err != nil {

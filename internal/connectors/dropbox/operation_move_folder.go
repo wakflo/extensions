@@ -72,7 +72,7 @@ func (c *MoveFolderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, err
 	}
 
-	reqURL := "https://api.dropboxapi.com/2/files/move_v2"
+	reqURL := "/2/files/move_v2"
 	resp, err := dropBoxClient(reqURL, ctx.Auth.AccessToken, folders)
 	if err != nil {
 		return nil, err

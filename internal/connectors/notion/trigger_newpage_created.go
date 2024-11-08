@@ -86,7 +86,7 @@ func (t *TriggerNewPageCreated) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, fmt.Errorf("failed to encode filter JSON: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf("https://api.notion.com/v1/databases/%s/query", input.DatabaseID), bytes.NewBuffer(filterJSON))
+	req, err := http.NewRequest("POST", fmt.Sprintf(baseURL+"/databases/%s/query", input.DatabaseID), bytes.NewBuffer(filterJSON))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

@@ -123,7 +123,7 @@ func (c *CreateTaskOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, err
 	}
 
-	reqURL := "https://api.clickup.com/api/v2/list/" + input.ListID + "/task"
+	reqURL := baseURL + "/v2/list/" + input.ListID + "/task"
 	req, err := http.NewRequest(http.MethodPost, reqURL, bytes.NewBuffer(taskJSON))
 	if err != nil {
 		return nil, err
@@ -140,7 +140,7 @@ func (c *CreateTaskOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	defer res.Body.Close()
 
 	var response sdk.JSON
-	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+	if newErr := json.NewDecoder(res.Body).Decode(&response); newErr != nil {
 		return nil, err
 	}
 

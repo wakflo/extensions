@@ -88,7 +88,7 @@ func (c *UpdateSpaceOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	input := sdk.InputToType[updateSpaceOperationProps](ctx)
 
-	reqURL := "https://api.clickup.com/api/v2/space/" + input.SpaceID
+	reqURL := baseURL + "/v2/space/" + input.SpaceID
 	data := []byte(fmt.Sprintf(`{
 		"name": "%s",
 		"multiple_assignees": %t,

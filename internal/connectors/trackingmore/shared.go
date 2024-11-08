@@ -83,7 +83,7 @@ func createBatchTracking(apiKey string, data []map[string]interface{}) (map[stri
 		return nil, fmt.Errorf("error marshaling JSON: %w", err)
 	}
 
-	fullURL := "https://api.trackingmore.com/v4/trackings/batch"
+	fullURL := baseURL + "/v4/trackings/batch"
 	req, err := http.NewRequest(http.MethodPost, fullURL, bytes.NewBuffer(payload))
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)
@@ -93,7 +93,6 @@ func createBatchTracking(apiKey string, data []map[string]interface{}) (map[stri
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Tracking-Api-Key", apiKey)
 
-	// Send the request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -101,7 +100,6 @@ func createBatchTracking(apiKey string, data []map[string]interface{}) (map[stri
 	}
 	defer resp.Body.Close()
 
-	// Decode the response into a map
 	var responseMap map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&responseMap); err != nil {
 		return nil, fmt.Errorf("error decoding response: %w", err)
@@ -112,7 +110,7 @@ func createBatchTracking(apiKey string, data []map[string]interface{}) (map[stri
 
 func listTracking(endpoint, applicationKey string, date string) (map[string]interface{}, error) {
 	encodedDate := url.QueryEscape(date)
-	fullURL := fmt.Sprintf("%s?updated_date_min=%s", endpoint, encodedDate)
+	fullURL := fmt.Sprintf("%s%s?updated_date_min=%s", baseURL, endpoint, encodedDate)
 
 	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
 	if err != nil {

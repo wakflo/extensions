@@ -60,7 +60,7 @@ func (c *GetFileLinkOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, err
 	}
 
-	reqURL := "https://api.dropboxapi.com/2/files/get_temporary_link"
+	reqURL := "/2/files/get_temporary_link"
 
 	resp, err := dropBoxClient(reqURL, ctx.Auth.AccessToken, fileLink)
 	if err != nil {

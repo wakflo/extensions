@@ -29,6 +29,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/flexport"
 	"github.com/wakflo/extensions/internal/connectors/freshdesk"
 	"github.com/wakflo/extensions/internal/connectors/freshworkscrm"
+	"github.com/wakflo/extensions/internal/connectors/github"
 	googledocs "github.com/wakflo/extensions/internal/connectors/google_docs"
 	googlesheets "github.com/wakflo/extensions/internal/connectors/google_sheets"
 	"github.com/wakflo/extensions/internal/connectors/googlecalendar"
@@ -36,7 +37,9 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/googlemail"
 	"github.com/wakflo/extensions/internal/connectors/goscript"
 	"github.com/wakflo/extensions/internal/connectors/harvest"
+	"github.com/wakflo/extensions/internal/connectors/hubspot"
 	"github.com/wakflo/extensions/internal/connectors/javascript"
+	"github.com/wakflo/extensions/internal/connectors/jiracloud"
 	"github.com/wakflo/extensions/internal/connectors/jsonconverter"
 	"github.com/wakflo/extensions/internal/connectors/linear"
 	"github.com/wakflo/extensions/internal/connectors/mailchimp"
@@ -44,6 +47,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/monday"
 	"github.com/wakflo/extensions/internal/connectors/notion"
 	"github.com/wakflo/extensions/internal/connectors/openai"
+	"github.com/wakflo/extensions/internal/connectors/prisync"
 	"github.com/wakflo/extensions/internal/connectors/shippo"
 	"github.com/wakflo/extensions/internal/connectors/shopify"
 	"github.com/wakflo/extensions/internal/connectors/slack"
@@ -108,9 +112,12 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		openai.NewConnector,         // OpenAI
 		googlecalendar.NewConnector, // Google Calendar
 		monday.NewConnector,         // Monday.com
-		monday.NewConnector,         // Monday.com
 		zoom.NewConnector,           // Zoom
 		flexport.NewConnector,       // Flexport
+		hubspot.NewConnector,        // Hubspot
+		jiracloud.NewConnector,      // Jira Cloud
+		prisync.NewConnector,        // Prisync
+		github.NewConnector,         // Github
 		notion.NewConnector,         // Notion
 	}
 

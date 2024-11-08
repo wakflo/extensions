@@ -75,7 +75,7 @@ func (c *ListFolderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, err
 	}
 
-	reqURL := "https://api.dropboxapi.com/2/files/list_folder"
+	reqURL := "/2/files/list_folder"
 
 	resp, err := listFolderContent(reqURL, ctx.Auth.AccessToken, folderContent)
 	if err != nil {

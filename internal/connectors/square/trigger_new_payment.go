@@ -55,9 +55,9 @@ func (t *TriggerNewPayment) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		fromDate = defaultStartDate.UTC().Format(time.RFC3339)
 	}
 
-	baseURL := "https://connect.squareup.com/v2/payments?begin_time=" + fromDate
+	request := "/v2/payments?begin_time=" + fromDate
 
-	payments, err := getSquareClient(ctx.Auth.AccessToken, baseURL)
+	payments, err := getSquareClient(ctx.Auth.AccessToken, request)
 	if err != nil {
 		return nil, err
 	}

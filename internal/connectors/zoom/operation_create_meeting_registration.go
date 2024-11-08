@@ -126,7 +126,7 @@ func (c *CreateMeetingRegistrantOperation) Run(ctx *sdk.RunContext) (sdk.JSON, e
 		return nil, err
 	}
 
-	reqURL := fmt.Sprintf("https://api.zoom.us/v2/meetings/%s/registrants", input.MeetingID)
+	reqURL := fmt.Sprintf("%s/v2/meetings/%s/registrants", baseURL, input.MeetingID)
 
 	resp, err := zoomRequest(ctx.Auth.AccessToken, reqURL, meetingRegistrant)
 	if err != nil {

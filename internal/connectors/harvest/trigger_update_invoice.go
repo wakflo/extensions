@@ -63,7 +63,7 @@ func (t *InvoiceUpdate) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		updatedTime = lastRunTime.UTC().Format(time.RFC3339)
 	}
 
-	url := "https://api.harvestapp.com/v2/invoices?updated_since=" + updatedTime
+	url := "/v2/invoices?updated_since=" + updatedTime
 
 	response, err := getHarvestClient(ctx.Auth.AccessToken, url)
 	if err != nil {

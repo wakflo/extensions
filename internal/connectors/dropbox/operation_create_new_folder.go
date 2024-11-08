@@ -67,7 +67,7 @@ func (c *CreateFolderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, err
 	}
 
-	reqURL := "https://api.dropboxapi.com/2/files/create_folder_v2"
+	reqURL := "/2/files/create_folder_v2"
 
 	resp, err := dropBoxClient(reqURL, ctx.Auth.AccessToken, newFolder)
 	if err != nil {

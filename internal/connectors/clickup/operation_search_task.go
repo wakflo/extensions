@@ -79,7 +79,7 @@ func (c *SearchTaskOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 
 	input := sdk.InputToType[searchTaskOperationProps](ctx)
 
-	reqURL := "https://api.clickup.com/api/v2/team/" + input.TeamID + "/task"
+	reqURL := "/v2/team/" + input.TeamID + "/task"
 	task, _ := searchTask(accessToken, reqURL, input.Page, input.OrderBy, input.Reverse, input.IncludeClosed)
 
 	return task, nil

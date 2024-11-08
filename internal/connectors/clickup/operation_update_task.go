@@ -131,7 +131,7 @@ func (c *UpdateTaskOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, err
 	}
 
-	reqURL := "https://api.clickup.com/api/v2/task/" + input.TaskID
+	reqURL := baseURL + "/v2/task/" + input.TaskID
 	req, err := http.NewRequest(http.MethodPut, reqURL, bytes.NewBuffer(taskJSON))
 	if err != nil {
 		return nil, err

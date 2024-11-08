@@ -15,13 +15,13 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
+const baseURL = "https://api.notion.com/v1"
+
 var (
 	// #nosec
-	tokenURL   = "https://api.notion.com/v1/oauth/token"
-	sharedAuth = autoform.NewOAuthField("https://api.notion.com/v1/oauth/authorize", &tokenURL, []string{}).Build()
+	tokenURL   = baseURL + "oauth/token"
+	sharedAuth = autoform.NewOAuthField(baseURL+"/oauth/authorize", &tokenURL, []string{}).Build()
 )
-
-const baseURL = "https://api.notion.com/v1"
 
 func getNotionPagesInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
 	getPages := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
@@ -32,7 +32,7 @@ func getNotionPagesInput(title string, desc string, required bool) *sdkcore.Auto
 		client := &http.Client{}
 
 		// Constructing the URL for querying the database
-		url := fmt.Sprintf("https://api.notion.com/v1/databases/%s/query", input.DatabaseID)
+		url := fmt.Sprintf(baseURL+"/databases/%s/query", input.DatabaseID)
 		req, err := http.NewRequest("POST", url, nil)
 		if err != nil {
 			return nil, err
@@ -97,7 +97,7 @@ func getNotionPagesInput(title string, desc string, required bool) *sdkcore.Auto
 func getNotionDatabasesInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
 	getDatabases := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
 		// Define the Notion API URL
-		url := "https://api.notion.com/v1/search"
+		url := baseURL + "/v1/search"
 
 		// Create the request body with the filter to only get databases
 		requestBody, err := json.Marshal(map[string]interface{}{
@@ -256,7 +256,7 @@ func createNotionPage(accessToken, parentPageID, title string, content string) (
 }
 
 func updateNotionPage(accessToken, pageID, title, content string) (map[string]interface{}, error) {
-	url := fmt.Sprintf("https://api.notion.com/v1/pages/%s", pageID)
+	url := fmt.Sprintf(baseURL+"/pages/%s", pageID)
 
 	// Define the properties for title and content
 	properties := map[string]interface{}{
@@ -331,7 +331,7 @@ func updateNotionPage(accessToken, pageID, title, content string) (map[string]in
 }
 
 func queryNewPages(accessToken, databaseID string, lastChecked time.Time) ([]map[string]interface{}, error) {
-	url := fmt.Sprintf("https://api.notion.com/v1/databases/%s/query", databaseID)
+	url := fmt.Sprintf(baseURL+"/databases/%s/query", databaseID)
 
 	payload := map[string]interface{}{
 		"filter": map[string]interface{}{
@@ -406,7 +406,7 @@ func queryNewPages(accessToken, databaseID string, lastChecked time.Time) ([]map
 }
 
 func getNotionPage(accessToken, pageID string) (sdk.JSON, error) {
-	url := "https://api.notion.com/v1/pages/" + pageID
+	url := baseURL + "/pages/" + pageID
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err

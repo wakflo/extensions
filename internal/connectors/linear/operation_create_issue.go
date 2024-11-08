@@ -97,7 +97,7 @@ func (c *CreateIssueOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if input.AssigneeID != "" {
 		fields["assigneeId"] = fmt.Sprintf(`"%s"`, input.AssigneeID)
 	}
-	if input.AssigneeID != "" {
+	if input.LabelID != "" {
 		fields["labelIds"] = fmt.Sprintf(`"%s"`, input.LabelID)
 	}
 

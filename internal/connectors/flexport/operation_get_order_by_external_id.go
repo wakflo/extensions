@@ -55,7 +55,7 @@ func NewGetOrderByExternalIDOperation() *GetOrderByExternalIDOperation {
 func (c *GetOrderByExternalIDOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	input := sdk.InputToType[getOrderByExternalIDOperationProps](ctx)
 
-	reqURL := "https://logistics-api.flexport.com/logistics/api/2024-07/orders/external_id/" + input.ExternalOrderID
+	reqURL := "/api/2024-07/orders/external_id/" + input.ExternalOrderID
 	resp, err := flexportRequest(ctx.Auth.Extra["api-key"], reqURL, http.MethodGet, nil)
 	if err != nil {
 		return nil, err
