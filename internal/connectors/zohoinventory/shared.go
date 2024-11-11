@@ -40,8 +40,8 @@ var (
 
 const baseURL = "https://www.zohoapis.com/inventory"
 
-func getZohoClient(accessToken, url string) (map[string]interface{}, error) {
-	fullURL := baseURL + url
+func getZohoClient(accessToken, endpoint string) (map[string]interface{}, error) {
+	fullURL := baseURL + endpoint
 	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %v", err)
@@ -77,7 +77,7 @@ func getZohoClient(accessToken, url string) (map[string]interface{}, error) {
 
 func getOrganizationsInput() *sdkcore.AutoFormSchema {
 	getOrganizations := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
-		client := fastshot.NewClient("https://www.zohoapis.com/inventory").
+		client := fastshot.NewClient(baseURL).
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
 			AddAccept("application/json").

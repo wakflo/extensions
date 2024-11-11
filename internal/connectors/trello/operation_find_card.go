@@ -12,38 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package zohoinventory
+package trello
 
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-type getInvoiceOperationProps struct {
-	OrganizationID string `json:"organization_id"`
-	InvoiceID      string `json:"invoice_id"`
+type findCardOperationProps struct {
+	CardID string `json:"cardId"`
 }
 
-type GetInvoiceOperation struct {
+type FindCardOperation struct {
 	options *sdk.OperationInfo
 }
 
-func NewGetInvoiceOperation() sdk.IOperation {
-	return &GetInvoiceOperation{
+func NewFindCardOperation() *FindCardOperation {
+	return &FindCardOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Get Invoice",
-			Description: "Retrieve a specific invoice.",
+			Name:        "Get a Card",
+			Description: "find a card",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"organization_id": getOrganizationsInput(),
-				"invoice_id": autoform.NewShortTextField().
-					SetDisplayName("Invoice ID").
-					SetDescription("The ID of the invoice to retrieve to retrieve").
+				"cardId": autoform.NewShortTextField().
+					SetDisplayName("Card ID").
+					SetDescription("The id of the card to find").
 					SetRequired(true).
 					Build(),
 			},
@@ -55,28 +54,27 @@ func NewGetInvoiceOperation() sdk.IOperation {
 	}
 }
 
-func (c *GetInvoiceOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
-	if ctx.Auth.AccessToken == "" {
-		return nil, errors.New("missing Zoho auth token")
+func (c *FindCardOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+	if ctx.Auth.Extra["api-key"] == "" {
+		return nil, errors.New("missing trello api credentials")
 	}
+	apiKey := ctx.Auth.Extra["api-key"]
+	apiToken := ctx.Auth.Extra["api-token"]
+	input := sdk.InputToType[findCardOperationProps](ctx)
+	fullURL := fmt.Sprintf("%s/cards/%s?key=%s&token=%s", baseURL, input.CardID, apiKey, apiToken)
 
-	input := sdk.InputToType[getInvoiceOperationProps](ctx)
-
-	url := fmt.Sprintf("/v1/invoices/%s?organization_id=%s",
-		input.InvoiceID, input.OrganizationID)
-
-	invoice, err := getZohoClient(ctx.Auth.AccessToken, url)
+	response, err := trelloRequest(http.MethodGet, fullURL, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error fetching data: %v", err)
 	}
 
-	return invoice, nil
+	return response, nil
 }
 
-func (c *GetInvoiceOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *FindCardOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 
-func (c *GetInvoiceOperation) GetInfo() *sdk.OperationInfo {
+func (c *FindCardOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }
