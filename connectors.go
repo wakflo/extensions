@@ -58,6 +58,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/woocommerce"
 	"github.com/wakflo/extensions/internal/connectors/xero"
 	"github.com/wakflo/extensions/internal/connectors/zohoinventory"
+	"github.com/wakflo/extensions/internal/connectors/zohosalesiq"
 	"github.com/wakflo/extensions/internal/connectors/zoom"
 	"github.com/wakflo/extensions/internal/logger"
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -117,6 +118,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		jiracloud.NewConnector,      // Jira Cloud
 		prisync.NewConnector,        // Prisync
 		github.NewConnector,         // Github
+		zohosalesiq.NewConnector,    // ZohoSales
 	}
 
 	// 🛑Do-Not-Edit
