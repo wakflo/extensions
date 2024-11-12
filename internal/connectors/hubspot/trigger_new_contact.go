@@ -27,8 +27,8 @@ type ContactCreated struct {
 	options *sdk.TriggerInfo
 }
 
-func NewContactCreated() *TicketCreated {
-	return &TicketCreated{
+func NewContactCreated() *ContactCreated {
+	return &ContactCreated{
 		options: &sdk.TriggerInfo{
 			Name:        "New Contact Added",
 			Description: "triggers workflow when a new contact has been created",

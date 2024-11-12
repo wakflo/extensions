@@ -27,8 +27,8 @@ type DealCreated struct {
 	options *sdk.TriggerInfo
 }
 
-func NewDealCreated() *TicketCreated {
-	return &TicketCreated{
+func NewDealCreated() *DealCreated {
+	return &DealCreated{
 		options: &sdk.TriggerInfo{
 			Name:        "New Deal Added",
 			Description: "triggers workflow when a new deal is added",

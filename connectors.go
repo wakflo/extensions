@@ -57,6 +57,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/trackingmore"
 	"github.com/wakflo/extensions/internal/connectors/woocommerce"
 	"github.com/wakflo/extensions/internal/connectors/xero"
+	"github.com/wakflo/extensions/internal/connectors/zendesk"
 	"github.com/wakflo/extensions/internal/connectors/zohoinventory"
 	"github.com/wakflo/extensions/internal/connectors/zoom"
 	"github.com/wakflo/extensions/internal/logger"
@@ -117,6 +118,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		jiracloud.NewConnector,      // Jira Cloud
 		prisync.NewConnector,        // Prisync
 		github.NewConnector,         // Github
+		zendesk.NewConnector,        // Zendesk
 	}
 
 	// 🛑Do-Not-Edit

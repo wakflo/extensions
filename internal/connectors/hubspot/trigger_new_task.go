@@ -27,8 +27,8 @@ type TaskCreated struct {
 	options *sdk.TriggerInfo
 }
 
-func NewTaskCreated() *TicketCreated {
-	return &TicketCreated{
+func NewTaskCreated() *TaskCreated {
+	return &TaskCreated{
 		options: &sdk.TriggerInfo{
 			Name:        "New Task Added",
 			Description: "triggers workflow when a new task has been added",
