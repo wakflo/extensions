@@ -52,6 +52,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/slack"
 	"github.com/wakflo/extensions/internal/connectors/square"
 	"github.com/wakflo/extensions/internal/connectors/stripe"
+	"github.com/wakflo/extensions/internal/connectors/survey_monkey"
 	"github.com/wakflo/extensions/internal/connectors/todoist"
 	"github.com/wakflo/extensions/internal/connectors/toggl"
 	"github.com/wakflo/extensions/internal/connectors/trackingmore"
@@ -59,6 +60,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/xero"
 	"github.com/wakflo/extensions/internal/connectors/zohoinventory"
 	"github.com/wakflo/extensions/internal/connectors/zoom"
+
 	"github.com/wakflo/extensions/internal/logger"
 	sdk "github.com/wakflo/go-sdk/connector"
 )
@@ -117,6 +119,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		jiracloud.NewConnector,      // Jira Cloud
 		prisync.NewConnector,        // Prisync
 		github.NewConnector,         // Github
+		survey_monkey.NewConnector,  // Survey Monkey
 	}
 
 	// 🛑Do-Not-Edit
