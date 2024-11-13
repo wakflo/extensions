@@ -26,8 +26,8 @@ import (
 
 var (
 	// #nosec
-	tokenURL   = "https://zoom.us/oauth/token"
-	sharedAuth = autoform.NewOAuthField("https://zoom.us/oauth/authorize", &tokenURL, []string{}).SetRequired(true).Build()
+	tokenURL   = baseURL + "/oauth/token"
+	sharedAuth = autoform.NewOAuthField(baseURL+"/oauth/authorize", &tokenURL, []string{}).SetRequired(true).Build()
 )
 
 const baseURL = "https://api.zoom.us"
