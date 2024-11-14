@@ -16,6 +16,7 @@ package zohoinventory
 
 import (
 	"errors"
+	"fmt"
 
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -53,14 +54,14 @@ func (c *GetInvoiceListOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	}
 
 	input := sdk.InputToType[getInvoiceListOperationProps](ctx)
+	endpoint := "/v1/invoices/?organization_id=" + input.OrganizationID
 
-	url := baseURL + "/v1/invoices/?organization_id=" + input.OrganizationID
-
-	invoices, err := getZohoClient(ctx.Auth.AccessToken, url)
+	result, err := getZohoClient(ctx.Auth.Token.AccessToken, endpoint)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting invoice list: %v", err)
 	}
-	return invoices, nil
+
+	return result, nil
 }
 
 func (c *GetInvoiceListOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
