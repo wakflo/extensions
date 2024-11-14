@@ -45,6 +45,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/mailchimp"
 	"github.com/wakflo/extensions/internal/connectors/manual"
 	"github.com/wakflo/extensions/internal/connectors/monday"
+	"github.com/wakflo/extensions/internal/connectors/notion"
 	"github.com/wakflo/extensions/internal/connectors/openai"
 	"github.com/wakflo/extensions/internal/connectors/prisync"
 	"github.com/wakflo/extensions/internal/connectors/shippo"
@@ -119,6 +120,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		prisync.NewConnector,        // Prisync
 		github.NewConnector,         // Github
 		trello.NewConnector,         // Trello
+		notion.NewConnector,         // Notion
 	}
 
 	// 🛑Do-Not-Edit
