@@ -20,16 +20,18 @@ import (
 
 var (
 	// #nosec
-	tokenURL   = "https://login.mailchimp.com/oauth2/token"
-	authURL    = "https://login.mailchimp.com/oauth2/authorize"
+	tokenURL   = baseURL + "/oauth2/token"
+	authURL    = baseURL + "/oauth2/authorize"
 	sharedAuth = autoform.NewOAuthField(authURL, &tokenURL, []string{
 		"",
 	}).
 		Build()
 )
 
+const baseURL = "https://login.mailchimp.com"
+
 func getMailChimpServerPrefix(accessToken string) (string, error) {
-	req, err := http.NewRequest(http.MethodGet, "https://login.mailchimp.com/oauth2/metadata", nil)
+	req, err := http.NewRequest(http.MethodGet, baseURL+"/oauth2/metadata", nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
@@ -51,7 +53,7 @@ func getMailChimpServerPrefix(accessToken string) (string, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		var apiError map[string]interface{}
-		if err := json.Unmarshal(body, &apiError); err != nil {
+		if errs := json.Unmarshal(body, &apiError); errs != nil {
 			return "", fmt.Errorf("failed to unmarshal error response: %w", err)
 		}
 		return "", fmt.Errorf("API error: %v", apiError)
@@ -169,7 +171,6 @@ var mailchimpSubscriberStatus = []*sdkcore.AutoFormSchema{
 	{Const: "transactional", Title: "Transactional"},
 }
 
-// FetchMailchimpLists retrieves the lists (audiences) from Mailchimp
 func fetchMailchimpLists(accessToken, server string) (interface{}, error) {
 	url := fmt.Sprintf("https://%s.api.mailchimp.com/3.0/lists", server)
 
@@ -204,7 +205,6 @@ func fetchMailchimpLists(accessToken, server string) (interface{}, error) {
 	return result, nil
 }
 
-// updateSubscriberStatus updates the status of a subscriber in Mailchimp.
 func updateSubscriberStatus(accessToken, server, listID, email, status string) error {
 	subscriberHash := getSubscriberHash(email)
 
@@ -225,7 +225,6 @@ func updateSubscriberStatus(accessToken, server, listID, email, status string) e
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 	req.Header.Set("Content-Type", "application/json")
 
-	// Send the request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -240,18 +239,15 @@ func updateSubscriberStatus(accessToken, server, listID, email, status string) e
 	return nil
 }
 
-// listRecentSubscribers fetches and lists subscribers added or updated in the last 24 hours.
 func listRecentSubscribers(accessToken, server, listID, date string) (interface{}, error) {
 	url := fmt.Sprintf("https://%s.api.mailchimp.com/3.0/lists/%s/members?since_timestamp_opt=%s", server, listID, date)
 
-	// Create the HTTP request
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 
-	// Send the request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -263,13 +259,11 @@ func listRecentSubscribers(accessToken, server, listID, date string) (interface{
 		return nil, fmt.Errorf("unexpected response status: %s", resp.Status)
 	}
 
-	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	// Parse the JSON response
 	var data interface{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
@@ -281,14 +275,12 @@ func listRecentSubscribers(accessToken, server, listID, date string) (interface{
 func listRecentUnSubscribers(accessToken, server, listID, date string) (interface{}, error) {
 	url := fmt.Sprintf("https://%s.api.mailchimp.com/3.0/lists/%s/members?unsubscribed_since=%s", server, listID, date)
 
-	// Create the HTTP request
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 
-	// Send the request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -300,13 +292,11 @@ func listRecentUnSubscribers(accessToken, server, listID, date string) (interfac
 		return nil, fmt.Errorf("unexpected response status: %s", resp.Status)
 	}
 
-	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	// Parse the JSON response
 	var data interface{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
@@ -329,7 +319,6 @@ func addMemberNote(accessToken, server, listID, email, note string) error {
 		return fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
-	// Create the HTTP request
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
@@ -337,7 +326,6 @@ func addMemberNote(accessToken, server, listID, email, note string) error {
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 	req.Header.Set("Content-Type", "application/json")
 
-	// Send the request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -354,14 +342,12 @@ func addMemberNote(accessToken, server, listID, email, note string) error {
 
 // addSubscriberTag adds a tag to a subscriber in Mailchimp.
 func modifySubscriberTags(accessToken, server, listID, email string, tags []string, status string) error {
-	// Calculate the subscriber hash from the email address
 	subscriberHash := getSubscriberHash(email)
 
 	url := fmt.Sprintf("https://%s.api.mailchimp.com/3.0/lists/%s/members/%s/tags", server, listID, subscriberHash)
 
 	tagEntries := make([]map[string]interface{}, 0, len(tags))
 
-	// Prepare the request payload
 	for _, tag := range tags {
 		tagEntries = append(tagEntries, map[string]interface{}{
 			"name":   tag,
@@ -377,7 +363,6 @@ func modifySubscriberTags(accessToken, server, listID, email string, tags []stri
 		return fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
-	// Create the HTTP request
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
@@ -385,7 +370,6 @@ func modifySubscriberTags(accessToken, server, listID, email string, tags []stri
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 	req.Header.Set("Content-Type", "application/json")
 
-	// Send the request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -394,7 +378,6 @@ func modifySubscriberTags(accessToken, server, listID, email string, tags []stri
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNoContent {
-		// Consider the operation successful
 		fmt.Println("Operation successful")
 		return nil
 	}

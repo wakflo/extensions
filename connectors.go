@@ -45,6 +45,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/mailchimp"
 	"github.com/wakflo/extensions/internal/connectors/manual"
 	"github.com/wakflo/extensions/internal/connectors/monday"
+	"github.com/wakflo/extensions/internal/connectors/notion"
 	"github.com/wakflo/extensions/internal/connectors/openai"
 	"github.com/wakflo/extensions/internal/connectors/prisync"
 	"github.com/wakflo/extensions/internal/connectors/shippo"
@@ -55,6 +56,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/todoist"
 	"github.com/wakflo/extensions/internal/connectors/toggl"
 	"github.com/wakflo/extensions/internal/connectors/trackingmore"
+	"github.com/wakflo/extensions/internal/connectors/trello"
 	"github.com/wakflo/extensions/internal/connectors/woocommerce"
 	"github.com/wakflo/extensions/internal/connectors/xero"
 	"github.com/wakflo/extensions/internal/connectors/zohoinventory"
@@ -119,6 +121,8 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		prisync.NewConnector,        // Prisync
 		github.NewConnector,         // Github
 		zohosalesiq.NewConnector,    // ZohoSales
+		trello.NewConnector,         // Trello
+		notion.NewConnector,         // Notion
 	}
 
 	// 🛑Do-Not-Edit
