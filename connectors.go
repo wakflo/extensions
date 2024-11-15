@@ -51,6 +51,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/shippo"
 	"github.com/wakflo/extensions/internal/connectors/shopify"
 	"github.com/wakflo/extensions/internal/connectors/slack"
+	"github.com/wakflo/extensions/internal/connectors/smartsheet"
 	"github.com/wakflo/extensions/internal/connectors/square"
 	"github.com/wakflo/extensions/internal/connectors/stripe"
 	"github.com/wakflo/extensions/internal/connectors/todoist"
@@ -121,6 +122,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		github.NewConnector,         // Github
 		trello.NewConnector,         // Trello
 		notion.NewConnector,         // Notion
+		smartsheet.NewConnector,     // Smartsheet
 	}
 
 	// 🛑Do-Not-Edit
