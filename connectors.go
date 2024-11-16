@@ -51,6 +51,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/shippo"
 	"github.com/wakflo/extensions/internal/connectors/shopify"
 	"github.com/wakflo/extensions/internal/connectors/slack"
+	"github.com/wakflo/extensions/internal/connectors/smartsheet"
 	"github.com/wakflo/extensions/internal/connectors/square"
 	"github.com/wakflo/extensions/internal/connectors/stripe"
 	"github.com/wakflo/extensions/internal/connectors/todoist"
@@ -61,6 +62,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/xero"
 	"github.com/wakflo/extensions/internal/connectors/zendesk"
 	"github.com/wakflo/extensions/internal/connectors/zohoinventory"
+	"github.com/wakflo/extensions/internal/connectors/zohosalesiq"
 	"github.com/wakflo/extensions/internal/connectors/zoom"
 	"github.com/wakflo/extensions/internal/logger"
 	sdk "github.com/wakflo/go-sdk/connector"
@@ -123,7 +125,10 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		zendesk.NewConnector,        // Zendesk
 		trello.NewConnector,         // Trello
 		notion.NewConnector,         // Notion
-
+		zohosalesiq.NewConnector,    // ZohoSales
+		trello.NewConnector,         // Trello
+		notion.NewConnector,         // Notion
+		smartsheet.NewConnector,     // Smartsheet
 	}
 
 	// 🛑Do-Not-Edit
