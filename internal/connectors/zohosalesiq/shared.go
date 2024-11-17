@@ -12,20 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package zohoinventory
+package zohosalesiq
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 
-	"github.com/gookit/goutil/arrutil"
-	fastshot "github.com/opus-domini/fast-shot"
-
 	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
 var (
@@ -33,15 +28,15 @@ var (
 	tokenURL   = "https://accounts.zoho.com/oauth/v2/token"
 	authURL    = "https://accounts.zoho.com/oauth/v2/auth"
 	sharedAuth = autoform.NewOAuthField(authURL, &tokenURL, []string{
-		"ZohoInventory.FullAccess.all",
+		"SalesIQ.chatdetails.UPDATE SalesIQ.chatdetails.READ SalesIQ.visitordetails.UPDATE SalesIQ.visitordetails.READ",
 	}).
 		Build()
 )
 
-const baseURL = "https://www.zohoapis.com/inventory"
+const baseURL = "https://salesiq.zoho.com/api/v1"
 
-func getZohoClient(accessToken, endpoint string) (map[string]interface{}, error) {
-	fullURL := baseURL + endpoint
+func getZohoClient(accessToken, url string) (map[string]interface{}, error) {
+	fullURL := baseURL + url
 	req, err := http.NewRequest(http.MethodGet, fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %v", err)
@@ -73,49 +68,4 @@ func getZohoClient(accessToken, endpoint string) (map[string]interface{}, error)
 	}
 
 	return result, nil
-}
-
-func getOrganizationsInput() *sdkcore.AutoFormSchema {
-	getOrganizations := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
-		client := fastshot.NewClient(baseURL).
-			Auth().BearerToken(ctx.Auth.AccessToken).
-			Header().
-			AddAccept("application/json").
-			Build()
-
-		rsp, err := client.GET("/v1/organizations").Send()
-		if err != nil {
-			return nil, err
-		}
-
-		if rsp.Status().IsError() {
-			return nil, errors.New(rsp.Status().Text())
-		}
-
-		bytes, err := io.ReadAll(rsp.Raw().Body) //nolint:bodyclose
-		if err != nil {
-			return nil, err
-		}
-
-		var organizations Organizations
-		err = json.Unmarshal(bytes, &organizations)
-		if err != nil {
-			return nil, err
-		}
-
-		organization := organizations.Organizations
-		return arrutil.Map[Organization, map[string]any](organization, func(input Organization) (target map[string]any, find bool) {
-			return map[string]any{
-				"id":   input.OrganizationID,
-				"name": input.Name,
-			}, true
-		}), nil
-	}
-
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Organizations").
-		SetDescription("Select organization").
-		SetDependsOn([]string{"connection"}).
-		SetDynamicOptions(&getOrganizations).
-		SetRequired(true).Build()
 }

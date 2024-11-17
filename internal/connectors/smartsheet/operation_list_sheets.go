@@ -12,62 +12,60 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package zohoinventory
+package smartsheet
 
 import (
-	"errors"
-	"fmt"
-
+	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-type getInvoiceListOperationProps struct {
-	OrganizationID string `json:"organization_id"`
+type listInvoicesOperationProps struct {
+	Name string `json:"name"`
 }
 
-type GetInvoiceListOperation struct {
+type ListSheetsOperation struct {
 	options *sdk.OperationInfo
 }
 
-func NewGetInvoiceListOperation() sdk.IOperation {
-	return &GetInvoiceListOperation{
+func NewListSheetsOperation() *ListSheetsOperation {
+	return &ListSheetsOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Get Invoice List",
-			Description: "Retrieve a list of Invoices",
-			RequireAuth: true,
+			Name:        "List Sheets",
+			Description: "list all sheets",
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"organization_id": getOrganizationsInput(),
+				"name": autoform.NewShortTextField().
+					SetDisplayName("").
+					SetDescription("").
+					SetRequired(false).Build(),
 			},
+			SampleOutput: map[string]interface{}{},
 			ErrorSettings: sdkcore.StepErrorSettings{
 				ContinueOnError: false,
 				RetryOnError:    false,
 			},
+			RequireAuth: true,
 		},
 	}
 }
 
-func (c *GetInvoiceListOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
-	if ctx.Auth.Token == nil {
-		return nil, errors.New("missing Zoho auth token")
-	}
+func (c *ListSheetsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+	_ = sdk.InputToType[listInvoicesOperationProps](ctx)
 
-	input := sdk.InputToType[getInvoiceListOperationProps](ctx)
-	endpoint := "/v1/invoices/?organization_id=" + input.OrganizationID
+	url := "/2.0/sheets"
 
-	result, err := getZohoClient(ctx.Auth.Token.AccessToken, endpoint)
+	sheets, err := getSmartsheetClient(ctx.Auth.AccessToken, url)
 	if err != nil {
-		return nil, fmt.Errorf("error getting invoice list: %v", err)
+		return nil, err
 	}
-
-	return result, nil
+	return sheets, nil
 }
 
-func (c *GetInvoiceListOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *ListSheetsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return c.Run(ctx)
 }
 
-func (c *GetInvoiceListOperation) GetInfo() *sdk.OperationInfo {
+func (c *ListSheetsOperation) GetInfo() *sdk.OperationInfo {
 	return c.options
 }

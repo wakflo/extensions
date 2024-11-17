@@ -45,22 +45,25 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/mailchimp"
 	"github.com/wakflo/extensions/internal/connectors/manual"
 	"github.com/wakflo/extensions/internal/connectors/monday"
+	"github.com/wakflo/extensions/internal/connectors/notion"
 	"github.com/wakflo/extensions/internal/connectors/openai"
 	"github.com/wakflo/extensions/internal/connectors/prisync"
 	"github.com/wakflo/extensions/internal/connectors/shippo"
 	"github.com/wakflo/extensions/internal/connectors/shopify"
 	"github.com/wakflo/extensions/internal/connectors/slack"
+	"github.com/wakflo/extensions/internal/connectors/smartsheet"
 	"github.com/wakflo/extensions/internal/connectors/square"
 	"github.com/wakflo/extensions/internal/connectors/stripe"
-	"github.com/wakflo/extensions/internal/connectors/survey_monkey"
+	surveyMonkey "github.com/wakflo/extensions/internal/connectors/survey_monkey"
 	"github.com/wakflo/extensions/internal/connectors/todoist"
 	"github.com/wakflo/extensions/internal/connectors/toggl"
 	"github.com/wakflo/extensions/internal/connectors/trackingmore"
+	"github.com/wakflo/extensions/internal/connectors/trello"
 	"github.com/wakflo/extensions/internal/connectors/woocommerce"
 	"github.com/wakflo/extensions/internal/connectors/xero"
 	"github.com/wakflo/extensions/internal/connectors/zohoinventory"
+	"github.com/wakflo/extensions/internal/connectors/zohosalesiq"
 	"github.com/wakflo/extensions/internal/connectors/zoom"
-
 	"github.com/wakflo/extensions/internal/logger"
 	sdk "github.com/wakflo/go-sdk/connector"
 )
@@ -119,7 +122,11 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		jiracloud.NewConnector,      // Jira Cloud
 		prisync.NewConnector,        // Prisync
 		github.NewConnector,         // Github
-		survey_monkey.NewConnector,  // Survey Monkey
+		zohosalesiq.NewConnector,    // ZohoSales
+		trello.NewConnector,         // Trello
+		notion.NewConnector,         // Notion
+		smartsheet.NewConnector,     // Smartsheet
+		surveyMonkey.NewConnector,   // Survey Monkey
 	}
 
 	// 🛑Do-Not-Edit
