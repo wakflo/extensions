@@ -17,11 +17,7 @@ var (
 	// #nosec
 	tokenURL   = baseURL + "oauth/token"
 	sharedAuth = autoform.NewOAuthField(baseURL+"oauth/authorize", &tokenURL, []string{
-		"accounts:read",
-		"forms:write",
-		"forms:read",
-		"responses:read",
-		"responses:write",
+		"accounts:read forms:write forms:read responses:read responses:write",
 	}).Build()
 )
 
