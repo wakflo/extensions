@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.0](https://github.com/wakflo/extensions/compare/v0.8.0...v0.9.0) (2024-11-24)
+
+
+### Features
+
+* implement smartsheet connector ([d8041a2](https://github.com/wakflo/extensions/commit/d8041a2dff7bfc91aac765a3556b27e86b51c4bc))
+* implement trello connector ([ea26172](https://github.com/wakflo/extensions/commit/ea2617265b9c5db5e996029f560913d591ce24cf))
+* implement zohosales iq connector ([ff77895](https://github.com/wakflo/extensions/commit/ff77895cf7d90e89181fcdeb8589acc3c5c6e066))
+
 ## [0.8.0](https://github.com/wakflo/extensions/compare/v0.7.0...v0.8.0) (2024-11-07)
 
 
