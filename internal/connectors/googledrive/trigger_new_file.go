@@ -45,7 +45,7 @@ type TriggerNewFile struct {
 }
 
 func NewTriggerNewFile() *TriggerNewFile {
-	getParentFolders := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getParentFolders := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		client := fastshot.NewClient("https://www.googleapis.com/drive/v3").
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
@@ -80,7 +80,7 @@ func NewTriggerNewFile() *TriggerNewFile {
 			return nil, err
 		}
 
-		return body.Files, nil
+		return ctx.Respond(body.Files, len(body.Files))
 	}
 
 	return &TriggerNewFile{

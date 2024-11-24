@@ -37,7 +37,7 @@ var (
 var baseAPI = "https://api.todoist.com/rest/v2"
 
 func getProjectsInput() *sdkcore.AutoFormSchema {
-	getProjects := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getProjects := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		client := fastshot.NewClient(baseAPI).
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
@@ -64,7 +64,7 @@ func getProjectsInput() *sdkcore.AutoFormSchema {
 			return nil, err
 		}
 
-		return projects, nil
+		return ctx.Respond(projects, len(projects))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -84,7 +84,7 @@ type getSectionsFilter struct {
 }
 
 func getSectionsInput() *sdkcore.AutoFormSchema {
-	getProjects := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getProjects := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[getSectionsFilter](ctx)
 
 		qu := fastshot.NewClient(baseAPI).
@@ -121,7 +121,7 @@ func getSectionsInput() *sdkcore.AutoFormSchema {
 			return nil, err
 		}
 
-		return projects, nil
+		return ctx.Respond(projects, len(projects))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -137,7 +137,7 @@ var viewStyleOptions = []*sdkcore.AutoFormSchema{
 }
 
 func getTasksInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getProjects := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getProjects := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[getSectionsFilter](ctx)
 
 		qu := fastshot.NewClient(baseAPI).
@@ -186,12 +186,14 @@ func getTasksInput(title string, desc string, required bool) *sdkcore.AutoFormSc
 			return nil, err
 		}
 
-		return arrutil.Map[Task, map[string]any](tasks, func(input Task) (target map[string]any, find bool) {
+		items := arrutil.Map[Task, map[string]any](tasks, func(input Task) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.ID,
 				"name": input.Content,
 			}, true
-		}), nil
+		})
+
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

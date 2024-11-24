@@ -24,7 +24,7 @@ var (
 )
 
 func getNotionPagesInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getPages := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getPages := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			DatabaseID string `json:"database"`
 		}](ctx)
@@ -72,7 +72,7 @@ func getNotionPagesInput(title string, desc string, required bool) *sdkcore.Auto
 		pages := body.Results
 
 		// Returning the mapped data in a format required by the AutoFormSchema
-		return arrutil.Map[NotionPage, map[string]any](pages, func(input NotionPage) (target map[string]any, find bool) {
+		items := arrutil.Map[NotionPage, map[string]any](pages, func(input NotionPage) (target map[string]any, find bool) {
 			title := ""
 			if input.Properties["Name"].Title != nil && len(input.Properties["Name"].Title) > 0 {
 				title = input.Properties["Name"].Title[0].Text.Content
@@ -83,7 +83,9 @@ func getNotionPagesInput(title string, desc string, required bool) *sdkcore.Auto
 				"name": title,
 				//"url":   input.URL,
 			}, true
-		}), nil
+		})
+
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -95,7 +97,7 @@ func getNotionPagesInput(title string, desc string, required bool) *sdkcore.Auto
 }
 
 func getNotionDatabasesInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getDatabases := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getDatabases := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		// Define the Notion API URL
 		url := baseURL + "/v1/search"
 
@@ -150,7 +152,7 @@ func getNotionDatabasesInput(title string, desc string, required bool) *sdkcore.
 		databases := bodyStruct.Results
 
 		// Map the data into the expected format for AutoFormSchema
-		return arrutil.Map[NotionDatabase, map[string]any](databases, func(input NotionDatabase) (target map[string]any, find bool) {
+		items := arrutil.Map[NotionDatabase, map[string]any](databases, func(input NotionDatabase) (target map[string]any, find bool) {
 			title := ""
 			if len(input.Title) > 0 && input.Title[0].Text.Content != "" {
 				title = input.Title[0].Text.Content
@@ -160,7 +162,8 @@ func getNotionDatabasesInput(title string, desc string, required bool) *sdkcore.
 				"id":   input.ID,
 				"name": title,
 			}, true
-		}), nil
+		})
+		return ctx.Respond(items, len(items))
 	}
 
 	// Return the AutoFormSchema using the dynamic database data

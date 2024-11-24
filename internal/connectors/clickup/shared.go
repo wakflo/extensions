@@ -193,7 +193,7 @@ func getTeams(accessToken string) ([]Team, error) {
 }
 
 func getWorkSpaceInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getWorkspaces := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getWorkspaces := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		client := fastshot.NewClient(baseURL).
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
@@ -223,10 +223,7 @@ func getWorkSpaceInput(title string, desc string, required bool) *sdkcore.AutoFo
 		if err != nil {
 			return nil, err
 		}
-
-		teams := body.Teams
-
-		return teams, nil
+		return ctx.Respond(body.Teams, len(body.Teams))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -237,7 +234,7 @@ func getWorkSpaceInput(title string, desc string, required bool) *sdkcore.AutoFo
 }
 
 func getSpacesInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getSpaces := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getSpaces := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			WorkspaceID string `json:"workspace-id,omitempty"`
 		}](ctx)
@@ -272,9 +269,7 @@ func getSpacesInput(title string, desc string, required bool) *sdkcore.AutoFormS
 			return nil, err
 		}
 
-		spaces := body.Spaces
-
-		return spaces, nil
+		return ctx.Respond(body.Spaces, len(body.Spaces))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -285,7 +280,7 @@ func getSpacesInput(title string, desc string, required bool) *sdkcore.AutoFormS
 }
 
 func getFoldersInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getFolders := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getFolders := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			SpaceID string `json:"space-id,omitempty"`
 		}](ctx)
@@ -320,9 +315,7 @@ func getFoldersInput(title string, desc string, required bool) *sdkcore.AutoForm
 			return nil, err
 		}
 
-		folders := body.Folders
-
-		return folders, nil
+		return ctx.Respond(body.Folders, len(body.Folders))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -333,7 +326,7 @@ func getFoldersInput(title string, desc string, required bool) *sdkcore.AutoForm
 }
 
 func getListsInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getLists := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getLists := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			FolderID string `json:"folder-id,omitempty"`
 		}](ctx)
@@ -368,9 +361,7 @@ func getListsInput(title string, desc string, required bool) *sdkcore.AutoFormSc
 			return nil, err
 		}
 
-		lists := body.Lists
-
-		return lists, nil
+		return ctx.Respond(body.Lists, len(body.Lists))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -381,7 +372,7 @@ func getListsInput(title string, desc string, required bool) *sdkcore.AutoFormSc
 }
 
 func getTasksInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getTasks := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getTasks := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			ListID string `json:"list-id,omitempty"`
 		}](ctx)
@@ -415,9 +406,7 @@ func getTasksInput(title string, desc string, required bool) *sdkcore.AutoFormSc
 			return nil, err
 		}
 
-		tasks := body.Tasks
-
-		return tasks, nil
+		return ctx.Respond(body.Tasks, len(body.Tasks))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -428,7 +417,7 @@ func getTasksInput(title string, desc string, required bool) *sdkcore.AutoFormSc
 }
 
 func getAssigneeInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getAssignees := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getAssignees := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			ListID string `json:"list-id,omitempty"`
 		}](ctx)
@@ -465,12 +454,14 @@ func getAssigneeInput(title string, desc string, required bool) *sdkcore.AutoFor
 
 		members := body.Members
 
-		return arrutil.Map[Member, map[string]any](members, func(input Member) (target map[string]any, find bool) {
+		items := arrutil.Map[Member, map[string]any](members, func(input Member) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.ID,
 				"name": input.Username,
 			}, true
-		}), nil
+		})
+
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

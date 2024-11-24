@@ -14,7 +14,7 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-var sharedAuth = autoform.NewCustomAuthField().
+var sharedAuth = autoform.NewAuth().NewCustomAuth().
 	SetFields(map[string]*sdkcore.AutoFormSchema{
 		"api-key": autoform.NewShortTextField().SetDisplayName("Api Key").
 			SetDescription("The api key used to authenticate linear.").
@@ -63,7 +63,7 @@ func MakeGraphQLRequest(apiKEY, query string) (map[string]interface{}, error) {
 }
 
 func getTeamsInput() *sdkcore.AutoFormSchema {
-	getTeams := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getTeams := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		query := `{
 		 teams {
 			nodes {
@@ -115,8 +115,7 @@ func getTeamsInput() *sdkcore.AutoFormSchema {
 		}
 
 		teams := response.Data.Team.Nodes
-
-		return &teams, nil
+		return ctx.Respond(teams, len(teams))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -127,7 +126,7 @@ func getTeamsInput() *sdkcore.AutoFormSchema {
 }
 
 func getIssuesInput(title, description string) *sdkcore.AutoFormSchema {
-	getIssues := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getIssues := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			TeamID string `json:"team-id"`
 		}](ctx)
@@ -188,12 +187,13 @@ func getIssuesInput(title, description string) *sdkcore.AutoFormSchema {
 
 		issues := response.Data.Team.Issues.Nodes
 
-		return arrutil.Map[Issue, map[string]any](issues, func(input Issue) (target map[string]any, find bool) {
+		items := arrutil.Map[Issue, map[string]any](issues, func(input Issue) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.ID,
 				"name": input.Title,
 			}, true
-		}), nil
+		})
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -204,7 +204,7 @@ func getIssuesInput(title, description string) *sdkcore.AutoFormSchema {
 }
 
 func getPriorityInput(title, description string) *sdkcore.AutoFormSchema {
-	getPriorities := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getPriorities := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		query := `
 		{
 			issuePriorityValues {
@@ -257,7 +257,7 @@ func getPriorityInput(title, description string) *sdkcore.AutoFormSchema {
 
 		priorities := response.Data.IssuePriorityValues
 
-		return arrutil.Map[struct {
+		items := arrutil.Map[struct {
 			Priority int
 			Label    string
 		}, map[string]any]([]struct {
@@ -272,7 +272,8 @@ func getPriorityInput(title, description string) *sdkcore.AutoFormSchema {
 				"id":   input.Priority,
 				"name": input.Label,
 			}, true
-		}), nil
+		})
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -283,7 +284,7 @@ func getPriorityInput(title, description string) *sdkcore.AutoFormSchema {
 }
 
 func getTeamLabelsInput(title, description string) *sdkcore.AutoFormSchema {
-	getLabels := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getLabels := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			TeamID string `json:"team-id"`
 		}](ctx)
@@ -344,8 +345,7 @@ func getTeamLabelsInput(title, description string) *sdkcore.AutoFormSchema {
 		}
 
 		labels := response.Data.Team.Labels.Nodes
-
-		return &labels, nil
+		return ctx.Respond(labels, len(labels))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -356,7 +356,7 @@ func getTeamLabelsInput(title, description string) *sdkcore.AutoFormSchema {
 }
 
 func getAssigneesInput(title, description string) *sdkcore.AutoFormSchema {
-	getAssignees := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getAssignees := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		query := `
 		query Assignees {
 		  issues {
@@ -425,8 +425,7 @@ func getAssigneesInput(title, description string) *sdkcore.AutoFormSchema {
 		for _, assignee := range assigneeMap {
 			assignees = append(assignees, assignee)
 		}
-
-		return assignees, nil
+		return ctx.Respond(assignees, len(assignees))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -437,7 +436,7 @@ func getAssigneesInput(title, description string) *sdkcore.AutoFormSchema {
 }
 
 func getIssueStatesInput(title, description string, required bool) *sdkcore.AutoFormSchema {
-	getIssueStates := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getIssueStates := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		query := `{
           workflowStates {
     		nodes {
@@ -489,8 +488,7 @@ func getIssueStatesInput(title, description string, required bool) *sdkcore.Auto
 		}
 
 		issueStates := response.Data.WorkflowStates.Nodes
-
-		return issueStates, nil
+		return ctx.Respond(issueStates, len(issueStates))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -501,7 +499,7 @@ func getIssueStatesInput(title, description string, required bool) *sdkcore.Auto
 }
 
 func getLabelsInput(title, description string) *sdkcore.AutoFormSchema {
-	getLabels := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getLabels := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		query := `{
           issueLabels {
     		nodes {
@@ -553,8 +551,7 @@ func getLabelsInput(title, description string) *sdkcore.AutoFormSchema {
 		}
 
 		labels := response.Data.IssueLabels.Nodes
-
-		return &labels, nil
+		return ctx.Respond(labels, len(labels))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

@@ -16,7 +16,7 @@ func getOpenAiClient(token string) (fastshot.ClientHttpMethods, error) {
 		Build(), nil
 }
 
-func getModels(token string, modelPrefix string) (interface{}, error) {
+func getModels(token string, modelPrefix string) ([]ModelResponse, error) {
 	client, err := getOpenAiClient(token)
 	if err != nil {
 		return nil, err

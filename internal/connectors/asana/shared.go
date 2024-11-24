@@ -36,7 +36,7 @@ var (
 var baseAPI = "https://app.asana.com/api/1.0"
 
 func getWorkspacesInput() *sdkcore.AutoFormSchema {
-	getWorkspaces := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getWorkspaces := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		client := fastshot.NewClient(baseAPI).
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
@@ -64,12 +64,13 @@ func getWorkspacesInput() *sdkcore.AutoFormSchema {
 		}
 
 		workspace := workspaces.Data
-		return arrutil.Map[Workspace, map[string]any](workspace, func(input Workspace) (target map[string]any, find bool) {
+		items := arrutil.Map[Workspace, map[string]any](workspace, func(input Workspace) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.GID,
 				"name": input.Name,
 			}, true
-		}), nil
+		})
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -81,7 +82,7 @@ func getWorkspacesInput() *sdkcore.AutoFormSchema {
 }
 
 func getProjectsInput() *sdkcore.AutoFormSchema {
-	getProjects := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getProjects := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		qu := fastshot.NewClient(baseAPI).
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
@@ -111,12 +112,14 @@ func getProjectsInput() *sdkcore.AutoFormSchema {
 
 		projects := response.Data
 
-		return arrutil.Map[Project, map[string]any](projects, func(input Project) (target map[string]any, find bool) {
+		items := arrutil.Map[Project, map[string]any](projects, func(input Project) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.GID,
 				"name": input.Name,
 			}, true
-		}), nil
+		})
+
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

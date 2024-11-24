@@ -86,7 +86,7 @@ type Country struct {
 }
 
 func getCountriesInput() *sdkcore.AutoFormSchema {
-	getCountries := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getCountries := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		qu := fastshot.NewClient("https://restcountries.com").
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
@@ -120,12 +120,13 @@ func getCountriesInput() *sdkcore.AutoFormSchema {
 
 		country := response
 
-		return arrutil.Map[Country, map[string]any](country, func(input Country) (target map[string]any, find bool) {
+		items := arrutil.Map[Country, map[string]any](country, func(input Country) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.Code,
 				"name": input.Name,
 			}, true
-		}), nil
+		})
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

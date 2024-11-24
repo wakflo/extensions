@@ -74,7 +74,7 @@ func githubGQL(accessToken, query string) (map[string]interface{}, error) {
 }
 
 func getRepositoryInput() *sdkcore.AutoFormSchema {
-	getRepository := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getRepository := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		query := `{
 		  viewer {
 		    repositories(first: 100) {
@@ -134,7 +134,7 @@ func getRepositoryInput() *sdkcore.AutoFormSchema {
 
 		repositories := response.Data.Viewer.Repositories.Nodes
 
-		return &repositories, nil
+		return ctx.Respond(repositories, len(repositories))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -145,7 +145,7 @@ func getRepositoryInput() *sdkcore.AutoFormSchema {
 }
 
 func getLabelInput() *sdkcore.AutoFormSchema {
-	getLabels := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getLabels := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			Repository string `json:"repository"`
 		}](ctx)
@@ -209,8 +209,7 @@ func getLabelInput() *sdkcore.AutoFormSchema {
 		}
 
 		labels := response.Data.Node.Labels.Nodes
-
-		return &labels, nil
+		return ctx.Respond(labels, len(labels))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -222,7 +221,7 @@ func getLabelInput() *sdkcore.AutoFormSchema {
 }
 
 func getIssuesInput() *sdkcore.AutoFormSchema {
-	getIssues := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getIssues := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			Repository string `json:"repository"`
 		}](ctx)
@@ -296,7 +295,7 @@ func getIssuesInput() *sdkcore.AutoFormSchema {
 			}, true
 		})
 
-		return &issues, nil
+		return ctx.Respond(issues, len(issues))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -308,7 +307,7 @@ func getIssuesInput() *sdkcore.AutoFormSchema {
 }
 
 // func getAssigneeInput() *sdkcore.AutoFormSchema {
-//	getAssignees := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+//	getAssignees := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 //		input := sdk.DynamicInputToType[struct {
 //			Repository string `json:"repository"`
 //		}](ctx)

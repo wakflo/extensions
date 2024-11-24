@@ -93,7 +93,7 @@ func jiraRequest(email, apiToken, reqURL, method, message string, request []byte
 }
 
 func getUsersInput() *sdkcore.AutoFormSchema {
-	getUsers := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getUsers := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		auth := ctx.Auth.Extra["email"] + ":" + ctx.Auth.Extra["api-token"]
 
 		encodedAuth := base64.StdEncoding.EncodeToString([]byte(auth))
@@ -132,12 +132,14 @@ func getUsersInput() *sdkcore.AutoFormSchema {
 			return input.AccountType == "atlassian"
 		})
 
-		return arrutil.Map[User, map[string]any](atlassianUsers, func(input User) (target map[string]any, find bool) {
+		items := arrutil.Map[User, map[string]any](atlassianUsers, func(input User) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.AccountID,
 				"name": input.DisplayName,
 			}, true
-		}), nil
+		})
+
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -148,7 +150,7 @@ func getUsersInput() *sdkcore.AutoFormSchema {
 }
 
 func getProjectsInput() *sdkcore.AutoFormSchema {
-	getProjects := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getProjects := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		auth := ctx.Auth.Extra["email"] + ":" + ctx.Auth.Extra["api-token"]
 
 		encodedAuth := base64.StdEncoding.EncodeToString([]byte(auth))
@@ -183,9 +185,7 @@ func getProjectsInput() *sdkcore.AutoFormSchema {
 			return nil, err
 		}
 
-		contact := projects.Values
-
-		return contact, nil
+		return ctx.Respond(projects.Values, len(projects.Values))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -196,7 +196,7 @@ func getProjectsInput() *sdkcore.AutoFormSchema {
 }
 
 func getIssueTypesInput() *sdkcore.AutoFormSchema {
-	getIssues := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getIssues := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		auth := ctx.Auth.Extra["email"] + ":" + ctx.Auth.Extra["api-token"]
 
 		encodedAuth := base64.StdEncoding.EncodeToString([]byte(auth))
@@ -236,9 +236,7 @@ func getIssueTypesInput() *sdkcore.AutoFormSchema {
 			return nil, err
 		}
 
-		issue := issueTypes
-
-		return issue, nil
+		return ctx.Respond(issueTypes, len(issueTypes))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -249,7 +247,7 @@ func getIssueTypesInput() *sdkcore.AutoFormSchema {
 }
 
 func getIssuesInput() *sdkcore.AutoFormSchema {
-	getIssues := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getIssues := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		auth := ctx.Auth.Extra["email"] + ":" + ctx.Auth.Extra["api-token"]
 		encodedAuth := base64.StdEncoding.EncodeToString([]byte(auth))
 		authHeader := "Basic " + encodedAuth
@@ -300,12 +298,14 @@ func getIssuesInput() *sdkcore.AutoFormSchema {
 			return nil, err
 		}
 
-		return arrutil.Map[Issue, map[string]any](searchResponse.Issues, func(issue Issue) (map[string]any, bool) {
+		items := arrutil.Map[Issue, map[string]any](searchResponse.Issues, func(issue Issue) (map[string]any, bool) {
 			return map[string]any{
 				"id":   issue.ID,
 				"name": fmt.Sprintf("[%s] %s", issue.Key, issue.Fields.Summary),
 			}, true
-		}), nil
+		})
+
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

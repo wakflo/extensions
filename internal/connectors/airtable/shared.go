@@ -41,7 +41,7 @@ var sharedAuth = autoform.NewCustomAuthField().
 var baseAPI = "https://api.airtable.com"
 
 func getBasesInput() *sdkcore.AutoFormSchema {
-	getBases := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getBases := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		client := fastshot.NewClient(baseAPI).
 			Auth().BearerToken(ctx.Auth.Extra["api-key"]).
 			Header().
@@ -62,15 +62,13 @@ func getBasesInput() *sdkcore.AutoFormSchema {
 			return nil, err
 		}
 
-		var bases Response
-		err = json.Unmarshal(bytes, &bases)
+		var baseRsp Response
+		err = json.Unmarshal(bytes, &baseRsp)
 		if err != nil {
 			return nil, err
 		}
 
-		base := bases.Bases
-
-		return base, nil
+		return ctx.Respond(baseRsp.Bases, len(baseRsp.Bases))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -82,7 +80,7 @@ func getBasesInput() *sdkcore.AutoFormSchema {
 }
 
 func getTablesInput() *sdkcore.AutoFormSchema {
-	getTables := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getTables := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			Bases string `json:"bases"`
 		}](ctx)
@@ -114,7 +112,7 @@ func getTablesInput() *sdkcore.AutoFormSchema {
 			return nil, err
 		}
 
-		return bases.Tables, nil
+		return ctx.Respond(bases.Tables, len(bases.Tables))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -126,7 +124,7 @@ func getTablesInput() *sdkcore.AutoFormSchema {
 }
 
 func getFieldsInput() *sdkcore.AutoFormSchema {
-	getFields := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getFields := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			Bases string `json:"bases"`
 			Table string `json:"table"`
@@ -167,7 +165,7 @@ func getFieldsInput() *sdkcore.AutoFormSchema {
 			}
 		}
 
-		return selectedTable.Fields, nil
+		return ctx.Respond(selectedTable.Fields, len(selectedTable.Fields))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -178,7 +176,7 @@ func getFieldsInput() *sdkcore.AutoFormSchema {
 }
 
 func getViewsInput() *sdkcore.AutoFormSchema {
-	getViews := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getViews := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			Bases string `json:"bases"`
 			Table string `json:"table"`
@@ -219,7 +217,7 @@ func getViewsInput() *sdkcore.AutoFormSchema {
 			}
 		}
 
-		return selectedTable.Views, nil
+		return ctx.Respond(selectedTable.Views, len(selectedTable.Views))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

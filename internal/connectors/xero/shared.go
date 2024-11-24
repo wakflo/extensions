@@ -83,7 +83,7 @@ func getXeroNewClient(accessToken, endpoint, tenant string) (map[string]interfac
 }
 
 func getTenantInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getTenantID := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getTenantID := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		client := fastshot.NewClient("https://api.xero.com").
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
@@ -115,12 +115,14 @@ func getTenantInput(title string, desc string, required bool) *sdkcore.AutoFormS
 		}
 
 		sheet := body
-		return arrutil.Map[Tenant, map[string]any](sheet, func(input Tenant) (target map[string]any, find bool) {
+		items := arrutil.Map[Tenant, map[string]any](sheet, func(input Tenant) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.TenantID,
 				"name": input.TenantName,
 			}, true
-		}), nil
+		})
+
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -131,7 +133,7 @@ func getTenantInput(title string, desc string, required bool) *sdkcore.AutoFormS
 }
 
 func getInvoiceInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getInvoices := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getInvoices := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			TenantID string `json:"tenant_id,omitempty"`
 		}](ctx)
@@ -167,12 +169,13 @@ func getInvoiceInput(title string, desc string, required bool) *sdkcore.AutoForm
 		}
 
 		invoice := result.Invoices
-		return arrutil.Map[Invoice, map[string]any](invoice, func(input Invoice) (target map[string]any, find bool) {
+		items := arrutil.Map[Invoice, map[string]any](invoice, func(input Invoice) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.InvoiceID,
 				"name": input.InvoiceNumber,
 			}, true
-		}), nil
+		})
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

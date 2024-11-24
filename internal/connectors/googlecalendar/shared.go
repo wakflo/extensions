@@ -41,7 +41,7 @@ func formatTimeString(input string) string {
 }
 
 func getCalendarInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getCalendarID := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getCalendarID := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		client := fastshot.NewClient("https://www.googleapis.com/calendar/v3").
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
@@ -69,12 +69,13 @@ func getCalendarInput(title string, desc string, required bool) *sdkcore.AutoFor
 			return nil, err
 		}
 
-		return arrutil.Map[Calendar, map[string]any](calendarList.Items, func(input Calendar) (target map[string]any, find bool) {
+		items := arrutil.Map[Calendar, map[string]any](calendarList.Items, func(input Calendar) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.ID,
 				"name": input.Summary,
 			}, true
-		}), nil
+		})
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -85,7 +86,7 @@ func getCalendarInput(title string, desc string, required bool) *sdkcore.AutoFor
 }
 
 func getCalendarEventIDInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getEventIDs := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getEventIDs := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			CalendarID string `json:"calendar_id"`
 		}](ctx)
@@ -119,12 +120,13 @@ func getCalendarEventIDInput(title string, desc string, required bool) *sdkcore.
 		}
 
 		events := eventList.Items
-		return arrutil.Map[Event, map[string]any](events, func(input Event) (target map[string]any, find bool) {
+		items := arrutil.Map[Event, map[string]any](events, func(input Event) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.ID,
 				"name": input.Summary,
 			}, true
-		}), nil
+		})
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

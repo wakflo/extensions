@@ -26,13 +26,13 @@ type PromptChatGPTOperationInput struct {
 }
 
 func NewPromptChatGPT() *PromptChatGPTOperation {
-	getGPTModels := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getGPTModels := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		models, err := getModels(ctx.Auth.Secret, "gpt")
 		if err != nil {
 			return nil, err
 		}
 
-		return models, nil
+		return ctx.Respond(models, len(models))
 	}
 
 	return &PromptChatGPTOperation{

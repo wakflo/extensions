@@ -126,7 +126,7 @@ func getProjects(apiKey, workspaceID string, sinceDate int64) (interface{}, erro
 }
 
 func getWorkSpaceInput() *sdkcore.AutoFormSchema {
-	getWorkspaces := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getWorkspaces := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		qu := fastshot.NewClient(baseURL).
 			Auth().BasicAuth(ctx.Auth.Extra["api-key"], "api_token").
 			Header().
@@ -154,7 +154,7 @@ func getWorkSpaceInput() *sdkcore.AutoFormSchema {
 			return nil, err
 		}
 
-		return workspaces, nil
+		return ctx.Respond(workspaces, len(workspaces))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

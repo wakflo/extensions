@@ -69,7 +69,7 @@ func CreateContact(baseURL, apiKey string, contactData map[string]interface{}) (
 }
 
 func getContactViewInput() *sdkcore.AutoFormSchema {
-	getContactView := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getContactView := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		baseAPI := "https://" + ctx.Auth.Extra["domain"] + ".myfreshworks.com"
 		apiKey := ctx.Auth.Extra["api-key"]
 
@@ -104,12 +104,14 @@ func getContactViewInput() *sdkcore.AutoFormSchema {
 
 		view := views.Filters
 
-		return arrutil.Map[ViewDetails, map[string]any](view, func(input ViewDetails) (target map[string]any, find bool) {
+		items := arrutil.Map[ViewDetails, map[string]any](view, func(input ViewDetails) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.ID,
 				"name": input.Name,
 			}, true
-		}), nil
+		})
+
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -120,7 +122,7 @@ func getContactViewInput() *sdkcore.AutoFormSchema {
 }
 
 func getContactsInput() *sdkcore.AutoFormSchema {
-	getContacts := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getContacts := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			ContactViewID string `json:"contact_view_id"`
 		}](ctx)
@@ -157,12 +159,13 @@ func getContactsInput() *sdkcore.AutoFormSchema {
 
 		contact := contacts.Contacts
 
-		return arrutil.Map[Contact, map[string]any](contact, func(input Contact) (target map[string]any, find bool) {
+		items := arrutil.Map[Contact, map[string]any](contact, func(input Contact) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.ID,
 				"name": input.DisplayName,
 			}, true
-		}), nil
+		})
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

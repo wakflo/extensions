@@ -43,7 +43,7 @@ func NewCreateTrackingsOperation() *CreateTrackingsOperation {
 					SetDescription("Tracking number of a package.").
 					SetRequired(true).
 					Build(),
-				"body": autoform.NewGroupArrayField().
+				"body": autoform.NewArrayField().
 					SetDisplayName("Courier Code").
 					SetDescription("Courier code").
 					SetItems(autoform.NewObjectField().SetDisplayName("").SetProperties(

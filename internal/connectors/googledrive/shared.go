@@ -17,15 +17,11 @@ package googledrive
 import (
 	"bytes"
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
 	"mime"
 	"net/http"
 	"slices"
 
-	fastshot "github.com/opus-domini/fast-shot"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 
@@ -37,9 +33,12 @@ import (
 var (
 	// #nosec
 	tokenURL   = "https://oauth2.googleapis.com/token"
-	sharedAuth = autoform.NewOAuthField("https://accounts.google.com/o/oauth2/auth", &tokenURL, []string{
-		"https://www.googleapis.com/auth/drive",
-	}).Build()
+	sharedAuth = autoform.NewAuth().NewOauth2Auth(
+		"https://accounts.google.com/o/oauth2/auth",
+		&tokenURL, []string{
+			"https://www.googleapis.com/auth/drive",
+		},
+	).SetExcludedQueryParams([]string{"access_tok"}).Build()
 )
 
 // File The metadata for a file. Some resource methods (such as
@@ -313,7 +312,7 @@ func downloadFile(ctx *sdk.RunContext, driveService *drive.Service, fileID strin
 }
 
 func getParentFoldersInput() *sdkcore.AutoFormSchema {
-	getParentFolders := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getParentFolders := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			IncludeTeamDrives bool `json:"includeTeamDrives"`
 		}](ctx)
@@ -335,7 +334,7 @@ func getParentFoldersInput() *sdkcore.AutoFormSchema {
 			return nil, err
 		}
 
-		return file.Files, err
+		return ctx.Respond(file.Files, len(file.Files))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -347,40 +346,29 @@ func getParentFoldersInput() *sdkcore.AutoFormSchema {
 }
 
 func getFoldersInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getParentFolders := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
-		client := fastshot.NewClient("https://www.googleapis.com/drive/v3").
-			Auth().BearerToken(ctx.Auth.AccessToken).
-			Header().
-			AddAccept("application/json").
-			Build()
-
-		rsp, err := client.GET("/files").Query().
-			AddParams(map[string]string{
-				"q": "mimeType='application/vnd.google-apps.folder' and trashed = false",
-			}).Send()
+	getParentFolders := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
 		if err != nil {
 			return nil, err
 		}
 
-		defer rsp.Body().Close()
+		q := "mimeType='application/vnd.google-apps.folder' and trashed = false"
 
-		if rsp.Status().IsError() {
-			return nil, errors.New(rsp.Status().Text())
+		if len(ctx.Filter.FilterTerm) > 0 {
+			q += fmt.Sprintf(" and name contains '%s'", ctx.Filter.FilterTerm)
 		}
 
-		defer rsp.Body().Close()
-		byts, err := io.ReadAll(rsp.Body().Raw())
+		fileList, err := driveService.Files.List().
+			Fields("files(id, name, mimeType, webViewLink, kind, createdTime)").
+			Q(q).
+			Do()
 		if err != nil {
 			return nil, err
 		}
 
-		var body ListFileResponse
-		err = json.Unmarshal(byts, &body)
-		if err != nil {
-			return nil, err
-		}
+		fmt.Printf("Helllooo %v \n", *ctx.Filter)
 
-		return body.Files, nil
+		return ctx.Respond(fileList.Files, len(fileList.Files))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

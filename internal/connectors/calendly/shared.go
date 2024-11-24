@@ -26,7 +26,7 @@ var (
 const baseURL = "https://api.calendly.com"
 
 func getCurrentCalendlyUserInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getCurrentUser := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getCurrentUser := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		client := fastshot.NewClient(baseURL).
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
@@ -58,12 +58,12 @@ func getCurrentCalendlyUserInput(title string, desc string, required bool) *sdkc
 
 		user := body.Resource
 
-		return []map[string]any{
+		return ctx.Respond([]map[string]any{
 			{
 				"id":   user.URI,
 				"name": user.Name,
 			},
-		}, nil
+		}, 1)
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -74,7 +74,7 @@ func getCurrentCalendlyUserInput(title string, desc string, required bool) *sdkc
 }
 
 func getCalendlyEventInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getEvents := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getEvents := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			User string `json:"user"`
 		}](ctx)
@@ -112,14 +112,16 @@ func getCalendlyEventInput(title string, desc string, required bool) *sdkcore.Au
 		}
 		events := body.Events
 
-		return arrutil.Map[Event, map[string]any](events, func(input Event) (target map[string]any, find bool) {
+		items := arrutil.Map[Event, map[string]any](events, func(input Event) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":    input.URI,
 				"name":  input.Name,
 				"start": input.StartTime,
 				"end":   input.EndTime,
 			}, true
-		}), nil
+		})
+
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -131,7 +133,7 @@ func getCalendlyEventInput(title string, desc string, required bool) *sdkcore.Au
 }
 
 func getCalendlyEventTypeInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getEventTypes := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getEventTypes := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			User string `json:"user"`
 		}](ctx)
@@ -168,12 +170,14 @@ func getCalendlyEventTypeInput(title string, desc string, required bool) *sdkcor
 			return nil, err
 		}
 
-		return arrutil.Map[EventType, map[string]any](body.Collection, func(input EventType) (target map[string]any, find bool) {
+		items := arrutil.Map[EventType, map[string]any](body.Collection, func(input EventType) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.URI,
 				"name": input.Name,
 			}, true
-		}), nil
+		})
+
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

@@ -62,7 +62,7 @@ func mondayClient(accessToken, query string) (map[string]interface{}, error) {
 }
 
 func getWorkspaceInput() *sdkcore.AutoFormSchema {
-	getWorkspaces := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getWorkspaces := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		query := `{
 		 workspaces {
 		     id
@@ -111,8 +111,7 @@ func getWorkspaceInput() *sdkcore.AutoFormSchema {
 		}
 
 		teams := response.Data.Workspaces
-
-		return &teams, nil
+		return ctx.Respond(teams, len(teams))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -123,7 +122,7 @@ func getWorkspaceInput() *sdkcore.AutoFormSchema {
 }
 
 func getBoardInput(title, description string) *sdkcore.AutoFormSchema {
-	getBoardID := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getBoardID := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			WorkspaceID string `json:"workspace_id"`
 		}](ctx)
@@ -176,8 +175,7 @@ func getBoardInput(title, description string) *sdkcore.AutoFormSchema {
 		}
 
 		boards := response.Data.Boards
-
-		return boards, nil
+		return ctx.Respond(boards, len(boards))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -188,7 +186,7 @@ func getBoardInput(title, description string) *sdkcore.AutoFormSchema {
 }
 
 func getGroupInput(title, description string, required bool) *sdkcore.AutoFormSchema {
-	getGroups := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getGroups := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			BoardID string `json:"board_id"`
 		}](ctx)
@@ -244,12 +242,14 @@ func getGroupInput(title, description string, required bool) *sdkcore.AutoFormSc
 
 		groups := response.Data.Boards[0].Groups
 
-		return arrutil.Map[Group, map[string]any](groups, func(input Group) (target map[string]any, find bool) {
+		items := arrutil.Map[Group, map[string]any](groups, func(input Group) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.ID,
 				"name": input.Title,
 			}, true
-		}), nil
+		})
+
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

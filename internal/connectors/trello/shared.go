@@ -77,7 +77,7 @@ func trelloRequest(method, fullURL string, request []byte) (interface{}, error) 
 }
 
 func getBoardsInput() *sdkcore.AutoFormSchema {
-	getBoards := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getBoards := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		endpoint := "/members/me/boards"
 		fullURL := fmt.Sprintf("%s%s?key=%s&token=%s", baseURL, endpoint, ctx.Auth.Extra["api-key"], ctx.Auth.Extra["api-token"])
 
@@ -106,7 +106,7 @@ func getBoardsInput() *sdkcore.AutoFormSchema {
 			return nil, err
 		}
 
-		return boards, nil
+		return ctx.Respond(boards, len(boards))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -117,7 +117,7 @@ func getBoardsInput() *sdkcore.AutoFormSchema {
 }
 
 func getBoardListsInput() *sdkcore.AutoFormSchema {
-	getBoardLists := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getBoardLists := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			BoardID string `json:"board_id"`
 			ListID  string `json:"idList"`
@@ -151,7 +151,7 @@ func getBoardListsInput() *sdkcore.AutoFormSchema {
 			return nil, err
 		}
 
-		return lists, nil
+		return ctx.Respond(lists, len(lists))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -162,7 +162,7 @@ func getBoardListsInput() *sdkcore.AutoFormSchema {
 }
 
 // func getCardsInput() *sdkcore.AutoFormSchema {
-//	getCards := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+//	getCards := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 //		input := sdk.DynamicInputToType[struct {
 //			BoardID string `json:"board_id"`
 //			ListID  string `json:"idList"`

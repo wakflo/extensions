@@ -76,7 +76,7 @@ func getZohoClient(accessToken, endpoint string) (map[string]interface{}, error)
 }
 
 func getOrganizationsInput() *sdkcore.AutoFormSchema {
-	getOrganizations := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getOrganizations := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		client := fastshot.NewClient(baseURL).
 			Auth().BearerToken(ctx.Auth.AccessToken).
 			Header().
@@ -104,12 +104,14 @@ func getOrganizationsInput() *sdkcore.AutoFormSchema {
 		}
 
 		organization := organizations.Organizations
-		return arrutil.Map[Organization, map[string]any](organization, func(input Organization) (target map[string]any, find bool) {
+		items := arrutil.Map[Organization, map[string]any](organization, func(input Organization) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.OrganizationID,
 				"name": input.Name,
 			}, true
-		}), nil
+		})
+
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

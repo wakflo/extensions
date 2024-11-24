@@ -37,7 +37,7 @@ var (
 )
 
 func getSpreadsheetsInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getSpreadsheetFiles := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getSpreadsheetFiles := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			IncludeTeamDrives bool `json:"includeTeamDrives"`
 		}](ctx)
@@ -81,7 +81,7 @@ func getSpreadsheetsInput(title string, desc string, required bool) *sdkcore.Aut
 			return nil, err
 		}
 
-		return body.Files, nil
+		return ctx.Respond(body.Files, len(body.Files))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -92,7 +92,7 @@ func getSpreadsheetsInput(title string, desc string, required bool) *sdkcore.Aut
 }
 
 func getSheetIDInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getSheetID := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getSheetID := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			SpreadSheetID string `json:"spreadsheetId,omitempty"`
 		}](ctx)
@@ -128,12 +128,13 @@ func getSheetIDInput(title string, desc string, required bool) *sdkcore.AutoForm
 		}
 
 		sheet := body.Sheets
-		return arrutil.Map[Sheet, map[string]any](sheet, func(input Sheet) (target map[string]any, find bool) {
+		items := arrutil.Map[Sheet, map[string]any](sheet, func(input Sheet) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.Properties.SheetID,
 				"name": input.Properties.Title,
 			}, true
-		}), nil
+		})
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
@@ -144,7 +145,7 @@ func getSheetIDInput(title string, desc string, required bool) *sdkcore.AutoForm
 }
 
 func getSheetTitleInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getSheetTitle := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getSheetTitle := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			SpreadSheetID string `json:"spreadsheetId,omitempty"`
 		}](ctx)
@@ -180,12 +181,13 @@ func getSheetTitleInput(title string, desc string, required bool) *sdkcore.AutoF
 		}
 
 		sheet := body.Sheets
-		return arrutil.Map[Sheet, map[string]any](sheet, func(input Sheet) (target map[string]any, find bool) {
+		items := arrutil.Map[Sheet, map[string]any](sheet, func(input Sheet) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.Properties.Title,
 				"name": input.Properties.Title,
 			}, true
-		}), nil
+		})
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

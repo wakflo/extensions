@@ -257,7 +257,7 @@ func GetTicket(baseURL, apiKey, ticketID string) (interface{}, error) {
 }
 
 func getTicketInput() *sdkcore.AutoFormSchema {
-	getTickets := func(ctx *sdkcore.DynamicFieldContext) (interface{}, error) {
+	getTickets := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		baseAPI := "https://" + ctx.Auth.Extra["domain"] + ".freshdesk.com"
 		qu := fastshot.NewClient(baseAPI).
 			Auth().BasicAuth(ctx.Auth.Extra["api-key"], "X").
@@ -286,12 +286,14 @@ func getTicketInput() *sdkcore.AutoFormSchema {
 			return nil, err
 		}
 
-		return arrutil.Map[Ticket, map[string]any](tickets, func(input Ticket) (target map[string]any, find bool) {
+		items := arrutil.Map[Ticket, map[string]any](tickets, func(input Ticket) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.ID,
 				"name": input.Subject,
 			}, true
-		}), nil
+		})
+
+		return ctx.Respond(items, len(items))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).

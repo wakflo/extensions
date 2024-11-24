@@ -19,7 +19,7 @@ require (
 	github.com/opus-domini/fast-shot v1.1.2
 	github.com/rs/zerolog v1.33.0
 	github.com/shopspring/decimal v1.4.0
-	github.com/wakflo/go-sdk v0.7.2
+	github.com/wakflo/go-sdk v0.8.0
 	golang.org/x/oauth2 v0.20.0
 	google.golang.org/api v0.181.0
 )
