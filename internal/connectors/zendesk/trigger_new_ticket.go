@@ -12,26 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package hubspot
+package zendesk
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-type DealCreated struct {
+type TicketCreated struct {
 	options *sdk.TriggerInfo
 }
 
-func NewDealCreated() *DealCreated {
-	return &DealCreated{
+func NewTicketCreated() *TicketCreated {
+	return &TicketCreated{
 		options: &sdk.TriggerInfo{
-			Name:        "New Deal Added",
-			Description: "triggers workflow when a new deal is added",
+			Name:        "New Ticket Added",
+			Description: "triggers workflow when a new ticket is added",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Type:        sdkcore.TriggerTypeCron,
@@ -50,33 +51,42 @@ func NewDealCreated() *DealCreated {
 	}
 }
 
-func (t *DealCreated) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
-	reqURL := "/crm/v3/objects/deals?limit=100&archived=false&properties=createdAt,updatedAt"
+func (t *TicketCreated) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+	if ctx.Auth.Extra["api-token"] == "" || ctx.Auth.Extra["email"] == "" || ctx.Auth.Extra["subdomain"] == "" {
+		return nil, errors.New("missing zendesk api credentials")
+	}
+
+	email := ctx.Auth.Extra["email"]
+	apiToken := ctx.Auth.Extra["api-token"]
+	subdomain := "https://" + ctx.Auth.Extra["subdomain"] + ".zendesk.com/api/v2"
+
+	fullURL := subdomain + "/search.json?query=type:ticket"
 
 	if ctx.Metadata.LastRun != nil {
-		createdAfter := ctx.Metadata.LastRun.UTC().Format(time.RFC3339)
-		reqURL += "&createdAfter=" + createdAfter
+		createdAfter := ctx.Metadata.LastRun.UTC().Format("2006-01-02T15:04:05Z")
+		fullURL = fmt.Sprintf("%s+created>=%s", fullURL, createdAfter)
 	}
 
-	resp, err := hubspotClient(reqURL, ctx.Auth.AccessToken, http.MethodGet, nil)
+	response, err := zendeskRequest(http.MethodGet, fullURL, email, apiToken, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error fetching data: %v", err)
 	}
-	return resp, nil
+
+	return response, nil
 }
 
-func (t *DealCreated) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (t *TicketCreated) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return t.Run(ctx)
 }
 
-func (t *DealCreated) OnEnabled(ctx *sdk.RunContext) error {
+func (t *TicketCreated) OnEnabled(ctx *sdk.RunContext) error {
 	return nil
 }
 
-func (t *DealCreated) OnDisabled(ctx *sdk.RunContext) error {
+func (t *TicketCreated) OnDisabled(ctx *sdk.RunContext) error {
 	return nil
 }
 
-func (t *DealCreated) GetInfo() *sdk.TriggerInfo {
+func (t *TicketCreated) GetInfo() *sdk.TriggerInfo {
 	return t.options
 }

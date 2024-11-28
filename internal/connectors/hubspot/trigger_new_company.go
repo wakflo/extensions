@@ -27,8 +27,8 @@ type CompanyCreated struct {
 	options *sdk.TriggerInfo
 }
 
-func NewCompanyCreated() *TicketCreated {
-	return &TicketCreated{
+func NewCompanyCreated() *CompanyCreated {
+	return &CompanyCreated{
 		options: &sdk.TriggerInfo{
 			Name:        "New Company Added",
 			Description: "triggers workflow when a new company is added",
@@ -51,7 +51,7 @@ func NewCompanyCreated() *TicketCreated {
 }
 
 func (t *CompanyCreated) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
-	reqURL := "/crm/v3/objects/company?limit=50&archived=false&properties=createdAt,updatedAt"
+	reqURL := "/crm/v3/objects/company?limit=100&archived=false&properties=createdAt,updatedAt"
 
 	if ctx.Metadata.LastRun != nil {
 		createdAfter := ctx.Metadata.LastRun.UTC().Format(time.RFC3339)

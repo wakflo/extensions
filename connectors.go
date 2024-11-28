@@ -60,6 +60,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/trello"
 	"github.com/wakflo/extensions/internal/connectors/woocommerce"
 	"github.com/wakflo/extensions/internal/connectors/xero"
+	"github.com/wakflo/extensions/internal/connectors/zendesk"
 	"github.com/wakflo/extensions/internal/connectors/zohoinventory"
 	"github.com/wakflo/extensions/internal/connectors/zohosalesiq"
 	"github.com/wakflo/extensions/internal/connectors/zoom"
@@ -121,6 +122,9 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		jiracloud.NewConnector,      // Jira Cloud
 		prisync.NewConnector,        // Prisync
 		github.NewConnector,         // Github
+		zendesk.NewConnector,        // Zendesk
+		trello.NewConnector,         // Trello
+		notion.NewConnector,         // Notion
 		zohosalesiq.NewConnector,    // ZohoSales
 		trello.NewConnector,         // Trello
 		notion.NewConnector,         // Notion

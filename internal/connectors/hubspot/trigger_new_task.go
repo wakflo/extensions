@@ -27,8 +27,8 @@ type TaskCreated struct {
 	options *sdk.TriggerInfo
 }
 
-func NewTaskCreated() *TicketCreated {
-	return &TicketCreated{
+func NewTaskCreated() *TaskCreated {
+	return &TaskCreated{
 		options: &sdk.TriggerInfo{
 			Name:        "New Task Added",
 			Description: "triggers workflow when a new task has been added",
@@ -51,7 +51,7 @@ func NewTaskCreated() *TicketCreated {
 }
 
 func (t *TaskCreated) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
-	reqURL := "/crm/v3/objects/tasks?limit=50&archived=false&properties=createdAt,updatedAt"
+	reqURL := "/crm/v3/objects/tasks?limit=100&archived=false&properties=createdAt,updatedAt"
 
 	if ctx.Metadata.LastRun != nil {
 		createdAfter := ctx.Metadata.LastRun.UTC().Format(time.RFC3339)
