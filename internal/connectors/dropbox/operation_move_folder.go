@@ -29,8 +29,8 @@ type MoveFolderOperation struct {
 func NewMoveFolderOperation() *MoveFolderOperation {
 	return &MoveFolderOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Move a Folder",
-			Description: "move folder",
+			Name:        "Move Folder",
+			Description: "Move folder to a new location",
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"from_path": autoform.NewShortTextField().
