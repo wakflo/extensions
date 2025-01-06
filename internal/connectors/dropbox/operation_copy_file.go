@@ -30,7 +30,7 @@ func NewCopyFileOperation() *CopyFileOperation {
 	return &CopyFileOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Copy File",
-			Description: "Create file",
+			Description: "Copy File",
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"from_path": autoform.NewShortTextField().
