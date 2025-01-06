@@ -33,8 +33,8 @@ type DeleteFolderOperation struct {
 func NewDeleteFolderOperation() *DeleteFolderOperation {
 	return &DeleteFolderOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Delete A Folder",
-			Description: "delete an existing folder",
+			Name:        "Delete Folder",
+			Description: "Delete an existing folder",
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"path": autoform.NewShortTextField().
