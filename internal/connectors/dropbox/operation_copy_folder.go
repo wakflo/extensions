@@ -30,7 +30,7 @@ func NewCopyFolderOperation() *CopyFolderOperation {
 	return &CopyFolderOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Copy a Folder",
-			Description: "copy folder",
+			Description: "Copy a folder",
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"from_path": autoform.NewShortTextField().
