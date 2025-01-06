@@ -29,8 +29,8 @@ type MoveFileOperation struct {
 func NewMoveFileOperation() *MoveFileOperation {
 	return &MoveFileOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Move a File",
-			Description: "move file",
+			Name:        "Move File",
+			Description: "Move file to a new location",
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"from_path": autoform.NewShortTextField().
