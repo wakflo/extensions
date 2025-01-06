@@ -33,8 +33,8 @@ type DeleteFileOperation struct {
 func NewDeleteFileOperation() *DeleteFileOperation {
 	return &DeleteFileOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Delete A file",
-			Description: "delete an existing file",
+			Name:        "Delete File",
+			Description: "Delete an existing file",
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"path": autoform.NewShortTextField().
