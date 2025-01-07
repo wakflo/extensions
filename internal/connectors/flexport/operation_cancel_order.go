@@ -35,7 +35,7 @@ func NewCancelOrderOperation() *CancelOrderOperation {
 	return &CancelOrderOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Cancel Order",
-			Description: "Cancel Order",
+			Description: "Cancel a specific order",
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"Id": autoform.NewShortTextField().
