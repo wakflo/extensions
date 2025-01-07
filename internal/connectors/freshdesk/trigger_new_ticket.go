@@ -30,8 +30,8 @@ type TriggerNewTicket struct {
 func NewTriggerNewTicket() *TriggerNewTicket {
 	return &TriggerNewTicket{
 		options: &sdk.TriggerInfo{
-			Name:        "New Ticket",
-			Description: "triggers workflow when a new sales is initiated",
+			Name:        "New Ticket Created",
+			Description: "Triggers workflow when a new ticket is created",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Type:        sdkcore.TriggerTypeCron,
