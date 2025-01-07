@@ -40,7 +40,7 @@ func NewUpdateTicketOperation() *UpdateTicketOperation {
 	return &UpdateTicketOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Update A Ticket",
-			Description: "updates a ticket",
+			Description: "Updates a ticket",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
