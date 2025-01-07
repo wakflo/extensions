@@ -41,7 +41,7 @@ func NewCreateNewTicketOperation() *CreateNewTicketOperation {
 	return &CreateNewTicketOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Create A New Ticket",
-			Description: "creates a new ticket",
+			Description: "Creates a new ticket",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
