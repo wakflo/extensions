@@ -34,8 +34,8 @@ type CreateNewLabelOperation struct {
 func NewCreateNewLabelOperation() *CreateNewLabelOperation {
 	return &CreateNewLabelOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Create A New label",
-			Description: "creates a new label",
+			Name:        "Create New Label",
+			Description: "Creates a new shipping label",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
