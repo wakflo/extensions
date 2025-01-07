@@ -37,8 +37,8 @@ type CreateCourierPickupOperation struct {
 func NewCreateCourierPickupOperation() *CreateCourierPickupOperation {
 	return &CreateCourierPickupOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Create Courier Pickup",
-			Description: "creates a courier pickup",
+			Name:        "Create Courier Pickup Request",
+			Description: "Creates a courier pickup request",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
