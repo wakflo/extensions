@@ -38,8 +38,8 @@ type ReadFileOperation struct {
 func NewReadFileOperation() *ReadFileOperation {
 	return &ReadFileOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Read file",
-			Description: "Read a selected file from google drive file",
+			Name:        "Read File",
+			Description: "Read a selected file from Google Drive",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
