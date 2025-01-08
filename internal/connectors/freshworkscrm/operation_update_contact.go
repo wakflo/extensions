@@ -39,8 +39,8 @@ type UpdateContactOperation struct {
 func NewUpdateContactOperation() *UpdateContactOperation {
 	return &UpdateContactOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Update a Contact",
-			Description: "update a contact",
+			Name:        "Update Contact",
+			Description: "Updates a contact",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
