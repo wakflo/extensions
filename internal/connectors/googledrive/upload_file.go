@@ -40,7 +40,7 @@ type UploadFileOperation struct {
 func NewUploadFileOperation() *UploadFileOperation {
 	return &UploadFileOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Upload file",
+			Name:        "Upload File",
 			Description: "Upload a file in your Google Drive",
 			RequireAuth: true,
 			Auth:        sharedAuth,
