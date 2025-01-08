@@ -86,7 +86,7 @@ func NewTriggerNewFile() *TriggerNewFile {
 	return &TriggerNewFile{
 		options: &sdk.TriggerInfo{
 			Name:        "New File",
-			Description: "triggers workflow when a new file is produced",
+			Description: "Triggers workflow when a new file is produced",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Type:        sdkcore.TriggerTypeCron,
