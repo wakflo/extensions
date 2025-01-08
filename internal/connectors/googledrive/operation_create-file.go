@@ -27,7 +27,7 @@ func NewCreateNewFileTrigger() *CreateNewFileOperation {
 	return &CreateNewFileOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Create New File",
-			Description: "operation creates new google drive file",
+			Description: "Creates new file in Google Drive",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			ErrorSettings: sdkcore.StepErrorSettings{
