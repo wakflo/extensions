@@ -36,7 +36,7 @@ type CreateIssueCommentOperation struct {
 func NewCreateIssueCommentOperation() *CreateIssueCommentOperation {
 	return &CreateIssueCommentOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Create comment on a issue",
+			Name:        "Add comment to issue",
 			Description: "Adds a comment to the specified issue (also works with pull requests)",
 			RequireAuth: true,
 			Auth:        sharedAuth,
