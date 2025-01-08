@@ -39,7 +39,7 @@ type ListFilesOperation struct {
 func NewListFilesOperation() *ListFilesOperation {
 	return &ListFilesOperation{
 		options: &sdk.OperationInfo{
-			Name:        "List files",
+			Name:        "List Files",
 			Description: "List files from a Google Drive folder",
 			RequireAuth: true,
 			Auth:        sharedAuth,
