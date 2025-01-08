@@ -39,7 +39,7 @@ func NewCreateDocumentOperation() *CreateDocumentOperation {
 	return &CreateDocumentOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Create Document",
-			Description: "Search for document by name",
+			Description: "Creates a new document",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
