@@ -46,7 +46,7 @@ func NewReadRowsOperation() *ReadRowsOperation {
 	return &ReadRowsOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Read rows",
-			Description: "Read rows",
+			Description: "Read rows from a Worksheet",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
