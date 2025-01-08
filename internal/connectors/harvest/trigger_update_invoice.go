@@ -32,7 +32,7 @@ func NewInvoiceUpdate() *InvoiceUpdate {
 	return &InvoiceUpdate{
 		options: &sdk.TriggerInfo{
 			Name:        "Invoice Update",
-			Description: "triggers workflow when an invoice has been updated",
+			Description: "Triggers workflow when an invoice has been updated",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Type:        sdkcore.TriggerTypeCron,
