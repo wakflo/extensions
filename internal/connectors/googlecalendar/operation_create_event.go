@@ -29,7 +29,7 @@ func NewCreateEventOperation() *CreateEventOperation {
 	return &CreateEventOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Create Event",
-			Description: "create a calendar event",
+			Description: "Create a calendar event",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
