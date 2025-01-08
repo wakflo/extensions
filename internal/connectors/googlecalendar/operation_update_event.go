@@ -30,7 +30,7 @@ func NewUpdateEventOperation() *UpdateEventOperation {
 	return &UpdateEventOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Update Event",
-			Description: "update a calendar event",
+			Description: "Update a calendar event",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
