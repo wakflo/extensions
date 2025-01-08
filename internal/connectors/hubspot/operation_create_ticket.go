@@ -37,7 +37,7 @@ func NewCreateTicketOperation() *CreateTicketOperation {
 	return &CreateTicketOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Create new Ticket",
-			Description: "Create new contact",
+			Description: "Creates new ticket",
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"subject": autoform.NewShortTextField().
