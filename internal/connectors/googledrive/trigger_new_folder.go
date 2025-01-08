@@ -36,7 +36,7 @@ func NewTriggerNewFolder() *TriggerNewFolder {
 	return &TriggerNewFolder{
 		options: &sdk.TriggerInfo{
 			Name:        "New Folder",
-			Description: "triggers workflow when a new folder is produced",
+			Description: "Triggers workflow when a new folder is produced",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Type:        sdkcore.TriggerTypeCron,
