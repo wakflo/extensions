@@ -36,7 +36,7 @@ func NewTriggerNewSubscriber() *TriggerNewSubscriber {
 	return &TriggerNewSubscriber{
 		options: &sdk.TriggerInfo{
 			Name:        "New Subscriber",
-			Description: "Runs when an Audience subscriber is added.",
+			Description: "Triggers workflow when an Audience subscriber is added.",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Type:        sdkcore.TriggerTypeCron,
