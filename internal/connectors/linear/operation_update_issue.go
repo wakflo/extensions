@@ -44,7 +44,7 @@ func NewUpdateIssueOperation() *UpdateIssueOperation {
 	return &UpdateIssueOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Update Issue",
-			Description: "Update a issue in Linear Workspace",
+			Description: "Update an issue in Linear Workspace",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
