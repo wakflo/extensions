@@ -40,7 +40,7 @@ func NewCreateItemOperation() *CreateItemOperation {
 	return &CreateItemOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Create Item",
-			Description: "Creates item",
+			Description: "Creates a new column on a board",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
