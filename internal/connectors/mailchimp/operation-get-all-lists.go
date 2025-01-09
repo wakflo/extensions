@@ -29,7 +29,7 @@ type GetAllListOperation struct {
 func NewGetAllListOperation() sdk.IOperation {
 	return &GetAllListOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Get all lists ",
+			Name:        "Get All Lists ",
 			Description: "Get all available lists",
 			RequireAuth: true,
 			Auth:        sharedAuth,
