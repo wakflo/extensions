@@ -33,7 +33,7 @@ type ConvertToJSONOperation struct {
 func NewConvertToJSONOperation() *ConvertToJSONOperation {
 	return &ConvertToJSONOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Convert to Json",
+			Name:        "Convert to JSON",
 			Description: "Returns the text in JSON",
 			Auth:        nil,
 			Input: map[string]*sdkcore.AutoFormSchema{
