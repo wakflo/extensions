@@ -37,7 +37,7 @@ func NewCreateUpdateOperation() *CreateUpdateOperation {
 	return &CreateUpdateOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Create Update",
-			Description: "Create an update ",
+			Description: "Adds an update to an item",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
