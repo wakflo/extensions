@@ -32,8 +32,8 @@ type TriggerIssueUpdated struct {
 func NewTriggerIssueUpdated() *TriggerIssueUpdated {
 	return &TriggerIssueUpdated{
 		options: &sdk.TriggerInfo{
-			Name:        "Issue updated",
-			Description: "triggers workflow an issue is updated",
+			Name:        "Issue Updated",
+			Description: "Triggers workflow when an issue is updated",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Type:        sdkcore.TriggerTypeCron,
