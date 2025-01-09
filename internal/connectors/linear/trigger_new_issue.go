@@ -33,7 +33,7 @@ func NewTriggerNewIssue() *TriggerNewIssue {
 	return &TriggerNewIssue{
 		options: &sdk.TriggerInfo{
 			Name:        "New Issue",
-			Description: "triggers workflow an issue is created",
+			Description: "Triggers workflow when an issue is created",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Type:        sdkcore.TriggerTypeCron,
