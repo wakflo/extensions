@@ -38,7 +38,7 @@ func NewCreateColumnOperation() *CreateColumnOperation {
 	return &CreateColumnOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Create Column",
-			Description: "Create a column ",
+			Description: "Creates a new column on a board",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
