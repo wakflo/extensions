@@ -41,7 +41,7 @@ func NewCreateCardOperation() *CreateCardOperation {
 	return &CreateCardOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Create Card",
-			Description: "Create a card",
+			Description: "Create a new card on a specific board and list.",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
