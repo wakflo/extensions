@@ -47,7 +47,7 @@ func NewCreateTaskOperation() *CreateTaskOperation {
 	return &CreateTaskOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Create Task",
-			Description: "Create task",
+			Description: "Creates a new task",
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"content": autoform.NewMarkdownField().
