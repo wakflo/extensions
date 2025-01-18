@@ -31,7 +31,7 @@ func NewTrackingStatusChange() *TrackingStatusChange {
 	return &TrackingStatusChange{
 		options: &sdk.TriggerInfo{
 			Name:        "Tracking Status Change",
-			Description: "triggers workflow when a new sales is initiated",
+			Description: "Triggers workflow when tracking status changes",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Type:        sdkcore.TriggerTypeCron,
