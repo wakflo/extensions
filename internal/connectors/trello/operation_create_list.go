@@ -37,8 +37,8 @@ type CreateListOperation struct {
 func NewCreateListOperation() *CreateListOperation {
 	return &CreateListOperation{
 		options: &sdk.OperationInfo{
-			Name:        "Create a new List",
-			Description: "Create a list",
+			Name:        "Create List",
+			Description: "Create a new card on a specific board",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
