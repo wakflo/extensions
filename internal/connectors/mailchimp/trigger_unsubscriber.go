@@ -36,7 +36,7 @@ func NewTriggerUnSubscriber() *TriggerUnSubscriber {
 	return &TriggerUnSubscriber{
 		options: &sdk.TriggerInfo{
 			Name:        "Member Unsubscribed to Audience",
-			Description: "Triggers workflow when a member unsubscribers.",
+			Description: "Triggers workflow when a member unsubscribes.",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Type:        sdkcore.TriggerTypeCron,
