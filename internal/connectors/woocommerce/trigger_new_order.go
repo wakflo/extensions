@@ -37,7 +37,7 @@ func NewTriggerNewOrder() *TriggerNewOrder {
 			Description: "Triggers when a new item is added or updated in an order.",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Type:        sdkcore.TriggerTypeCron,
+			Strategy:    sdkcore.TriggerStrategyPolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"tag": autoform.NewShortTextField().
 					SetDisplayName("").

@@ -35,7 +35,7 @@ func NewTriggerCustomer() *TriggerNewCustomer {
 			Description: "triggers workflow when a new customer is created",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Type:        sdkcore.TriggerTypeCron,
+			Strategy:    sdkcore.TriggerStrategyPolling,
 			Input:       map[string]*sdkcore.AutoFormSchema{},
 			Settings:    &sdkcore.TriggerSettings{},
 			ErrorSettings: &sdkcore.StepErrorSettings{

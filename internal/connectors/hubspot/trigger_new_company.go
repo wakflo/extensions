@@ -34,7 +34,7 @@ func NewCompanyCreated() *TicketCreated {
 			Description: "triggers workflow when a new company is added",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Type:        sdkcore.TriggerTypeCron,
+			Strategy:    sdkcore.TriggerStrategyPolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"id": autoform.NewShortTextField().
 					SetDisplayName("").

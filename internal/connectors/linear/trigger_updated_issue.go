@@ -36,7 +36,7 @@ func NewTriggerIssueUpdated() *TriggerIssueUpdated {
 			Description: "triggers workflow an issue is updated",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Type:        sdkcore.TriggerTypeCron,
+			Strategy:    sdkcore.TriggerStrategyPolling,
 			Input:       map[string]*sdkcore.AutoFormSchema{},
 			Settings:    &sdkcore.TriggerSettings{},
 			ErrorSettings: &sdkcore.StepErrorSettings{

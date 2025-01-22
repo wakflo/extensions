@@ -32,7 +32,7 @@ func NewTriggerNewPayment() *TriggerNewPayment {
 			Description: "triggers workflow when a new payment is created",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Type:        sdkcore.TriggerTypeCron,
+			Strategy:    sdkcore.TriggerStrategyPolling,
 			Input:       map[string]*sdkcore.AutoFormSchema{},
 			Settings:    &sdkcore.TriggerSettings{},
 			ErrorSettings: &sdkcore.StepErrorSettings{

@@ -52,7 +52,7 @@ func TestNewConnector(t *testing.T) {
 					Secret:      "",
 					TokenSource: &testToken,
 				},
-				Metadata: &sdkcore.WorkflowRunMetadata{
+				Metadata: &sdkcore.FlowRunMetadata{
 					LastRun: &lastFourHours,
 				},
 			},

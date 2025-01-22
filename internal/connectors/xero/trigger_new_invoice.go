@@ -39,7 +39,7 @@ func NewTriggerNewInvoice() *TriggerNewInvoice {
 			Description: "triggers workflow when a new invoice is created",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Type:        sdkcore.TriggerTypeCron,
+			Strategy:    sdkcore.TriggerStrategyPolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"tenant_id": getTenantInput("Organization", "select organization", true),
 			},

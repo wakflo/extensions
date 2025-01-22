@@ -37,7 +37,7 @@ func NewProjectTrigger() *ProjectTrigger {
 			Description: "triggers workflow when a new project is created, modified or deleted",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Type:        sdkcore.TriggerTypeCron,
+			Strategy:    sdkcore.TriggerStrategyPolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"workspace_id": getWorkSpaceInput(),
 			},

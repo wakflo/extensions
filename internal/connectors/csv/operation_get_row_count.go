@@ -36,8 +36,8 @@ func NewGetRowCountOperation() *GetRowCountOperation {
 			Name:        "Get Row Count",
 			Description: "retrieves the row count of a csv file",
 			Input: map[string]*sdkcore.AutoFormSchema{
-				"script": autoform.NewCodeEditorField(sdkcore.Javascript).
-					SetDisplayName("Javascript Code").
+				"script": autoform.NewCodeEditorField(sdkcore.CodeLanguageJavascript).
+					SetDisplayName("CodeLanguageJavascript Code").
 					SetDescription("Enter your javascript code").
 					SetDefaultValue("function execute(ctx){\n    return {}\n}").
 					SetRequired(true).Build(),

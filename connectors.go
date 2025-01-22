@@ -35,15 +35,12 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/googlecalendar"
 	"github.com/wakflo/extensions/internal/connectors/googledrive"
 	"github.com/wakflo/extensions/internal/connectors/googlemail"
-	"github.com/wakflo/extensions/internal/connectors/goscript"
 	"github.com/wakflo/extensions/internal/connectors/harvest"
 	"github.com/wakflo/extensions/internal/connectors/hubspot"
-	"github.com/wakflo/extensions/internal/connectors/javascript"
 	"github.com/wakflo/extensions/internal/connectors/jiracloud"
 	"github.com/wakflo/extensions/internal/connectors/jsonconverter"
 	"github.com/wakflo/extensions/internal/connectors/linear"
 	"github.com/wakflo/extensions/internal/connectors/mailchimp"
-	"github.com/wakflo/extensions/internal/connectors/manual"
 	"github.com/wakflo/extensions/internal/connectors/monday"
 	"github.com/wakflo/extensions/internal/connectors/notion"
 	"github.com/wakflo/extensions/internal/connectors/openai"
@@ -77,17 +74,15 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 
 	plugins := []func() (*sdk.ConnectorPlugin, error){
 		// 👋 Add connectors here
-		googledrive.NewConnector,    // Google Drive
-		googlesheets.NewConnector,   // Google Sheets
-		googledocs.NewConnector,     // Google Docs
-		googlemail.NewConnector,     // Gmail
-		slack.NewConnector,          // Slack
-		javascript.NewConnector,     // Javascript
+		googledrive.NewConnector,  // Google Drive
+		googlesheets.NewConnector, // Google Sheets
+		googledocs.NewConnector,   // Google Docs
+		googlemail.NewConnector,   // Gmail
+		slack.NewConnector,        // Slack
+		// javascript.NewConnector,     // Javascript
 		cryptography.NewConnector,   // Cryptography
-		goscript.NewConnector,       // Go Lang
 		delay.NewConnector,          // Delay
 		todoist.NewConnector,        // Todoist
-		manual.NewConnector,         // Manual
 		calculator.NewConnector,     // Calculator
 		shopify.NewConnector,        // Shopify
 		zohoinventory.NewConnector,  // Zoho Inventory

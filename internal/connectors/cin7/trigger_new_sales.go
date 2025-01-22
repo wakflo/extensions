@@ -34,7 +34,7 @@ func NewTriggerNewSales() *TriggerNewSales {
 			Description: "triggers workflow when a new sales is initiated",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Type:        sdkcore.TriggerTypeCron,
+			Strategy:    sdkcore.TriggerStrategyPolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"id": autoform.NewShortTextField().
 					SetDisplayName("").

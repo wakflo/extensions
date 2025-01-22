@@ -42,7 +42,7 @@ func NewTriggerNewEventCreated() *TriggerNewEventCreated {
 					SetDefaultValue(5).
 					Build(),
 			},
-			Type:     sdkcore.TriggerTypeCron,
+			Strategy: sdkcore.TriggerStrategyPolling,
 			Settings: &sdkcore.TriggerSettings{},
 			ErrorSettings: &sdkcore.StepErrorSettings{
 				ContinueOnError: false,

@@ -39,7 +39,7 @@ func NewTaskCompletedTrigger() *TaskCompletedTrigger {
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"projectId": getProjectsInput(),
 			},
-			Type:     sdkcore.TriggerTypeCron,
+			Strategy: sdkcore.TriggerStrategyPolling,
 			Settings: &sdkcore.TriggerSettings{},
 			SampleOutput: map[string]interface{}{
 				"content":      "Buy Milk",

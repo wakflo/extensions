@@ -39,7 +39,7 @@ func NewTriggerNewFolder() *TriggerNewFolder {
 			Description: "triggers workflow when a new folder is produced",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Type:        sdkcore.TriggerTypeCron,
+			Strategy:    sdkcore.TriggerStrategyPolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"parentFolder":      getParentFoldersInput(),
 				"includeTeamDrives": includeTeamFieldInput,
@@ -63,6 +63,8 @@ func (t *TriggerNewFolder) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Printf("ctx.Metadata.LastRun %+v \n", ctx.Metadata.LastRun)
 
 	var qarr []string
 	if input.ParentFolder != nil {

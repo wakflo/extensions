@@ -34,7 +34,7 @@ func NewTaskCreated() *TicketCreated {
 			Description: "triggers workflow when a new task has been added",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Type:        sdkcore.TriggerTypeCron,
+			Strategy:    sdkcore.TriggerStrategyPolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"id": autoform.NewShortTextField().
 					SetDisplayName("").

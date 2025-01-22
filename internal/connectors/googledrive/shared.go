@@ -240,7 +240,7 @@ func handleFileContent(ctx *sdk.RunContext, files []*drive.File, driveService *d
 			// fileName = strings.Replace()
 		}
 
-		fileData, err := ctx.Files.PutWorkflow(ctx.Metadata, fileName, buf)
+		fileData, err := ctx.Files.PutFlow(ctx.Metadata, fileName, buf)
 		if err != nil {
 			return nil, err
 		}
@@ -308,7 +308,7 @@ func downloadFile(ctx *sdk.RunContext, driveService *drive.Service, fileID strin
 		name = fmt.Sprintf("%s.%s", *fileName, ext)
 	}
 
-	return ctx.Files.PutWorkflow(ctx.Metadata, name, buf)
+	return ctx.Files.PutFlow(ctx.Metadata, name, buf)
 }
 
 func getParentFoldersInput() *sdkcore.AutoFormSchema {

@@ -36,7 +36,7 @@ func NewTriggerNewOrder() *TriggerNewOrder {
 			Description: "Triggers when a new order is created",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Type:        sdkcore.TriggerTypeCron,
+			Strategy:    sdkcore.TriggerStrategyPolling,
 			Input:       map[string]*sdkcore.AutoFormSchema{},
 			Settings:    &sdkcore.TriggerSettings{},
 			ErrorSettings: &sdkcore.StepErrorSettings{

@@ -42,7 +42,7 @@ func NewTriggerNewEmail() *TriggerNewEmail {
 					SetRequired(false).
 					Build(),
 			},
-			Type:     sdkcore.TriggerTypeCron,
+			Strategy: sdkcore.TriggerStrategyPolling,
 			Settings: &sdkcore.TriggerSettings{},
 			ErrorSettings: &sdkcore.StepErrorSettings{
 				ContinueOnError: false,

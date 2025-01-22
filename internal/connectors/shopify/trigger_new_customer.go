@@ -37,7 +37,7 @@ func NewTriggerNewCustomer() *TriggerNewCustomer {
 			Description: "Triggers when a new customer is created",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Type:        sdkcore.TriggerTypeCron,
+			Strategy:    sdkcore.TriggerStrategyPolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"tag": autoform.NewShortTextField().
 					SetDisplayName("").
