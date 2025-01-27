@@ -37,7 +37,7 @@ func NewTriggerNewProduct() *TriggerNewProduct {
 			Description: "Triggers when a new product is created",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Strategy:    sdkcore.TriggerStrategyPolling,
+			Type:        sdkcore.TriggerTypePolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"tag": autoform.NewShortTextField().
 					SetDisplayName("").

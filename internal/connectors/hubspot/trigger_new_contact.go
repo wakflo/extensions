@@ -34,7 +34,7 @@ func NewContactCreated() *TicketCreated {
 			Description: "triggers workflow when a new contact has been created",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Strategy:    sdkcore.TriggerStrategyPolling,
+			Type:        sdkcore.TriggerTypePolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"id": autoform.NewShortTextField().
 					SetDisplayName("").

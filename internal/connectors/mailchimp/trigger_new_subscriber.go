@@ -39,7 +39,7 @@ func NewTriggerNewSubscriber() *TriggerNewSubscriber {
 			Description: "Runs when an Audience subscriber is added.",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Strategy:    sdkcore.TriggerStrategyPolling,
+			Type:        sdkcore.TriggerTypePolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"list_id": autoform.NewShortTextField().
 					SetDisplayName("List ID").

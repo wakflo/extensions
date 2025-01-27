@@ -34,7 +34,7 @@ func NewDealCreated() *TicketCreated {
 			Description: "triggers workflow when a new deal is added",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Strategy:    sdkcore.TriggerStrategyPolling,
+			Type:        sdkcore.TriggerTypePolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"id": autoform.NewShortTextField().
 					SetDisplayName("").

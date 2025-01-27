@@ -38,7 +38,7 @@ func NewTriggerNewPageCreated() *TriggerNewPageCreated {
 					SetDefaultValue(5).
 					Build(),
 			},
-			Strategy: sdkcore.TriggerStrategyPolling,
+			Type:     sdkcore.TriggerTypePolling,
 			Settings: &sdkcore.TriggerSettings{},
 			ErrorSettings: &sdkcore.StepErrorSettings{
 				ContinueOnError: false,

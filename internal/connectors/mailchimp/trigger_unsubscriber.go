@@ -39,7 +39,7 @@ func NewTriggerUnSubscriber() *TriggerUnSubscriber {
 			Description: "Runs when a member unsubscribes.",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Strategy:    sdkcore.TriggerStrategyPolling,
+			Type:        sdkcore.TriggerTypePolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"list_id": autoform.NewShortTextField().
 					SetDisplayName(" List ID").

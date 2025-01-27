@@ -32,7 +32,7 @@ func NewTriggerNewSpace() *TriggerNewSpace {
 			Description: "triggers workflow when a new space is created",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Strategy:    sdkcore.TriggerStrategyPolling,
+			Type:        sdkcore.TriggerTypePolling,
 			Input:       map[string]*sdkcore.AutoFormSchema{},
 			Settings:    &sdkcore.TriggerSettings{},
 			ErrorSettings: &sdkcore.StepErrorSettings{

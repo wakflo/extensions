@@ -39,7 +39,7 @@ func NewRecordTrigger() *RecordTrigger {
 			Description: "triggers workflow when a new record is created",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Strategy:    sdkcore.TriggerStrategyPolling,
+			Type:        sdkcore.TriggerTypePolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"bases": getBasesInput(),
 			},

@@ -35,7 +35,7 @@ func NewInvoiceUpdate() *InvoiceUpdate {
 			Description: "triggers workflow when an invoice has been updated",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Strategy:    sdkcore.TriggerStrategyPolling,
+			Type:        sdkcore.TriggerTypePolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"id": autoform.NewShortTextField().
 					SetDisplayName("").

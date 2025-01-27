@@ -34,7 +34,7 @@ func NewTrackingStatusChange() *TrackingStatusChange {
 			Description: "triggers workflow when a new sales is initiated",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Strategy:    sdkcore.TriggerStrategyPolling,
+			Type:        sdkcore.TriggerTypePolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"id": autoform.NewShortTextField().
 					SetDisplayName("").

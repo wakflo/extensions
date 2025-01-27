@@ -89,7 +89,7 @@ func NewTriggerNewFile() *TriggerNewFile {
 			Description: "triggers workflow when a new file is produced",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Strategy:    sdkcore.TriggerStrategyPolling,
+			Type:        sdkcore.TriggerTypePolling,
 			Settings:    &sdkcore.TriggerSettings{},
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"parentFolder": autoform.NewDynamicField(sdkcore.String).

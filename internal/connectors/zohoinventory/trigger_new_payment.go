@@ -38,7 +38,7 @@ func NewTriggerNewPayment() *TriggerNewPayment {
 			Description: "triggers workflow when a new payment is created",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Strategy:    sdkcore.TriggerStrategyPolling,
+			Type:        sdkcore.TriggerTypePolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"id": autoform.NewShortTextField().
 					SetDisplayName("").

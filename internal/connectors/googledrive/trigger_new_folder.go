@@ -39,7 +39,7 @@ func NewTriggerNewFolder() *TriggerNewFolder {
 			Description: "triggers workflow when a new folder is produced",
 			RequireAuth: true,
 			Auth:        sharedAuth,
-			Strategy:    sdkcore.TriggerStrategyPolling,
+			Type:        sdkcore.TriggerTypePolling,
 			Input: map[string]*sdkcore.AutoFormSchema{
 				"parentFolder":      getParentFoldersInput(),
 				"includeTeamDrives": includeTeamFieldInput,
