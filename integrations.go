@@ -1,12 +1,9 @@
-package integrations
+package extensions
 
 import (
 	"github.com/wakflo/extensions/internal/integrations/googledrive"
-	"github.com/wakflo/extensions/internal/logger"
 	"github.com/wakflo/go-sdk/integration"
 )
-
-var log = logger.NewDefaultLogger("external-connectors")
 
 func RegisterIntegrations() map[string]integration.RegistrationMap {
 	// 🛑Do-Not-Edit
