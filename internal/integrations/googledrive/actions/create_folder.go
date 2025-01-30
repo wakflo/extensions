@@ -19,6 +19,10 @@ type createFolderActionProps struct {
 type CreateFolderAction struct {
 }
 
+func (c *CreateFolderAction) GetType() sdkcore.ActionType {
+	return sdkcore.ActionTypeNormal
+}
+
 func (c CreateFolderAction) Name() string {
 	return "Create Folder"
 }
