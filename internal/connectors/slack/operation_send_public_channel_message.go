@@ -39,7 +39,7 @@ func NewSendPublicChannelMessageOperation() *SendPublicChannelMessage {
 	return &SendPublicChannelMessage{
 		options: &sdk.OperationInfo{
 			Name:        "Send public channel message",
-			Description: "Operation that sends a message to specified public channel",
+			Description: "Action that sends a message to specified public channel",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
