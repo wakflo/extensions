@@ -44,7 +44,7 @@ func NewSendPrivateChannelMessageOperation() *SendPrivateChannelMessage {
 	return &SendPrivateChannelMessage{
 		options: &sdk.OperationInfo{
 			Name:        "Send private channel message",
-			Description: "Operation that sends a message to specified private channel",
+			Description: "Action that sends a message to specified private channel",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{

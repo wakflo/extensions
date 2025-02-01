@@ -103,7 +103,7 @@ func TestNewConnector(t *testing.T) {
 			}
 
 			if len(spider.Operations()) != 6 {
-				t.Errorf("NewConnector() Operations() count = %d, want %d", len(spider.Operations()), 6)
+				t.Errorf("NewConnector() ActionsMap() count = %d, want %d", len(spider.Operations()), 6)
 			}
 
 			// if testCase.isTrigger {

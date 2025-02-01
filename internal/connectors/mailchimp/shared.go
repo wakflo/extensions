@@ -378,7 +378,7 @@ func modifySubscriberTags(accessToken, server, listID, email string, tags []stri
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNoContent {
-		fmt.Println("Operation successful")
+		fmt.Println("Action successful")
 		return nil
 	}
 

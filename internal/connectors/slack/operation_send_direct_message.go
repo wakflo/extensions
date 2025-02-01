@@ -44,7 +44,7 @@ func NewSendDirectMessageOperation() *SendDirectMessageOperation {
 	return &SendDirectMessageOperation{
 		options: &sdk.OperationInfo{
 			Name:        "Send direct message",
-			Description: "Operation that sends a direct slack message to a specified user",
+			Description: "Action that sends a direct slack message to a specified user",
 			RequireAuth: true,
 			Auth:        sharedAuth,
 			Input: map[string]*sdkcore.AutoFormSchema{
