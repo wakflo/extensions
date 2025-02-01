@@ -1,0 +1,7 @@
+[integration]
+name = "Shippo"
+version = "0.0.1"
+icon = "icon-park-solid:hippo"
+description = "Multi-carrier shipping software for e-commerce businesses."
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

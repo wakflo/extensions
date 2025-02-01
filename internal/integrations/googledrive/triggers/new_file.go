@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"strings"
+	"time"
+
 	fastshot "github.com/opus-domini/fast-shot"
 	"github.com/wakflo/extensions/internal/integrations/googledrive/shared"
 	"github.com/wakflo/go-sdk/autoform"
@@ -12,9 +16,6 @@ import (
 	"github.com/wakflo/go-sdk/integration"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
-	"io"
-	"strings"
-	"time"
 )
 
 type newFileProps struct {

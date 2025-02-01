@@ -3,13 +3,14 @@ package triggers
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/wakflo/extensions/internal/integrations/googledrive/shared"
 	sdkcore "github.com/wakflo/go-sdk/core"
 	"github.com/wakflo/go-sdk/integration"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
-	"strings"
-	"time"
 )
 
 type newFolderProps = newFileProps
@@ -125,6 +126,5 @@ func (e *NewFolderTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria
 }
 
 func NewNewFolderTrigger() integration.Trigger {
-
 	return &NewFolderTrigger{}
 }

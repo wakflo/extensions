@@ -1,0 +1,7 @@
+[integration]
+name = "JSON"
+version = "0.0.1"
+icon = "mdi:code-json"
+description = "Convert JSON to text and vice versa"
+categories = ["core"]
+authors = ["Wakflo <integrations@wakflo.com>"]

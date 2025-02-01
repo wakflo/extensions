@@ -1,0 +1,7 @@
+[integration]
+name = "Aftership"
+version = "0.0.1"
+icon = "openmoji:red-hexagon"
+description = "easy-to-use package tracker with which you will know when your parcel will arrive."
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

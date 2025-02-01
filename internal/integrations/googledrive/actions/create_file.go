@@ -5,7 +5,10 @@ import (
 	"github.com/wakflo/go-sdk/integration"
 )
 
-type CreateFileAction struct {
+type CreateFileAction struct{}
+
+func (c CreateFileAction) GetType() sdkcore.ActionType {
+	return sdkcore.ActionTypeNormal
 }
 
 func (c *CreateFileAction) GetType() sdkcore.ActionType {
@@ -43,6 +46,7 @@ func (c *CreateFileAction) Auth() *integration.Auth {
 		Inherit: true,
 	}
 }
+
 
 func (c *CreateFileAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
 	//TODO implement me
