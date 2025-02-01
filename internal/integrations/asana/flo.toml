@@ -1,0 +1,7 @@
+[integration]
+name = "Asana"
+version = "0.0.1"
+icon = "logos:asana-icon"
+description = "Work management platform designed to help teams organize, track, and manage their work."
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

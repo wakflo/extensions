@@ -1,7 +1,17 @@
 package extensions
 
 import (
+	"github.com/wakflo/extensions/internal/integrations/aftership"
+	"github.com/wakflo/extensions/internal/integrations/asana"
+	"github.com/wakflo/extensions/internal/integrations/easyship"
 	"github.com/wakflo/extensions/internal/integrations/googledrive"
+	"github.com/wakflo/extensions/internal/integrations/jsonconverter"
+	"github.com/wakflo/extensions/internal/integrations/smartsheet"
+	"github.com/wakflo/extensions/internal/integrations/square"
+	"github.com/wakflo/extensions/internal/integrations/toggl"
+	"github.com/wakflo/extensions/internal/integrations/trackingmore"
+	"github.com/wakflo/extensions/internal/integrations/zohosalesiq"
+	"github.com/wakflo/extensions/internal/integrations/zoom"
 	"github.com/wakflo/go-sdk/integration"
 )
 
@@ -13,7 +23,17 @@ func RegisterIntegrations() map[string]integration.RegistrationMap {
 
 	plugins := []*integration.Registration{
 		// 👋 Add connectors here
-		googledrive.Integration, // Google Drive
+		googledrive.Integration,   // Google Drive
+		asana.Integration,         // Asana
+		aftership.Integration,     // AfterShip
+		smartsheet.Integration,    // SmartSheet
+		jsonconverter.Integration, // JsonConverter
+		zohosalesiq.Integration,   // ZohoSales iq
+		toggl.Integration,         // Toggl
+		square.Integration,        // Square
+		trackingmore.Integration,  // TrackingMore
+		zoom.Integration,          // Zoom
+		easyship.Integration,      // EasyShip
 	}
 
 	// 🛑Do-Not-Edit

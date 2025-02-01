@@ -18,10 +18,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/wakflo/go-sdk/integration"
 	"mime"
 	"net/http"
 	"slices"
+
+	"github.com/wakflo/go-sdk/integration"
 
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"

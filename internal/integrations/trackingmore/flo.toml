@@ -1,0 +1,7 @@
+[integration]
+name = "TrackingMore"
+version = "0.0.1"
+icon = "logos:pivotal-tracker"
+description = "order tracking platform for eCommerce"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

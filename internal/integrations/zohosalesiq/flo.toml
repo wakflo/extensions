@@ -1,0 +1,7 @@
+[integration]
+name = "Zoho Sales IQ"
+version = "0.0.1"
+icon = "simple-icons:zoho"
+description = "interacts with Zoho sales API."
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

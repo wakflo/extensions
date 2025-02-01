@@ -1,0 +1,7 @@
+[integration]
+name = "Toggl"
+version = "0.0.1"
+icon = "fxemoji:pinkwallet"
+description = "Time tracking software to drive every decision."
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

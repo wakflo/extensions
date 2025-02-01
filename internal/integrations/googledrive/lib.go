@@ -21,8 +21,7 @@ import (
 	"github.com/wakflo/go-sdk/integration"
 )
 
-type GoogleDrive struct {
-}
+type GoogleDrive struct{}
 
 func (n *GoogleDrive) Auth() *integration.Auth {
 	return &integration.Auth{

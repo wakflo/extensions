@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+
 	"github.com/wakflo/extensions/internal/integrations/googledrive/shared"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -16,7 +17,10 @@ type createFolderActionProps struct {
 	IncludeTeamDrives bool    `json:"includeTeamDrives"`
 }
 
-type CreateFolderAction struct {
+type CreateFolderAction struct{}
+
+func (c CreateFolderAction) GetType() sdkcore.ActionType {
+	return sdkcore.ActionTypeNormal
 }
 
 func (c CreateFolderAction) Name() string {

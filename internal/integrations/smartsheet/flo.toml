@@ -1,0 +1,7 @@
+[integration]
+name = "Smartsheet"
+version = "0.0.1"
+icon = "ph:check-square-duotone"
+description = "Work management that adapts to your needs."
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

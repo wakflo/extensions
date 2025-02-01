@@ -1,0 +1,7 @@
+[integration]
+name = "Square"
+version = "0.0.1"
+icon = "simple-icons:square"
+description = "Payment solutions for every business."
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

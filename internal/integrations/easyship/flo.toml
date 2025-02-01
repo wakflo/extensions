@@ -1,0 +1,7 @@
+[integration]
+name = "EasyShip"
+version = "0.0.1"
+icon = "fxemoji:diamondshapewithdotinside"
+description = "shipping platform that connects sellers and marketplaces to couriers."
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

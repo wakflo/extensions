@@ -1,0 +1,7 @@
+[integration]
+name = "Zoom"
+version = "0.0.1"
+icon = "logos:zoom"
+description = "Video conferencing, web conferencing, webinars, screen sharing."
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]
