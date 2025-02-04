@@ -7,10 +7,6 @@ import (
 
 type CreateFileAction struct{}
 
-func (c CreateFileAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
 func (c *CreateFileAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -46,7 +42,6 @@ func (c *CreateFileAction) Auth() *integration.Auth {
 		Inherit: true,
 	}
 }
-
 
 func (c *CreateFileAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
 	//TODO implement me

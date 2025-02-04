@@ -19,37 +19,33 @@ type createFolderActionProps struct {
 
 type CreateFolderAction struct{}
 
-func (c CreateFolderAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
 func (c *CreateFolderAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
 
-func (c CreateFolderAction) Name() string {
+func (c *CreateFolderAction) Name() string {
 	return "Create Folder"
 }
 
-func (c CreateFolderAction) Description() string {
+func (c *CreateFolderAction) Description() string {
 	return "Create a new folder in Google Drive"
 }
 
-func (c CreateFolderAction) Documentation() *integration.OperationDocumentation {
+func (c *CreateFolderAction) Documentation() *integration.OperationDocumentation {
 	return &integration.OperationDocumentation{
 		Documentation: &createFolderDocs,
 	}
 }
 
-func (c CreateFolderAction) Icon() *string {
+func (c *CreateFolderAction) Icon() *string {
 	return nil
 }
 
-func (c CreateFolderAction) SampleData() (sdkcore.JSON, error) {
+func (c *CreateFolderAction) SampleData() (sdkcore.JSON, error) {
 	return nil, nil
 }
 
-func (c CreateFolderAction) Properties() map[string]*sdkcore.AutoFormSchema {
+func (c *CreateFolderAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
 		"folderName": autoform.NewShortTextField().
 			SetDisplayName("Folder name").
@@ -61,13 +57,13 @@ func (c CreateFolderAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	}
 }
 
-func (c CreateFolderAction) Auth() *integration.Auth {
+func (c *CreateFolderAction) Auth() *integration.Auth {
 	return &integration.Auth{
 		Inherit: true,
 	}
 }
 
-func (c CreateFolderAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
+func (c *CreateFolderAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
 	input, err := integration.InputToTypeSafely[createFolderActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
