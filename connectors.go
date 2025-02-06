@@ -51,6 +51,7 @@ import (
 	"github.com/wakflo/extensions/internal/connectors/smartsheet"
 	"github.com/wakflo/extensions/internal/connectors/square"
 	"github.com/wakflo/extensions/internal/connectors/stripe"
+	surveyMonkey "github.com/wakflo/extensions/internal/connectors/survey_monkey"
 	"github.com/wakflo/extensions/internal/connectors/todoist"
 	"github.com/wakflo/extensions/internal/connectors/toggl"
 	"github.com/wakflo/extensions/internal/connectors/trackingmore"
@@ -120,6 +121,7 @@ func RegisterConnectors() []*sdk.ConnectorPlugin {
 		trello.NewConnector,         // Trello
 		notion.NewConnector,         // Notion
 		smartsheet.NewConnector,     // Smartsheet
+		surveyMonkey.NewConnector,   // Survey Monkey
 	}
 
 	// 🛑Do-Not-Edit
