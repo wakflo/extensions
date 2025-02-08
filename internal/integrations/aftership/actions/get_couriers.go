@@ -24,6 +24,10 @@ import (
 
 type GetCouriersAction struct{}
 
+func (c *GetCouriersAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c GetCouriersAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -46,8 +50,8 @@ func (c GetCouriersAction) Icon() *string {
 	return nil
 }
 
-func (c GetCouriersAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c GetCouriersAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c GetCouriersAction) Properties() map[string]*sdkcore.AutoFormSchema {

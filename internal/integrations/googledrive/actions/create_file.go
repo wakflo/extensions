@@ -7,6 +7,10 @@ import (
 
 type CreateFileAction struct{}
 
+func (c *CreateFileAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c *CreateFileAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -29,8 +33,8 @@ func (c *CreateFileAction) Icon() *string {
 	return nil
 }
 
-func (c *CreateFileAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c *CreateFileAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c *CreateFileAction) Properties() map[string]*sdkcore.AutoFormSchema {

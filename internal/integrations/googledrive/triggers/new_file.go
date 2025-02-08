@@ -48,13 +48,13 @@ func (e *NewFileTrigger) Icon() *string {
 	return nil
 }
 
-func (e *NewFileTrigger) SampleData() (sdkcore.JSON, error) {
+func (e *NewFileTrigger) SampleData() sdkcore.JSON {
 	return map[string]interface{}{
 		"kind":     "drive#file",
 		"mimeType": "image/jpeg",
 		"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
 		"name":     "example.jpg",
-	}, nil
+	}
 }
 
 func (e *NewFileTrigger) Properties() map[string]*sdkcore.AutoFormSchema {

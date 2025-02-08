@@ -37,8 +37,8 @@ func (e *NewProjectTrigger) Icon() *string {
 	return nil
 }
 
-func (e *NewProjectTrigger) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (e *NewProjectTrigger) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (e *NewProjectTrigger) Properties() map[string]*sdkcore.AutoFormSchema {

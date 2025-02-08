@@ -33,6 +33,10 @@ type trackAPackageActionProps struct {
 
 type TrackAPackageAction struct{}
 
+func (c *TrackAPackageAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c TrackAPackageAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -55,8 +59,8 @@ func (c TrackAPackageAction) Icon() *string {
 	return nil
 }
 
-func (c TrackAPackageAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c TrackAPackageAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c TrackAPackageAction) Properties() map[string]*sdkcore.AutoFormSchema {

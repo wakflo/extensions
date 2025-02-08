@@ -24,6 +24,10 @@ import (
 
 type MarkTrackingAsCompletedAction struct{}
 
+func (c *MarkTrackingAsCompletedAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c MarkTrackingAsCompletedAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -46,8 +50,8 @@ func (c MarkTrackingAsCompletedAction) Icon() *string {
 	return nil
 }
 
-func (c MarkTrackingAsCompletedAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c MarkTrackingAsCompletedAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c MarkTrackingAsCompletedAction) Properties() map[string]*sdkcore.AutoFormSchema {

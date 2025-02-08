@@ -32,6 +32,10 @@ type createProjectActionProps struct {
 
 type CreateProjectAction struct{}
 
+func (c *CreateProjectAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c CreateProjectAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -54,8 +58,8 @@ func (c CreateProjectAction) Icon() *string {
 	return nil
 }
 
-func (c CreateProjectAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c CreateProjectAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c CreateProjectAction) Properties() map[string]*sdkcore.AutoFormSchema {

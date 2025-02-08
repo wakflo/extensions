@@ -30,6 +30,10 @@ type createNewLabelActionProps struct {
 
 type CreateNewLabelAction struct{}
 
+func (c *CreateNewLabelAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c CreateNewLabelAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -52,8 +56,8 @@ func (c CreateNewLabelAction) Icon() *string {
 	return nil
 }
 
-func (c CreateNewLabelAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c CreateNewLabelAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c CreateNewLabelAction) Properties() map[string]*sdkcore.AutoFormSchema {

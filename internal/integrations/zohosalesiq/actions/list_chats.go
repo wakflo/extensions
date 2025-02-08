@@ -15,6 +15,10 @@ type listChatsActionProps struct {
 
 type ListChatsAction struct{}
 
+func (c *ListChatsAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c ListChatsAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -37,8 +41,8 @@ func (c ListChatsAction) Icon() *string {
 	return nil
 }
 
-func (c ListChatsAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c ListChatsAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c ListChatsAction) Properties() map[string]*sdkcore.AutoFormSchema {

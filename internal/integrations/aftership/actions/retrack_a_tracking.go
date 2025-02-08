@@ -25,6 +25,10 @@ import (
 
 type RetrackATrackingAction struct{}
 
+func (c *RetrackATrackingAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c RetrackATrackingAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -47,8 +51,8 @@ func (c RetrackATrackingAction) Icon() *string {
 	return nil
 }
 
-func (c RetrackATrackingAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c RetrackATrackingAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c RetrackATrackingAction) Properties() map[string]*sdkcore.AutoFormSchema {

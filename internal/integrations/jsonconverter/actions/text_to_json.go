@@ -1,8 +1,6 @@
 package actions
 
 import (
-	"fmt"
-
 	"github.com/wakflo/extensions/internal/integrations/jsonconverter/shared"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -14,6 +12,10 @@ type convertToJsonActionProps struct {
 }
 
 type ConvertToJsonAction struct{}
+
+func (c *ConvertToJsonAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
 
 func (c ConvertToJsonAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
@@ -37,8 +39,8 @@ func (c ConvertToJsonAction) Icon() *string {
 	return nil
 }
 
-func (c ConvertToJsonAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c ConvertToJsonAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c ConvertToJsonAction) Properties() map[string]*sdkcore.AutoFormSchema {
@@ -59,12 +61,12 @@ func (c ConvertToJsonAction) Perform(ctx integration.PerformContext) (sdkcore.JS
 	if err != nil {
 		return nil, err
 	}
+	sdkcore.PrettyPrint(input)
 
 	result, err := shared.ConvertTextToJSON(input.Text)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("%+v\n", result)
 
 	return result, nil
 }

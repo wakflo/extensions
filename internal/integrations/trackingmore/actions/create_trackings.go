@@ -29,6 +29,10 @@ type createTrackingsActionProps struct {
 
 type CreateTrackingsAction struct{}
 
+func (c *CreateTrackingsAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c CreateTrackingsAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -51,8 +55,8 @@ func (c CreateTrackingsAction) Icon() *string {
 	return nil
 }
 
-func (c CreateTrackingsAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c CreateTrackingsAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c CreateTrackingsAction) Properties() map[string]*sdkcore.AutoFormSchema {

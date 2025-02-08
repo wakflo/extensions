@@ -26,6 +26,10 @@ type getPaymentsActionProps struct {
 
 type GetPaymentsAction struct{}
 
+func (c *GetPaymentsAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c GetPaymentsAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -48,8 +52,8 @@ func (c GetPaymentsAction) Icon() *string {
 	return nil
 }
 
-func (c GetPaymentsAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c GetPaymentsAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c GetPaymentsAction) Properties() map[string]*sdkcore.AutoFormSchema {

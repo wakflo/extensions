@@ -17,6 +17,10 @@ type getVisitorsDetailsActionProps struct {
 
 type GetVisitorsDetailsAction struct{}
 
+func (c *GetVisitorsDetailsAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c GetVisitorsDetailsAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -39,8 +43,8 @@ func (c GetVisitorsDetailsAction) Icon() *string {
 	return nil
 }
 
-func (c GetVisitorsDetailsAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c GetVisitorsDetailsAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c GetVisitorsDetailsAction) Properties() map[string]*sdkcore.AutoFormSchema {

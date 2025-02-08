@@ -19,6 +19,10 @@ type createFolderActionProps struct {
 
 type CreateFolderAction struct{}
 
+func (c *CreateFolderAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c *CreateFolderAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -41,8 +45,8 @@ func (c *CreateFolderAction) Icon() *string {
 	return nil
 }
 
-func (c *CreateFolderAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c *CreateFolderAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c *CreateFolderAction) Properties() map[string]*sdkcore.AutoFormSchema {

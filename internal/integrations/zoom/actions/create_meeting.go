@@ -36,6 +36,10 @@ type createMeetingActionProps struct {
 
 type CreateMeetingAction struct{}
 
+func (c *CreateMeetingAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c CreateMeetingAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -58,8 +62,8 @@ func (c CreateMeetingAction) Icon() *string {
 	return nil
 }
 
-func (c CreateMeetingAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c CreateMeetingAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c CreateMeetingAction) Properties() map[string]*sdkcore.AutoFormSchema {

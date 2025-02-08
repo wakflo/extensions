@@ -16,11 +16,12 @@ package shared
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
-func ConvertTextToJSON(text string) (map[string]interface{}, error) {
+func ConvertTextToJSON(text string) (any, error) {
 	var result map[string]interface{}
-	err := json.Unmarshal([]byte(text), &result)
+	err := parseDoubleEncodedJSON(text, &result)
 	if err != nil {
 		return nil, err
 	}
@@ -34,3 +35,21 @@ func ConvertTextToJSON(text string) (map[string]interface{}, error) {
 //	}
 //	return string(jsonData), nil
 //}
+
+// parseDoubleEncodedJSON parses a double-encoded JSON string.
+func parseDoubleEncodedJSON(input string, output interface{}) error {
+	// Step 1: Decode the outer layer to get the inner JSON string
+	var rawJSON string
+	err := json.Unmarshal([]byte(input), &rawJSON)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal outer JSON: %w", err)
+	}
+
+	// Step 2: Decode the inner JSON string into the expected structure
+	err = json.Unmarshal([]byte(rawJSON), &output)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal inner JSON: %w", err)
+	}
+
+	return nil
+}

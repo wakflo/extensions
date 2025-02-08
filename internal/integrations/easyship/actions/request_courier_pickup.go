@@ -33,6 +33,10 @@ type createCourierPickupActionProps struct {
 
 type CreateCourierPickupAction struct{}
 
+func (c *CreateCourierPickupAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c CreateCourierPickupAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -55,8 +59,8 @@ func (c CreateCourierPickupAction) Icon() *string {
 	return nil
 }
 
-func (c CreateCourierPickupAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c CreateCourierPickupAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c CreateCourierPickupAction) Properties() map[string]*sdkcore.AutoFormSchema {

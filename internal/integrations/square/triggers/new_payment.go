@@ -45,13 +45,13 @@ func (e *NewPaymentTrigger) Icon() *string {
 	return nil
 }
 
-func (e *NewPaymentTrigger) SampleData() (sdkcore.JSON, error) {
+func (e *NewPaymentTrigger) SampleData() sdkcore.JSON {
 	return map[string]interface{}{
 		"kind":     "drive#file",
 		"mimeType": "image/jpeg",
 		"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
 		"name":     "example.jpg",
-	}, nil
+	}
 }
 
 func (e *NewPaymentTrigger) Properties() map[string]*sdkcore.AutoFormSchema {

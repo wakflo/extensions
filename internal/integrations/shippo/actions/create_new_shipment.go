@@ -51,6 +51,10 @@ type createNewShipmentActionProps struct {
 
 type CreateNewShipmentAction struct{}
 
+func (c *CreateNewShipmentAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c CreateNewShipmentAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -73,8 +77,8 @@ func (c CreateNewShipmentAction) Icon() *string {
 	return nil
 }
 
-func (c CreateNewShipmentAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c CreateNewShipmentAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c CreateNewShipmentAction) Properties() map[string]*sdkcore.AutoFormSchema {

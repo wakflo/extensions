@@ -38,8 +38,8 @@ func (e *NewFolderTrigger) Icon() *string {
 	return nil
 }
 
-func (e *NewFolderTrigger) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (e *NewFolderTrigger) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (e *NewFolderTrigger) Properties() map[string]*sdkcore.AutoFormSchema {

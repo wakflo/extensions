@@ -27,6 +27,10 @@ type getATrackingActionProps struct {
 
 type GetATrackingAction struct{}
 
+func (c *GetATrackingAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c GetATrackingAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -49,8 +53,8 @@ func (c GetATrackingAction) Icon() *string {
 	return nil
 }
 
-func (c GetATrackingAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c GetATrackingAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c GetATrackingAction) Properties() map[string]*sdkcore.AutoFormSchema {

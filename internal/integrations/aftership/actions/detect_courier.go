@@ -32,6 +32,10 @@ func (c DetectCourierAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
 
+func (c *DetectCourierAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c DetectCourierAction) Name() string {
 	return "Detect Courier"
 }
@@ -50,8 +54,8 @@ func (c DetectCourierAction) Icon() *string {
 	return nil
 }
 
-func (c DetectCourierAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c DetectCourierAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c DetectCourierAction) Properties() map[string]*sdkcore.AutoFormSchema {

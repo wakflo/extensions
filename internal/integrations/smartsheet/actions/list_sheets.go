@@ -26,6 +26,10 @@ type listSheetProps struct {
 
 type ListSheetsAction struct{}
 
+func (c *ListSheetsAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
 func (c ListSheetsAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -48,8 +52,8 @@ func (c ListSheetsAction) Icon() *string {
 	return nil
 }
 
-func (c ListSheetsAction) SampleData() (sdkcore.JSON, error) {
-	return nil, nil
+func (c ListSheetsAction) SampleData() sdkcore.JSON {
+	return nil
 }
 
 func (c ListSheetsAction) Properties() map[string]*sdkcore.AutoFormSchema {
