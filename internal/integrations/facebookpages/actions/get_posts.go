@@ -3,7 +3,6 @@ package actions
 import (
 	"fmt"
 	"github.com/wakflo/extensions/internal/integrations/facebookpages/shared"
-	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
 
 	"github.com/wakflo/go-sdk/integration"
@@ -47,12 +46,7 @@ func (c GetPostsAction) SampleData() sdkcore.JSON {
 
 func (c GetPostsAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
-		//"page_id": shared.GetFacebookPageInput("Select a Page", "The ID of the page you want to get the post from", true),
-		"page_id": autoform.NewShortTextField().
-			SetDisplayName("Page").
-			SetDescription("Page").
-			SetRequired(true).
-			Build(),
+		"page_id": shared.GetFacebookPageInput("Select a Page", "The ID of the page you want to get the post from", true),
 	}
 }
 
