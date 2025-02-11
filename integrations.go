@@ -4,8 +4,10 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/aftership"
 	"github.com/wakflo/extensions/internal/integrations/asana"
 	"github.com/wakflo/extensions/internal/integrations/easyship"
+	"github.com/wakflo/extensions/internal/integrations/facebookpages"
 	"github.com/wakflo/extensions/internal/integrations/googledrive"
 	"github.com/wakflo/extensions/internal/integrations/jsonconverter"
+	"github.com/wakflo/extensions/internal/integrations/sendbox"
 	"github.com/wakflo/extensions/internal/integrations/smartsheet"
 	"github.com/wakflo/extensions/internal/integrations/square"
 	"github.com/wakflo/extensions/internal/integrations/toggl"
@@ -34,6 +36,8 @@ func RegisterIntegrations() map[string]integration.RegistrationMap {
 		trackingmore.Integration,  // TrackingMore
 		zoom.Integration,          // Zoom
 		easyship.Integration,      // EasyShip
+		sendbox.Integration,       // Sendbox
+		facebookpages.Integration, // Facebook Pages
 	}
 
 	// 🛑Do-Not-Edit
