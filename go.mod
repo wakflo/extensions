@@ -2,7 +2,7 @@ module github.com/wakflo/extensions
 
 go 1.23.4
 
-replace github.com/wakflo/go-sdk => ../go-sdk
+//replace github.com/wakflo/go-sdk => ../go-sdk
 
 require (
 	github.com/Khan/genqlient v0.7.0
@@ -15,9 +15,8 @@ require (
 	github.com/opus-domini/fast-shot v1.1.4
 	github.com/rs/zerolog v1.33.0
 	github.com/shopspring/decimal v1.4.0
-	github.com/wakflo/go-sdk v0.8.0
+	github.com/wakflo/go-sdk v0.10.0
 	google.golang.org/api v0.217.0
-	google.golang.org/genai v0.2.0
 )
 
 require (
@@ -41,13 +40,11 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.24.0 // indirect
 	github.com/go-resty/resty/v2 v2.16.3 // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.1 // indirect
-	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/gosimple/slug v1.15.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/grokify/goauth v0.23.2 // indirect
