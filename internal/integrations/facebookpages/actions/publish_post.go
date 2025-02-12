@@ -6,6 +6,8 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/wakflo/go-sdk/integration"
 )
@@ -15,7 +17,7 @@ type publishPostActionProps struct {
 	Message              string `json:"message"`
 	Link                 string `json:"link"`
 	Published            *bool  `json:"published"`
-	ScheduledPublishTime string `json:"scheduled_publish_time,omitempty"`
+	ScheduledPublishTime string `json:"scheduled_publish_time"`
 }
 
 type PublishPostAction struct{}
@@ -68,7 +70,7 @@ func (c PublishPostAction) Properties() map[string]*sdkcore.AutoFormSchema {
 			SetDescription("Set to false to schedule the post for later").
 			SetDefaultValue(true).
 			Build(),
-		"scheduled_publish_time": autoform.NewShortTextField().
+		"scheduled_publish_time": autoform.NewDateTimeField().
 			SetDisplayName("Scheduled Publish Time").
 			SetDescription("When to publish the post. Can be a UNIX timestamp, ISO 8601 timestamp, or relative time (e.g. '+2 weeks'). Required if not publishing immediately.").
 			SetRequired(false).
@@ -103,7 +105,15 @@ func (c PublishPostAction) Perform(ctx integration.PerformContext) (sdkcore.JSON
 		}
 
 		if input.ScheduledPublishTime != "" {
-			body["scheduled_publish_time"] = input.ScheduledPublishTime
+			cleanTimeString := strings.Split(input.ScheduledPublishTime, "[")[0]
+
+			parsedTime, errs := time.Parse(time.RFC3339, cleanTimeString)
+			if errs != nil {
+				return nil, fmt.Errorf("error parsing scheduled_publish_time: %v", err)
+			}
+
+			scheduledPublishTime := parsedTime.Format("2006-01-02T15:04:05-07:00")
+			body["scheduled_publish_time"] = scheduledPublishTime
 		}
 	}
 

@@ -51,14 +51,10 @@ func (c UpdatePostAction) SampleData() sdkcore.JSON {
 func (c UpdatePostAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
 		"page_id": shared.GetFacebookPageInput("Select a page", "The page you want to get the post from", true),
-		"post_id": autoform.NewShortTextField().
-			SetDisplayName("Page Post ID").
-			SetDescription("Post ID").
-			SetRequired(true).
-			Build(),
-		"message": autoform.NewShortTextField().
-			SetDisplayName("Message").
-			SetDescription("The text content of your post").
+		"post_id": shared.GetPagePostsInput("Select a post", "The post you want to update", true),
+		"message": autoform.NewLongTextField().
+			SetDisplayName("New Post").
+			SetDescription("The text content of the post you want to edit").
 			SetRequired(true).
 			Build(),
 	}

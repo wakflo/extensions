@@ -74,19 +74,7 @@ func (c GetPostsAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, e
 	if err != nil {
 		return nil, err
 	}
-
-	//videoResult, err := shared.MakeFacebookRequest(http.MethodGet, ctx.Auth.AccessToken, endpoint, nil)
-	//if err != nil {
-	//	return nil, err
-	//}
-
 	return posts, nil
-
-	//posts, err := shared.MakeFacebookRequest(http.MethodGet, ctx.Auth.AccessToken, url, nil)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//return posts, nil
 }
 
 func NewGetPostsAction() integration.Action {

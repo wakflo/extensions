@@ -22,3 +22,13 @@ type Page struct {
 type PagesResponse struct {
 	Data []Page `json:"data"`
 }
+
+type PostsResponse struct {
+	Data []Post `json:"data"`
+}
+
+type Post struct {
+	ID          string `json:"id"`
+	Message     string `json:"message"`
+	CreatedTime string `json:"created_time"`
+}

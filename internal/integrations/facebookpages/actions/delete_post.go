@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"github.com/wakflo/go-sdk/autoform"
 	"net/http"
 
 	"github.com/wakflo/extensions/internal/integrations/facebookpages/shared"
@@ -50,11 +49,7 @@ func (c DeletePostAction) SampleData() sdkcore.JSON {
 func (c DeletePostAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
 		"page_id": shared.GetFacebookPageInput("Select a page", "The page you want to get the post from", true),
-		"post_id": autoform.NewShortTextField().
-			SetDisplayName("Page Post ID").
-			SetDescription("Post ID").
-			SetRequired(true).
-			Build(),
+		"post_id": shared.GetPagePostsInput("Select a post", "The post you want to update", true),
 	}
 }
 

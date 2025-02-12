@@ -17,7 +17,9 @@ package shared
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 	"io"
 	"net/http"
@@ -122,6 +124,80 @@ func GetFacebookPageInput(title string, desc string, required bool) *sdkcore.Aut
 		}
 
 		return ctx.Respond(pages, len(pages))
+	}
+
+	return autoform.NewDynamicField(sdkcore.String).
+		SetDisplayName(title).
+		SetDescription(desc).
+		SetDynamicOptions(&getPages).
+		SetRequired(required).
+		Build()
+}
+
+func GetPagePostsInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
+	getPages := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		input := sdk.DynamicInputToType[struct {
+			PageID string `json:"page_id"`
+		}](ctx)
+
+		if input.PageID == "" {
+			return nil, errors.New("please select a page")
+		}
+
+		// Fetch the page access token
+		pageAccessToken, err := GetPageAccessToken(ctx.Auth.AccessToken, input.PageID)
+		if err != nil {
+			return nil, fmt.Errorf("error fetching page access token: %v", err)
+		}
+
+		// Use the page access token to fetch posts
+		reqURL := fmt.Sprintf("%s/%s/feed", baseURL, input.PageID)
+		req, err := http.NewRequest(http.MethodGet, reqURL, nil)
+		if err != nil {
+			return nil, fmt.Errorf("error creating request: %v", err)
+		}
+
+		query := req.URL.Query()
+		query.Add("access_token", pageAccessToken) // Use the page access token here
+		query.Add("fields", "id,message,created_time")
+		req.URL.RawQuery = query.Encode()
+
+		req.Header.Add("Authorization", "Bearer "+pageAccessToken) // Use the page access token here
+
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return nil, fmt.Errorf("error sending request: %v", err)
+		}
+		defer res.Body.Close()
+
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			return nil, fmt.Errorf("error reading response body: %v", err)
+		}
+
+		if res.StatusCode != http.StatusOK {
+			var apiError map[string]interface{}
+			if errs := json.Unmarshal(body, &apiError); errs == nil {
+				return nil, fmt.Errorf("API error: %v", apiError["error"])
+			}
+			return nil, fmt.Errorf("API request failed with status code %d: %s", res.StatusCode, string(body))
+		}
+
+		var respData PostsResponse
+		err = json.Unmarshal(body, &respData)
+		if err != nil {
+			return nil, fmt.Errorf("error unmarshaling response: %v", err)
+		}
+
+		var posts []map[string]string
+		for _, post := range respData.Data {
+			posts = append(posts, map[string]string{
+				"id":   post.ID,
+				"name": post.Message,
+			})
+		}
+
+		return ctx.Respond(posts, len(posts))
 	}
 
 	return autoform.NewDynamicField(sdkcore.String).
