@@ -9,6 +9,7 @@
 * implement trello connector ([ea26172](https://github.com/wakflo/extensions/commit/ea2617265b9c5db5e996029f560913d591ce24cf))
 * implement zohosales iq connector ([ff77895](https://github.com/wakflo/extensions/commit/ff77895cf7d90e89181fcdeb8589acc3c5c6e066))
 * update integrations code structure ([82b0b39](https://github.com/wakflo/extensions/commit/82b0b39e7b43f2accc665d19bad19c7bb49192f8))
+* updated schemas ([f4f0f4f](https://github.com/wakflo/extensions/commit/f4f0f4f842372a2e47acf0643af3ef68a421eee9))
 * updated schemas ([4a75ab4](https://github.com/wakflo/extensions/commit/4a75ab4d07d2315051b0498068f227129bf5916b))
 * updated schemas ([ec5db4a](https://github.com/wakflo/extensions/commit/ec5db4a8d44248c4dd98f4fac6409106efb24f4f))
 
