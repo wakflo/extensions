@@ -1,11 +1,10 @@
-### EveryDay
-is a trigger action that performs a specific task every day at a specified time.
 
-#### Usage:
-To use this function, simply call it and specify the desired time of day
-when the action should trigger. The function will schedule the action
-to execute daily at the provided time.
+# New Folder
 
-#### Parameters:
-hour (int): The hour of the day (in 24-hour format) when the action should trigger (valid range: 0-23).
-minute (int): The minute of the hour when the action should trigger (valid range: 0-59).
+## Description
+
+The "New Folder" integration trigger is designed to monitor a specific folder or directory for new files or subfolders. Whenever a new folder is created within the monitored directory, this trigger will automatically initiate the workflow automation process, allowing you to streamline tasks and automate workflows related to file organization, data processing, or other business-critical activities.
+
+## Details
+
+- **Type**: sdkcore.TriggerTypePolling

@@ -22,6 +22,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type createNewTicketOperationProps struct {
@@ -83,7 +84,7 @@ func NewCreateNewTicketOperation() *CreateNewTicketOperation {
 	}
 }
 
-func (c *CreateNewTicketOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *CreateNewTicketOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	if ctx.Auth.Extra["api-key"] == "" || ctx.Auth.Extra["domain"] == "" {
 		return nil, errors.New("missing freshdesk auth values")
 	}
@@ -125,12 +126,12 @@ func (c *CreateNewTicketOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 		return nil, fmt.Errorf("error creating ticket:  %v", err)
 	}
 
-	return sdk.JSON(map[string]interface{}{
+	return sdk2.JSON(map[string]interface{}{
 		"Status": response,
 	}), nil
 }
 
-func (c *CreateNewTicketOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *CreateNewTicketOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

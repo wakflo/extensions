@@ -19,6 +19,7 @@ import (
 
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type GetTeamsOperation struct {
@@ -41,7 +42,7 @@ func NewGetTeamsOperation() *GetTeamsOperation {
 	}
 }
 
-func (c *GetTeamsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetTeamsOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	if ctx.Auth.AccessToken == "" {
 		return nil, errors.New("missing clickup auth token")
 	}
@@ -55,7 +56,7 @@ func (c *GetTeamsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return teams, nil
 }
 
-func (c *GetTeamsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetTeamsOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

@@ -1,0 +1,7 @@
+[integration]
+name = "Xero"
+description = "Automate your accounting workflows with seamless integration between our platform and Xero. Easily sync financial data, automate tasks, and streamline processes to save time and reduce errors. With real-time updates and bi-directional syncing, you can trust that your financial records are always up-to-date and accurate."
+version = "0.0.1"
+icon = "logos:xero"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

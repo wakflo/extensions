@@ -20,7 +20,7 @@ import (
 
 	"github.com/wakflo/extensions/internal/integrations/square/shared"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type NewPaymentTrigger struct {
@@ -35,8 +35,8 @@ func (e *NewPaymentTrigger) Description() string {
 	return "triggers workflow when a new payment is created"
 }
 
-func (e *NewPaymentTrigger) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (e *NewPaymentTrigger) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &newPaymentDocs,
 	}
 }
@@ -58,21 +58,21 @@ func (e *NewPaymentTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{}
 }
 
-func (e *NewPaymentTrigger) Auth() *integration.Auth {
-	return &integration.Auth{
+func (e *NewPaymentTrigger) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Inherit: true,
 	}
 }
 
-func (e *NewPaymentTrigger) Start(ctx integration.LifecycleContext) error {
+func (e *NewPaymentTrigger) Start(ctx sdk.LifecycleContext) error {
 	return nil
 }
 
-func (e *NewPaymentTrigger) Stop(ctx integration.LifecycleContext) error {
+func (e *NewPaymentTrigger) Stop(ctx sdk.LifecycleContext) error {
 	return nil
 }
 
-func (e *NewPaymentTrigger) Execute(ctx integration.ExecuteContext) (sdkcore.JSON, error) {
+func (e *NewPaymentTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
 	var fromDate string
 	lastRunTime := ctx.Metadata().LastRun
 
@@ -108,6 +108,6 @@ func (e *NewPaymentTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteri
 	}
 }
 
-func NewNewPaymentTrigger() integration.Trigger {
+func NewNewPaymentTrigger() sdk.Trigger {
 	return &NewPaymentTrigger{}
 }

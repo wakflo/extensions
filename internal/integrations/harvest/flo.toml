@@ -1,0 +1,13 @@
+[integration]
+name = "Harvest"
+description = """Integrate your Harvest time tracking data with our workflow automation software to streamline project management and accounting processes. Automatically sync Harvest projects, tasks, and timesheets with your workflows, eliminating manual data entry and reducing errors. Use this integration to:
+
+* Track project hours and costs in real-time
+* Automate task assignments and updates based on Harvest project status
+* Generate accurate invoices and reports using synced Harvest data
+* Enhance collaboration by sharing Harvest project information with team members
+* Gain insights into project performance and resource allocation"""
+version = "0.0.1"
+icon = "devicon:harvester"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

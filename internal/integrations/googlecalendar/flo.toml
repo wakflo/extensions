@@ -1,0 +1,13 @@
+[integration]
+name = "Google Calendar"
+description = """Integrate your workflow automation software with Google Calendar to streamline task management and scheduling. Automatically create calendar events from workflow tasks, set reminders, and assign due dates. Sync your workflows with your calendar to ensure seamless collaboration and reduce errors. With this integration, you can:
+
+* Create calendar events for each task in your workflow
+* Set reminders and due dates for tasks and deadlines
+* Assign tasks to team members and track progress
+* View workflow status directly from Google Calendar
+* Automate repetitive tasks and workflows with ease"""
+version = "0.0.1"
+icon = "logos:google-calendar"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

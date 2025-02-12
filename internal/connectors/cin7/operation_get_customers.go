@@ -18,6 +18,7 @@ import (
 	"log"
 
 	"github.com/wakflo/go-sdk/autoform"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -52,7 +53,7 @@ func NewGetCustomersOperation() *GetCustomersOperation {
 	}
 }
 
-func (c *GetCustomersOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetCustomersOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input := sdk.InputToType[getCustomerOperationProps](ctx)
 
 	endpoint := "/ExternalApi/Customers"
@@ -75,7 +76,7 @@ func (c *GetCustomersOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return response, nil
 }
 
-func (c *GetCustomersOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetCustomersOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

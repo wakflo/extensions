@@ -1,0 +1,7 @@
+[integration]
+name = "Mailchimp"
+description = "Automate your email marketing workflows with seamless integration between our workflow automation software and Mailchimp. Easily sync subscriber data, trigger campaigns, and automate email sends based on custom conditions. Say goodbye to manual data imports and hello to streamlined email marketing operations."
+version = "0.0.1"
+icon = "logos:mailchimp"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

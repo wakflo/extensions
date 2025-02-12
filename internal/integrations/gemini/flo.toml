@@ -1,0 +1,7 @@
+[integration]
+name = "Gemini"
+description = """Integrate your Gemini website builder with our workflow automation software to streamline content creation and deployment. Automate tasks such as publishing new pages, updating existing ones, and triggering workflows based on page changes. Seamlessly connect your Gemini site to other tools and services, enabling a more efficient and collaborative content management process."""
+version = "0.0.1"
+icon = "logos:google-gemini"
+categories = ["ai"]
+authors = ["Wakflo <integrations@wakflo.com>"]

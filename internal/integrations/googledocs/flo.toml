@@ -1,0 +1,15 @@
+[integration]
+name = "Google Docs"
+description = """Integrate your Google Docs with our workflow automation software to streamline document creation and collaboration. With this seamless integration, you can:
+
+* Automate repetitive tasks by triggering workflows based on Google Doc changes
+* Create custom workflows that update Google Docs in real-time
+* Assign tasks and track progress directly from within Google Docs
+* Enhance collaboration by automatically notifying team members of updates and changes
+* Gain visibility into document status and history with our centralized dashboard
+
+Elevate your workflow efficiency, reduce errors, and increase productivity with our Google Docs integration."""
+version = "0.0.1"
+icon = "simple-icons:googledocs"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

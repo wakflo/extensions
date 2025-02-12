@@ -20,6 +20,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type getShipmentOperationProps struct {
@@ -52,7 +53,7 @@ func NewGetShipmentOperation() *GetShipmentOperation {
 	}
 }
 
-func (c *GetShipmentOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetShipmentOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input := sdk.InputToType[getShipmentOperationProps](ctx)
 
 	reqURL := "/api/2024-07/inbounds/shipments/" + input.ShipmentID
@@ -64,7 +65,7 @@ func (c *GetShipmentOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (c *GetShipmentOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetShipmentOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

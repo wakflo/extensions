@@ -7,7 +7,7 @@ import (
 
 	"github.com/wakflo/extensions/internal/integrations/toggl/shared"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type newProjectProps struct {
@@ -27,8 +27,8 @@ func (e *NewProjectTrigger) Description() string {
 	return "Schedules a workflow to run every hour"
 }
 
-func (e *NewProjectTrigger) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (e *NewProjectTrigger) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &newProjectDocs,
 	}
 }
@@ -47,25 +47,25 @@ func (e *NewProjectTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
 	}
 }
 
-func (e *NewProjectTrigger) Auth() *integration.Auth {
+func (e *NewProjectTrigger) Auth() *sdk.Auth {
 	return nil
 }
 
-func (e *NewProjectTrigger) Start(ctx integration.LifecycleContext) error {
+func (e *NewProjectTrigger) Start(ctx sdk.LifecycleContext) error {
 	return nil
 }
 
-func (e *NewProjectTrigger) Stop(ctx integration.LifecycleContext) error {
+func (e *NewProjectTrigger) Stop(ctx sdk.LifecycleContext) error {
 	return nil
 }
 
-func (e *NewProjectTrigger) Execute(ctx integration.ExecuteContext) (sdkcore.JSON, error) {
+func (e *NewProjectTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
 	if ctx.Auth.Extra["api-key"] == "" {
 		return nil, errors.New("missing toggl api key")
 	}
 	apiKey := ctx.Auth.Extra["api-key"]
 
-	input, err := integration.InputToTypeSafely[newProjectProps](ctx.BaseContext)
+	input, err := sdk.InputToTypeSafely[newProjectProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +101,6 @@ func (e *NewProjectTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteri
 	}
 }
 
-func NewNewProjectTrigger() integration.Trigger {
+func NewNewProjectTrigger() sdk.Trigger {
 	return &NewProjectTrigger{}
 }

@@ -24,7 +24,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/asana/shared"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type createTaskActionProps struct {
@@ -51,8 +51,8 @@ func (c CreateTaskAction) Description() string {
 	return "Create a new task"
 }
 
-func (c CreateTaskAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (c CreateTaskAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &createTaskDocs,
 	}
 }
@@ -77,14 +77,14 @@ func (c CreateTaskAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	}
 }
 
-func (c CreateTaskAction) Auth() *integration.Auth {
-	return &integration.Auth{
+func (c CreateTaskAction) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Inherit: true,
 	}
 }
 
-func (c CreateTaskAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
-	input, err := integration.InputToTypeSafely[createTaskActionProps](ctx.BaseContext)
+func (c CreateTaskAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createTaskActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -138,6 +138,6 @@ func (c CreateTaskAction) Perform(ctx integration.PerformContext) (sdkcore.JSON,
 	}, nil
 }
 
-func NewCreateTaskAction() integration.Action {
+func NewCreateTaskAction() sdk.Action {
 	return &CreateTaskAction{}
 }

@@ -20,6 +20,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type getPurchaseInvoiceOperationProps struct {
@@ -52,7 +53,7 @@ func NewGetPurchaseInvoiceOperation() *GetPurchaseInvoiceOperation {
 	}
 }
 
-func (c *GetPurchaseInvoiceOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetPurchaseInvoiceOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input := sdk.InputToType[getPurchaseInvoiceOperationProps](ctx)
 
 	endpoint := "/ExternalApi/v2/purchase/invoice"
@@ -71,7 +72,7 @@ func (c *GetPurchaseInvoiceOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error)
 	return response, nil
 }
 
-func (c *GetPurchaseInvoiceOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetPurchaseInvoiceOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

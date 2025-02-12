@@ -19,6 +19,7 @@ import (
 	"log"
 
 	"github.com/wakflo/go-sdk/autoform"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -54,7 +55,7 @@ func NewGetTicketOperation() *GetTicketOperation {
 	}
 }
 
-func (c *GetTicketOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetTicketOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	if ctx.Auth.Extra["api-key"] == "" || ctx.Auth.Extra["domain"] == "" {
 		return nil, errors.New("missing freshdesk auth values")
 	}
@@ -71,7 +72,7 @@ func (c *GetTicketOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return ticket, nil
 }
 
-func (c *GetTicketOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetTicketOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

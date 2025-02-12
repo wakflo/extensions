@@ -1,0 +1,15 @@
+[integration]
+name = "Google Mail"
+description = """Integrate your Gmail account with our workflow automation software to streamline your email-based workflows and automate repetitive tasks. With seamless connectivity, you can:
+
+* Send automated emails to team members or clients
+* Trigger custom actions based on specific email keywords or attachments
+* Route incoming emails to designated team members or workflows
+* Monitor and track email conversations across multiple threads
+* Enhance collaboration by integrating with other workflow automation tools
+
+Experience the power of unified communication and workflow management, all within a single platform."""
+version = "0.0.1"
+icon = "logos:google-gmail"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

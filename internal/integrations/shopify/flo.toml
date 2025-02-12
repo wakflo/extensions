@@ -1,0 +1,15 @@
+[integration]
+name = "Shopify"
+description = """Integrate your Shopify store with our workflow automation software to streamline and automate repetitive tasks, such as order processing, inventory management, and customer communication. With seamless API connectivity, you can:
+
+* Automate order fulfillment by sending notifications to suppliers or triggering workflows for shipping and tracking
+* Update product information and inventory levels in real-time across multiple channels
+* Trigger custom workflows based on specific Shopify events, such as new orders, abandoned carts, or product updates
+* Enhance customer experience through automated email campaigns and personalized messages
+* Gain valuable insights into your store's performance with customizable reporting and analytics
+
+By integrating your Shopify store with our workflow automation software, you can increase efficiency, reduce errors, and focus on growing your business."""
+version = "0.0.1"
+icon = "logos:shopify"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

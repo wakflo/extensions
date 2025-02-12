@@ -1,0 +1,19 @@
+[integration]
+name = "Open AI"
+description = """Integrate your workflow automation software with OpenAI to unlock the power of artificial intelligence and machine learning. Seamlessly connect your workflows to OpenAI's vast language model capabilities, enabling tasks such as:
+
+* Natural Language Processing (NLP) for text analysis and sentiment detection
+* Machine Learning (ML) for predictive modeling and decision-making
+* Conversational AI for chatbots and voice assistants
+
+Streamline your workflow automation by leveraging OpenAI's APIs to:
+
+* Automate repetitive tasks with AI-powered workflows
+* Enhance data quality through AI-driven data cleaning and normalization
+* Improve customer service with AI-fueled chatbots and virtual assistants
+
+Experience the future of workflow automation today, with OpenAI integration."""
+version = "0.0.1"
+icon = "logos:openai-icon"
+categories = ["ai"]
+authors = ["Wakflo <integrations@wakflo.com>"]

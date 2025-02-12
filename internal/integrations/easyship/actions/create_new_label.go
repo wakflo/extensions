@@ -20,7 +20,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/easyship/shared"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type createNewLabelActionProps struct {
@@ -46,8 +46,8 @@ func (c CreateNewLabelAction) Description() string {
 	return "creates a new label"
 }
 
-func (c CreateNewLabelAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (c CreateNewLabelAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &newLabelDocs,
 	}
 }
@@ -75,20 +75,20 @@ func (c CreateNewLabelAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	}
 }
 
-func (c CreateNewLabelAction) Auth() *integration.Auth {
-	return &integration.Auth{
+func (c CreateNewLabelAction) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Inherit: true,
 	}
 }
 
-func (c CreateNewLabelAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
+func (c CreateNewLabelAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 	if ctx.Auth.Extra["api-key"] == "" {
 		return nil, errors.New("missing easyship api key")
 	}
 
 	endpoint := "/2023-01/labels"
 
-	input, err := integration.InputToTypeSafely[createNewLabelActionProps](ctx.BaseContext)
+	input, err := sdk.InputToTypeSafely[createNewLabelActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -109,6 +109,6 @@ func (c CreateNewLabelAction) Perform(ctx integration.PerformContext) (sdkcore.J
 	return response, nil
 }
 
-func NewCreateNewLabelAction() integration.Action {
+func NewCreateNewLabelAction() sdk.Action {
 	return &CreateNewLabelAction{}
 }

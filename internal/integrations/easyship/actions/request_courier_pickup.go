@@ -22,7 +22,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/easyship/shared"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type createCourierPickupActionProps struct {
@@ -49,8 +49,8 @@ func (c CreateCourierPickupAction) Description() string {
 	return "creates a courier pickup"
 }
 
-func (c CreateCourierPickupAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (c CreateCourierPickupAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &createCourierDocs,
 	}
 }
@@ -89,18 +89,18 @@ func (c CreateCourierPickupAction) Properties() map[string]*sdkcore.AutoFormSche
 	}
 }
 
-func (c CreateCourierPickupAction) Auth() *integration.Auth {
-	return &integration.Auth{
+func (c CreateCourierPickupAction) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Inherit: true,
 	}
 }
 
-func (c CreateCourierPickupAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
+func (c CreateCourierPickupAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 	if ctx.Auth.Extra["api-key"] == "" {
 		return nil, errors.New("missing easyship api key")
 	}
 
-	input, err := integration.InputToTypeSafely[createCourierPickupActionProps](ctx.BaseContext)
+	input, err := sdk.InputToTypeSafely[createCourierPickupActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -121,6 +121,6 @@ func (c CreateCourierPickupAction) Perform(ctx integration.PerformContext) (sdkc
 	return response, nil
 }
 
-func NewCreateCourierPickupAction() integration.Action {
+func NewCreateCourierPickupAction() sdk.Action {
 	return &CreateCourierPickupAction{}
 }

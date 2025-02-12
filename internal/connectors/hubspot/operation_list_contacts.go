@@ -20,6 +20,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type listContactsProps struct {
@@ -52,7 +53,7 @@ func NewListContactsOperation() *ListContactsOperation {
 	}
 }
 
-func (c *ListContactsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *ListContactsOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	_ = sdk.InputToType[listContactsProps](ctx)
 
 	reqURL := "/crm/v3/objects/contacts"
@@ -64,7 +65,7 @@ func (c *ListContactsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (c *ListContactsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *ListContactsOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

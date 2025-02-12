@@ -6,7 +6,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/zohosalesiq/shared"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type listChatsActionProps struct {
@@ -31,8 +31,8 @@ func (c ListChatsAction) Description() string {
 	return "Get list of chats"
 }
 
-func (c ListChatsAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (c ListChatsAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &listChatsDocs,
 	}
 }
@@ -55,14 +55,14 @@ func (c ListChatsAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	}
 }
 
-func (c ListChatsAction) Auth() *integration.Auth {
-	return &integration.Auth{
+func (c ListChatsAction) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Inherit: true,
 	}
 }
 
-func (c ListChatsAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
-	input, err := integration.InputToTypeSafely[listChatsActionProps](ctx.BaseContext)
+func (c ListChatsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[listChatsActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -76,6 +76,6 @@ func (c ListChatsAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, 
 	return chats, nil
 }
 
-func NewListChatsAction() integration.Action {
+func NewListChatsAction() sdk.Action {
 	return &ListChatsAction{}
 }

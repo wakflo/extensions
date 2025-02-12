@@ -1,0 +1,7 @@
+[integration]
+name = "Monday"
+description = "Integrate your Monday CRM with our workflow automation software to streamline your sales, marketing, and customer service processes. Automate tasks such as lead routing, task assignment, and data synchronization between Monday and other business applications. Enhance collaboration and visibility across teams by integrating Monday's customizable boards and tables with our workflow engine."
+version = "0.0.1"
+icon = "logos:monday-icon"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

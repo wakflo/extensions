@@ -20,6 +20,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type createFolderlesslistOperationProps struct {
@@ -55,7 +56,7 @@ func NewCreateFolderlessListOperation() *CreateFolderlessListOperation {
 	}
 }
 
-func (c *CreateFolderlessListOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *CreateFolderlessListOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	if ctx.Auth.AccessToken == "" {
 		return nil, errors.New("missing clickup auth token")
 	}
@@ -72,7 +73,7 @@ func (c *CreateFolderlessListOperation) Run(ctx *sdk.RunContext) (sdk.JSON, erro
 	return response, nil
 }
 
-func (c *CreateFolderlessListOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *CreateFolderlessListOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

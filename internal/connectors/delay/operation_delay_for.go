@@ -21,6 +21,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type delayForOperationProps struct {
@@ -66,7 +67,7 @@ func NewDelayForOperation() *DelayForOperation {
 	}
 }
 
-func (c *DelayForOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *DelayForOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input := sdk.InputToType[delayForOperationProps](ctx)
 
 	unit := Seconds
@@ -110,7 +111,7 @@ func (c *DelayForOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	}, nil
 }
 
-func (c *DelayForOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *DelayForOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

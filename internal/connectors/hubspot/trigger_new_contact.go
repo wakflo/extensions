@@ -21,6 +21,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type ContactCreated struct {
@@ -50,7 +51,7 @@ func NewContactCreated() *TicketCreated {
 	}
 }
 
-func (t *ContactCreated) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (t *ContactCreated) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	reqURL := "/crm/v3/objects/contacts?limit=50&archived=false&properties=createdAt,updatedAt"
 
 	if ctx.Metadata.LastRun != nil {
@@ -65,7 +66,7 @@ func (t *ContactCreated) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (t *ContactCreated) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (t *ContactCreated) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return t.Run(ctx)
 }
 

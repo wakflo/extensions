@@ -1,11 +1,10 @@
-### EveryDay
-is a trigger action that performs a specific task every day at a specified time.
 
-#### Usage:
-To use this function, simply call it and specify the desired time of day
-when the action should trigger. The function will schedule the action
-to execute daily at the provided time.
+# New File
 
-#### Parameters:
-hour (int): The hour of the day (in 24-hour format) when the action should trigger (valid range: 0-23).
-minute (int): The minute of the hour when the action should trigger (valid range: 0-59).
+## Description
+
+Triggers when a new file is created or uploaded to a specified directory or location, allowing you to automate workflows and processes as soon as a new file becomes available.
+
+## Details
+
+- **Type**: sdkcore.TriggerTypePolling

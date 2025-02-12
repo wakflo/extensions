@@ -17,7 +17,7 @@ package actions
 import (
 	"github.com/wakflo/extensions/internal/integrations/square/shared"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type getPaymentsActionProps struct {
@@ -42,8 +42,8 @@ func (c GetPaymentsAction) Description() string {
 	return "Retrieve a list of Payments"
 }
 
-func (c GetPaymentsAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (c GetPaymentsAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &getPaymentDocs,
 	}
 }
@@ -60,14 +60,14 @@ func (c GetPaymentsAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{}
 }
 
-func (c GetPaymentsAction) Auth() *integration.Auth {
-	return &integration.Auth{
+func (c GetPaymentsAction) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Inherit: true,
 	}
 }
 
-func (c GetPaymentsAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
-	_, err := integration.InputToTypeSafely[getPaymentsActionProps](ctx.BaseContext)
+func (c GetPaymentsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
+	_, err := sdk.InputToTypeSafely[getPaymentsActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -81,6 +81,6 @@ func (c GetPaymentsAction) Perform(ctx integration.PerformContext) (sdkcore.JSON
 	return payments, nil
 }
 
-func NewGetPaymentsAction() integration.Action {
+func NewGetPaymentsAction() sdk.Action {
 	return &GetPaymentsAction{}
 }

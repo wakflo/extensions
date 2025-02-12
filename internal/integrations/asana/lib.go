@@ -17,30 +17,30 @@ package asana
 import (
 	"github.com/wakflo/extensions/internal/integrations/asana/actions"
 	"github.com/wakflo/extensions/internal/integrations/asana/shared"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type Asana struct{}
 
-func (n *Asana) Auth() *integration.Auth {
-	return &integration.Auth{
+func (n *Asana) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Required: true,
 		Schema:   *shared.AsanaSharedAuth,
 	}
 }
 
-func (n *Asana) Triggers() []integration.Trigger {
-	return []integration.Trigger{}
+func (n *Asana) Triggers() []sdk.Trigger {
+	return []sdk.Trigger{}
 }
 
-func (n *Asana) Actions() []integration.Action {
-	return []integration.Action{
+func (n *Asana) Actions() []sdk.Action {
+	return []sdk.Action{
 		actions.NewCreateTaskAction(),
 	}
 }
 
-func NewAsana() integration.Integration {
+func NewAsana() sdk.Integration {
 	return &Asana{}
 }
 
-var Integration = integration.Register(NewAsana())
+var Integration = sdk.Register(NewAsana())

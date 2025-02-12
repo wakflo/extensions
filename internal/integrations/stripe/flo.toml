@@ -1,0 +1,14 @@
+[integration]
+name = "Stripe"
+description = """Integrate Stripe with your workflow automation software to seamlessly process payments and manage transactions within your automated workflows. With this integration, you can:
+
+* Automatically trigger payment processing upon workflow completion
+* Update customer information and subscription status in real-time
+* Generate invoices and send notifications based on workflow events
+* Track payment history and reconcile transactions directly from the workflow interface
+
+Streamline your payment processing and enhance the overall customer experience by automating Stripe integrations with your workflows."""
+version = "0.0.1"
+icon = "logos:stripe"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

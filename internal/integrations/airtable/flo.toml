@@ -1,0 +1,7 @@
+[integration]
+name = "Airtable"
+description = "Integrate your Airtable database with our workflow automation software to streamline data-driven workflows and automate repetitive tasks. Seamlessly connect Airtable records to custom workflows, trigger actions based on record updates, and synchronize data in real-time. Enhance collaboration by sharing Airtable views and tables with team members, and gain visibility into workflow performance through customizable dashboards."
+version = "0.0.1"
+icon = "logos:airtable"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

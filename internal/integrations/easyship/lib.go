@@ -17,31 +17,31 @@ package easyship
 import (
 	"github.com/wakflo/extensions/internal/integrations/easyship/actions"
 	"github.com/wakflo/extensions/internal/integrations/easyship/shared"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type EasyShip struct{}
 
-func (n *EasyShip) Auth() *integration.Auth {
-	return &integration.Auth{
+func (n *EasyShip) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Required: true,
 		Schema:   *shared.EasyShipSharedAuth,
 	}
 }
 
-func (n *EasyShip) Triggers() []integration.Trigger {
-	return []integration.Trigger{}
+func (n *EasyShip) Triggers() []sdk.Trigger {
+	return []sdk.Trigger{}
 }
 
-func (n *EasyShip) Actions() []integration.Action {
-	return []integration.Action{
+func (n *EasyShip) Actions() []sdk.Action {
+	return []sdk.Action{
 		actions.NewCreateNewLabelAction(),
 		actions.NewCreateCourierPickupAction(),
 	}
 }
 
-func NewEasyShip() integration.Integration {
+func NewEasyShip() sdk.Integration {
 	return &EasyShip{}
 }
 
-var Integration = integration.Register(NewEasyShip())
+var Integration = sdk.Register(NewEasyShip())

@@ -21,7 +21,7 @@ import (
 	"github.com/aftership/tracking-sdk-go/v5/model"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type getAllTrackingsActionProps struct {
@@ -33,6 +33,7 @@ type GetAllTrackingsAction struct{}
 func (c *GetAllTrackingsAction) Settings() sdkcore.ActionSettings {
 	return sdkcore.ActionSettings{}
 }
+
 func (c GetAllTrackingsAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
@@ -45,8 +46,8 @@ func (c GetAllTrackingsAction) Description() string {
 	return "get all available trackings"
 }
 
-func (c GetAllTrackingsAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (c GetAllTrackingsAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &getAllTrackingsDocs,
 	}
 }
@@ -69,17 +70,17 @@ func (c GetAllTrackingsAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	}
 }
 
-func (c GetAllTrackingsAction) Auth() *integration.Auth {
-	return &integration.Auth{
+func (c GetAllTrackingsAction) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Inherit: true,
 	}
 }
 
-func (c GetAllTrackingsAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
+func (c GetAllTrackingsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 	if ctx.Auth.Extra["api-key"] == "" {
 		return nil, errors.New("missing aftership api key")
 	}
-	input, err := integration.InputToTypeSafely[getAllTrackingsActionProps](ctx.BaseContext)
+	input, err := sdk.InputToTypeSafely[getAllTrackingsActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +100,6 @@ func (c GetAllTrackingsAction) Perform(ctx integration.PerformContext) (sdkcore.
 	return result.Tracking, nil
 }
 
-func NewGetAllTrackingsAction() integration.Action {
+func NewGetAllTrackingsAction() sdk.Action {
 	return &GetAllTrackingsAction{}
 }

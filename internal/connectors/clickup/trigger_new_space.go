@@ -19,6 +19,7 @@ import (
 
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type TriggerNewSpace struct {
@@ -43,7 +44,7 @@ func NewTriggerNewSpace() *TriggerNewSpace {
 	}
 }
 
-func (t *TriggerNewSpace) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (t *TriggerNewSpace) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	if ctx.Auth.AccessToken == "" {
 		return nil, errors.New("missing clickup auth token")
 	}
@@ -51,7 +52,7 @@ func (t *TriggerNewSpace) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return nil, nil
 }
 
-func (t *TriggerNewSpace) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (t *TriggerNewSpace) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return t.Run(ctx)
 }
 

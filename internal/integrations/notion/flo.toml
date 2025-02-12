@@ -1,0 +1,14 @@
+[integration]
+name = "Notion"
+description = """Integrate your workflow automation software with Notion to streamline your workflows and boost productivity. Seamlessly connect your automated tasks with your existing Notion pages, databases, and blocks, allowing you to:
+
+* Trigger custom Notion actions based on automation events
+* Update Notion pages in real-time as tasks are completed or changed
+* Use Notion's powerful database features to track and analyze workflow performance
+* Visualize your workflows and automate repetitive tasks with ease
+
+By integrating your workflow automation software with Notion, you'll be able to create a seamless workflow experience that combines the power of automation with the flexibility of a customizable workspace."""
+version = "0.0.1"
+icon = "logos:notion"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

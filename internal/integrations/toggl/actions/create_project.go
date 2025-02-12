@@ -21,7 +21,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/toggl/shared"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type createProjectActionProps struct {
@@ -48,8 +48,8 @@ func (c CreateProjectAction) Description() string {
 	return "Create a new project"
 }
 
-func (c CreateProjectAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (c CreateProjectAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &createProjectDocs,
 	}
 }
@@ -78,18 +78,18 @@ func (c CreateProjectAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	}
 }
 
-func (c CreateProjectAction) Auth() *integration.Auth {
-	return &integration.Auth{
+func (c CreateProjectAction) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Inherit: true,
 	}
 }
 
-func (c CreateProjectAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
+func (c CreateProjectAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 	if ctx.Auth.Extra["api-key"] == "" {
 		return nil, errors.New("missing toggl api key")
 	}
 	apiKey := ctx.Auth.Extra["api-key"]
-	input, err := integration.InputToTypeSafely[createProjectActionProps](ctx.BaseContext)
+	input, err := sdk.InputToTypeSafely[createProjectActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -102,6 +102,6 @@ func (c CreateProjectAction) Perform(ctx integration.PerformContext) (sdkcore.JS
 	return response, nil
 }
 
-func NewCreateProjectAction() integration.Action {
+func NewCreateProjectAction() sdk.Action {
 	return &CreateProjectAction{}
 }

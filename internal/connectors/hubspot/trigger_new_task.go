@@ -21,6 +21,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type TaskCreated struct {
@@ -50,7 +51,7 @@ func NewTaskCreated() *TicketCreated {
 	}
 }
 
-func (t *TaskCreated) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (t *TaskCreated) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	reqURL := "/crm/v3/objects/tasks?limit=50&archived=false&properties=createdAt,updatedAt"
 
 	if ctx.Metadata.LastRun != nil {
@@ -65,7 +66,7 @@ func (t *TaskCreated) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (t *TaskCreated) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (t *TaskCreated) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return t.Run(ctx)
 }
 

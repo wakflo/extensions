@@ -21,6 +21,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type TriggerNewTicket struct {
@@ -50,7 +51,7 @@ func NewTriggerNewTicket() *TriggerNewTicket {
 	}
 }
 
-func (t *TriggerNewTicket) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (t *TriggerNewTicket) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	if ctx.Auth.Extra["api-key"] == "" || ctx.Auth.Extra["domain"] == "" {
 		return nil, errors.New("missing freshdesk auth values")
 	}
@@ -75,7 +76,7 @@ func (t *TriggerNewTicket) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return tickets, nil
 }
 
-func (t *TriggerNewTicket) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (t *TriggerNewTicket) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return t.Run(ctx)
 }
 

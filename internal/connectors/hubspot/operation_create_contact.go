@@ -21,6 +21,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type createNewContactProps struct {
@@ -68,7 +69,7 @@ func NewCreateContactOperation() *CreateContactOperation {
 	}
 }
 
-func (c *CreateContactOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *CreateContactOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input := sdk.InputToType[createNewContactProps](ctx)
 
 	contact := contactRequest{
@@ -94,7 +95,7 @@ func (c *CreateContactOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (c *CreateContactOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *CreateContactOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

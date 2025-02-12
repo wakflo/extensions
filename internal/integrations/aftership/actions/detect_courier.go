@@ -19,7 +19,7 @@ import (
 	"github.com/aftership/tracking-sdk-go/v5/model"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type detectCourierActionProps struct {
@@ -44,8 +44,8 @@ func (c DetectCourierAction) Description() string {
 	return "Returns a list of matched couriers based on tracking number format"
 }
 
-func (c DetectCourierAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (c DetectCourierAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &detectCourierDocs,
 	}
 }
@@ -68,14 +68,14 @@ func (c DetectCourierAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	}
 }
 
-func (c DetectCourierAction) Auth() *integration.Auth {
-	return &integration.Auth{
+func (c DetectCourierAction) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Inherit: true,
 	}
 }
 
-func (c DetectCourierAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
-	input, err := integration.InputToTypeSafely[detectCourierActionProps](ctx.BaseContext)
+func (c DetectCourierAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[detectCourierActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -98,6 +98,6 @@ func (c DetectCourierAction) Perform(ctx integration.PerformContext) (sdkcore.JS
 	return result.Couriers, nil
 }
 
-func NewDetectCourierAction() integration.Action {
+func NewDetectCourierAction() sdk.Action {
 	return &DetectCourierAction{}
 }

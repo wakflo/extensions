@@ -1,17 +1,3 @@
-// Copyright 2022-present Wakflo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package actions
 
 import (
@@ -21,47 +7,39 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/zoom/shared"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
-type createMeetingRegistrantActionProps struct {
+type createMeetingRegistrationActionProps struct {
 	MeetingID string `json:"meeting_id"`
 	shared.MeetingRegistrant
 }
 
-type CreateMeetingRegistrantAction struct{}
+type CreateMeetingRegistrationAction struct{}
 
-func (c *CreateMeetingRegistrantAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
+func (a *CreateMeetingRegistrationAction) Name() string {
+	return "Create Meeting Registration"
 }
 
-func (c CreateMeetingRegistrantAction) GetType() sdkcore.ActionType {
+func (a *CreateMeetingRegistrationAction) Description() string {
+	return "Create Meeting Registration: Automatically generates meeting registrations for attendees, including details such as name, email, and RSVP status. This integration action streamlines the process of tracking attendee information and reduces manual errors."
+}
+
+func (a *CreateMeetingRegistrationAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
 
-func (c CreateMeetingRegistrantAction) Name() string {
-	return "Create Zoom Meeting Registrant"
-}
-
-func (c CreateMeetingRegistrantAction) Description() string {
-	return "Create and submit a user's registration to a meeting."
-}
-
-func (c CreateMeetingRegistrantAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (a *CreateMeetingRegistrationAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &createMeetingRegistrationDocs,
 	}
 }
 
-func (c CreateMeetingRegistrantAction) Icon() *string {
+func (a *CreateMeetingRegistrationAction) Icon() *string {
 	return nil
 }
 
-func (c CreateMeetingRegistrantAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c CreateMeetingRegistrantAction) Properties() map[string]*sdkcore.AutoFormSchema {
+func (a *CreateMeetingRegistrationAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
 		"meeting_id": autoform.NewShortTextField().
 			SetDisplayName("Meeting ID").
@@ -134,14 +112,8 @@ func (c CreateMeetingRegistrantAction) Properties() map[string]*sdkcore.AutoForm
 	}
 }
 
-func (c CreateMeetingRegistrantAction) Auth() *integration.Auth {
-	return &integration.Auth{
-		Inherit: true,
-	}
-}
-
-func (c CreateMeetingRegistrantAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
-	input, err := integration.InputToTypeSafely[createMeetingRegistrantActionProps](ctx.BaseContext)
+func (a *CreateMeetingRegistrationAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createMeetingRegistrationActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -160,6 +132,20 @@ func (c CreateMeetingRegistrantAction) Perform(ctx integration.PerformContext) (
 	return resp, nil
 }
 
-func NewCreateMeetingRegistrantAction() integration.Action {
-	return &CreateMeetingRegistrantAction{}
+func (a *CreateMeetingRegistrationAction) Auth() *sdk.Auth {
+	return nil
+}
+
+func (a *CreateMeetingRegistrationAction) SampleData() sdkcore.JSON {
+	return map[string]any{
+		"message": "Hello World!",
+	}
+}
+
+func (a *CreateMeetingRegistrationAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
+func NewCreateMeetingRegistrationAction() sdk.Action {
+	return &CreateMeetingRegistrationAction{}
 }

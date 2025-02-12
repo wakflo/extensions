@@ -18,33 +18,33 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/trackingmore/actions"
 	"github.com/wakflo/extensions/internal/integrations/trackingmore/shared"
 	"github.com/wakflo/extensions/internal/integrations/trackingmore/triggers"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type TrackingMore struct{}
 
-func (n *TrackingMore) Auth() *integration.Auth {
-	return &integration.Auth{
+func (n *TrackingMore) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Required: true,
 		Schema:   *shared.TrackingMoreSharedAuth,
 	}
 }
 
-func (n *TrackingMore) Triggers() []integration.Trigger {
-	return []integration.Trigger{
+func (n *TrackingMore) Triggers() []sdk.Trigger {
+	return []sdk.Trigger{
 		triggers.NewNewPaymentTrigger(),
 	}
 }
 
-func (n *TrackingMore) Actions() []integration.Action {
-	return []integration.Action{
+func (n *TrackingMore) Actions() []sdk.Action {
+	return []sdk.Action{
 		actions.NewTrackAPackageAction(),
 		actions.NewCreateTrackingsAction(),
 	}
 }
 
-func NewTrackingMore() integration.Integration {
+func NewTrackingMore() sdk.Integration {
 	return &TrackingMore{}
 }
 
-var Integration = integration.Register(NewTrackingMore())
+var Integration = sdk.Register(NewTrackingMore())

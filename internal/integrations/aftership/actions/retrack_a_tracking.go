@@ -20,7 +20,7 @@ import (
 	"github.com/aftership/tracking-sdk-go/v5"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type RetrackATrackingAction struct{}
@@ -41,8 +41,8 @@ func (c RetrackATrackingAction) Description() string {
 	return "retrack an expired tracking. Max 3 times per tracking."
 }
 
-func (c RetrackATrackingAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (c RetrackATrackingAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &retrackATracking,
 	}
 }
@@ -65,17 +65,17 @@ func (c RetrackATrackingAction) Properties() map[string]*sdkcore.AutoFormSchema 
 	}
 }
 
-func (c RetrackATrackingAction) Auth() *integration.Auth {
-	return &integration.Auth{
+func (c RetrackATrackingAction) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Inherit: true,
 	}
 }
 
-func (c RetrackATrackingAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
+func (c RetrackATrackingAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 	if ctx.Auth.Extra["api-key"] == "" {
 		return nil, errors.New("missing aftership api key")
 	}
-	input, err := integration.InputToTypeSafely[getATrackingActionProps](ctx.BaseContext)
+	input, err := sdk.InputToTypeSafely[getATrackingActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -95,6 +95,6 @@ func (c RetrackATrackingAction) Perform(ctx integration.PerformContext) (sdkcore
 	return result, nil
 }
 
-func NewRetrackATrackingAction() integration.Action {
+func NewRetrackATrackingAction() sdk.Action {
 	return &RetrackATrackingAction{}
 }

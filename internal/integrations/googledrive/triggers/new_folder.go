@@ -8,61 +8,65 @@ import (
 
 	"github.com/wakflo/extensions/internal/integrations/googledrive/shared"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 )
 
-type newFolderProps = newFileProps
+type newFolderTriggerProps struct {
+	newFileTriggerProps
+}
 
 type NewFolderTrigger struct {
 	timezoneOptions []*sdkcore.AutoFormSchema
 	hodOptions      []*sdkcore.AutoFormSchema
 }
 
-func (e *NewFolderTrigger) Name() string {
+func (t *NewFolderTrigger) Name() string {
 	return "New Folder"
 }
 
-func (e *NewFolderTrigger) Description() string {
-	return "Schedules a workflow to run every hour"
+func (t *NewFolderTrigger) Description() string {
+	return "New Folder trigger is designed to monitor a specific folder or directory for new files or subfolders. Whenever a new folder is created within the monitored directory, this trigger will automatically initiate the workflow automation process, allowing you to streamline tasks and automate workflows related to file organization, data processing, or other business-critical activities."
 }
 
-func (e *NewFolderTrigger) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (t *NewFolderTrigger) GetType() sdkcore.TriggerType {
+	return sdkcore.TriggerTypePolling
+}
+
+func (t *NewFolderTrigger) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &newFolderDocs,
 	}
 }
 
-func (e *NewFolderTrigger) Icon() *string {
+func (t *NewFolderTrigger) Icon() *string {
 	return nil
 }
 
-func (e *NewFolderTrigger) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (e *NewFolderTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
+func (t *NewFolderTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
 		"parentFolder":      shared.GetParentFoldersInput(),
 		"includeTeamDrives": shared.IncludeTeamFieldInput,
 	}
 }
 
-func (e *NewFolderTrigger) Auth() *integration.Auth {
+// Start initializes the newFolderTrigger, required for event and webhook triggers in a lifecycle context.
+func (t *NewFolderTrigger) Start(ctx sdk.LifecycleContext) error {
+	// Required for event and webhook triggers
 	return nil
 }
 
-func (e *NewFolderTrigger) Start(ctx integration.LifecycleContext) error {
+// Stop shuts down the newFolderTrigger, cleaning up resources and performing necessary teardown operations.
+func (t *NewFolderTrigger) Stop(ctx sdk.LifecycleContext) error {
 	return nil
 }
 
-func (e *NewFolderTrigger) Stop(ctx integration.LifecycleContext) error {
-	return nil
-}
-
-func (e *NewFolderTrigger) Execute(ctx integration.ExecuteContext) (sdkcore.JSON, error) {
-	input, err := integration.InputToTypeSafely[newFolderProps](ctx.BaseContext)
+// Execute performs the main action logic of newFolderTrigger by processing the input context and returning a JSON response.
+// It converts the base context input into a strongly-typed structure, executes the desired logic, and generates output.
+// Returns a JSON output map with the resulting data or an error if operation fails. required for Pooling triggers
+func (t *NewFolderTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[newFolderTriggerProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -109,22 +113,20 @@ func (e *NewFolderTrigger) Execute(ctx integration.ExecuteContext) (sdkcore.JSON
 	return files.Files, nil
 }
 
-func (e *NewFolderTrigger) GetType() sdkcore.TriggerType {
-	return sdkcore.TriggerTypeScheduled
+func (t *NewFolderTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
+	return sdkcore.TriggerCriteria{}
 }
 
-func (e *NewFolderTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
-	return sdkcore.TriggerCriteria{
-		Schedule: &sdkcore.ScheduleTriggerCriteria{
-			CronExpression: "",
-			StartTime:      nil,
-			EndTime:        nil,
-			TimeZone:       "",
-			Enabled:        true,
-		},
+func (t *NewFolderTrigger) Auth() *sdk.Auth {
+	return nil
+}
+
+func (t *NewFolderTrigger) SampleData() sdkcore.JSON {
+	return map[string]any{
+		"message": "Hello World!",
 	}
 }
 
-func NewNewFolderTrigger() integration.Trigger {
+func NewNewFolderTrigger() sdk.Trigger {
 	return &NewFolderTrigger{}
 }

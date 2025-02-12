@@ -1,0 +1,15 @@
+[integration]
+name = "Slack"
+description = """Streamline your workflow and stay connected with your team using our Slack integration! With this seamless connection, you can:
+
+* Trigger workflows directly from Slack channels
+* Receive real-time updates on workflow status and progress
+* Assign tasks to team members and track their progress
+* View workflow history and analytics in Slack
+* Customize notifications and alerts to keep your team informed
+
+Elevate your workflow automation game and stay productive with our Slack integration!"""
+version = "0.0.1"
+icon = "logos:slack"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

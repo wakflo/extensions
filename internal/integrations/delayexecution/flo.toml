@@ -1,0 +1,7 @@
+[integration]
+name = "Delay Execution"
+description = "The Delay Execution integration allows you to pause the execution of a workflow or task for a specified amount of time, enabling you to control the timing and pacing of your automated processes. This feature is particularly useful when you need to introduce a delay between tasks or workflows, such as waiting for a specific condition to be met before proceeding, or simulating a real-world scenario where there are natural pauses or delays. With Delay Execution, you can set a custom time interval, ranging from seconds to days, and the workflow will pause until the specified time has elapsed, ensuring that your automation runs smoothly and efficiently."
+version = "0.0.1"
+icon = "uil:sleep"
+categories = ["tools", "core"]
+authors = ["Wakflo <integrations@wakflo.com>"]

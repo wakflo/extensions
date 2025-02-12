@@ -21,6 +21,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type searchOwnerByEmailProps struct {
@@ -53,7 +54,7 @@ func NewSearchOwnerByEmailOperation() *SearchOwnerByEmailOperation {
 	}
 }
 
-func (c *SearchOwnerByEmailOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *SearchOwnerByEmailOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input := sdk.InputToType[searchOwnerByEmailProps](ctx)
 
 	reqURL := fmt.Sprintf("/crm/v3/owners/?email=%s&limit=100&archived=false", input.Email)
@@ -65,7 +66,7 @@ func (c *SearchOwnerByEmailOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error)
 	return resp, nil
 }
 
-func (c *SearchOwnerByEmailOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *SearchOwnerByEmailOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

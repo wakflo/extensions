@@ -20,6 +20,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type getOrderOperationProps struct {
@@ -52,7 +53,7 @@ func NewGetOrderOperation() *GetOrderOperation {
 	}
 }
 
-func (c *GetOrderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetOrderOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input := sdk.InputToType[getOrderOperationProps](ctx)
 
 	reqURL := "/api/2024-07/orders/" + input.OrderID
@@ -63,7 +64,7 @@ func (c *GetOrderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (c *GetOrderOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetOrderOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

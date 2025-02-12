@@ -20,6 +20,7 @@ import (
 	"net/http"
 
 	"github.com/wakflo/go-sdk/autoform"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -59,7 +60,7 @@ func NewAddCommentToIssueOperation() *AddCommentToIssueOperation {
 	}
 }
 
-func (c *AddCommentToIssueOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *AddCommentToIssueOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input, err := sdk.InputToTypeSafely[addCommentIssueOperationProps](ctx)
 	if err != nil {
 		return nil, err
@@ -100,7 +101,7 @@ func (c *AddCommentToIssueOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) 
 	return resp, nil
 }
 
-func (c *AddCommentToIssueOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *AddCommentToIssueOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

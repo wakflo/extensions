@@ -20,6 +20,7 @@ import (
 
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type ListTicketsOperation struct {
@@ -42,7 +43,7 @@ func NewListTicketsOperation() *ListTicketsOperation {
 	}
 }
 
-func (c *ListTicketsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *ListTicketsOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	if ctx.Auth.Extra["api-key"] == "" {
 		return nil, errors.New("missing freshdesk api key")
 	}
@@ -58,7 +59,7 @@ func (c *ListTicketsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return response, nil
 }
 
-func (c *ListTicketsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *ListTicketsOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

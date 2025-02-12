@@ -1,17 +1,3 @@
-// Copyright 2022-present Wakflo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package actions
 
 import (
@@ -20,7 +6,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/zoom/shared"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type createMeetingActionProps struct {
@@ -36,37 +22,29 @@ type createMeetingActionProps struct {
 
 type CreateMeetingAction struct{}
 
-func (c *CreateMeetingAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
+func (a *CreateMeetingAction) Name() string {
+	return "Create Meeting"
 }
 
-func (c CreateMeetingAction) GetType() sdkcore.ActionType {
+func (a *CreateMeetingAction) Description() string {
+	return "Create a new meeting with specified details, including title, start and end dates, duration, and attendees. This action allows you to schedule meetings with ease, streamlining your workflow and reducing manual errors."
+}
+
+func (a *CreateMeetingAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
 
-func (c CreateMeetingAction) Name() string {
-	return "Create Zoom Meeting"
-}
-
-func (c CreateMeetingAction) Description() string {
-	return "create a new zoom meeting"
-}
-
-func (c CreateMeetingAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (a *CreateMeetingAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &createMeetingDocs,
 	}
 }
 
-func (c CreateMeetingAction) Icon() *string {
+func (a *CreateMeetingAction) Icon() *string {
 	return nil
 }
 
-func (c CreateMeetingAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c CreateMeetingAction) Properties() map[string]*sdkcore.AutoFormSchema {
+func (a *CreateMeetingAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
 		"topic": autoform.NewShortTextField().
 			SetDisplayName("Meeting's topic").
@@ -103,14 +81,8 @@ func (c CreateMeetingAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	}
 }
 
-func (c CreateMeetingAction) Auth() *integration.Auth {
-	return &integration.Auth{
-		Inherit: true,
-	}
-}
-
-func (c CreateMeetingAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
-	input, err := integration.InputToTypeSafely[createMeetingActionProps](ctx.BaseContext)
+func (a *CreateMeetingAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createMeetingActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -183,6 +155,20 @@ func (c CreateMeetingAction) Perform(ctx integration.PerformContext) (sdkcore.JS
 	return resp, nil
 }
 
-func NewCreateMeetingAction() integration.Action {
+func (a *CreateMeetingAction) Auth() *sdk.Auth {
+	return nil
+}
+
+func (a *CreateMeetingAction) SampleData() sdkcore.JSON {
+	return map[string]any{
+		"message": "Hello World!",
+	}
+}
+
+func (a *CreateMeetingAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
+func NewCreateMeetingAction() sdk.Action {
 	return &CreateMeetingAction{}
 }

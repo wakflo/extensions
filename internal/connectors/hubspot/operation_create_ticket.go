@@ -21,6 +21,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type createNewTicketProps struct {
@@ -65,7 +66,7 @@ func NewCreateTicketOperation() *CreateTicketOperation {
 	}
 }
 
-func (c *CreateTicketOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *CreateTicketOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input := sdk.InputToType[createNewTicketProps](ctx)
 
 	ticket := contactRequest{
@@ -92,7 +93,7 @@ func (c *CreateTicketOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (c *CreateTicketOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *CreateTicketOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

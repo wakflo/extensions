@@ -13,12 +13,12 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/googledrive/shared"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 )
 
-type newFileProps struct {
+type newFileTriggerProps struct {
 	ParentFolder       *string    `json:"parentFolder"`
 	IncludeTeamDrives  bool       `json:"includeTeamDrives"`
 	IncludeFileContent bool       `json:"includeFileContent"`
@@ -30,39 +30,34 @@ type NewFileTrigger struct {
 	getParentFolders func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error)
 }
 
-func (e *NewFileTrigger) Name() string {
+func (t *NewFileTrigger) Name() string {
 	return "New File"
 }
 
-func (e *NewFileTrigger) Description() string {
-	return "Triggers a workflow to by providing seamless automation for monitoring newly created files with customizable options like folder selection and additional file details."
+func (t *NewFileTrigger) Description() string {
+	return "Triggers when a new file is created or uploaded to a specified directory or location, allowing you to automate workflows and processes as soon as a new file becomes available."
 }
 
-func (e *NewFileTrigger) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (t *NewFileTrigger) GetType() sdkcore.TriggerType {
+	return sdkcore.TriggerTypePolling
+}
+
+func (t *NewFileTrigger) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &newFileDocs,
 	}
 }
 
-func (e *NewFileTrigger) Icon() *string {
+func (t *NewFileTrigger) Icon() *string {
 	return nil
 }
 
-func (e *NewFileTrigger) SampleData() sdkcore.JSON {
-	return map[string]interface{}{
-		"kind":     "drive#file",
-		"mimeType": "image/jpeg",
-		"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
-		"name":     "example.jpg",
-	}
-}
-
-func (e *NewFileTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
+func (t *NewFileTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
 		"parentFolder": autoform.NewDynamicField(sdkcore.String).
 			SetDisplayName("Parent Folder").
 			SetDescription("select parent folder").
-			SetDynamicOptions(&e.getParentFolders).
+			SetDynamicOptions(&t.getParentFolders).
 			SetDependsOn([]string{"connection"}).
 			SetRequired(false).Build(),
 		"includeTeamDrives": shared.IncludeTeamFieldInput,
@@ -74,22 +69,22 @@ func (e *NewFileTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
 	}
 }
 
-func (e *NewFileTrigger) Auth() *integration.Auth {
-	return &integration.Auth{
-		Inherit: true,
-	}
-}
-
-func (e *NewFileTrigger) Start(ctx integration.LifecycleContext) error {
+// Start initializes the newFileTrigger, required for event and webhook triggers in a lifecycle context.
+func (t *NewFileTrigger) Start(ctx sdk.LifecycleContext) error {
+	// Required for event and webhook triggers
 	return nil
 }
 
-func (e *NewFileTrigger) Stop(ctx integration.LifecycleContext) error {
+// Stop shuts down the newFileTrigger, cleaning up resources and performing necessary teardown operations.
+func (t *NewFileTrigger) Stop(ctx sdk.LifecycleContext) error {
 	return nil
 }
 
-func (e *NewFileTrigger) Execute(ctx integration.ExecuteContext) (sdkcore.JSON, error) {
-	input, err := integration.InputToTypeSafely[newFileProps](ctx.BaseContext)
+// Execute performs the main action logic of newFileTrigger by processing the input context and returning a JSON response.
+// It converts the base context input into a strongly-typed structure, executes the desired logic, and generates output.
+// Returns a JSON output map with the resulting data or an error if operation fails. required for Pooling triggers
+func (t *NewFileTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[newFileTriggerProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -134,23 +129,24 @@ func (e *NewFileTrigger) Execute(ctx integration.ExecuteContext) (sdkcore.JSON, 
 	return files.Files, nil
 }
 
-func (e *NewFileTrigger) GetType() sdkcore.TriggerType {
-	return sdkcore.TriggerTypeScheduled
+func (t *NewFileTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
+	return sdkcore.TriggerCriteria{}
 }
 
-func (e *NewFileTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
-	return sdkcore.TriggerCriteria{
-		Schedule: &sdkcore.ScheduleTriggerCriteria{
-			CronExpression: "",
-			StartTime:      nil,
-			EndTime:        nil,
-			TimeZone:       "",
-			Enabled:        true,
-		},
+func (t *NewFileTrigger) Auth() *sdk.Auth {
+	return nil
+}
+
+func (t *NewFileTrigger) SampleData() sdkcore.JSON {
+	return map[string]any{
+		"kind":     "drive#file",
+		"mimeType": "image/jpeg",
+		"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
+		"name":     "example.jpg",
 	}
 }
 
-func NewNewFileTrigger() integration.Trigger {
+func NewNewFileTrigger() sdk.Trigger {
 	getParentFolders := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		client := fastshot.NewClient("https://www.googleapis.com/drive/v3").
 			Auth().BearerToken(ctx.Auth.AccessToken).

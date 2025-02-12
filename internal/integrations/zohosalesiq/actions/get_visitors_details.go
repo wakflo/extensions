@@ -7,7 +7,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
 
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type getVisitorsDetailsActionProps struct {
@@ -33,8 +33,8 @@ func (c GetVisitorsDetailsAction) Description() string {
 	return "Get visitor details"
 }
 
-func (c GetVisitorsDetailsAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (c GetVisitorsDetailsAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &getVisitorsDetails,
 	}
 }
@@ -61,14 +61,14 @@ func (c GetVisitorsDetailsAction) Properties() map[string]*sdkcore.AutoFormSchem
 	}
 }
 
-func (c GetVisitorsDetailsAction) Auth() *integration.Auth {
-	return &integration.Auth{
+func (c GetVisitorsDetailsAction) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Inherit: true,
 	}
 }
 
-func (c GetVisitorsDetailsAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
-	input, err := integration.InputToTypeSafely[getVisitorsDetailsActionProps](ctx.BaseContext)
+func (c GetVisitorsDetailsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getVisitorsDetailsActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -88,6 +88,6 @@ func (c GetVisitorsDetailsAction) Perform(ctx integration.PerformContext) (sdkco
 	return visitors, nil
 }
 
-func NewGetVisitorsDetailsAction() integration.Action {
+func NewGetVisitorsDetailsAction() sdk.Action {
 	return &GetVisitorsDetailsAction{}
 }

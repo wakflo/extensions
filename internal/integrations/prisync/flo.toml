@@ -1,0 +1,7 @@
+[integration]
+name = "Prisync"
+description = "Integrate Prisync with your workflow automation software to streamline your e-commerce operations and automate tedious tasks. With this integration, you can synchronize product data, track inventory levels, and manage orders in real-time across multiple platforms. Say goodbye to manual data entry and hello to increased efficiency and accuracy."
+version = "0.0.1"
+icon = "logos:prisma"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

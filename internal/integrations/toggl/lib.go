@@ -17,30 +17,30 @@ package toggl
 import (
 	"github.com/wakflo/extensions/internal/integrations/toggl/actions"
 	"github.com/wakflo/extensions/internal/integrations/toggl/shared"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type Toggl struct{}
 
-func (n *Toggl) Auth() *integration.Auth {
-	return &integration.Auth{
+func (n *Toggl) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Required: true,
 		Schema:   *shared.TogglSharedAuth,
 	}
 }
 
-func (n *Toggl) Triggers() []integration.Trigger {
-	return []integration.Trigger{}
+func (n *Toggl) Triggers() []sdk.Trigger {
+	return []sdk.Trigger{}
 }
 
-func (n *Toggl) Actions() []integration.Action {
-	return []integration.Action{
+func (n *Toggl) Actions() []sdk.Action {
+	return []sdk.Action{
 		actions.NewCreateProjectAction(),
 	}
 }
 
-func NewToggl() integration.Integration {
+func NewToggl() sdk.Integration {
 	return &Toggl{}
 }
 
-var Integration = integration.Register(NewToggl())
+var Integration = sdk.Register(NewToggl())

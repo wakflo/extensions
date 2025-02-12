@@ -1,7 +1,13 @@
 [integration]
 name = "Zoom"
+description = """Integrate your Zoom meetings with our workflow automation software to streamline meeting preparation and follow-up tasks. Automatically create new tasks or updates in your workflow based on Zoom meeting events, such as:
+
+* New meeting creation: Trigger a task to send out meeting invitations or reminders
+* Meeting start/end: Update task status or trigger notifications for attendees
+* Recording availability: Automate the sharing of meeting recordings with team members or stakeholders
+
+Enhance collaboration and productivity by leveraging your Zoom meetings within our workflow automation software. Say goodbye to manual data entry and hello to seamless integration!"""
 version = "0.0.1"
 icon = "logos:zoom"
-description = "Video conferencing, web conferencing, webinars, screen sharing."
 categories = ["app"]
 authors = ["Wakflo <integrations@wakflo.com>"]

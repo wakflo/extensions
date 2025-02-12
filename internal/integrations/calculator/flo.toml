@@ -1,0 +1,7 @@
+[integration]
+name = "Calculator"
+description = "Automate calculations and data manipulation with our Calculator integration. Seamlessly connect your calculator to your workflow, allowing you to perform complex mathematical operations, convert units, and more - all within the context of your automated process."
+version = "0.0.1"
+icon = "tabler:calculator"
+categories = ["core"]
+authors = ["Wakflo <integrations@wakflo.com>"]

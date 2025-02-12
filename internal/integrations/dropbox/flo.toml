@@ -1,0 +1,13 @@
+[integration]
+name = "Dropbox"
+description = """Integrate your Dropbox account with our workflow automation software to streamline file sharing and collaboration across teams. With this integration, you can:
+
+* Automatically upload files from your workflow to Dropbox
+* Share files with team members or clients directly from your workflow
+* Track file versions and revisions in real-time
+* Use Dropbox's robust search functionality to quickly find specific files
+* Enjoy seamless integration with other workflow automation features, such as conditional logic and approval workflows"""
+version = "0.0.1"
+icon = "logos:dropbox"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

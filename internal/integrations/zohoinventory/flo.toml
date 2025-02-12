@@ -1,0 +1,7 @@
+[integration]
+name = "Zoho Inventory"
+description = "Integrate your Zoho Inventory with our workflow automation software to streamline your inventory management process. Automate tasks such as updating stock levels, tracking orders, and generating reports in real-time. Seamlessly sync your Zoho Inventory data with other business applications to ensure accurate and up-to-date information across all departments. Enhance visibility, reduce errors, and increase productivity by automating repetitive tasks and workflows."
+version = "0.0.1"
+icon = "logos:zoho"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

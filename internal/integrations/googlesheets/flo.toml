@@ -1,0 +1,7 @@
+[integration]
+name = "Google Sheets"
+description = "Integrate your Google Sheets with our workflow automation software to streamline data-driven workflows and automate repetitive tasks. Seamlessly connect your spreadsheets to custom-built workflows, enabling real-time data synchronization, automated calculations, and conditional logic-based decision-making. Enhance collaboration by sharing sheets with team members and stakeholders, while maintaining version control and audit trails. Automate data imports from Google Sheets into other applications or services, such as CRM systems, email marketing tools, or project management platforms. Unlock the full potential of your data and workflows with our intuitive integration."
+version = "0.0.1"
+icon = "simple-icons:googlesheets"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

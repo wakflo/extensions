@@ -21,7 +21,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/shippo/shared"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type createShipmentLabelActionProps struct {
@@ -46,8 +46,8 @@ func (c CreateShipmentLabelAction) Description() string {
 	return "Create and submit a user's registration to a meeting."
 }
 
-func (c CreateShipmentLabelAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (c CreateShipmentLabelAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &newShipmentLabelDocs,
 	}
 }
@@ -133,18 +133,18 @@ func (c CreateShipmentLabelAction) Properties() map[string]*sdkcore.AutoFormSche
 	}
 }
 
-func (c CreateShipmentLabelAction) Auth() *integration.Auth {
-	return &integration.Auth{
+func (c CreateShipmentLabelAction) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Inherit: true,
 	}
 }
 
-func (c CreateShipmentLabelAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
+func (c CreateShipmentLabelAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 	if ctx.Auth.Extra["api-key"] == "" {
 		return nil, errors.New("missing shippo api key")
 	}
 
-	input, err := integration.InputToTypeSafely[createShipmentLabelActionProps](ctx.BaseContext)
+	input, err := sdk.InputToTypeSafely[createShipmentLabelActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -164,6 +164,6 @@ func (c CreateShipmentLabelAction) Perform(ctx integration.PerformContext) (sdkc
 	return response, nil
 }
 
-func NewCreateShipmentLabelAction() integration.Action {
+func NewCreateShipmentLabelAction() sdk.Action {
 	return &CreateShipmentLabelAction{}
 }

@@ -17,7 +17,7 @@ package actions
 import (
 	"github.com/wakflo/extensions/internal/integrations/smartsheet/shared"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type listSheetProps struct {
@@ -42,8 +42,8 @@ func (c ListSheetsAction) Description() string {
 	return "list all sheets"
 }
 
-func (c ListSheetsAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (c ListSheetsAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &listSheetDocs,
 	}
 }
@@ -60,14 +60,14 @@ func (c ListSheetsAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{}
 }
 
-func (c ListSheetsAction) Auth() *integration.Auth {
-	return &integration.Auth{
+func (c ListSheetsAction) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Inherit: true,
 	}
 }
 
-func (c ListSheetsAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
-	_, err := integration.InputToTypeSafely[listSheetProps](ctx.BaseContext)
+func (c ListSheetsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
+	_, err := sdk.InputToTypeSafely[listSheetProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -81,6 +81,6 @@ func (c ListSheetsAction) Perform(ctx integration.PerformContext) (sdkcore.JSON,
 	return sheets, nil
 }
 
-func NewListSheetAction() integration.Action {
+func NewListSheetAction() sdk.Action {
 	return &ListSheetsAction{}
 }

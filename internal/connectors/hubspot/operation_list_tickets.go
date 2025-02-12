@@ -20,6 +20,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type listTicketsOperationProps struct {
@@ -52,7 +53,7 @@ func NewListTicketsOperation() *ListTicketsOperation {
 	}
 }
 
-func (c *ListTicketsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *ListTicketsOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	_ = sdk.InputToType[listTicketsOperationProps](ctx)
 
 	reqURL := "/crm/v3/objects/tickets"
@@ -64,7 +65,7 @@ func (c *ListTicketsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (c *ListTicketsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *ListTicketsOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

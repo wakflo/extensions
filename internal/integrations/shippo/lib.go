@@ -17,31 +17,31 @@ package shippo
 import (
 	"github.com/wakflo/extensions/internal/integrations/shippo/actions"
 	"github.com/wakflo/extensions/internal/integrations/shippo/shared"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type Shippo struct{}
 
-func (n *Shippo) Auth() *integration.Auth {
-	return &integration.Auth{
+func (n *Shippo) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Required: true,
 		Schema:   *shared.ShippoSharedAuth,
 	}
 }
 
-func (n *Shippo) Triggers() []integration.Trigger {
-	return []integration.Trigger{}
+func (n *Shippo) Triggers() []sdk.Trigger {
+	return []sdk.Trigger{}
 }
 
-func (n *Shippo) Actions() []integration.Action {
-	return []integration.Action{
+func (n *Shippo) Actions() []sdk.Action {
+	return []sdk.Action{
 		// actions.NewCreateNewShipmentAction(),
 		actions.NewCreateShipmentLabelAction(),
 	}
 }
 
-func NewShippo() integration.Integration {
+func NewShippo() sdk.Integration {
 	return &Shippo{}
 }
 
-var Integration = integration.Register(NewShippo())
+var Integration = sdk.Register(NewShippo())

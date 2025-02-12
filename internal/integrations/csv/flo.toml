@@ -1,0 +1,14 @@
+[integration]
+name = "CSV"
+description = """Integrate your CSV files with our workflow automation software to streamline data processing and automate repetitive tasks. Easily import and export CSV data to and from our platform, allowing you to:
+
+* Load CSV files into workflows for automated processing
+* Export processed data back to CSV format
+* Map CSV columns to custom fields in our platform
+* Schedule recurring imports and exports to keep your data up-to-date
+
+With seamless CSV integration, you can automate tasks such as data cleansing, transformation, and reporting, freeing up more time for strategic decision-making. Say goodbye to manual data processing and hello to increased efficiency with our CSV integration feature."""
+version = "0.0.1"
+icon = "flowbite:file-csv-outline"
+categories = ["tools", "core"]
+authors = ["Wakflo <integrations@wakflo.com>"]

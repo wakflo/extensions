@@ -1,0 +1,9 @@
+[integration]
+name = "Linear"
+description = """Linear Integration:
+
+The Linear integration feature in our workflow automation software enables seamless connection with other systems and applications by mapping data between them. This allows for efficient exchange of information, streamlining processes, and enhancing overall productivity. With linear integration, you can automate complex workflows, eliminate manual errors, and gain real-time visibility into your operations."""
+version = "0.0.1"
+icon = "solar:bell-linear"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

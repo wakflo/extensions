@@ -1,0 +1,13 @@
+[integration]
+name = "WooCommerce"
+description = """Integrate your WooCommerce store with our workflow automation software to streamline and automate various tasks, such as:
+
+* Order processing: Automatically trigger workflows based on order status changes, allowing you to quickly respond to customer inquiries and fulfill orders efficiently.
+* Inventory management: Sync product stock levels and track inventory movements in real-time, ensuring accurate stock counts and reducing the risk of overselling or underselling.
+* Shipping integration: Automate shipping tasks, such as generating shipping labels and tracking numbers, to save time and reduce errors.
+* Customer notifications: Send automated email and SMS notifications to customers at various stages of the order process, keeping them informed and improving overall customer satisfaction.
+* Reporting and analytics: Gain valuable insights into your store's performance with customizable reports and dashboards, helping you make data-driven decisions to drive growth."""
+version = "0.0.1"
+icon = "logos:woocommerce-icon"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

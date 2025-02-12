@@ -4,7 +4,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/jsonconverter/shared"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type convertToJsonActionProps struct {
@@ -29,8 +29,8 @@ func (c ConvertToJsonAction) Description() string {
 	return "Returns the text in JSON"
 }
 
-func (c ConvertToJsonAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (c ConvertToJsonAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &textToJsonDocs,
 	}
 }
@@ -52,12 +52,12 @@ func (c ConvertToJsonAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	}
 }
 
-func (c ConvertToJsonAction) Auth() *integration.Auth {
+func (c ConvertToJsonAction) Auth() *sdk.Auth {
 	return nil
 }
 
-func (c ConvertToJsonAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
-	input, err := integration.InputToTypeSafely[convertToJsonActionProps](ctx.BaseContext)
+func (c ConvertToJsonAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[convertToJsonActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -71,6 +71,6 @@ func (c ConvertToJsonAction) Perform(ctx integration.PerformContext) (sdkcore.JS
 	return result, nil
 }
 
-func NewConvertToJsonAction() integration.Action {
+func NewConvertToJsonAction() sdk.Action {
 	return &ConvertToJsonAction{}
 }

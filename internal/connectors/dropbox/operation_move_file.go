@@ -20,6 +20,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type MoveFileOperation struct {
@@ -64,7 +65,7 @@ func NewMoveFileOperation() *MoveFileOperation {
 	}
 }
 
-func (c *MoveFileOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *MoveFileOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input := sdk.InputToType[FileMove](ctx)
 
 	file, err := json.Marshal(input)
@@ -81,7 +82,7 @@ func (c *MoveFileOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (c *MoveFileOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *MoveFileOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

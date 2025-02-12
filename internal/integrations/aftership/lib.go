@@ -17,24 +17,24 @@ package aftership
 import (
 	"github.com/wakflo/extensions/internal/integrations/aftership/actions"
 	"github.com/wakflo/extensions/internal/integrations/aftership/shared"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type AfterShip struct{}
 
-func (n *AfterShip) Auth() *integration.Auth {
-	return &integration.Auth{
+func (n *AfterShip) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Required: true,
 		Schema:   *shared.AfterShipSharedAuth,
 	}
 }
 
-func (n *AfterShip) Triggers() []integration.Trigger {
-	return []integration.Trigger{}
+func (n *AfterShip) Triggers() []sdk.Trigger {
+	return []sdk.Trigger{}
 }
 
-func (n *AfterShip) Actions() []integration.Action {
-	return []integration.Action{
+func (n *AfterShip) Actions() []sdk.Action {
+	return []sdk.Action{
 		actions.NewCreateATrackingAction(),
 		actions.NewGetATrackingAction(),
 		actions.NewDetectCourierAction(),
@@ -46,8 +46,8 @@ func (n *AfterShip) Actions() []integration.Action {
 	}
 }
 
-func NewAfterShip() integration.Integration {
+func NewAfterShip() sdk.Integration {
 	return &AfterShip{}
 }
 
-var Integration = integration.Register(NewAfterShip())
+var Integration = sdk.Register(NewAfterShip())

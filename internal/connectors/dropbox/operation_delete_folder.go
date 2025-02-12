@@ -20,6 +20,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type deleteFolderProps struct {
@@ -52,7 +53,7 @@ func NewDeleteFolderOperation() *DeleteFolderOperation {
 	}
 }
 
-func (c *DeleteFolderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *DeleteFolderOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input := sdk.InputToType[deleteFolderProps](ctx)
 
 	folder, err := json.Marshal(input)
@@ -70,7 +71,7 @@ func (c *DeleteFolderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (c *DeleteFolderOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *DeleteFolderOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

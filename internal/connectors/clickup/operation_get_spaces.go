@@ -19,6 +19,7 @@ import (
 
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type getSpacesOperationProps struct {
@@ -47,7 +48,7 @@ func NewGetSpacesOperation() *GetSpacesOperation {
 	}
 }
 
-func (c *GetSpacesOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetSpacesOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	if ctx.Auth.AccessToken == "" {
 		return nil, errors.New("missing clickup auth token")
 	}
@@ -60,7 +61,7 @@ func (c *GetSpacesOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return spaces, nil
 }
 
-func (c *GetSpacesOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetSpacesOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

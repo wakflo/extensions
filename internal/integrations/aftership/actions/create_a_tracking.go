@@ -20,7 +20,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/aftership/shared"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type createATrackingActionProps struct {
@@ -46,8 +46,8 @@ func (c CreateATrackingAction) Description() string {
 	return "create a new tracking"
 }
 
-func (c CreateATrackingAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (c CreateATrackingAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &createTrackingDocs,
 	}
 }
@@ -76,14 +76,14 @@ func (c CreateATrackingAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	}
 }
 
-func (c CreateATrackingAction) Auth() *integration.Auth {
-	return &integration.Auth{
+func (c CreateATrackingAction) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Inherit: true,
 	}
 }
 
-func (c CreateATrackingAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
-	input, err := integration.InputToTypeSafely[createATrackingActionProps](ctx.BaseContext)
+func (c CreateATrackingAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createATrackingActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -104,6 +104,6 @@ func (c CreateATrackingAction) Perform(ctx integration.PerformContext) (sdkcore.
 	return result, nil
 }
 
-func NewCreateATrackingAction() integration.Action {
+func NewCreateATrackingAction() sdk.Action {
 	return &CreateATrackingAction{}
 }

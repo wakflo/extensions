@@ -21,6 +21,7 @@ import (
 
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type assignIssueOperationProps struct {
@@ -54,7 +55,7 @@ func NewAssignIssueOperation() *AssignIssueOperation {
 	}
 }
 
-func (c *AssignIssueOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *AssignIssueOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input := sdk.InputToType[assignIssueOperationProps](ctx)
 	endpoint := fmt.Sprintf("/rest/api/3/issue/%s/assignee", input.IssueID)
 
@@ -77,7 +78,7 @@ func (c *AssignIssueOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (c *AssignIssueOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *AssignIssueOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

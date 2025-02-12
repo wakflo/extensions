@@ -1,7 +1,7 @@
 [integration]
 name = "Google Drive"
+description = "Integrate your Google Drive with our workflow automation software to streamline file management and collaboration. Seamlessly upload, download, and manage files from within our platform, eliminating manual data entry and reducing errors. Automate workflows by triggering actions based on file changes, such as sending notifications or updating databases. Enjoy enhanced productivity and visibility across teams and departments."
 version = "0.0.1"
 icon = "logos:google-drive"
-description = "Integrate with Google Drive to streamline file management, sharing, and collaboration directly within your workflows."
 categories = ["app"]
 authors = ["Wakflo <integrations@wakflo.com>"]

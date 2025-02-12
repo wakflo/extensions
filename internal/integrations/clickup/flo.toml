@@ -1,0 +1,14 @@
+[integration]
+name = "Clickup"
+description = """Streamline your workflow with seamless integration between [Software Name] and ClickUp! Automate tasks, trigger workflows, and synchronize data in real-time to boost productivity and efficiency. With this integration, you can:
+
+* Trigger custom workflows based on ClickUp task updates
+* Automatically assign tasks to team members or update task status
+* Sync project details, such as due dates and priorities, between the two platforms
+* Use [Software Name]'s powerful automation engine to create custom workflows that span both tools
+
+Say goodbye to manual data entry and hello to a more streamlined workflow. Get started today and unlock the full potential of your ClickUp and [Software Name] integration!"""
+version = "0.0.1"
+icon = "arcticons:clickup"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

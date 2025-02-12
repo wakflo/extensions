@@ -1,0 +1,15 @@
+[integration]
+name = "Hubspot"
+description = """Streamline your sales and marketing processes by integrating our workflow automation software with HubSpot. Seamlessly sync your CRM data, automate repetitive tasks, and gain real-time insights into customer interactions. With this integration, you can:
+
+* Update HubSpot contacts and companies in real-time
+* Trigger custom workflows based on HubSpot activity
+* Automate lead scoring and routing
+* Enhance sales and marketing alignment with unified data
+* Gain visibility into customer journey and behavior
+
+Elevate your workflow efficiency and make data-driven decisions with our HubSpot integration."""
+version = "0.0.1"
+icon = "logos:hubspot"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

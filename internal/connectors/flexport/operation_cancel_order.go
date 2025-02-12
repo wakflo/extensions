@@ -21,6 +21,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type cancelOrderOperationProps struct {
@@ -53,7 +54,7 @@ func NewCancelOrderOperation() *CancelOrderOperation {
 	}
 }
 
-func (c *CancelOrderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *CancelOrderOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input := sdk.InputToType[cancelOrderOperationProps](ctx)
 
 	reqURL := fmt.Sprintf("/api/2024-07/orders/%s/cancel", input.OrderID)
@@ -64,7 +65,7 @@ func (c *CancelOrderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (c *CancelOrderOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *CancelOrderOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

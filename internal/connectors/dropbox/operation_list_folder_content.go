@@ -20,6 +20,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type listFolderContentProps struct {
@@ -67,7 +68,7 @@ func NewListFolderOperation() *ListFolderOperation {
 	}
 }
 
-func (c *ListFolderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *ListFolderOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input := sdk.InputToType[listFolderContentProps](ctx)
 
 	folderContent, err := json.Marshal(input)
@@ -84,7 +85,7 @@ func (c *ListFolderOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (c *ListFolderOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *ListFolderOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

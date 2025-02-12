@@ -19,7 +19,7 @@ import (
 
 	"github.com/aftership/tracking-sdk-go/v5"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type GetCouriersAction struct{}
@@ -40,8 +40,8 @@ func (c GetCouriersAction) Description() string {
 	return "get all couriers"
 }
 
-func (c GetCouriersAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (c GetCouriersAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &getCouriersDocs,
 	}
 }
@@ -58,13 +58,13 @@ func (c GetCouriersAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{}
 }
 
-func (c GetCouriersAction) Auth() *integration.Auth {
-	return &integration.Auth{
+func (c GetCouriersAction) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Inherit: true,
 	}
 }
 
-func (c GetCouriersAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
+func (c GetCouriersAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 	if ctx.Auth.Extra["api-key"] == "" {
 		return nil, errors.New("missing aftership api key")
 	}
@@ -79,6 +79,6 @@ func (c GetCouriersAction) Perform(ctx integration.PerformContext) (sdkcore.JSON
 	return result.Couriers, nil
 }
 
-func NewGetCouriersAction() integration.Action {
+func NewGetCouriersAction() sdk.Action {
 	return &GetCouriersAction{}
 }

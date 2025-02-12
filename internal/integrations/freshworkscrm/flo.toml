@@ -1,0 +1,7 @@
+[integration]
+name = "Fresh Works CRM"
+description = "Integrate your FreshWorks CRM with our workflow automation software to streamline sales, marketing, and customer service processes. Automate tasks such as lead routing, contact updates, and opportunity tracking, ensuring seamless data synchronization between the two platforms. Enhance collaboration and visibility across teams by leveraging real-time insights and analytics from FreshWorks, while also reducing manual errors and increasing productivity."
+version = "0.0.1"
+icon = "icon-park-outline:fireworks"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

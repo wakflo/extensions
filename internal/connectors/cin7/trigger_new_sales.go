@@ -21,6 +21,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type TriggerNewSales struct {
@@ -50,7 +51,7 @@ func NewTriggerNewSales() *TriggerNewSales {
 	}
 }
 
-func (t *TriggerNewSales) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (t *TriggerNewSales) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	endpoint := "/ExternalApi/SaleList"
 	accountID := ctx.Auth.Extra["account_id"]
 	applicationKey := ctx.Auth.Extra["key"]
@@ -75,7 +76,7 @@ func (t *TriggerNewSales) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return response, nil
 }
 
-func (t *TriggerNewSales) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (t *TriggerNewSales) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return t.Run(ctx)
 }
 

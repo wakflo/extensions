@@ -1,0 +1,7 @@
+[integration]
+name = "Cin7"
+description = "Integrate your Cin7 e-commerce platform with our workflow automation software to streamline order fulfillment, inventory management, and shipping processes. Automate tasks such as updating product information, tracking orders, and sending notifications to customers and team members. Enhance visibility and control over your online store's operations, reduce manual errors, and increase productivity."
+version = "0.0.1"
+icon = "arcticons:cino"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

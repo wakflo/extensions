@@ -56,8 +56,6 @@ func GetSmartSheetClient(accessToken, url string) (map[string]interface{}, error
 		return nil, fmt.Errorf("error reading response body: %v", err)
 	}
 
-	fmt.Println("Response Body:", string(body))
-
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("API request failed with status code %d: %s", resp.StatusCode, string(body))
 	}

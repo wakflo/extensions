@@ -20,6 +20,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type getListOperationProps struct {
@@ -52,7 +53,7 @@ func NewGetListOperation() *GetListOperation {
 	}
 }
 
-func (c *GetListOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetListOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	if ctx.Auth.AccessToken == "" {
 		return nil, errors.New("missing clickup auth token")
 	}
@@ -68,7 +69,7 @@ func (c *GetListOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return list, nil
 }
 
-func (c *GetListOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetListOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

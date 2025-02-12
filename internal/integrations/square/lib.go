@@ -18,32 +18,32 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/square/actions"
 	"github.com/wakflo/extensions/internal/integrations/square/shared"
 	"github.com/wakflo/extensions/internal/integrations/square/triggers"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type Square struct{}
 
-func (n *Square) Auth() *integration.Auth {
-	return &integration.Auth{
+func (n *Square) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Required: true,
 		Schema:   *shared.SquareSharedAuth,
 	}
 }
 
-func (n *Square) Triggers() []integration.Trigger {
-	return []integration.Trigger{
+func (n *Square) Triggers() []sdk.Trigger {
+	return []sdk.Trigger{
 		triggers.NewNewPaymentTrigger(),
 	}
 }
 
-func (n *Square) Actions() []integration.Action {
-	return []integration.Action{
+func (n *Square) Actions() []sdk.Action {
+	return []sdk.Action{
 		actions.NewGetPaymentsAction(),
 	}
 }
 
-func NewSquare() integration.Integration {
+func NewSquare() sdk.Integration {
 	return &Square{}
 }
 
-var Integration = integration.Register(NewSquare())
+var Integration = sdk.Register(NewSquare())

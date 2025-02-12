@@ -20,6 +20,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type createMeetingOperationProps struct{}
@@ -50,7 +51,7 @@ func NewGetProductsOperation() *GetProductsOperation {
 	}
 }
 
-func (c *GetProductsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetProductsOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	_ = sdk.InputToType[createMeetingOperationProps](ctx)
 
 	reqURL := "/api/2024-07/products"
@@ -62,7 +63,7 @@ func (c *GetProductsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (c *GetProductsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetProductsOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

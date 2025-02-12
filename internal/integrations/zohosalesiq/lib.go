@@ -17,31 +17,31 @@ package zohosalesiq
 import (
 	"github.com/wakflo/extensions/internal/integrations/zohosalesiq/actions"
 	"github.com/wakflo/extensions/internal/integrations/zohosalesiq/shared"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type ZohoSalesIq struct{}
 
-func (n *ZohoSalesIq) Auth() *integration.Auth {
-	return &integration.Auth{
+func (n *ZohoSalesIq) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Required: true,
 		Schema:   *shared.ZohoSalesSharedAuth,
 	}
 }
 
-func (n *ZohoSalesIq) Triggers() []integration.Trigger {
-	return []integration.Trigger{}
+func (n *ZohoSalesIq) Triggers() []sdk.Trigger {
+	return []sdk.Trigger{}
 }
 
-func (n *ZohoSalesIq) Actions() []integration.Action {
-	return []integration.Action{
+func (n *ZohoSalesIq) Actions() []sdk.Action {
+	return []sdk.Action{
 		actions.NewListChatsAction(),
 		actions.NewGetVisitorsDetailsAction(),
 	}
 }
 
-func NewZohoSalesIq() integration.Integration {
+func NewZohoSalesIq() sdk.Integration {
 	return &ZohoSalesIq{}
 }
 
-var Integration = integration.Register(NewZohoSalesIq())
+var Integration = sdk.Register(NewZohoSalesIq())

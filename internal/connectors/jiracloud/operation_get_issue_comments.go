@@ -21,6 +21,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type getIssueCommentsOperationProps struct {
@@ -59,7 +60,7 @@ func NewGetIssueCommentsOperation() *GetIssueCommentsOperation {
 	}
 }
 
-func (c *GetIssueCommentsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetIssueCommentsOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input := sdk.InputToType[getIssueCommentsOperationProps](ctx)
 	endpoint := fmt.Sprintf("/rest/api/3/issue/%s/comment?orderBy=%s", input.IssueID, input.OrderBy)
 
@@ -73,7 +74,7 @@ func (c *GetIssueCommentsOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (c *GetIssueCommentsOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetIssueCommentsOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

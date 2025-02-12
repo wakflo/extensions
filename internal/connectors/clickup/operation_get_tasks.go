@@ -19,6 +19,7 @@ import (
 
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type getTasksOperationProps struct {
@@ -50,7 +51,7 @@ func NewGetTasksOperation() *GetTasksOperation {
 	}
 }
 
-func (c *GetTasksOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetTasksOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	if ctx.Auth.AccessToken == "" {
 		return nil, errors.New("missing clickup auth token")
 	}
@@ -68,7 +69,7 @@ func (c *GetTasksOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return tasks, nil
 }
 
-func (c *GetTasksOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *GetTasksOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

@@ -6,7 +6,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/googledrive/shared"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 )
@@ -19,37 +19,29 @@ type createFolderActionProps struct {
 
 type CreateFolderAction struct{}
 
-func (c *CreateFolderAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (c *CreateFolderAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (c *CreateFolderAction) Name() string {
+func (a *CreateFolderAction) Name() string {
 	return "Create Folder"
 }
 
-func (c *CreateFolderAction) Description() string {
-	return "Create a new folder in Google Drive"
+func (a *CreateFolderAction) Description() string {
+	return "Creates a new folder in the specified location, allowing you to organize and structure your files and data within your workflow."
 }
 
-func (c *CreateFolderAction) Documentation() *integration.OperationDocumentation {
-	return &integration.OperationDocumentation{
+func (a *CreateFolderAction) GetType() sdkcore.ActionType {
+	return sdkcore.ActionTypeNormal
+}
+
+func (a *CreateFolderAction) Documentation() *sdk.OperationDocumentation {
+	return &sdk.OperationDocumentation{
 		Documentation: &createFolderDocs,
 	}
 }
 
-func (c *CreateFolderAction) Icon() *string {
+func (a *CreateFolderAction) Icon() *string {
 	return nil
 }
 
-func (c *CreateFolderAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c *CreateFolderAction) Properties() map[string]*sdkcore.AutoFormSchema {
+func (a *CreateFolderAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
 		"folderName": autoform.NewShortTextField().
 			SetDisplayName("Folder name").
@@ -61,14 +53,8 @@ func (c *CreateFolderAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	}
 }
 
-func (c *CreateFolderAction) Auth() *integration.Auth {
-	return &integration.Auth{
-		Inherit: true,
-	}
-}
-
-func (c *CreateFolderAction) Perform(ctx integration.PerformContext) (sdkcore.JSON, error) {
-	input, err := integration.InputToTypeSafely[createFolderActionProps](ctx.BaseContext)
+func (a *CreateFolderAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createFolderActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -94,6 +80,23 @@ func (c *CreateFolderAction) Perform(ctx integration.PerformContext) (sdkcore.JS
 	return folder, err
 }
 
-func NewCreateFolderAction() integration.Action {
+func (a *CreateFolderAction) Auth() *sdk.Auth {
+	return nil
+}
+
+func (a *CreateFolderAction) SampleData() sdkcore.JSON {
+	return map[string]any{
+		"kind":     "drive#file",
+		"mimeType": "image/jpeg",
+		"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
+		"name":     "example.jpg",
+	}
+}
+
+func (a *CreateFolderAction) Settings() sdkcore.ActionSettings {
+	return sdkcore.ActionSettings{}
+}
+
+func NewCreateFolderAction() sdk.Action {
 	return &CreateFolderAction{}
 }

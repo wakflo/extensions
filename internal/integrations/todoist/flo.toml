@@ -1,0 +1,14 @@
+[integration]
+name = "Todoist"
+description = """Integrate your Todoist tasks with our workflow automation software to streamline your productivity and simplify task management. Automatically create new workflows or update existing ones based on Todoist task changes, such as due dates, priorities, or labels. Use Zapier's Todoist integration to:
+
+* Create new workflows for each Todoist project
+* Update workflow stages based on Todoist task status (e.g., completed, in progress)
+* Trigger custom actions when a Todoist task is moved to a specific stage
+* Set deadlines and reminders from Todoist tasks directly into your workflows
+
+Elevate your productivity by automating repetitive tasks, reducing manual errors, and gaining real-time visibility into your workflow's progress. Seamlessly integrate Todoist with our workflow automation software to achieve more in less time."""
+version = "0.0.1"
+icon = "logos:todoist-icon"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

@@ -22,13 +22,12 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 
 	"github.com/wakflo/go-sdk/autoform"
-	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
@@ -203,7 +202,7 @@ var googleType = []string{
 	"application/vnd.google-apps.presentation",
 }
 
-func HandleFileContent(ctx *integration.BaseContext, files []*drive.File, driveService *drive.Service) ([]File, error) {
+func HandleFileContent(ctx *sdk.BaseContext, files []*drive.File, driveService *drive.Service) ([]File, error) {
 	outputs := make([]File, len(files))
 
 	for i, file := range files {
@@ -244,10 +243,10 @@ func HandleFileContent(ctx *integration.BaseContext, files []*drive.File, driveS
 
 		// todo: Rex revert
 		fmt.Printf("Helllooo %v \n", fileName)
-		//fileData, err := ctx.Files.PutFlow(ctx.Metadata(), fileName, buf)
-		//if err != nil {
+		// fileData, err := ctx.Files.PutFlow(ctx.Metadata(), fileName, buf)
+		// if err != nil {
 		//	return nil, err
-		//}
+		// }
 
 		out := File{
 			ID:                file.Id,
@@ -272,7 +271,7 @@ func HandleFileContent(ctx *integration.BaseContext, files []*drive.File, driveS
 	return outputs, nil
 }
 
-func DownloadFile(ctx *sdk.RunContext, driveService *drive.Service, fileID string, fileName *string) (*string, error) {
+func DownloadFile(ctx *sdk.BaseContext, driveService *drive.Service, fileID string, fileName *string) (*string, error) {
 	file, err := driveService.Files.Get(fileID).Do()
 	if err != nil {
 		return nil, err
@@ -312,7 +311,8 @@ func DownloadFile(ctx *sdk.RunContext, driveService *drive.Service, fileID strin
 		name = fmt.Sprintf("%s.%s", *fileName, ext)
 	}
 
-	return ctx.Files.PutFlow(ctx.Metadata, name, buf)
+	m := ctx.Metadata()
+	return ctx.Files.PutFlow(&m, name, buf)
 }
 
 func GetParentFoldersInput() *sdkcore.AutoFormSchema {

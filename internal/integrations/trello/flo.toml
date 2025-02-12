@@ -1,0 +1,15 @@
+[integration]
+name = "Trello"
+description = """Streamline your workflow with seamless integration between our automation software and Trello! With this integration, you can:
+
+* Automate tasks based on Trello board updates
+* Create new cards in Trello from automated workflows
+* Update card statuses and comments directly from our platform
+* Trigger custom actions in Trello when specific conditions are met
+* Enjoy real-time visibility into your workflow's progress across both platforms
+
+Say goodbye to tedious manual updates and hello to a more efficient, streamlined workflow. Get started today!"""
+version = "0.0.1"
+icon = "logos:trello"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

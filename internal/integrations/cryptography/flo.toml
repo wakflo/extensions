@@ -1,0 +1,7 @@
+[integration]
+name = "Cryptography"
+description = "Cryptography Integration: Securely encrypt and decrypt sensitive data within your workflows using industry-standard algorithms such as AES, RSA, and SHA-256. Integrate with popular cryptography libraries like OpenSSL or NaCl to ensure seamless encryption and decryption of data in transit and at rest. Configure custom encryption settings for specific workflow steps, ensuring that sensitive information remains protected throughout the automation process."
+version = "0.0.1"
+icon = "tabler:circle-key-filled"
+categories = ["tools", "core"]
+authors = ["Wakflo <integrations@wakflo.com>"]

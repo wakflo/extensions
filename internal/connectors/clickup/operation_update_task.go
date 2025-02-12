@@ -26,6 +26,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type updateTaskOperationProps struct {
@@ -80,7 +81,7 @@ func NewUpdateTaskOperation() *UpdateTaskOperation {
 	}
 }
 
-func (c *UpdateTaskOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *UpdateTaskOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	if ctx.Auth.AccessToken == "" {
 		return nil, errors.New("missing clickup auth token")
 	}
@@ -147,14 +148,14 @@ func (c *UpdateTaskOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	}
 	defer res.Body.Close()
 
-	var response sdk.JSON
+	var response sdk2.JSON
 	fmt.Println(response)
 	return map[string]interface{}{
 		"Report": "Task updated successfully",
 	}, nil
 }
 
-func (c *UpdateTaskOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *UpdateTaskOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

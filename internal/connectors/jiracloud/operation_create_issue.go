@@ -21,6 +21,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type createIssueOperationProps struct {
@@ -77,7 +78,7 @@ func NewCreateIssueOperation() *CreateIssueOperation {
 	}
 }
 
-func (c *CreateIssueOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *CreateIssueOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input := sdk.InputToType[createIssueOperationProps](ctx)
 	instanceURL := ctx.Auth.Extra["instance-url"] + "/rest/api/3/issue"
 
@@ -143,7 +144,7 @@ func (c *CreateIssueOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (c *CreateIssueOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *CreateIssueOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

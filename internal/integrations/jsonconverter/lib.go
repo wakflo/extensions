@@ -16,29 +16,29 @@ package jsonconverter
 
 import (
 	"github.com/wakflo/extensions/internal/integrations/jsonconverter/actions"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type TextToJson struct{}
 
-func (n *TextToJson) Auth() *integration.Auth {
-	return &integration.Auth{
+func (n *TextToJson) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Required: false,
 	}
 }
 
-func (n *TextToJson) Triggers() []integration.Trigger {
-	return []integration.Trigger{}
+func (n *TextToJson) Triggers() []sdk.Trigger {
+	return []sdk.Trigger{}
 }
 
-func (n *TextToJson) Actions() []integration.Action {
-	return []integration.Action{
+func (n *TextToJson) Actions() []sdk.Action {
+	return []sdk.Action{
 		actions.NewConvertToJsonAction(),
 	}
 }
 
-func NewTextToJson() integration.Integration {
+func NewTextToJson() sdk.Integration {
 	return &TextToJson{}
 }
 
-var Integration = integration.Register(NewTextToJson())
+var Integration = sdk.Register(NewTextToJson())

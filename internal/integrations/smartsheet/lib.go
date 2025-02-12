@@ -17,30 +17,30 @@ package smartsheet
 import (
 	"github.com/wakflo/extensions/internal/integrations/smartsheet/actions"
 	"github.com/wakflo/extensions/internal/integrations/smartsheet/shared"
-	"github.com/wakflo/go-sdk/integration"
+	"github.com/wakflo/go-sdk/sdk"
 )
 
 type Smartsheet struct{}
 
-func (n *Smartsheet) Auth() *integration.Auth {
-	return &integration.Auth{
+func (n *Smartsheet) Auth() *sdk.Auth {
+	return &sdk.Auth{
 		Required: true,
 		Schema:   *shared.SmartsheetSharedAuth,
 	}
 }
 
-func (n *Smartsheet) Triggers() []integration.Trigger {
-	return []integration.Trigger{}
+func (n *Smartsheet) Triggers() []sdk.Trigger {
+	return []sdk.Trigger{}
 }
 
-func (n *Smartsheet) Actions() []integration.Action {
-	return []integration.Action{
+func (n *Smartsheet) Actions() []sdk.Action {
+	return []sdk.Action{
 		actions.NewListSheetAction(),
 	}
 }
 
-func NewSmartsheet() integration.Integration {
+func NewSmartsheet() sdk.Integration {
 	return &Smartsheet{}
 }
 
-var Integration = integration.Register(NewSmartsheet())
+var Integration = sdk.Register(NewSmartsheet())

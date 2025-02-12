@@ -1,0 +1,7 @@
+[integration]
+name = "Calendly"
+description = "Streamline your scheduling process by integrating our workflow automation software with Calendly. Automatically create and manage meetings, appointments, and events in one place, eliminating manual data entry and reducing no-shows. With seamless synchronization, you'll always have an up-to-date calendar view of upcoming meetings and can easily reschedule or cancel as needed. Say goodbye to back-and-forth email exchanges and hello to a more efficient scheduling experience."
+version = "0.0.1"
+icon = "simple-icons:calendly"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

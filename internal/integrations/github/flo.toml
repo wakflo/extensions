@@ -1,0 +1,12 @@
+[integration]
+name = "Github"
+description = """Integrate your GitHub repository with our workflow automation software to streamline your development process. With this integration, you can:
+
+* Trigger automated workflows based on specific GitHub events such as push, pull request, or issue creation
+* Automate repetitive tasks and processes by leveraging GitHub's rich API and our powerful workflow engine
+* Enhance collaboration and visibility by integrating GitHub issues, pull requests, and commits with your automated workflows
+* Get real-time updates and notifications when changes are made to your repository, ensuring you're always on top of your project's progress"""
+version = "0.0.1"
+icon = "charm:github"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

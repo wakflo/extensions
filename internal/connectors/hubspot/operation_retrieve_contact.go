@@ -21,6 +21,7 @@ import (
 	"github.com/wakflo/go-sdk/autoform"
 	sdk "github.com/wakflo/go-sdk/connector"
 	sdkcore "github.com/wakflo/go-sdk/core"
+	sdk2 "github.com/wakflo/go-sdk/sdk"
 )
 
 type retrieveContactProps struct {
@@ -53,7 +54,7 @@ func NewRetrieveContactOperation() *RetrieveContactOperation {
 	}
 }
 
-func (c *RetrieveContactOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *RetrieveContactOperation) Run(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	input := sdk.InputToType[retrieveContactProps](ctx)
 
 	reqURL := fmt.Sprintf("/v3/objects/contacts/%s?idProperty=email", input.Email)
@@ -65,7 +66,7 @@ func (c *RetrieveContactOperation) Run(ctx *sdk.RunContext) (sdk.JSON, error) {
 	return resp, nil
 }
 
-func (c *RetrieveContactOperation) Test(ctx *sdk.RunContext) (sdk.JSON, error) {
+func (c *RetrieveContactOperation) Test(ctx *sdk.RunContext) (sdk2.JSON, error) {
 	return c.Run(ctx)
 }
 

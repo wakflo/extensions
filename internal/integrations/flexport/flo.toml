@@ -1,0 +1,7 @@
+[integration]
+name = "Flexport"
+description = "Seamlessly integrate with Flexport to automate your international shipping and logistics processes. With this integration, you can easily track shipments, update order status, and retrieve shipment data in real-time, streamlining your operations and reducing manual errors. Enjoy increased visibility, improved communication, and enhanced decision-making capabilities with our seamless connection to the Flexport platform."
+version = "0.0.1"
+icon = "arcticons:orange-flex"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]
