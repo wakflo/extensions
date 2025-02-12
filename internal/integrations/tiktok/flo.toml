@@ -1,0 +1,7 @@
+[integration]
+name = "TikTok"
+description = """Automate your social media workflow with our seamless TikTok integration! Easily schedule and publish TikTok videos directly from our platform, streamlining your content calendar and saving you time. With our intuitive interface, you can: - Schedule TikTok posts in advance to maximize engagement - Monitor performance metrics and adjust your strategy accordingly - Collaborate with team members on video creation and approval - Integrate with other social media platforms for a unified workflow Experience the power of automation and take your TikTok game to the next level!"""
+version = "0.0.1"
+icon = "formkit:tiktok"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]
