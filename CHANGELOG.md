@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.9.0](https://github.com/wakflo/extensions/compare/v0.8.0...v0.9.0) (2025-02-12)
+
+
+### Features
+
+* implement smartsheet connector ([d8041a2](https://github.com/wakflo/extensions/commit/d8041a2dff7bfc91aac765a3556b27e86b51c4bc))
+* implement trello connector ([ea26172](https://github.com/wakflo/extensions/commit/ea2617265b9c5db5e996029f560913d591ce24cf))
+* implement zohosales iq connector ([ff77895](https://github.com/wakflo/extensions/commit/ff77895cf7d90e89181fcdeb8589acc3c5c6e066))
+* update integrations code structure ([82b0b39](https://github.com/wakflo/extensions/commit/82b0b39e7b43f2accc665d19bad19c7bb49192f8))
+* updated schemas ([4a75ab4](https://github.com/wakflo/extensions/commit/4a75ab4d07d2315051b0498068f227129bf5916b))
+* updated schemas ([ec5db4a](https://github.com/wakflo/extensions/commit/ec5db4a8d44248c4dd98f4fac6409106efb24f4f))
+
+
+### Bug Fixes
+
+* updated autoform schema to v2 ([527228c](https://github.com/wakflo/extensions/commit/527228c781391e0b22f8d729d7fe582c82967880))
+
 ## [0.8.0](https://github.com/wakflo/extensions/compare/v0.7.0...v0.8.0) (2024-11-07)
 
 
