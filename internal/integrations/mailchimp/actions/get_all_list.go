@@ -9,8 +9,7 @@ import (
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-type getAllTagActionProps struct {
-}
+type getAllTagActionProps struct{}
 
 type GetAllListAction struct{}
 

@@ -18,12 +18,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	sdkcore "github.com/wakflo/go-sdk/core"
 	"io"
+	"net/http"
 	"net/url"
 
+	sdkcore "github.com/wakflo/go-sdk/core"
+
 	"github.com/wakflo/go-sdk/autoform"
-	"net/http"
 )
 
 var SharedAuth = autoform.NewCustomAuthField().

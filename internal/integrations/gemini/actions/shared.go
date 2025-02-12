@@ -2,7 +2,6 @@ package actions
 
 import (
 	"context"
-	"strings"
 
 	"github.com/google/generative-ai-go/genai"
 	"github.com/wakflo/go-sdk/autoform"
@@ -36,7 +35,7 @@ func GetModelInput() *sdkcore.AutoFormSchema {
 				return nil, err
 			}
 			models = append(models, map[string]string{
-				"id":   strings.ReplaceAll(model.Name, "models/", ""),
+				"id":   model.BaseModelID,
 				"name": model.DisplayName,
 			})
 		}

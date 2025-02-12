@@ -11,8 +11,7 @@ import (
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-type invoiceUpdatedTriggerProps struct {
-}
+type invoiceUpdatedTriggerProps struct{}
 
 type InvoiceUpdatedTrigger struct{}
 

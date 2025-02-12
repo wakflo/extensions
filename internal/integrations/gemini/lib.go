@@ -6,8 +6,10 @@ import (
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewGemini())
-var sharedAuth = autoform.NewAuthSecretField().SetDisplayName("Gemini API key").SetDescription("Your Gemini api key").Build()
+var (
+	Integration = sdk.Register(NewGemini())
+	sharedAuth  = autoform.NewAuthSecretField().SetDisplayName("Gemini API key").SetDescription("Your Gemini api key").Build()
+)
 
 type Gemini struct{}
 
