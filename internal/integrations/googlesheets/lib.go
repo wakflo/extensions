@@ -1,12 +1,20 @@
 package googlesheets
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/googlesheets/actions"
 	"github.com/wakflo/extensions/internal/integrations/googlesheets/shared"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewGoogleSheets())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewGoogleSheets(), Flow, ReadME)
 
 type GoogleSheets struct{}
 

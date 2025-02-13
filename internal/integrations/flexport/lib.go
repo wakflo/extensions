@@ -1,10 +1,18 @@
 package flexport
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewFlexport())
+var Integration = sdk.Register(NewFlexport(), Flow, ReadME)
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
 
 type Flexport struct{}
 

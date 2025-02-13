@@ -1,13 +1,21 @@
 package mailchimp
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/mailchimp/actions"
 	"github.com/wakflo/extensions/internal/integrations/mailchimp/shared"
 	"github.com/wakflo/extensions/internal/integrations/mailchimp/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewMailchimp())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewMailchimp(), Flow, ReadME)
 
 type Mailchimp struct{}
 

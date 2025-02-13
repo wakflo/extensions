@@ -15,10 +15,18 @@
 package shippo
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/shippo/actions"
 	"github.com/wakflo/extensions/internal/integrations/shippo/shared"
 	"github.com/wakflo/go-sdk/sdk"
 )
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
 
 type Shippo struct{}
 
@@ -44,4 +52,4 @@ func NewShippo() sdk.Integration {
 	return &Shippo{}
 }
 
-var Integration = sdk.Register(NewShippo())
+var Integration = sdk.Register(NewShippo(), Flow, ReadME)

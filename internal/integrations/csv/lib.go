@@ -1,11 +1,19 @@
 package csv
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/csv/actions"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewCSV())
+var Integration = sdk.Register(NewCSV(), Flow, ReadME)
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
 
 type CSV struct{}
 

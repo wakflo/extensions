@@ -1,13 +1,21 @@
 package notion
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/notion/actions"
 	"github.com/wakflo/extensions/internal/integrations/notion/shared"
 	"github.com/wakflo/extensions/internal/integrations/notion/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewNotion())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewNotion(), Flow, ReadME)
 
 type Notion struct{}
 

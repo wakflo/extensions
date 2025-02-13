@@ -1,13 +1,21 @@
 package googledrive
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/googledrive/actions"
 	"github.com/wakflo/extensions/internal/integrations/googledrive/shared"
 	"github.com/wakflo/extensions/internal/integrations/googledrive/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewGoogleDrive())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewGoogleDrive(), Flow, ReadME)
 
 type GoogleDrive struct{}
 

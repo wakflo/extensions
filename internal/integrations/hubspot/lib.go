@@ -1,10 +1,18 @@
 package hubspot
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewHubspot())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewHubspot(), Flow, ReadME)
 
 type Hubspot struct{}
 

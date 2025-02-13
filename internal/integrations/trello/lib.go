@@ -1,12 +1,20 @@
 package trello
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/trello/actions"
 	"github.com/wakflo/extensions/internal/integrations/trello/shared"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewTrello())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewTrello(), Flow, ReadME)
 
 type Trello struct{}
 

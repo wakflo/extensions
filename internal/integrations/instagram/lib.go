@@ -1,10 +1,19 @@
 package instagram
 
 import (
+	_ "embed"
+
+	"github.com/wakflo/extensions/internal/integrations/instagram/actions"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewInstagram())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewInstagram(), Flow, ReadME)
 
 type Instagram struct{}
 

@@ -28,7 +28,7 @@ type detectCourierActionProps struct {
 
 type DetectCourierAction struct{}
 
-func (c DetectCourierAction) GetType() sdkcore.ActionType {
+func (c *DetectCourierAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
 
@@ -36,29 +36,29 @@ func (c *DetectCourierAction) Settings() sdkcore.ActionSettings {
 	return sdkcore.ActionSettings{}
 }
 
-func (c DetectCourierAction) Name() string {
+func (c *DetectCourierAction) Name() string {
 	return "Detect Courier"
 }
 
-func (c DetectCourierAction) Description() string {
+func (c *DetectCourierAction) Description() string {
 	return "Returns a list of matched couriers based on tracking number format"
 }
 
-func (c DetectCourierAction) Documentation() *sdk.OperationDocumentation {
+func (c *DetectCourierAction) Documentation() *sdk.OperationDocumentation {
 	return &sdk.OperationDocumentation{
 		Documentation: &detectCourierDocs,
 	}
 }
 
-func (c DetectCourierAction) Icon() *string {
+func (c *DetectCourierAction) Icon() *string {
 	return nil
 }
 
-func (c DetectCourierAction) SampleData() sdkcore.JSON {
+func (c *DetectCourierAction) SampleData() sdkcore.JSON {
 	return nil
 }
 
-func (c DetectCourierAction) Properties() map[string]*sdkcore.AutoFormSchema {
+func (c *DetectCourierAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
 		"tracking_number": autoform.NewShortTextField().
 			SetDisplayName("Tracking Number").
@@ -68,13 +68,13 @@ func (c DetectCourierAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	}
 }
 
-func (c DetectCourierAction) Auth() *sdk.Auth {
+func (c *DetectCourierAction) Auth() *sdk.Auth {
 	return &sdk.Auth{
 		Inherit: true,
 	}
 }
 
-func (c DetectCourierAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
+func (c *DetectCourierAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 	input, err := sdk.InputToTypeSafely[detectCourierActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err

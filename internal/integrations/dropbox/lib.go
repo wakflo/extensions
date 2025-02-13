@@ -1,10 +1,18 @@
 package dropbox
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewDropbox())
+var Integration = sdk.Register(NewDropbox(), Flow, ReadME)
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
 
 type Dropbox struct{}
 

@@ -15,11 +15,19 @@
 package square
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/square/actions"
 	"github.com/wakflo/extensions/internal/integrations/square/shared"
 	"github.com/wakflo/extensions/internal/integrations/square/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
 
 type Square struct{}
 
@@ -46,4 +54,4 @@ func NewSquare() sdk.Integration {
 	return &Square{}
 }
 
-var Integration = sdk.Register(NewSquare())
+var Integration = sdk.Register(NewSquare(), Flow, ReadME)

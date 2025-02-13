@@ -1,13 +1,21 @@
 package xero
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/xero/actions"
 	"github.com/wakflo/extensions/internal/integrations/xero/shared"
 	"github.com/wakflo/extensions/internal/integrations/xero/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewXero())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewXero(), Flow, ReadME)
 
 type Xero struct{}
 

@@ -1,12 +1,20 @@
 package monday
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/monday/actions"
 	"github.com/wakflo/extensions/internal/integrations/monday/shared"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewMonday())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewMonday(), Flow, ReadME)
 
 type Monday struct{}
 

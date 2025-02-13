@@ -1,13 +1,20 @@
 package gemini
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/gemini/actions"
 	"github.com/wakflo/go-sdk/autoform"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
 var (
-	Integration = sdk.Register(NewGemini())
+	//go:embed README.md
+	ReadME string
+	//go:embed flo.toml
+
+	Flow        string
+	Integration = sdk.Register(NewGemini(), Flow, ReadME)
 	sharedAuth  = autoform.NewAuthSecretField().SetDisplayName("Gemini API key").SetDescription("Your Gemini api key").Build()
 )
 

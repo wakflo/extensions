@@ -1,11 +1,19 @@
 package github
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/github/actions"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewGithub())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewGithub(), Flow, ReadME)
 
 type Github struct{}
 

@@ -1,13 +1,21 @@
 package airtable
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/airtable/actions"
 	"github.com/wakflo/extensions/internal/integrations/airtable/shared"
 	"github.com/wakflo/extensions/internal/integrations/airtable/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewAirtable())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewAirtable(), Flow, ReadME)
 
 type Airtable struct{}
 

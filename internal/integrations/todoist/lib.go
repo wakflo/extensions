@@ -1,13 +1,21 @@
 package todoist
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/todoist/actions"
 	"github.com/wakflo/extensions/internal/integrations/todoist/shared"
 	"github.com/wakflo/extensions/internal/integrations/todoist/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewTodoist())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewTodoist(), Flow, ReadME)
 
 type Todoist struct{}
 

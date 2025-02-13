@@ -15,10 +15,18 @@
 package zohosalesiq
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/zohosalesiq/actions"
 	"github.com/wakflo/extensions/internal/integrations/zohosalesiq/shared"
 	"github.com/wakflo/go-sdk/sdk"
 )
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
 
 type ZohoSalesIq struct{}
 
@@ -44,4 +52,4 @@ func NewZohoSalesIq() sdk.Integration {
 	return &ZohoSalesIq{}
 }
 
-var Integration = sdk.Register(NewZohoSalesIq())
+var Integration = sdk.Register(NewZohoSalesIq(), Flow, ReadME)

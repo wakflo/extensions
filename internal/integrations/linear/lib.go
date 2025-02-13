@@ -1,13 +1,23 @@
 package linear
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/linear/actions"
 	"github.com/wakflo/extensions/internal/integrations/linear/shared"
 	"github.com/wakflo/extensions/internal/integrations/linear/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewLinear())
+var (
+	//go:embed README.md
+	ReadME string
+
+	//go:embed flo.toml
+	Flow string
+
+	Integration = sdk.Register(NewLinear(), Flow, ReadME)
+)
 
 type Linear struct{}
 

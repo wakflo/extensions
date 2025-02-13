@@ -15,11 +15,19 @@
 package trackingmore
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/trackingmore/actions"
 	"github.com/wakflo/extensions/internal/integrations/trackingmore/shared"
 	"github.com/wakflo/extensions/internal/integrations/trackingmore/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
 
 type TrackingMore struct{}
 
@@ -47,4 +55,4 @@ func NewTrackingMore() sdk.Integration {
 	return &TrackingMore{}
 }
 
-var Integration = sdk.Register(NewTrackingMore())
+var Integration = sdk.Register(NewTrackingMore(), Flow, ReadME)

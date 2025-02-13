@@ -1,11 +1,19 @@
 package tiktok
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/tiktok/actions"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewTikTok())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewTikTok(), Flow, ReadME)
 
 type TikTok struct{}
 

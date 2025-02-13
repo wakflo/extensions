@@ -1,11 +1,19 @@
 package calculator
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/calculator/actions"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewCalculator())
+var Integration = sdk.Register(NewCalculator(), Flow, ReadME)
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
 
 type Calculator struct{}
 

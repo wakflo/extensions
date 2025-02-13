@@ -15,10 +15,18 @@
 package easyship
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/easyship/actions"
 	"github.com/wakflo/extensions/internal/integrations/easyship/shared"
 	"github.com/wakflo/go-sdk/sdk"
 )
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
 
 type EasyShip struct{}
 
@@ -44,4 +52,4 @@ func NewEasyShip() sdk.Integration {
 	return &EasyShip{}
 }
 
-var Integration = sdk.Register(NewEasyShip())
+var Integration = sdk.Register(NewEasyShip(), Flow, ReadME)

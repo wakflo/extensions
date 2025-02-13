@@ -1,13 +1,21 @@
 package zohoinventory
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/zohoinventory/actions"
 	"github.com/wakflo/extensions/internal/integrations/zohoinventory/shared"
 	"github.com/wakflo/extensions/internal/integrations/zohoinventory/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewZohoInventory())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewZohoInventory(), Flow, ReadME)
 
 type ZohoInventory struct{}
 

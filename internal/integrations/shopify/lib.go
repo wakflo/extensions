@@ -1,13 +1,21 @@
 package shopify
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/shopify/actions"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
 	"github.com/wakflo/extensions/internal/integrations/shopify/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewShopify())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewShopify(), Flow, ReadME)
 
 type Shopify struct{}
 

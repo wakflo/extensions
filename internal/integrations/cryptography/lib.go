@@ -1,11 +1,19 @@
 package cryptography
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/cryptography/actions"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewCryptography())
+var Integration = sdk.Register(NewCryptography(), Flow, ReadME)
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
 
 type Cryptography struct{}
 

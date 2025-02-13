@@ -15,6 +15,8 @@
 package asana
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/asana/actions"
 	"github.com/wakflo/extensions/internal/integrations/asana/shared"
 	"github.com/wakflo/go-sdk/sdk"
@@ -43,4 +45,10 @@ func NewAsana() sdk.Integration {
 	return &Asana{}
 }
 
-var Integration = sdk.Register(NewAsana())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewAsana(), Flow, ReadME)

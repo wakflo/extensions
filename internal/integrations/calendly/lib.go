@@ -1,12 +1,14 @@
 package calendly
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/calendly/actions"
 	"github.com/wakflo/extensions/internal/integrations/calendly/shared"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewCalendly())
+var Integration = sdk.Register(NewCalendly(), Flow, ReadME)
 
 type Calendly struct{}
 
@@ -32,3 +34,9 @@ func (n *Calendly) Actions() []sdk.Action {
 func NewCalendly() sdk.Integration {
 	return &Calendly{}
 }
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string

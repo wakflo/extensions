@@ -15,6 +15,8 @@
 package aftership
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/aftership/actions"
 	"github.com/wakflo/extensions/internal/integrations/aftership/shared"
 	"github.com/wakflo/go-sdk/sdk"
@@ -50,4 +52,10 @@ func NewAfterShip() sdk.Integration {
 	return &AfterShip{}
 }
 
-var Integration = sdk.Register(NewAfterShip())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewAfterShip(), Flow, ReadME)

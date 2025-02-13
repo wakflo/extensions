@@ -1,12 +1,20 @@
 package prisync
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/prisync/actions"
 	"github.com/wakflo/extensions/internal/integrations/prisync/shared"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewPrisync())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewPrisync(), Flow, ReadME)
 
 type Prisync struct{}
 

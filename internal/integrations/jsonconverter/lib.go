@@ -15,9 +15,17 @@
 package jsonconverter
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/jsonconverter/actions"
 	"github.com/wakflo/go-sdk/sdk"
 )
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
 
 type TextToJson struct{}
 
@@ -41,4 +49,4 @@ func NewTextToJson() sdk.Integration {
 	return &TextToJson{}
 }
 
-var Integration = sdk.Register(NewTextToJson())
+var Integration = sdk.Register(NewTextToJson(), Flow, ReadME)

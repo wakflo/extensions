@@ -1,10 +1,12 @@
 package cin7
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewCin7())
+var Integration = sdk.Register(NewCin7(), Flow, ReadME)
 
 type Cin7 struct{}
 
@@ -25,3 +27,9 @@ func (n *Cin7) Actions() []sdk.Action {
 func NewCin7() sdk.Integration {
 	return &Cin7{}
 }
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string

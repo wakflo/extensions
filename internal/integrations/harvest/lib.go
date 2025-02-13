@@ -1,13 +1,21 @@
 package harvest
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/harvest/actions"
 	"github.com/wakflo/extensions/internal/integrations/harvest/shared"
 	"github.com/wakflo/extensions/internal/integrations/harvest/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewHarvest())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewHarvest(), Flow, ReadME)
 
 type Harvest struct{}
 

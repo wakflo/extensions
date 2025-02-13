@@ -15,10 +15,18 @@
 package toggl
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/toggl/actions"
 	"github.com/wakflo/extensions/internal/integrations/toggl/shared"
 	"github.com/wakflo/go-sdk/sdk"
 )
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
 
 type Toggl struct{}
 
@@ -43,4 +51,4 @@ func NewToggl() sdk.Integration {
 	return &Toggl{}
 }
 
-var Integration = sdk.Register(NewToggl())
+var Integration = sdk.Register(NewToggl(), Flow, ReadME)

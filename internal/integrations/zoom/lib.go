@@ -1,12 +1,20 @@
 package zoom
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/zoom/actions"
 	"github.com/wakflo/extensions/internal/integrations/zoom/shared"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewZoom())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewZoom(), Flow, ReadME)
 
 type Zoom struct{}
 

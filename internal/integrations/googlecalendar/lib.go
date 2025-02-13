@@ -1,13 +1,21 @@
 package googlecalendar
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/googlecalendar/actions"
 	"github.com/wakflo/extensions/internal/integrations/googlecalendar/shared"
 	"github.com/wakflo/extensions/internal/integrations/googlecalendar/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewGoogleCalendar())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewGoogleCalendar(), Flow, ReadME)
 
 type GoogleCalendar struct{}
 

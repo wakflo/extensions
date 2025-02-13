@@ -1,12 +1,20 @@
 package googledocs
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/googledocs/actions"
 	"github.com/wakflo/extensions/internal/integrations/googledocs/shared"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewGoogleDocs())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewGoogleDocs(), Flow, ReadME)
 
 type GoogleDocs struct{}
 

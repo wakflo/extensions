@@ -1,10 +1,18 @@
 package freshworkscrm
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewFreshWorksCRM())
+var Integration = sdk.Register(NewFreshWorksCRM(), Flow, ReadME)
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
 
 type FreshWorksCRM struct{}
 

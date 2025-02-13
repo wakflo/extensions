@@ -1,11 +1,19 @@
 package slack
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/slack/actions"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewSlack())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewSlack(), Flow, ReadME)
 
 type Slack struct{}
 

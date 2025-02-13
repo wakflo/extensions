@@ -15,10 +15,18 @@
 package smartsheet
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/smartsheet/actions"
 	"github.com/wakflo/extensions/internal/integrations/smartsheet/shared"
 	"github.com/wakflo/go-sdk/sdk"
 )
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
 
 type Smartsheet struct{}
 
@@ -43,4 +51,4 @@ func NewSmartsheet() sdk.Integration {
 	return &Smartsheet{}
 }
 
-var Integration = sdk.Register(NewSmartsheet())
+var Integration = sdk.Register(NewSmartsheet(), Flow, ReadME)

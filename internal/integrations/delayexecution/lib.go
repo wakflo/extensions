@@ -1,10 +1,18 @@
 package delayexecution
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewDelayExecution())
+var Integration = sdk.Register(NewDelayExecution(), Flow, ReadME)
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
 
 type DelayExecution struct{}
 

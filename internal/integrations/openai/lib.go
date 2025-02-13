@@ -1,12 +1,20 @@
 package openai
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/openai/actions"
 	"github.com/wakflo/go-sdk/autoform"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewOpenAI())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewOpenAI(), Flow, ReadME)
 
 var sharedAuth = autoform.NewAuthSecretField().SetDisplayName("OpenAI API key").SetDescription("Your OpenAI api key").Build()
 

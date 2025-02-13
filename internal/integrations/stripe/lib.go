@@ -1,13 +1,21 @@
 package stripe
 
 import (
+	_ "embed"
+
 	"github.com/wakflo/extensions/internal/integrations/stripe/actions"
 	"github.com/wakflo/extensions/internal/integrations/stripe/shared"
 	"github.com/wakflo/extensions/internal/integrations/stripe/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-var Integration = sdk.Register(NewStripe())
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewStripe(), Flow, ReadME)
 
 type Stripe struct{}
 
