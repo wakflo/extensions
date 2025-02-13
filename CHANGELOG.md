@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/wakflo/extensions/compare/v0.9.0...v0.9.1) (2025-02-13)
+
+
+### Bug Fixes
+
+* Embed `README.md` and `flo.toml` in all integrations. ([53f728f](https://github.com/wakflo/extensions/commit/53f728f75842c4158ef41ee349c822649de47e09))
+
 ## [0.9.0](https://github.com/wakflo/extensions/compare/v0.8.0...v0.9.0) (2025-02-12)
 
 
