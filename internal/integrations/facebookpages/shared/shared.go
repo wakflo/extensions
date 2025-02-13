@@ -144,13 +144,10 @@ func GetPagePostsInput(title string, desc string, required bool) *sdkcore.AutoFo
 			return nil, errors.New("please select a page")
 		}
 
-		// Fetch the page access token
 		pageAccessToken, err := GetPageAccessToken(ctx.Auth.AccessToken, input.PageID)
 		if err != nil {
 			return nil, fmt.Errorf("error fetching page access token: %v", err)
 		}
-
-		// Use the page access token to fetch posts
 		reqURL := fmt.Sprintf("%s/%s/feed", baseURL, input.PageID)
 		req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 		if err != nil {
@@ -158,11 +155,11 @@ func GetPagePostsInput(title string, desc string, required bool) *sdkcore.AutoFo
 		}
 
 		query := req.URL.Query()
-		query.Add("access_token", pageAccessToken) // Use the page access token here
+		query.Add("access_token", pageAccessToken)
 		query.Add("fields", "id,message,created_time")
 		req.URL.RawQuery = query.Encode()
 
-		req.Header.Add("Authorization", "Bearer "+pageAccessToken) // Use the page access token here
+		req.Header.Add("Authorization", "Bearer "+pageAccessToken)
 
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
