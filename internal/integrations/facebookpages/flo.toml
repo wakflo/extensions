@@ -1,0 +1,7 @@
+[integration]
+name = "Facebook Pages"
+version = "0.0.1"
+icon = "devicon:facebook"
+description = "Manage your Facebook pages to grow your business."
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

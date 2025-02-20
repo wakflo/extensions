@@ -9,6 +9,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/cryptography"
 	"github.com/wakflo/extensions/internal/integrations/csv"
 	"github.com/wakflo/extensions/internal/integrations/easyship"
+	"github.com/wakflo/extensions/internal/integrations/facebookpages"
 	"github.com/wakflo/extensions/internal/integrations/gemini"
 	"github.com/wakflo/extensions/internal/integrations/github"
 	"github.com/wakflo/extensions/internal/integrations/googlecalendar"
@@ -82,6 +83,7 @@ func RegisterIntegrations() map[string]sdk.RegistrationMap {
 		todoist.Integration,        // Todoist
 		linear.Integration,         // Linear
 		github.Integration,         // Github
+		facebookpages.Integration,  // Facebook Pages
 	}
 
 	// 🛑Do-Not-Edit
