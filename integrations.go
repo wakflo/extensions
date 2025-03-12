@@ -9,6 +9,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/cryptography"
 	"github.com/wakflo/extensions/internal/integrations/csv"
 	"github.com/wakflo/extensions/internal/integrations/easyship"
+	"github.com/wakflo/extensions/internal/integrations/freshdesk"
 	"github.com/wakflo/extensions/internal/integrations/gemini"
 	"github.com/wakflo/extensions/internal/integrations/github"
 	"github.com/wakflo/extensions/internal/integrations/googlecalendar"
@@ -17,6 +18,8 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/googlemail"
 	"github.com/wakflo/extensions/internal/integrations/googlesheets"
 	"github.com/wakflo/extensions/internal/integrations/harvest"
+	"github.com/wakflo/extensions/internal/integrations/hubspot"
+	"github.com/wakflo/extensions/internal/integrations/instagram"
 	"github.com/wakflo/extensions/internal/integrations/jsonconverter"
 	"github.com/wakflo/extensions/internal/integrations/linear"
 	"github.com/wakflo/extensions/internal/integrations/mailchimp"
@@ -33,6 +36,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/trello"
 	"github.com/wakflo/extensions/internal/integrations/woocommerce"
 	"github.com/wakflo/extensions/internal/integrations/xero"
+	"github.com/wakflo/extensions/internal/integrations/zohocrm"
 	"github.com/wakflo/extensions/internal/integrations/zohoinventory"
 	"github.com/wakflo/extensions/internal/integrations/zohosalesiq"
 	"github.com/wakflo/extensions/internal/integrations/zoom"
@@ -82,6 +86,11 @@ func RegisterIntegrations() map[string]sdk.RegistrationMap {
 		todoist.Integration,        // Todoist
 		linear.Integration,         // Linear
 		github.Integration,         // Github
+		instagram.Integration,      // Instagram
+		hubspot.Integration,        // Hubspot
+		zohocrm.Integration,        // Zoho CRM
+		freshdesk.Integration,      // Freshdesk
+
 	}
 
 	// 🛑Do-Not-Edit

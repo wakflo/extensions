@@ -1,0 +1,7 @@
+[integration]
+name = "Freshdesk"
+description = "Freshdesk is a cloud-based customer support software that helps businesses manage their customer support operations. It provides a centralized platform for managing customer inquiries, tickets, and support requests. Freshdesk offers features such as ticket management, knowledge base, automation, reporting, and integrations with other tools. It is designed to help businesses improve their customer support processes, reduce response times, and enhance customer satisfaction."
+version = "0.0.1"
+icon = "icon-park-outline:fireworks"
+categories = ["customer-support"]
+authors = ["Wakflo <integrations@wakflo.com>"]

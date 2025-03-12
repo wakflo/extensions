@@ -1,0 +1,13 @@
+[integration]
+name = "Zoho CRM"
+version = "0.0.1"
+description = """Integrate your Zoho CRM data with your workflows to streamline sales and marketing processes. Automatically sync Zoho CRM contacts, leads, deals, and tasks with your workflows, eliminating manual data entry and reducing errors. Use this integration to:
+
+* Automatically create or update contacts, leads, and deals in Zoho CRM
+* Trigger workflows when new contacts are added or existing records are updated
+* Sync customer data between Zoho CRM and other business systems
+* Enhance your sales process by automating follow-ups and notifications
+* Generate custom reports using synced Zoho CRM data"""
+icon = "arcticons:zoho-crm"
+categories = ["crm"]
+authors = ["Wakflo <integrations@wakflo.com>"]
