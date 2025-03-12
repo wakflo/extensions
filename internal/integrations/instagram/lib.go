@@ -4,6 +4,7 @@ import (
 	_ "embed"
 
 	"github.com/wakflo/extensions/internal/integrations/instagram/actions"
+	"github.com/wakflo/extensions/internal/integrations/instagram/shared"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
@@ -20,6 +21,7 @@ type Instagram struct{}
 func (n *Instagram) Auth() *sdk.Auth {
 	return &sdk.Auth{
 		Required: false,
+		Schema:   *shared.InstagramSharedAuth,
 	}
 }
 

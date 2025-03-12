@@ -1,6 +1,6 @@
 [integration]
 name = "Instagram"
-description = """Streamline your social media management with our seamless Instagram integration! Automate tasks such as scheduling posts, responding to comments, and tracking engagement metrics directly within our workflow automation software. Say goodbye to tedious manual processes and hello to increased productivity and efficiency. #InstagramIntegration #WorkflowAutomation #ProductivityHacks"""
+description = "Streamline your social media management with our seamless Instagram integration! Automate tasks such as scheduling posts, responding to comments, and tracking engagement metrics directly within our workflow automation software. Say goodbye to tedious manual processes and hello to increased productivity and efficiency. #InstagramIntegration #WorkflowAutomation #ProductivityHacks"
 version = "0.0.1"
 icon = "formkit:instagram"
 categories = ["app"]

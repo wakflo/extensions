@@ -52,7 +52,7 @@ func GetWorkspacesInput() *sdkcore.AutoFormSchema {
 			return nil, errors.New(rsp.Status().Text())
 		}
 
-		bytes, err := io.ReadAll(rsp.Raw().Body) //nolint:bodyclose
+		bytes, err := io.ReadAll(rsp.Raw().Body)
 		if err != nil {
 			return nil, err
 		}

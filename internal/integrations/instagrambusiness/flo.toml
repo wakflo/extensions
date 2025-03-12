@@ -1,0 +1,7 @@
+[integration]
+name = "Instagram Business"
+description = "Streamline your social media management with our seamless Instagram integration! Automate tasks such as scheduling posts, responding to comments, and tracking engagement metrics directly within our workflow automation software. Say goodbye to tedious manual processes and hello to increased productivity and efficiency. #InstagramIntegration #WorkflowAutomation #ProductivityHacks"
+version = "0.0.1"
+icon = "skill-icons:instagram"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]
