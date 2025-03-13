@@ -42,7 +42,7 @@ func (n *WooCommerce) Actions() []sdk.Action {
 
 		actions.NewListOrdersAction(),
 
-		actions.NewGetCustomerByIdAction(),
+		actions.NewGetCustomerByIDAction(),
 
 		actions.NewFindProductAction(),
 

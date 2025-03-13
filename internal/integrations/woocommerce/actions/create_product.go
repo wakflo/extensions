@@ -20,6 +20,7 @@ type createProductActionProps struct {
 	Description      string  `json:"description"`
 	ShortDescription string  `json:"short_description"`
 	Categories       string  `json:"categories"`
+	ImageURL         string  `json:"image_url"`
 }
 
 type CreateProductAction struct{}
@@ -78,6 +79,10 @@ func (a *CreateProductAction) Properties() map[string]*sdkcore.AutoFormSchema {
 			SetDisplayName("Category").
 			SetDescription("Enter the category IDs (comma separated)").
 			Build(),
+		"image_url": autoform.NewShortTextField().
+			SetDisplayName("Image URL").
+			SetDescription("Enter image URL. Must end with a valid image extension (.jpg, .jpeg, .png, .gif)").
+			Build(),
 	}
 }
 
@@ -92,7 +97,6 @@ func (a *CreateProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 		return nil, err
 	}
 
-	// Parse categories
 	var categories []entity.ProductCategory
 	if input.Categories != "" {
 		categoryIDs := strings.Split(input.Categories, ",")
@@ -105,7 +109,6 @@ func (a *CreateProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 		}
 	}
 
-	// Create a query parameters struct
 	params := woocommerce.CreateProductRequest{
 		Name:             input.Name,
 		Description:      input.Description,
@@ -113,6 +116,14 @@ func (a *CreateProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 		RegularPrice:     input.RegularPrice,
 		ShortDescription: input.ShortDescription,
 		Categories:       categories,
+	}
+
+	if input.ImageURL != "" {
+		params.Images = []entity.ProductImage{
+			{
+				Src: input.ImageURL,
+			},
+		}
 	}
 
 	product, err := wooClient.Services.Product.Create(params)

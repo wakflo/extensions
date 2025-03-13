@@ -1,0 +1,16 @@
+[integration]
+name = "Keap CRM"
+description = """
+Integrate your Keap (formerly Infusionsoft) CRM data with our workflow automation software to streamline sales and marketing processes. Automatically sync Keap contacts, leads, and opportunities with your workflows, eliminating manual data entry and reducing errors. Use this integration to:
+
+* Automatically create or update contacts in Keap when leads come in from other channels
+* Trigger workflows based on contact activities or status changes in Keap
+* Send personalized follow-up emails through Keap when specific events occur
+* Update contact information across multiple systems when changes occur in Keap
+* Generate tasks in your project management system based on Keap contact interactions
+* Create comprehensive customer profiles by combining Keap data with information from other sources
+"""
+version = "0.0.1"
+icon = "noto:letter-k"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

@@ -2,6 +2,7 @@ package actions
 
 import (
 	"github.com/hiscaler/woocommerce-go"
+	"github.com/hiscaler/woocommerce-go/entity"
 	"github.com/wakflo/extensions/internal/integrations/woocommerce/shared"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -19,6 +20,7 @@ type updateProductActionProps struct {
 	Length           float64 `json:"length"`
 	Width            float64 `json:"width"`
 	Height           float64 `json:"height"`
+	ImageURL         string  `json:"image_url"`
 }
 
 type UpdateProductAction struct{}
@@ -90,6 +92,10 @@ func (a *UpdateProductAction) Properties() map[string]*sdkcore.AutoFormSchema {
 			SetDisplayName("Weight").
 			SetDescription("weight").
 			Build(),
+		"image_url": autoform.NewShortTextField().
+			SetDisplayName("Image URL").
+			SetDescription("Enter image URL. Must end with a valid image extension (.jpg, .jpeg, .png, .gif)").
+			Build(),
 	}
 }
 
@@ -104,7 +110,6 @@ func (a *UpdateProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 		return nil, err
 	}
 
-	// Create a query parameters struct
 	params := woocommerce.UpdateProductRequest{}
 	if input.Name != "" {
 		params.Name = input.Name
@@ -140,6 +145,14 @@ func (a *UpdateProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 
 	if input.Height != 0 {
 		params.Dimensions.Length = input.Height
+	}
+
+	if input.ImageURL != "" {
+		params.Images = []entity.ProductImage{
+			{
+				Src: input.ImageURL,
+			},
+		}
 	}
 
 	updatedProduct, err := wooClient.Services.Product.Update(input.ProductID, params)

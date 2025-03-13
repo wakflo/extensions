@@ -18,7 +18,7 @@ var findCustomerDocs string
 var findProductDocs string
 
 //go:embed get_customer_by_id.md
-var getCustomerByIdDocs string
+var getCustomerByIDDocs string
 
 //go:embed list_orders.md
 var listOrdersDocs string

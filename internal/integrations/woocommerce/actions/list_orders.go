@@ -9,7 +9,7 @@ import (
 )
 
 type listOrdersActionProps struct {
-	ProjectID int `json:"project-id"`
+	Limit int `json:"limit"`
 }
 
 type ListOrdersAction struct{}
@@ -38,19 +38,27 @@ func (a *ListOrdersAction) Icon() *string {
 
 func (a *ListOrdersAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
-		"projectId": autoform.NewLongTextField().
-			SetDisplayName("").
-			SetDescription("").
+		"limit": autoform.NewNumberField().
+			SetDisplayName("Result Limit").
+			SetDescription("Maximum number of orders to return").
 			Build(),
 	}
 }
 
 func (a *ListOrdersAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[listOrdersActionProps](ctx.BaseContext)
+	if err != nil {
+		return nil, err
+	}
 	wooClient, err := shared.InitClient(ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
 	params := woocommerce.OrdersQueryParams{}
+
+	if input.Limit > 0 {
+		params.PerPage = input.Limit
+	}
 
 	orders, _, _, _, err := wooClient.Services.Order.All(params)
 	if err != nil {

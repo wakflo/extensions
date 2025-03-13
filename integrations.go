@@ -21,6 +21,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/hubspot"
 	"github.com/wakflo/extensions/internal/integrations/instagram"
 	"github.com/wakflo/extensions/internal/integrations/jsonconverter"
+	"github.com/wakflo/extensions/internal/integrations/keapcrm"
 	"github.com/wakflo/extensions/internal/integrations/linear"
 	"github.com/wakflo/extensions/internal/integrations/mailchimp"
 	"github.com/wakflo/extensions/internal/integrations/monday"
@@ -90,7 +91,7 @@ func RegisterIntegrations() map[string]sdk.RegistrationMap {
 		hubspot.Integration,        // Hubspot
 		zohocrm.Integration,        // Zoho CRM
 		freshdesk.Integration,      // Freshdesk
-
+		keapcrm.Integration,        // KeapCRM
 	}
 
 	// 🛑Do-Not-Edit
