@@ -37,9 +37,9 @@ func (a *FindProductAction) Icon() *string {
 
 func (a *FindProductAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
-		"customer-id": autoform.NewNumberField().
-			SetDisplayName("Customer ID").
-			SetDescription("Enter customer ID").
+		"productId": autoform.NewNumberField().
+			SetDisplayName("Product ID").
+			SetDescription("Enter product ID").
 			SetRequired(true).
 			Build(),
 	}

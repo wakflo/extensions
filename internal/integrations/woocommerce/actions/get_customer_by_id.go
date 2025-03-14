@@ -7,35 +7,35 @@ import (
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-type getCustomerByIdActionProps struct {
+type getCustomerByIDActionProps struct {
 	CustomerID int `json:"customer-id"`
 }
 
-type GetCustomerByIdAction struct{}
+type GetCustomerByIDAction struct{}
 
-func (a *GetCustomerByIdAction) Name() string {
+func (a *GetCustomerByIDAction) Name() string {
 	return "Get Customer By ID"
 }
 
-func (a *GetCustomerByIdAction) Description() string {
+func (a *GetCustomerByIDAction) Description() string {
 	return "Retrieves a customer record by their unique identifier (ID) from your CRM or database, allowing you to access and utilize customer information in subsequent workflow steps."
 }
 
-func (a *GetCustomerByIdAction) GetType() sdkcore.ActionType {
+func (a *GetCustomerByIDAction) GetType() sdkcore.ActionType {
 	return sdkcore.ActionTypeNormal
 }
 
-func (a *GetCustomerByIdAction) Documentation() *sdk.OperationDocumentation {
+func (a *GetCustomerByIDAction) Documentation() *sdk.OperationDocumentation {
 	return &sdk.OperationDocumentation{
-		Documentation: &getCustomerByIdDocs,
+		Documentation: &getCustomerByIDDocs,
 	}
 }
 
-func (a *GetCustomerByIdAction) Icon() *string {
+func (a *GetCustomerByIDAction) Icon() *string {
 	return nil
 }
 
-func (a *GetCustomerByIdAction) Properties() map[string]*sdkcore.AutoFormSchema {
+func (a *GetCustomerByIDAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
 		"customer-id": autoform.NewNumberField().
 			SetDisplayName("Customer ID").
@@ -45,8 +45,8 @@ func (a *GetCustomerByIdAction) Properties() map[string]*sdkcore.AutoFormSchema 
 	}
 }
 
-func (a *GetCustomerByIdAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getCustomerByIdActionProps](ctx.BaseContext)
+func (a *GetCustomerByIDAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getCustomerByIDActionProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
@@ -64,20 +64,20 @@ func (a *GetCustomerByIdAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, e
 	return customer, nil
 }
 
-func (a *GetCustomerByIdAction) Auth() *sdk.Auth {
+func (a *GetCustomerByIDAction) Auth() *sdk.Auth {
 	return nil
 }
 
-func (a *GetCustomerByIdAction) SampleData() sdkcore.JSON {
+func (a *GetCustomerByIDAction) SampleData() sdkcore.JSON {
 	return map[string]any{
 		"message": "Hello World!",
 	}
 }
 
-func (a *GetCustomerByIdAction) Settings() sdkcore.ActionSettings {
+func (a *GetCustomerByIDAction) Settings() sdkcore.ActionSettings {
 	return sdkcore.ActionSettings{}
 }
 
-func NewGetCustomerByIdAction() sdk.Action {
-	return &GetCustomerByIdAction{}
+func NewGetCustomerByIDAction() sdk.Action {
+	return &GetCustomerByIDAction{}
 }

@@ -1,6 +1,8 @@
 package actions
 
 import (
+	"fmt"
+
 	"github.com/hiscaler/woocommerce-go"
 	"github.com/wakflo/extensions/internal/integrations/woocommerce/shared"
 	"github.com/wakflo/go-sdk/autoform"
@@ -61,12 +63,19 @@ func (a *FindCustomerAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 		Email: input.Email,
 	}
 
-	customer, _, _, _, err := wooClient.Services.Customer.All(params)
+	customers, _, _, _, err := wooClient.Services.Customer.All(params)
 	if err != nil {
 		return nil, err
 	}
 
-	return customer, nil
+	// Filter customers by exact email match
+	for _, customer := range customers {
+		if customer.Email == input.Email {
+			return customer, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no customer found with email: %s", input.Email)
 }
 
 func (a *FindCustomerAction) Auth() *sdk.Auth {

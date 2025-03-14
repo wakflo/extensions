@@ -8,9 +8,6 @@ import (
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-type listProductsActionProps struct {
-	ProjectID int `json:"project-id"`
-}
 
 type ListProductsAction struct{}
 
@@ -39,7 +36,7 @@ func (a *ListProductsAction) Icon() *string {
 func (a *ListProductsAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
 		"projectId": autoform.NewLongTextField().
-			SetDisplayName("").
+			SetDisplayName("Limit").
 			SetDescription("").
 			Build(),
 	}

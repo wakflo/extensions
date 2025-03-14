@@ -38,8 +38,8 @@ func (a *FindCouponAction) Icon() *string {
 func (a *FindCouponAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
 		"couponId": autoform.NewNumberField().
-			SetDisplayName("Product ID").
-			SetDescription("Enter the product ID").
+			SetDisplayName("Coupon ID").
+			SetDescription("Enter the coupon ID").
 			SetRequired(true).
 			Build(),
 	}
