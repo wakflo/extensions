@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.10.0](https://github.com/wakflo/extensions/compare/v0.9.1...v0.10.0) (2025-03-15)
+
+
+### Features
+
+* implement keap crm integration and fixed woocommerce integration ([c72dcb5](https://github.com/wakflo/extensions/commit/c72dcb59fa14438f0c1f8644f4dc2afc4acf71a4))
+* implement keap crm integration and fixed woocommerce integration ([44b8dbf](https://github.com/wakflo/extensions/commit/44b8dbf4f60af2c11e45a3cf48a38dced5cfca65))
+* implement new integrations ([2ee8da6](https://github.com/wakflo/extensions/commit/2ee8da61b9bb7e9b7950e6712b356a6a6c8243a2))
+* implement new integrations ([124cb10](https://github.com/wakflo/extensions/commit/124cb109291872f79c230a5397b09910cc570670))
+
+
+### Bug Fixes
+
+* remove instagram business ([8c13f6e](https://github.com/wakflo/extensions/commit/8c13f6e9d6b90a3514e0b255bf0765c4b2168bf6))
+
 ## [0.9.1](https://github.com/wakflo/extensions/compare/v0.9.0...v0.9.1) (2025-02-13)
 
 
