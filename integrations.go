@@ -1,11 +1,13 @@
 package extensions
 
 import (
+	"github.com/wakflo/extensions/internal/integrations/activecampaign"
 	"github.com/wakflo/extensions/internal/integrations/aftership"
 	"github.com/wakflo/extensions/internal/integrations/airtable"
 	"github.com/wakflo/extensions/internal/integrations/asana"
 	"github.com/wakflo/extensions/internal/integrations/calculator"
 	"github.com/wakflo/extensions/internal/integrations/calendly"
+	"github.com/wakflo/extensions/internal/integrations/convertkit"
 	"github.com/wakflo/extensions/internal/integrations/cryptography"
 	"github.com/wakflo/extensions/internal/integrations/csv"
 	"github.com/wakflo/extensions/internal/integrations/easyship"
@@ -92,6 +94,8 @@ func RegisterIntegrations() map[string]sdk.RegistrationMap {
 		zohocrm.Integration,        // Zoho CRM
 		freshdesk.Integration,      // Freshdesk
 		keapcrm.Integration,        // KeapCRM
+		activecampaign.Integration, // ActiveCampaign
+		convertkit.Integration,     // ConvertKit
 	}
 
 	// 🛑Do-Not-Edit

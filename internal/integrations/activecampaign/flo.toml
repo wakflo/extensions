@@ -1,0 +1,14 @@
+[integration]
+name = "ActiveCampaign"
+description = """Integrate your ActiveCampaign marketing automation data with our workflow automation software to streamline customer engagement and marketing processes. Automatically sync ActiveCampaign contacts, campaigns, and automations with your workflows, eliminating manual data entry and improving efficiency. Use this integration to:
+
+* Automatically create or update contacts in ActiveCampaign when new leads are generated
+* Trigger workflows based on campaign interactions or automation completions
+* Segment contacts based on workflow data and update lists accordingly
+* Send personalized emails based on user behavior or data changes
+* Track campaign performance and engagement metrics in your dashboards"""
+version = "0.0.1"
+icon = "logos:active-campaign-icon"
+categories = ["app"]
+# categories = ["marketing", "crm"]
+authors = ["Wakflo <integrations@wakflo.com>"]

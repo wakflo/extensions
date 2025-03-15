@@ -8,7 +8,6 @@ import (
 	"github.com/wakflo/go-sdk/sdk"
 )
 
-
 type ListProductsAction struct{}
 
 func (a *ListProductsAction) Name() string {
