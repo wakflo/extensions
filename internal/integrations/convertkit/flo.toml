@@ -1,0 +1,14 @@
+[integration]
+name = "ConvertKit"
+description = """Integrate your ConvertKit email marketing platform with our workflow automation software to streamline your email marketing campaigns and subscriber management. Use this integration to:
+
+* Automatically add new subscribers to your ConvertKit account when they fill out forms in other systems
+* Create and apply tags to organize your subscribers
+* Trigger workflows when new subscribers are added
+* Automate email sequences based on user actions in other platforms
+* Sync subscriber data between ConvertKit and your CRM, e-commerce, or other business tools"""
+version = "0.0.1"
+icon = "tdesign:letters-k"
+categories = ["app"]
+# categories = ["marketing", "crm"]
+authors = ["Wakflo <integrations@wakflo.com>"]
