@@ -93,7 +93,7 @@ func (a *UpdateContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	if input.FamilyName != "" {
 		contactData["family_name"] = input.FamilyName
 	}
-		if input.Email != "" {
+	if input.Email != "" {
 		contactData["email_addresses"] = []map[string]interface{}{
 			{
 				"email": input.Email,
@@ -105,7 +105,7 @@ func (a *UpdateContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	if input.PhoneNumber != "" {
 		contactData["phone_numbers"] = []map[string]interface{}{
 			{
-				"field": "PHONE1",
+				"field":  "PHONE1",
 				"number": input.PhoneNumber,
 			},
 		}

@@ -74,27 +74,25 @@ func (a *CreateContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 		return nil, err
 	}
 
-contactData := map[string]interface{}{
-    "given_name":     input.GivenName,
-    "family_name":    input.FamilyName,
-    "email_addresses": []map[string]string{
-        {
-            "email":    input.Email,
-            "field":    "EMAIL1",
-        },
-    },
-}
+	contactData := map[string]interface{}{
+		"given_name":  input.GivenName,
+		"family_name": input.FamilyName,
+		"email_addresses": []map[string]string{
+			{
+				"email": input.Email,
+				"field": "EMAIL1",
+			},
+		},
+	}
 
-	
-if input.PhoneNumber != "" {
-
-    contactData["phone_numbers"] = []map[string]interface{}{
-        {
-            "number": input.PhoneNumber,
-            "field": "PHONE1",
-        },
-    }
-}
+	if input.PhoneNumber != "" {
+		contactData["phone_numbers"] = []map[string]interface{}{
+			{
+				"number": input.PhoneNumber,
+				"field":  "PHONE1",
+			},
+		}
+	}
 
 	endpoint := "/contacts"
 	contact, err := shared.MakeKeapRequest(ctx.Auth.AccessToken, http.MethodPost, endpoint, contactData)

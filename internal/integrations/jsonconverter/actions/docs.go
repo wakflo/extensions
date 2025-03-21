@@ -20,3 +20,6 @@ import (
 
 //go:embed text_to_json.md
 var textToJsonDocs string
+
+//go:embed json_to_text.md
+var jsonToTextDocs string

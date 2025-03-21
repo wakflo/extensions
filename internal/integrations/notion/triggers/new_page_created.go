@@ -107,7 +107,7 @@ func (t *NewPageCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, e
 		return nil, fmt.Errorf("failed to encode filter JSON: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf(shared.BaseURL+"/databases/%s/query", input.DatabaseID), bytes.NewBuffer(filterJSON))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf(shared.BaseURL+"/databases/%s/query", input.DatabaseID), bytes.NewBuffer(filterJSON))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

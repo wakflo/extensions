@@ -2,6 +2,7 @@ package triggers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/wakflo/extensions/internal/integrations/convertkit/shared"
@@ -62,7 +63,7 @@ func (t *TagCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error
 		return nil, err
 	}
 
-	path := fmt.Sprintf("/tags?api_key=%s", ctx.Auth.Extra["api-key"])
+	path := "/tags?api_key=" + ctx.Auth.Extra["api-key"]
 
 	response, err := shared.GetConvertKitClient(path, "GET", nil)
 	if err != nil {
@@ -76,7 +77,7 @@ func (t *TagCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error
 
 	tagsData, ok := responseMap["tags"]
 	if !ok {
-		return nil, fmt.Errorf("failed to extract tags from response")
+		return nil, errors.New("failed to extract tags from response")
 	}
 
 	return tagsData, nil
