@@ -30,7 +30,7 @@ func (a *ConvertToJSONAction) GetType() sdkcore.ActionType {
 
 func (a *ConvertToJSONAction) Documentation() *sdk.OperationDocumentation {
 	return &sdk.OperationDocumentation{
-		Documentation: &textToJsonDocs,
+		Documentation: &textToJSONDocs,
 	}
 }
 
