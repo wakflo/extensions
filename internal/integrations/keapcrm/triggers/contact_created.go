@@ -58,7 +58,7 @@ func (t *ContactCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, e
 	}
 
 	queryParams := url.Values{}
-	queryParams.Add("limit", "100") // Maximum allowed limit
+	queryParams.Add("limit", "100")
 	queryParams.Add("order", "date_created")
 	queryParams.Add("order_direction", "ascending")
 	queryParams.Add("since", createdSince)
@@ -66,7 +66,7 @@ func (t *ContactCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, e
 	queryParams.Add("optional_properties", "email")
 	queryParams.Add("optional_properties", "last_updated")
 
-	endpoint := fmt.Sprintf("/contacts?%s", queryParams.Encode())
+	endpoint := "/contacts?" + queryParams.Encode()
 
 	response, err := shared.MakeKeapRequest(ctx.Auth.AccessToken, "GET", endpoint, nil)
 	if err != nil {

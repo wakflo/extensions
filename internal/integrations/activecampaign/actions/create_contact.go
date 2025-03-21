@@ -64,12 +64,6 @@ func (a *CreateContactAction) Properties() map[string]*sdkcore.AutoFormSchema {
 			SetDescription("Phone number of the contact").
 			SetRequired(false).
 			Build(),
-		// "list-ids": autoform.NewShortTextField().
-		// 	SetDisplayName("List IDs").
-		// 	SetDescription("Comma-separated list of list IDs to add the contact to").
-		// 	SetRequired(false).
-		// 	Build(),
-
 	}
 }
 

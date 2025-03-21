@@ -64,7 +64,7 @@ func (t *ContactUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, e
 	queryParams.Add("order_direction", "ascending")
 	queryParams.Add("since", updatedSince)
 
-	endpoint := fmt.Sprintf("/contacts?%s", queryParams.Encode())
+	endpoint := "/contacts?" + queryParams.Encode()
 
 	response, err := shared.MakeKeapRequest(ctx.Auth.AccessToken, "GET", endpoint, nil)
 	if err != nil {

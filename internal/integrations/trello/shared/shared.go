@@ -33,7 +33,7 @@ var SharedAuth = autoform.NewCustomAuthField().
 			SetDescription("Your trello api key").
 			SetRequired(true).
 			Build(),
-		"api-token": autoform.NewLongTextField().SetDisplayName("Api Token (Required)").
+		"api-token": autoform.NewShortTextField().SetDisplayName("Api Token (Required)").
 			SetDescription("Your Trello API Token. Click **manually generate a Token** next to the API key field").
 			SetRequired(true).
 			Build(),

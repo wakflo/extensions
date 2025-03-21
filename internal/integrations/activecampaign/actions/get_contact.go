@@ -69,22 +69,7 @@ func (a *GetContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 		return nil, err
 	}
 
-	responseMap, ok := response.(map[string]interface{})
-	if !ok {
-		return nil, errors.New("unexpected response format from API")
-	}
-
-	contacts, ok := responseMap["contacts"]
-	if !ok {
-		return nil, errors.New("invalid response format: contacts field not found")
-	}
-
-	contactsArray, ok := contacts.([]interface{})
-	if !ok {
-		return nil, errors.New("invalid response format: contacts field is not an array")
-	}
-
-	return contactsArray, nil
+	return response, nil
 }
 
 func (a *GetContactAction) Auth() *sdk.Auth {

@@ -27,26 +27,27 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
-type TextToJson struct{}
+type TextToJSON struct{}
 
-func (n *TextToJson) Auth() *sdk.Auth {
+func (n *TextToJSON) Auth() *sdk.Auth {
 	return &sdk.Auth{
 		Required: false,
 	}
 }
 
-func (n *TextToJson) Triggers() []sdk.Trigger {
+func (n *TextToJSON) Triggers() []sdk.Trigger {
 	return []sdk.Trigger{}
 }
 
-func (n *TextToJson) Actions() []sdk.Action {
+func (n *TextToJSON) Actions() []sdk.Action {
 	return []sdk.Action{
-		actions.NewConvertToJsonAction(),
+		actions.NewConvertToJSONAction(),
+		actions.NewJSONToStringAction(),
 	}
 }
 
-func NewTextToJson() sdk.Integration {
-	return &TextToJson{}
+func NewTextToJSON() sdk.Integration {
+	return &TextToJSON{}
 }
 
-var Integration = sdk.Register(NewTextToJson(), Flow, ReadME)
+var Integration = sdk.Register(NewTextToJSON(), Flow, ReadME)

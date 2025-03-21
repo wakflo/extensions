@@ -2,6 +2,7 @@ package triggers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/wakflo/extensions/internal/integrations/convertkit/shared"
@@ -81,7 +82,7 @@ func (t *SubscriberCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON
 
 	response, err := shared.GetConvertKitClient(path, "GET", nil)
 	if err != nil {
-		return nil, fmt.Errorf("error fetching subscribers: %v", err)
+		return nil, errors.New("error fetching subscribers")
 	}
 
 	responseMap, ok := response.(map[string]interface{})
@@ -91,12 +92,12 @@ func (t *SubscriberCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON
 
 	subscribers, ok := responseMap["subscribers"]
 	if !ok {
-		return nil, fmt.Errorf("failed to extract subscribers from response")
+		return nil, errors.New("failed to extract subscribers from response")
 	}
 
 	subscribersArray, ok := subscribers.([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("invalid subscribers format in response")
+		return nil, errors.New("invalid subscribers format in response")
 	}
 
 	if len(subscribersArray) == 0 {

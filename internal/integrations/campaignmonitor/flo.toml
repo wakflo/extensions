@@ -1,0 +1,13 @@
+[integration]
+name = "Campaign Monitor"
+description = """Integrate Campaign Monitor with your workflow automation software to seamlessly manage email marketing campaigns. Connect your Campaign Monitor account to automate subscriber management, campaign creation, and reporting processes. This integration allows you to:
+
+* Automatically add or update subscribers based on form submissions or user actions
+* Create and send email campaigns when triggered by specific events
+* Sync campaign performance data with your CRM or analytics tools
+* Create targeted segments based on user behavior in your application
+* Get real-time notifications about campaign activities and subscriber changes"""
+version = "0.0.1"
+icon = "cib:campaign-monitor"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]
