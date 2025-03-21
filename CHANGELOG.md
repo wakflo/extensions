@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.1](https://github.com/wakflo/extensions/compare/v0.10.0...v0.10.1) (2025-03-16)
+
+
+### Bug Fixes
+
+* integration update ([fdec605](https://github.com/wakflo/extensions/commit/fdec605c29998624f3513adc938a7de2b4415f31))
+
 ## [0.10.0](https://github.com/wakflo/extensions/compare/v0.9.1...v0.10.0) (2025-03-15)
 
 
