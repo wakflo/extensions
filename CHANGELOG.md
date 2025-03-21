@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.10.2](https://github.com/wakflo/extensions/compare/v0.10.1...v0.10.2) (2025-03-21)
+
+
+### Bug Fixes
+
+* docs file ([4bd43e1](https://github.com/wakflo/extensions/commit/4bd43e1fc3b6f99f753c564c2d303b1ef983c17b))
+* docs file ([d39401f](https://github.com/wakflo/extensions/commit/d39401f7c4d3c3cf25876d9e1fc8f150a0b12e66))
+
 ## [0.10.1](https://github.com/wakflo/extensions/compare/v0.10.0...v0.10.1) (2025-03-16)
 
 
