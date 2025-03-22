@@ -85,7 +85,7 @@ func (t *TaskCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, erro
 	}
 
 	if createdSince != "" {
-		queryParam = fmt.Sprintf("?date_created_gt=%s", createdSince)
+		queryParam = "?date_created_gt=" + createdSince
 		endpoint += queryParam
 	}
 

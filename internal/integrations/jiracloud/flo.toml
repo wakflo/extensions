@@ -12,4 +12,5 @@ Elevate your development process with this powerful integration, and experience 
 version = "0.0.1"
 icon = "logos:jira"
 categories = ["app"]
+# categories = ["project-management", "collaboration", "app"]
 authors = ["Wakflo <integrations@wakflo.com>"]

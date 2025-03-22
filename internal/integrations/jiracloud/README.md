@@ -1,65 +1,97 @@
-# Jira Cloud Integration
+# Jira Integration
 
 ## Description
 
-Integrate your workflow automation software with Jira Cloud to streamline your development process and enhance collaboration. Seamlessly connect workflows, automate tasks, and gain real-time visibility into project status. With this integration, you can:
+Integrate Jira with your workflow automation to streamline project management, issue tracking, and team collaboration. This integration allows you to automatically create, update, and track issues, synchronize data between systems, and keep your team informed of important changes. Use this integration to:
 
-* Automate repetitive tasks and reduce manual errors
-* Trigger custom workflows based on Jira issue updates
-* Sync Jira issues with workflow automation software for real-time tracking
-* Gain insights into project performance and identify areas for improvement
-* Enhance collaboration by automating notifications and approvals
+* Create and update Jira issues automatically
+* Track issue status changes and transitions
+* Sync project data between Jira and other tools
+* Notify team members of important issue updates
+* Automate issue assignment and prioritization
+* Generate custom reports based on Jira data
 
-Elevate your development process with this powerful integration, and experience the benefits of streamlined workflows, increased productivity, and improved team efficiency.
-
-**Jira Cloud Integration Documentation**
+**Jira Integration Documentation**
 
 **Overview**
-The [Software Name] Jira Cloud integration enables seamless communication between your workflow automation and Jira Cloud instance. This integration allows you to create, update, and link issues in Jira directly from within [Software Name], streamlining your workflow and improving collaboration.
+The Jira integration allows you to seamlessly connect your Jira account with our workflow automation software, enabling you to automate tasks and streamline your workflow.
 
 **Prerequisites**
 
-* A valid Jira Cloud account
-* A [Software Name] account with the necessary permissions to integrate with Jira
+* A Jira account (Cloud or Server)
+* Our workflow automation software account
+* Jira API token or Basic Authentication credentials
+* Permission to access the Jira API
 
 **Setup Instructions**
 
-1. Log in to your [Software Name] account and navigate to the "Integrations" page.
-2. Click on the "Jira Cloud" tile and select "Connect to Jira".
-3. Enter your Jira Cloud instance URL and API token. You can obtain an API token by logging into your Jira Cloud account, going to the "Settings" > "Issues" > "API tokens", and creating a new token.
-4. Authorize [Software Name] to access your Jira Cloud instance.
+1. Log in to your Jira account and navigate to Account Settings
+2. Under Security, select "Create and manage API tokens"
+3. Click "Create API token" and provide a label for the token
+4. Copy the generated API token
+5. In our workflow automation software, navigate to the "Integrations" section and select "Jira"
+6. Enter your Jira email address, API token, and Jira instance URL (e.g., https://yourcompany.atlassian.net)
+7. Test the connection and save
 
-**Integration Features**
+**Available Actions**
 
-* **Create Issues**: Create new issues in Jira directly from within [Software Name].
-* **Update Issues**: Update existing issues in Jira with relevant information from [Software Name].
-* **Link Issues**: Link issues in Jira to corresponding workflows and tasks in [Software Name].
-* **Issue Syncing**: Synchronize issue status, priority, and other fields between [Software Name] and Jira.
+* **Create Issue**: Create a new issue in Jira with specified details
+* **Get Issue**: Retrieve detailed information about a specific issue
+* **List Issues**: Retrieve a list of issues based on specified criteria
+* **Update Issue**: Update the details of an existing issue
+* **Transition Issue**: Move an issue through its workflow states
+* **Add Comment**: Add a comment to an existing issue
 
-**Best Practices**
+**Available Triggers**
 
-* Use a dedicated API token for the integration to ensure security.
-* Configure your Jira Cloud instance to allow incoming requests from [Software Name].
-* Test the integration thoroughly before deploying it in production.
+* **Issue Created**: Trigger a workflow when a new issue is created
+* **Issue Updated**: Trigger a workflow when an issue is updated
+
+**Example Use Cases**
+
+1. **Customer Support Automation**: Automatically create Jira issues when new support tickets are received
+2. **Development Workflow**: Trigger deployments when issues are transitioned to "Ready for Deployment"
+3. **Project Status Reporting**: Generate weekly reports based on Jira issue status
+4. **Cross-Platform Synchronization**: Keep Jira issues synchronized with tasks in other tools
 
 **Troubleshooting Tips**
 
-* Check the [Software Name] logs for any errors or issues related to the Jira Cloud integration.
-* Verify that your Jira Cloud instance is properly configured and accessible.
-* Contact [Software Name] support if you encounter any issues during setup or usage.
+* Ensure your API token has the appropriate permissions
+* Check that your Jira instance URL is correctly formatted
+* Verify that the required fields for issue creation are properly specified
+* For Jira Server instances, ensure the API endpoint is accessible from our service
 
-**Release Notes**
-This documentation reflects the current version of the Jira Cloud integration. For updates, bug fixes, and new features, please refer to our release notes page.
+**FAQs**
 
-**Contact Us**
-If you have any questions or need assistance with setting up the Jira Cloud integration, please contact [Software Name] support at [support email].
+Q: Can I use this integration with both Jira Cloud and Jira Server?
+A: Yes, this integration works with both Jira Cloud and Server editions, but the authentication method may differ.
+
+Q: How frequently are the triggers checked?
+A: The polling triggers (Issue Created, Issue Updated) check for new events every 5 minutes.
 
 ## Categories
 
-- app
-
+- project-management
+- collaboration
 
 ## Authors
 
 - Wakflo <integrations@wakflo.com>
 
+## Actions
+
+| Name             | Description                                                              | Link                                  |
+|------------------|--------------------------------------------------------------------------|---------------------------------------|
+| Create Issue     | Create a new issue in Jira with specified details                        | [docs](actions/create_issue.md)       |
+| Get Issue        | Retrieve detailed information about a specific issue                     | [docs](actions/get_issue.md)          |
+| List Issues      | Retrieve a list of issues based on specified criteria                    | [docs](actions/list_issues.md)        |
+| Update Issue     | Update the details of an existing issue                                  | [docs](actions/update_issue.md)       |
+| Transition Issue | Move an issue through its workflow states                                | [docs](actions/transition_issue.md)   |
+| Add Comment      | Add a comment to an existing issue                                       | [docs](actions/add_comment.md)        |
+
+## Triggers
+
+| Name           | Description                                               | Link                               |
+|----------------|-----------------------------------------------------------|----------------------------------- |
+| Issue Created  | Trigger a workflow when a new issue is created in Jira    | [docs](triggers/issue_created.md)  |
+| Issue Updated  | Trigger a workflow when an issue is updated in Jira       | [docs](triggers/issue_updated.md)  |

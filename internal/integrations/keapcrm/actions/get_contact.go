@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 
 	"github.com/wakflo/extensions/internal/integrations/keapcrm/shared"
@@ -44,7 +44,7 @@ func (a *GetContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	}
 
 	if input.ContactID == "" {
-		return nil, fmt.Errorf("contact ID is required")
+		return nil, errors.New("contact ID is required")
 	}
 	endpoint := "/contacts/" + input.ContactID
 

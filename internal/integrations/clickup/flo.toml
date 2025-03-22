@@ -9,6 +9,6 @@ description = """Streamline your workflow with seamless integration between [Sof
 
 Say goodbye to manual data entry and hello to a more streamlined workflow. Get started today and unlock the full potential of your ClickUp and [Software Name] integration!"""
 version = "0.0.1"
-icon = "arcticons:clickup"
+icon = "simple-icons:clickup"
 categories = ["app"]
 authors = ["Wakflo <integrations@wakflo.com>"]

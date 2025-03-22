@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 
 	"github.com/wakflo/extensions/internal/integrations/keapcrm/shared"
@@ -82,7 +82,7 @@ func (a *UpdateContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	}
 
 	if input.ContactID == "" {
-		return nil, fmt.Errorf("contact ID is required for updating a contact")
+		return nil, errors.New("contact ID is required for updating a contact")
 	}
 
 	contactData := make(map[string]interface{})
@@ -111,10 +111,8 @@ func (a *UpdateContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 		}
 	}
 
-	// Construct the endpoint URL with contact ID
-	endpoint := fmt.Sprintf("/contacts/%s", input.ContactID)
+	endpoint := "/contacts/" + input.ContactID
 
-	// Make the PUT request to update the contact
 	updatedContact, err := shared.MakeKeapRequest(ctx.Auth.AccessToken, http.MethodPatch, endpoint, contactData)
 	if err != nil {
 		return nil, err
