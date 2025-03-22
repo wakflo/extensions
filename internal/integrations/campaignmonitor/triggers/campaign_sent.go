@@ -79,7 +79,7 @@ func (t *CampaignSentTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, err
 		// Use the client ID from authentication if not provided in input
 		clientID = ctx.Auth.Extra["client-id"]
 		if clientID == "" {
-			return nil, fmt.Errorf("client ID is required either as a parameter or in authentication")
+			return nil, errors.New("client ID is required either as a parameter or in authentication")
 		}
 	}
 

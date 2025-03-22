@@ -91,10 +91,10 @@ func (t *TaskUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, erro
 	}
 
 	if updatedSince != "" {
-		queryParams = fmt.Sprintf("?date_updated_gt=%s", updatedSince)
+		queryParams = "?date_updated_gt=" + updatedSince
 
 		if input.Status != nil && *input.Status != "" {
-			queryParams += fmt.Sprintf("&statuses=%s", *input.Status)
+			queryParams += "&statuses=" + *input.Status
 		}
 
 		endpoint += queryParams

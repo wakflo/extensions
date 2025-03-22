@@ -45,29 +45,22 @@ func (t *SubscriberAddedTrigger) Properties() map[string]*sdkcore.AutoFormSchema
 	}
 }
 
-// Start initializes the subscriberAddedTrigger, required for event and webhook triggers in a lifecycle context.
 func (t *SubscriberAddedTrigger) Start(ctx sdk.LifecycleContext) error {
-	// Required for event and webhook triggers
 	return nil
 }
 
-// Stop shuts down the subscriberAddedTrigger, cleaning up resources and performing necessary teardown operations.
 func (t *SubscriberAddedTrigger) Stop(ctx sdk.LifecycleContext) error {
 	return nil
 }
 
-// Execute performs the main action logic of subscriberAddedTrigger by processing the input context and returning a JSON response.
-// It converts the base context input into a strongly-typed structure, executes the desired logic, and generates output.
-// Returns a JSON output map with the resulting data or an error if operation fails. required for Pooling triggers
 func (t *SubscriberAddedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	// Get the input parameters
 	input, err := sdk.InputToTypeSafely[subscriberAddedTriggerProps](ctx.BaseContext)
 	if err != nil {
 		return nil, err
 	}
 
 	if input.ListID == "" {
-		return nil, fmt.Errorf("list ID is required")
+		return nil, errors.New("list ID is required")
 	}
 
 	lastRunTime := ctx.Metadata().LastRun
