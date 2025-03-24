@@ -24,6 +24,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/harvest"
 	"github.com/wakflo/extensions/internal/integrations/hubspot"
 	"github.com/wakflo/extensions/internal/integrations/instagram"
+	"github.com/wakflo/extensions/internal/integrations/jiracloud"
 	"github.com/wakflo/extensions/internal/integrations/jsonconverter"
 	"github.com/wakflo/extensions/internal/integrations/keapcrm"
 	"github.com/wakflo/extensions/internal/integrations/linear"
@@ -102,6 +103,7 @@ func RegisterIntegrations() map[string]sdk.RegistrationMap {
 		campaignmonitor.Integration, // Campaign Monitor
 		mailjet.Integration,         // Mailjet
 		clickup.Integration,         // ClickUp
+		jiracloud.Integration,       // Jira Cloud
 	}
 
 	// 🛑Do-Not-Edit
