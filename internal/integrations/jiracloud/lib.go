@@ -4,6 +4,7 @@ import (
 	_ "embed"
 
 	"github.com/wakflo/extensions/internal/integrations/jiracloud/actions"
+	"github.com/wakflo/extensions/internal/integrations/jiracloud/shared"
 	"github.com/wakflo/extensions/internal/integrations/jiracloud/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
@@ -21,6 +22,7 @@ type JiraCloud struct{}
 func (n *JiraCloud) Auth() *sdk.Auth {
 	return &sdk.Auth{
 		Required: false,
+		Schema:   *shared.JiraSharedAuth,
 	}
 }
 
