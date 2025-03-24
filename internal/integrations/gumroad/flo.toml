@@ -1,0 +1,13 @@
+[integration]
+name = "Gumroad"
+description = """Integrate your Gumroad store with our workflow automation software to streamline e-commerce operations. Automatically sync Gumroad products, sales, subscriptions, and customer data with your workflows, eliminating manual data entry and reducing errors. Use this integration to:
+
+* Track sales and revenue in real-time
+* Automate customer follow-ups based on purchase behavior
+* Generate comprehensive sales reports using synced Gumroad data
+* Enhance customer support by accessing purchase history information
+* Trigger actions when new sales, refunds, or subscriptions occur"""
+version = "0.0.1"
+icon = "formkit:instagram"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

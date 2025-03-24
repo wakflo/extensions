@@ -19,6 +19,8 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/googledrive"
 	"github.com/wakflo/extensions/internal/integrations/googlemail"
 	"github.com/wakflo/extensions/internal/integrations/googlesheets"
+
+	"github.com/wakflo/extensions/internal/integrations/gumroad"
 	"github.com/wakflo/extensions/internal/integrations/harvest"
 	"github.com/wakflo/extensions/internal/integrations/hubspot"
 	"github.com/wakflo/extensions/internal/integrations/instagram"
@@ -96,6 +98,7 @@ func RegisterIntegrations() map[string]sdk.RegistrationMap {
 		keapcrm.Integration,        // KeapCRM
 		activecampaign.Integration, // ActiveCampaign
 		convertkit.Integration,     // ConvertKit
+		gumroad.Integration,        // Gumroad
 	}
 
 	// 🛑Do-Not-Edit
