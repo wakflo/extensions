@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.11.1](https://github.com/wakflo/extensions/compare/v0.11.0...v0.11.1) (2025-03-24)
+
+
+### Bug Fixes
+
+* jira cloud integration ([6d4e8bd](https://github.com/wakflo/extensions/commit/6d4e8bd40b108f688a17c1081660bbe0f9ce485f))
+* jira cloud integration ([20238b5](https://github.com/wakflo/extensions/commit/20238b527c2cb855312cc065ae6f2c0a12e7aa05))
+
 ## [0.11.0](https://github.com/wakflo/extensions/compare/v0.10.2...v0.11.0) (2025-03-24)
 
 
