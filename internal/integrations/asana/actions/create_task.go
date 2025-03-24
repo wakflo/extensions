@@ -107,7 +107,7 @@ func (c CreateTaskAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) 
 		return nil, err
 	}
 
-	reqURL := "https://app.asana.com/api/1.0/tasks"
+	reqURL := shared.BaseAPI + "/tasks"
 
 	req, err := http.NewRequest(http.MethodPost, reqURL, bytes.NewBuffer(taskJSON))
 	if err != nil {

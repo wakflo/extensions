@@ -19,6 +19,7 @@ import (
 
 	"github.com/wakflo/extensions/internal/integrations/asana/actions"
 	"github.com/wakflo/extensions/internal/integrations/asana/shared"
+	"github.com/wakflo/extensions/internal/integrations/asana/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
@@ -32,12 +33,19 @@ func (n *Asana) Auth() *sdk.Auth {
 }
 
 func (n *Asana) Triggers() []sdk.Trigger {
-	return []sdk.Trigger{}
+	return []sdk.Trigger{
+		triggers.NewTaskCompletedTrigger(),
+		triggers.NewTaskCreatedTrigger(),
+		triggers.NewTaskUpdatedTrigger(),
+	}
 }
 
 func (n *Asana) Actions() []sdk.Action {
 	return []sdk.Action{
 		actions.NewCreateTaskAction(),
+		actions.NewGetTaskAction(),
+		actions.NewUpdateTaskAction(),
+		actions.NewListTasksAction(),
 	}
 }
 

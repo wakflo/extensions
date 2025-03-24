@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -124,7 +123,7 @@ func (a *ListContactsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 		queryParams.Add("order_direction", input.OrderDirection)
 	}
 
-	endpoint := fmt.Sprintf("/contacts?%s", queryParams.Encode())
+	endpoint := "/contacts?" + queryParams.Encode()
 
 	contactsList, err := shared.MakeKeapRequest(ctx.Auth.AccessToken, http.MethodGet, endpoint, nil)
 	if err != nil {
