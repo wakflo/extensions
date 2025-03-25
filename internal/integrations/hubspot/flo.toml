@@ -11,5 +11,5 @@ description = """Streamline your sales and marketing processes by integrating ou
 Elevate your workflow efficiency and make data-driven decisions with our HubSpot integration."""
 version = "0.0.1"
 icon = "logos:hubspot"
-categories = ["crm"]
+categories = ["app"]
 authors = ["Wakflo <integrations@wakflo.com>"]

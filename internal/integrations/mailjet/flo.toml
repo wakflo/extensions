@@ -1,0 +1,15 @@
+[integration]
+name = "MailJet"
+description = """Integrate MailJet's email marketing and transactional email services with your workflow automation. Send personalized emails, manage contacts, track deliveries, and automate communications based on triggers or customer actions. This integration enables you to:
+
+* Send transactional emails directly from your workflows
+* Create and update contact information in your MailJet lists
+* Track email deliveries, opens, and clicks to automate follow-up actions
+* Trigger workflows based on email events (sent, opened, clicked)
+* Automatically manage contact subscriptions and preferences
+* Access contact data to personalize other workflow steps"""
+version = "0.0.1"
+icon = "logos:mailjet"
+categories = ["app"]
+# categories = ["email", "marketing"]
+authors = ["Wakflo <integrations@wakflo.com>"]

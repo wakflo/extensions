@@ -38,7 +38,9 @@ func GetConvertKitClient(path, method string, body io.Reader) (sdkcore.JSON, err
 		return nil, err
 	}
 
-	if resp.StatusCode >= 400 {
+	errCode := 400
+
+	if resp.StatusCode >= errCode {
 		errMsg := fmt.Sprintf("ConvertKit API Error: %s (Status: %d)", string(bodyBytes), resp.StatusCode)
 		return nil, errors.New(errMsg)
 	}

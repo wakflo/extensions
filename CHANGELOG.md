@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.11.1](https://github.com/wakflo/extensions/compare/v0.11.0...v0.11.1) (2025-03-24)
+
+
+### Bug Fixes
+
+* jira cloud integration ([6d4e8bd](https://github.com/wakflo/extensions/commit/6d4e8bd40b108f688a17c1081660bbe0f9ce485f))
+* jira cloud integration ([20238b5](https://github.com/wakflo/extensions/commit/20238b527c2cb855312cc065ae6f2c0a12e7aa05))
+
+## [0.11.0](https://github.com/wakflo/extensions/compare/v0.10.2...v0.11.0) (2025-03-24)
+
+
+### Features
+
+* jira cloud integration ([22f9076](https://github.com/wakflo/extensions/commit/22f90762548abd236dc758cf43467cf708ba5d09))
+* jira cloud integration ([6762534](https://github.com/wakflo/extensions/commit/67625346c5e065d778e89659036dda04eb6dc295))
+
+## [0.10.2](https://github.com/wakflo/extensions/compare/v0.10.1...v0.10.2) (2025-03-21)
+
+
+### Bug Fixes
+
+* docs file ([4bd43e1](https://github.com/wakflo/extensions/commit/4bd43e1fc3b6f99f753c564c2d303b1ef983c17b))
+* docs file ([d39401f](https://github.com/wakflo/extensions/commit/d39401f7c4d3c3cf25876d9e1fc8f150a0b12e66))
+
+## [0.10.1](https://github.com/wakflo/extensions/compare/v0.10.0...v0.10.1) (2025-03-16)
+
+
+### Bug Fixes
+
+* integration update ([fdec605](https://github.com/wakflo/extensions/commit/fdec605c29998624f3513adc938a7de2b4415f31))
+
 ## [0.10.0](https://github.com/wakflo/extensions/compare/v0.9.1...v0.10.0) (2025-03-15)
 
 

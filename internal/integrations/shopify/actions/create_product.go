@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	goshopify "github.com/bold-commerce/go-shopify/v4"
+	"github.com/shopspring/decimal"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
@@ -12,12 +13,14 @@ import (
 )
 
 type createProductActionProps struct {
-	Title       string `json:"title"`
-	BodyHTML    string `json:"bodyHTML"`
-	Vendor      string `json:"vendor"`
-	ProductType string `json:"productType"`
-	Status      string `json:"status"`
-	Tags        string `json:"tags"`
+	Title       string           `json:"title"`
+	BodyHTML    string           `json:"bodyHTML"`
+	Vendor      string           `json:"vendor"`
+	ProductType string           `json:"productType"`
+	Status      string           `json:"status"`
+	Tags        string           `json:"tags"`
+	ImageURL    string           `json:"imageURL"`
+	Price       *decimal.Decimal `json:"price"`
 }
 
 type CreateProductAction struct{}
@@ -77,6 +80,16 @@ func (a *CreateProductAction) Properties() map[string]*sdkcore.AutoFormSchema {
 			SetOptions(shared.StatusFormat).
 			SetRequired(false).
 			Build(),
+		"imageURL": autoform.NewShortTextField().
+			SetDisplayName("Image URL").
+			SetDescription("URL for the product image.").
+			SetRequired(false).
+			Build(),
+		"price": autoform.NewShortTextField().
+			SetDisplayName("Price").
+			SetDescription("The price of the product.").
+			SetRequired(false).
+			Build(),
 	}
 }
 
@@ -99,13 +112,41 @@ func (a *CreateProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 		Status:      goshopify.ProductStatus(input.Status),
 		Tags:        input.Tags,
 	}
+
+	// Add price via variant if provided
+	if input.Price != nil && input.Price.Sign() > 0 {
+		// Create a default variant with the price
+		variant := goshopify.Variant{
+			Option1: "Default",   // Default option title
+			Price:   input.Price, // Pass the decimal.Decimal pointer directly
+		}
+		newProduct.Variants = []goshopify.Variant{variant}
+	}
+
+	// Create the product with all details including variant/price
 	product, err := client.Product.Create(context.Background(), newProduct)
 	if err != nil {
 		return nil, err
 	}
 	if product == nil {
-		return nil, errors.New("product not created ")
+		return nil, errors.New("product not created")
 	}
+
+	if input.ImageURL != "" {
+		image := goshopify.Image{
+			ProductId: product.Id,
+			Src:       input.ImageURL,
+		}
+
+		_, err = client.Image.Create(context.Background(), product.Id, image)
+		if err != nil {
+			return map[string]interface{}{
+				"new product": product,
+				"warning":     "Product created but failed to add image: " + err.Error(),
+			}, nil
+		}
+	}
+
 	return map[string]interface{}{
 		"new product": product,
 	}, nil
