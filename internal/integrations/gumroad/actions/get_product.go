@@ -10,7 +10,6 @@ import (
 
 type getProductActionProps struct {
 	ProductID string `json:"product_id"`
-	// Category  *string `json:"category"`
 }
 
 type GetProductAction struct{}

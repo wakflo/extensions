@@ -8,6 +8,6 @@ description = """Integrate your Gumroad store with our workflow automation softw
 * Enhance customer support by accessing purchase history information
 * Trigger actions when new sales, refunds, or subscriptions occur"""
 version = "0.0.1"
-icon = "formkit:instagram"
+icon = "mingcute:gumroad-fill"
 categories = ["app"]
 authors = ["Wakflo <integrations@wakflo.com>"]

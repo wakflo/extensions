@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/wakflo/extensions/internal/integrations/gumroad/shared"
-	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
 	"github.com/wakflo/go-sdk/sdk"
 )
@@ -41,10 +40,7 @@ func (a *EnableProductAction) Icon() *string {
 
 func (a *EnableProductAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
-		"product_id": autoform.NewShortTextField().
-			SetDisplayName("Product ID").
-			SetDescription("Product ID").
-			SetRequired(true).Build(),
+		"product_id": shared.ListProductsInput("Product ID", "Product ID", true),
 	}
 }
 

@@ -19,3 +19,9 @@ var listSalesDocs string
 
 // go:embed get_sale.md
 var getSaleDocs string
+
+// go:embed delete_product.md
+var deleteProductDocs string
+
+// go:embed mark_as_shipped.md
+var markasShippedDocs string

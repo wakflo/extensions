@@ -57,10 +57,6 @@ func (a *ListProductsAction) Properties() map[string]*sdkcore.AutoFormSchema {
 			SetDisplayName("Page").
 			SetDescription("Page number for pagination (default: 1).").
 			SetRequired(false).Build(),
-		// "category": autoform.NewShortTextField().
-		// 	SetDisplayName("Category").
-		// 	SetDescription("Filter products by category.").
-		// 	SetRequired(false).Build(),
 	}
 }
 
@@ -93,10 +89,6 @@ func (a *ListProductsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 	if input.Page != nil {
 		params.Set("page", fmt.Sprintf("%d", *input.Page))
 	}
-
-	// if input.Category != nil && *input.Category != "" {
-	// 	params.Set("category", *input.Category)
-	// }
 
 	products, err := shared.ListProducts(accessToken, params)
 

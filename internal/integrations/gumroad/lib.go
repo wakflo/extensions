@@ -26,13 +26,7 @@ func (n *Gumroad) Auth() *sdk.Auth {
 }
 
 func (n *Gumroad) Triggers() []sdk.Trigger {
-	return []sdk.Trigger{
-		// triggers.NewSaleCreatedTrigger(),
-		// triggers.NewRefundCreatedTrigger(),
-		// triggers.NewDisputeCreatedTrigger(),
-		// triggers.NewSubscriptionCreatedTrigger(),
-		// triggers.NewSubscriptionCancelledTrigger(),
-	}
+	return []sdk.Trigger{}
 }
 
 func (n *Gumroad) Actions() []sdk.Action {
@@ -44,14 +38,8 @@ func (n *Gumroad) Actions() []sdk.Action {
 		actions.NewEnableProductAction(),
 		actions.NewListSalesAction(),
 		actions.NewGetSaleAction(),
-		// actions.NewCreateProductAction(),
-		// actions.NewUpdateProductAction(),
-		// actions.NewGetSaleAction(),
-		// actions.NewListSalesAction(),
-		// actions.NewGetSubscriptionAction(),
-		// actions.NewListSubscriptionsAction(),
-		// actions.NewGetCustomerAction(),
-		// actions.NewListCustomersAction(),
+		actions.NewDeleteProductAction(),
+		actions.NewMarkasShippedAction(),
 	}
 }
 

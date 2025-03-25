@@ -102,7 +102,7 @@ func (a *ListSalesAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) 
 	}
 
 	if input.After != "" {
-		formattedAfter, err := shared.FormatDateInput(input.Before)
+		formattedAfter, err := shared.FormatDateInput(input.After)
 		if err != nil {
 			return nil, errors.New("invalid after date: " + err.Error())
 		}
