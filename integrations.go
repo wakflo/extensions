@@ -21,6 +21,8 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/googledrive"
 	"github.com/wakflo/extensions/internal/integrations/googlemail"
 	"github.com/wakflo/extensions/internal/integrations/googlesheets"
+
+	"github.com/wakflo/extensions/internal/integrations/gumroad"
 	"github.com/wakflo/extensions/internal/integrations/harvest"
 	"github.com/wakflo/extensions/internal/integrations/hubspot"
 	"github.com/wakflo/extensions/internal/integrations/instagram"
@@ -106,6 +108,7 @@ func RegisterIntegrations() map[string]sdk.RegistrationMap {
 		clickup.Integration,           // ClickUp
 		wrike.Integration,             // Wrike
 		jiracloudsoftware.Integration, // Jira Cloud Software
+		gumroad.Integration,           // Gumroad Software
 	}
 
 	// 🛑Do-Not-Edit
