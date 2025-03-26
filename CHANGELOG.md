@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/wakflo/extensions/compare/v0.11.1...v0.12.0) (2025-03-26)
+
+
+### Features
+
+* wrike integration ([65dc25a](https://github.com/wakflo/extensions/commit/65dc25a2e716077d0de816f97a068f5115853e3d))
+
 ## [0.11.1](https://github.com/wakflo/extensions/compare/v0.11.0...v0.11.1) (2025-03-24)
 
 
