@@ -35,15 +35,14 @@ func (n *CampaignMonitor) Triggers() []sdk.Trigger {
 
 func (n *CampaignMonitor) Actions() []sdk.Action {
 	return []sdk.Action{
-		// actions.NewListCampaignsAction(),
-		// actions.NewGetCampaignAction(),
 		actions.NewCreateCampaignAction(),
 		actions.NewListSubscribersAction(),
 		actions.NewGetSubscriberListsAction(),
 		actions.NewCreateCampaignFromTemplateAction(),
 		actions.NewSendCampaignAction(),
 		actions.NewListAllCampaignsAction(),
-		// actions.NewAddSubscriberAction(),
+		actions.NewAddSubscriberAction(),
+		actions.NewGetCampaignListsAndSegmentsAction(),
 	}
 }
 

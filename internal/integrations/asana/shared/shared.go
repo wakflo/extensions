@@ -187,95 +187,28 @@ func GetProjectsInput() *sdkcore.AutoFormSchema {
 		SetRequired(false).Build()
 }
 
-// func GetTasksInput() *sdkcore.AutoFormSchema {
-// 	getTasks := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-// 		input := sdk.DynamicInputToType[struct {
-// 			ProjectID string `json:"project-id,omitempty"`
-// 		}](ctx)
-// 		query := fastshot.NewClient(BaseAPI).
-// 			Auth().BearerToken(ctx.Auth.AccessToken).
-// 			Header().
-// 			AddAccept("application/json").
-// 			Build().GET("/tasks")
-
-// 		query.Query().AddParam("project", input.ProjectID)
-
-// 		rsp, err := query.Send()
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		if rsp.Status().IsError() {
-// 			return nil, errors.New(rsp.Status().Text())
-// 		}
-// 		defer rsp.Raw().Body.Close()
-
-// 		bytes, err := io.ReadAll(rsp.Raw().Body) //nolint:bodyclose
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		type Task struct {
-// 			GID  string `json:"gid"`
-// 			Name string `json:"name"`
-// 		}
-
-// 		type TaskResponse struct {
-// 			Data []Task `json:"data"`
-// 		}
-
-// 		var response TaskResponse
-// 		err = json.Unmarshal(bytes, &response)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-
-// 		tasks := response.Data
-
-// 		items := arrutil.Map[Task, map[string]any](tasks, func(input Task) (target map[string]any, find bool) {
-// 			return map[string]any{
-// 				"id":   input.GID,
-// 				"name": input.Name,
-// 			}, true
-// 		})
-
-// 		return ctx.Respond(items, len(items))
-// 	}
-// 	return autoform.NewDynamicField(sdkcore.String).
-// 		SetDisplayName("Task").
-// 		SetDescription("Select a task to retrieve").
-// 		SetDynamicOptions(&getTasks).
-// 		SetRequired(true).Build()
-// }
-
 func GetTasksInput() *sdkcore.AutoFormSchema {
 	getTasks := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			ProjectID string `json:"project_id,omitempty"`
 		}](ctx)
-		// Build URL with query parameters
 		baseURL := BaseAPI + "/tasks"
 		params := url.Values{}
 
 		params.Add("project", input.ProjectID)
 
-		// Add fields to include in the response
 		params.Add("opt_fields", "gid,name")
 
-		// Build the complete URL with query parameters
 		reqURL := baseURL + "?" + params.Encode()
 
-		// Create the request
 		req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 		if err != nil {
 			return nil, err
 		}
 
-		// Add headers
 		req.Header.Add("Accept", "application/json")
 		req.Header.Add("Authorization", "Bearer "+ctx.Auth.AccessToken)
 
-		// Send the request
 		client := &http.Client{}
 		res, err := client.Do(req)
 		if err != nil {
@@ -283,13 +216,11 @@ func GetTasksInput() *sdkcore.AutoFormSchema {
 		}
 		defer res.Body.Close()
 
-		// Read the response
 		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			return nil, err
 		}
 
-		// Check for errors
 		if res.StatusCode < 200 || res.StatusCode >= 300 {
 			return nil, errors.New("request failed with status: " + strconv.Itoa(res.StatusCode))
 		}
@@ -324,7 +255,7 @@ func GetTasksInput() *sdkcore.AutoFormSchema {
 	return autoform.NewDynamicField(sdkcore.String).
 		SetDisplayName("Task").
 		SetDescription("Select a task to retrieve").
-		SetDependsOn([]string{"project"}). // Add dependency on project field
+		SetDependsOn([]string{"project"}).
 		SetDynamicOptions(&getTasks).
 		SetRequired(true).Build()
 }

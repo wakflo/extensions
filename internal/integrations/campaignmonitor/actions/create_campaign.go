@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -97,11 +98,11 @@ func (a *CreateCampaignAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, er
 
 	clientID := ctx.Auth.Extra["client-id"]
 	if clientID == "" {
-		return nil, fmt.Errorf("client ID is required")
+		return nil, errors.New("client ID is required")
 	}
 
 	if input.ListID == "" && len(input.SegmentIDs) == 0 {
-		return nil, fmt.Errorf("either a list ID or segment IDs must be provided")
+		return nil, errors.New("either a list ID or segment IDs must be provided")
 	}
 
 	payload := map[string]interface{}{
