@@ -1,0 +1,13 @@
+[integration]
+name = "Wrike"
+description = """Integrate your Wrike project management data with our workflow automation software to streamline task management and team collaboration processes. Automatically sync Wrike tasks, projects, and updates with your workflows, eliminating manual data entry and reducing errors. Use this integration to:
+
+* Track task progress and deadlines in real-time
+* Automate task assignments and updates based on Wrike project status
+* Generate accurate reports using synced Wrike data
+* Enhance collaboration by sharing Wrike task information with team members
+* Gain insights into project performance and resource allocation"""
+version = "0.0.1"
+icon = "flat-color-icons:checkmark"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

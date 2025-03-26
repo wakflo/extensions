@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -129,11 +130,11 @@ func (a *AddSubscriberAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	}
 
 	if input.ListID == "" {
-		return nil, fmt.Errorf("list ID is required")
+		return nil, errors.New("list ID is required")
 	}
 
 	if input.Email == "" {
-		return nil, fmt.Errorf("email address is required")
+		return nil, errors.New("email address is required")
 	}
 
 	// Build the endpoint - correct endpoint format for Campaign Monitor
