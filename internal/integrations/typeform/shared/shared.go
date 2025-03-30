@@ -85,17 +85,8 @@ func GetTypeformFormsInput(title string, desc string, required bool) *sdkcore.Au
 			})
 		}
 
-		fmt.Println("Typeform forms:----------------------->", options)
-
 		return ctx.Respond(options, len(options))
 
-		// Map the data into the expected format for AutoFormSchema
-		// return arrutil.Map[Form, map[string]any](forms, func(input Form) (target map[string]any, find bool) {
-		// 	return map[string]any{
-		// 		"id":   input.ID,
-		// 		"name": input.Title,
-		// 	}, true
-		// }), nil
 	}
 
 	// Return the AutoFormSchema using the dynamic form data
