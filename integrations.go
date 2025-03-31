@@ -43,6 +43,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/toggl"
 	"github.com/wakflo/extensions/internal/integrations/trackingmore"
 	"github.com/wakflo/extensions/internal/integrations/trello"
+	"github.com/wakflo/extensions/internal/integrations/typeform"
 	"github.com/wakflo/extensions/internal/integrations/woocommerce"
 	"github.com/wakflo/extensions/internal/integrations/wrike"
 	"github.com/wakflo/extensions/internal/integrations/xero"
@@ -109,6 +110,7 @@ func RegisterIntegrations() map[string]sdk.RegistrationMap {
 		wrike.Integration,             // Wrike
 		jiracloudsoftware.Integration, // Jira Cloud Software
 		gumroad.Integration,           // Gumroad Software
+		typeform.Integration,          // Typeform Software
 	}
 
 	// 🛑Do-Not-Edit

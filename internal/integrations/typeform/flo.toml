@@ -1,0 +1,13 @@
+[integration]
+name = "Typeform"
+description = """Integrate Typeform with your workflow automation to create dynamic forms and process responses efficiently. Connect your forms to other systems, automate follow-up actions, and analyze data based on form submissions. Use this integration to:
+
+* Automatically process form submissions 
+* Create personalized follow-ups based on responses
+* Sync form data with CRM, marketing, or customer support tools
+* Analyze form responses and generate custom reports
+* Trigger workflows when forms are submitted or updated"""
+version = "0.0.1"
+icon = "simple-icons:typeform"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]
