@@ -36,6 +36,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/notion"
 	"github.com/wakflo/extensions/internal/integrations/openai"
 	"github.com/wakflo/extensions/internal/integrations/prisync"
+	"github.com/wakflo/extensions/internal/integrations/sendowl"
 	"github.com/wakflo/extensions/internal/integrations/shopify"
 	"github.com/wakflo/extensions/internal/integrations/smartsheet"
 	"github.com/wakflo/extensions/internal/integrations/square"
@@ -111,6 +112,7 @@ func RegisterIntegrations() map[string]sdk.RegistrationMap {
 		jiracloudsoftware.Integration, // Jira Cloud Software
 		gumroad.Integration,           // Gumroad Software
 		typeform.Integration,          // Typeform Software
+		sendowl.Integration,           // SendOwl
 	}
 
 	// 🛑Do-Not-Edit
