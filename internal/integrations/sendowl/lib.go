@@ -35,7 +35,7 @@ func (s *SendOwl) Triggers() []sdk.Trigger {
 func (s *SendOwl) Actions() []sdk.Action {
 	return []sdk.Action{
 		actions.NewListProductsAction(),
-		// actions.NewGetProductAction(),
+		actions.NewGetProductAction(),
 		// actions.NewListOrdersAction(),
 		// actions.NewGetOrderAction(),
 	}

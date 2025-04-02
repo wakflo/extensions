@@ -77,7 +77,10 @@ func GetSendOwlClient(apiKey string, apiSecret string, endpoint string) (*Respon
 		}
 	}
 
+	fmt.Println("Response 1 from SendOwl-------------------------->:", response)
+
 	return response, nil
+
 }
 
 // PostSendOwlClient makes a POST request to the SendOwl API
@@ -89,9 +92,7 @@ func PostSendOwlClient(apiKey string, apiSecret string, endpoint string, body ma
 	}
 
 	// Create HTTP client
-	client := &http.Client{
-		Timeout: time.Second * 30,
-	}
+	client := &http.Client{}
 
 	// Create request
 	url := fmt.Sprintf("%s%s", BaseURL, endpoint)

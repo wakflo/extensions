@@ -83,6 +83,8 @@ func (a *ListProductsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 		return nil, err
 	}
 
+	fmt.Println("Response from SendOwl-------------------------->:", response)
+
 	return response, nil
 }
 
