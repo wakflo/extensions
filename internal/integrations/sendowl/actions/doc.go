@@ -9,5 +9,8 @@ var listProductsDocs string
 //go:embed get_product.md
 var getProductDocs string
 
-// //go:embed list_orders.md
-// var listOrdersDocs string
+//go:embed list_orders.md
+var listOrdersDocs string
+
+//go:embed get_order.md
+var getOrderDocs string

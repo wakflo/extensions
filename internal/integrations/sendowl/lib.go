@@ -36,8 +36,8 @@ func (s *SendOwl) Actions() []sdk.Action {
 	return []sdk.Action{
 		actions.NewListProductsAction(),
 		actions.NewGetProductAction(),
-		// actions.NewListOrdersAction(),
-		// actions.NewGetOrderAction(),
+		actions.NewListOrdersAction(),
+		actions.NewGetOrderAction(),
 	}
 }
 

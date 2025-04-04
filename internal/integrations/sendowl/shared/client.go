@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	BaseURL = "https://www.sendowl.com/api/v1"
+	BaseURL    = "https://www.sendowl.com/api/v1"
+	AltBaseURL = "https://www.sendowl.com/api/v1_3"
 )
 
 // Response represents a generic API response that can be either an array or an object
@@ -22,14 +23,14 @@ type Response struct {
 }
 
 // GetSendOwlClient makes a GET request to the SendOwl API
-func GetSendOwlClient(apiKey string, apiSecret string, endpoint string) (*Response, error) {
+func GetSendOwlClient(baseUrl string, apiKey string, apiSecret string, endpoint string) (*Response, error) {
 	// Create HTTP client
 	client := &http.Client{
 		Timeout: time.Second * 30,
 	}
 
 	// Create request
-	url := fmt.Sprintf("%s%s", BaseURL, endpoint)
+	url := fmt.Sprintf("%s%s", baseUrl, endpoint)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Error creating request: %v", err)
@@ -77,10 +78,7 @@ func GetSendOwlClient(apiKey string, apiSecret string, endpoint string) (*Respon
 		}
 	}
 
-	fmt.Println("Response 1 from SendOwl-------------------------->:", response)
-
 	return response, nil
-
 }
 
 // PostSendOwlClient makes a POST request to the SendOwl API

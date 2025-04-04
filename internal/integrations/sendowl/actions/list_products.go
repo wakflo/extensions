@@ -78,12 +78,10 @@ func (a *ListProductsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 		url = fmt.Sprintf("%s?page=%d&per_page=%d", url, page, limit)
 	}
 
-	response, err := shared.GetSendOwlClient(ctx.Auth.Extra["api_key"], ctx.Auth.Extra["api_secret"], url)
+	response, err := shared.GetSendOwlClient(shared.BaseURL, ctx.Auth.Extra["api_key"], ctx.Auth.Extra["api_secret"], url)
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println("Response from SendOwl-------------------------->:", response)
 
 	return response, nil
 }

@@ -50,7 +50,7 @@ func (a *GetProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 
 	url := "/products/" + input.ProductID
 
-	product, err := shared.GetSendOwlClient(ctx.Auth.Extra["api_key"], ctx.Auth.Extra["api_secret"], url)
+	product, err := shared.GetSendOwlClient(shared.BaseURL, ctx.Auth.Extra["api_key"], ctx.Auth.Extra["api_secret"], url)
 	if err != nil {
 		return nil, err
 	}
