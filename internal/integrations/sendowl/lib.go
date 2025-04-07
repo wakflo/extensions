@@ -5,6 +5,7 @@ import (
 
 	"github.com/wakflo/extensions/internal/integrations/sendowl/actions"
 	"github.com/wakflo/extensions/internal/integrations/sendowl/shared"
+	"github.com/wakflo/extensions/internal/integrations/sendowl/triggers"
 	"github.com/wakflo/go-sdk/sdk"
 )
 
@@ -27,8 +28,8 @@ func (s *SendOwl) Auth() *sdk.Auth {
 
 func (s *SendOwl) Triggers() []sdk.Trigger {
 	return []sdk.Trigger{
-		// triggers.NewOrderCompletedTrigger(),
-		// triggers.NewProductUpdatedTrigger(),
+		triggers.NewOrderCompletedTrigger(),
+		triggers.NewProductUpdatedTrigger(),
 	}
 }
 

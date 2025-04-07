@@ -99,14 +99,14 @@ func GetOrderInput(title string, desc string, required bool) *sdkcore.AutoFormSc
 		var options []map[string]interface{}
 
 		if response.IsArray {
-			// The response structure is an array of objects with a "product" key
+			// The response structure is an array of objects with a "order" key
 			for _, item := range response.Array {
 				itemMap, ok := item.(map[string]interface{})
 				if !ok {
 					continue
 				}
 
-				// Extract the product map from the item
+				// Extract the order map from the item
 				orderRaw, ok := itemMap["order"].(map[string]interface{})
 				if !ok {
 					continue
