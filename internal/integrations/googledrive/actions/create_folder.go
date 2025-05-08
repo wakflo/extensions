@@ -48,7 +48,7 @@ func (a *CreateFolderAction) Properties() map[string]*sdkcore.AutoFormSchema {
 			SetDescription("The name of the new folder.").
 			SetRequired(true).
 			Build(),
-		"parentFolder":      shared.GetParentFoldersInput(),
+		"parentFolder":      shared.RegisterParentFoldersProp(),
 		"includeTeamDrives": shared.IncludeTeamFieldInput,
 	}
 }

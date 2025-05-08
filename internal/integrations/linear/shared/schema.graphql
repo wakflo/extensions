@@ -2421,7 +2421,7 @@ type IntegrationConnection {
   pageInfo: PageInfo!
 }
 
-"""[ALPHA] A customer schema."""
+"""[ALPHA] A customer form."""
 type CustomerSchema implements Node {
   """The unique identifier of the entity."""
   id: ID!
@@ -2440,7 +2440,7 @@ type CustomerSchema implements Node {
   """
   archivedAt: DateTime
 
-  """The schema display name."""
+  """The form display name."""
   displayName: String!
 }
 
@@ -2457,7 +2457,7 @@ type CustomerSchemaConnection {
   pageInfo: PageInfo!
 }
 
-"""[ALPHA] A customer schema field."""
+"""[ALPHA] A customer form field."""
 type CustomerSchemaField implements Node {
   """The unique identifier of the entity."""
   id: ID!
@@ -2476,10 +2476,10 @@ type CustomerSchemaField implements Node {
   """
   archivedAt: DateTime
 
-  """The name of the field in the schema."""
+  """The name of the field in the form."""
   name: String!
 
-  """The type of the field in the schema."""
+  """The type of the field in the form."""
   type: SchemaFieldType!
 
   """Whether this field is enabled to be used as a custom attribute."""

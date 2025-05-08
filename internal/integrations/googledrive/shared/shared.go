@@ -22,13 +22,15 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 
 	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 var (
@@ -315,8 +317,8 @@ func DownloadFile(ctx *sdk.BaseContext, driveService *drive.Service, fileID stri
 	return ctx.Files.PutFlow(&m, name, buf)
 }
 
-func GetParentFoldersInput() *sdkcore.AutoFormSchema {
-	getParentFolders := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterParentFoldersProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getParentFolders := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			IncludeTeamDrives bool `json:"includeTeamDrives"`
 		}](ctx)
@@ -341,16 +343,25 @@ func GetParentFoldersInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(file.Files, len(file.Files))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Parent Folder").
-		SetDescription("select parent folder").
-		SetDynamicOptions(&getParentFolders).
-		SetDependsOn([]string{"connection"}).
-		SetRequired(false).Build()
+	return form.SelectField("parentFolder", "Parent Folder").
+		Placeholder("Enter a value for Parent Folder.").
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getParentFolders)).
+				// WithFieldReference("state", "state").
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				// RefreshOn("state").
+				GetDynamicSource(),
+		).
+		HelpText("The folder where the file will be created.")
 }
 
-func GetFoldersInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getParentFolders := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterFoldersProp(form *smartform.FormBuilder, label string, hint string, required bool) {
+	getParentFolders := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
 		if err != nil {
 			return nil, err
@@ -358,8 +369,8 @@ func GetFoldersInput(title string, desc string, required bool) *sdkcore.AutoForm
 
 		q := "mimeType='application/vnd.google-apps.folder' and trashed = false"
 
-		if len(ctx.Filter.FilterTerm) > 0 {
-			q += fmt.Sprintf(" and name contains '%s'", ctx.Filter.FilterTerm)
+		if len(ctx.Filter().FilterTerm) > 0 {
+			q += fmt.Sprintf(" and name contains '%s'", ctx.Filter().FilterTerm)
 		}
 
 		fileList, err := driveService.Files.List().
@@ -370,16 +381,24 @@ func GetFoldersInput(title string, desc string, required bool) *sdkcore.AutoForm
 			return nil, err
 		}
 
-		fmt.Printf("Helllooo %v \n", *ctx.Filter)
-
 		return ctx.Respond(fileList.Files, len(fileList.Files))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getParentFolders).
-		SetRequired(required).Build()
+	form.SelectField(label, label).
+		Placeholder("Enter a value.").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getParentFolders)).
+				WithFieldReference("state", "state").
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				RefreshOn("state").
+				GetDynamicSource(),
+		).
+		HelpText(hint)
 }
 
 var IncludeTeamFieldInput = autoform.NewBooleanField().

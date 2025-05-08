@@ -43,7 +43,7 @@ func (a *ListFoldersAction) Icon() *string {
 
 func (a *ListFoldersAction) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
-		"folderId":          shared.GetFoldersInput("Folder ID", "Folder ID coming from | New Folder -> id | (or any other source)", false),
+		"folderId":          shared.RegisterFoldersProp("Folder ID", "Folder ID coming from | New Folder -> id | (or any other source)", false),
 		"includeTeamDrives": shared.IncludeTeamFieldInput,
 	}
 }

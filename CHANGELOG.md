@@ -76,7 +76,7 @@
 
 ### Bug Fixes
 
-* updated autoform schema to v2 ([527228c](https://github.com/wakflo/extensions/commit/527228c781391e0b22f8d729d7fe582c82967880))
+* updated autoform form to v2 ([527228c](https://github.com/wakflo/extensions/commit/527228c781391e0b22f8d729d7fe582c82967880))
 
 ## [0.8.0](https://github.com/wakflo/extensions/compare/v0.7.0...v0.8.0) (2024-11-07)
 

@@ -54,7 +54,7 @@ func (a *UploadFileAction) Properties() map[string]*sdkcore.AutoFormSchema {
 			SetDescription("The file URL or base64 to upload").
 			SetRequired(true).
 			Build(),
-		"parentFolder":      shared.GetParentFoldersInput(),
+		"parentFolder":      shared.RegisterParentFoldersProp(),
 		"includeTeamDrives": shared.IncludeTeamFieldInput,
 	}
 }

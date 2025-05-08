@@ -54,7 +54,7 @@ func (a *DuplicateFileAction) Properties() map[string]*sdkcore.AutoFormSchema {
 			SetDescription("The name of the new file").
 			SetRequired(true).
 			Build(),
-		"folderId":          shared.GetFoldersInput("Folder ID", "The ID of the folder where the file will be duplicated", false),
+		"folderId":          shared.RegisterFoldersProp("Folder ID", "The ID of the folder where the file will be duplicated", false),
 		"includeTeamDrives": shared.IncludeTeamFieldInput,
 	}
 }

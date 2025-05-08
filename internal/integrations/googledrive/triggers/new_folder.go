@@ -46,7 +46,7 @@ func (t *NewFolderTrigger) Icon() *string {
 
 func (t *NewFolderTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
-		"parentFolder":      shared.GetParentFoldersInput(),
+		"parentFolder":      shared.RegisterParentFoldersProp(),
 		"includeTeamDrives": shared.IncludeTeamFieldInput,
 	}
 }

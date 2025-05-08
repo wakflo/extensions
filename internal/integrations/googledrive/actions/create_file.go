@@ -3,10 +3,11 @@ package actions
 import (
 	"context"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googledrive/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 )
@@ -20,52 +21,71 @@ type createFileActionProps struct {
 
 type CreateFileAction struct{}
 
-func (a *CreateFileAction) Name() string {
-	return "Create File"
-}
-
-func (a *CreateFileAction) Description() string {
-	return "Creates a new file with a specified name and content, allowing you to store and manage data within your workflow."
-}
-
-func (a *CreateFileAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateFileAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createFileDocs,
+// Metadata returns metadata about the action
+func (a *CreateFileAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_file",
+		DisplayName:   "Create File",
+		Description:   "Creates a new file with a specified name and content, allowing you to store and manage data within your workflow.",
+		Type:          core.ActionTypeAction,
+		Documentation: createFileDocs,
+		SampleOutput: map[string]any{
+			"kind":     "drive#file",
+			"mimeType": "image/jpeg",
+			"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
+			"name":     "example.jpg",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateFileAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *CreateFileAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_file", "Create File")
+
+	form.TextField("fileName", "File name").
+		Placeholder("example.txt").
+		Required(true).
+		HelpText("The name of the new file with extension.")
+
+	form.TextField("content", "File").
+		Placeholder("file to upload.").
+		Required(true).
+		HelpText("The name of the new file with extension.")
+
+	shared.RegisterParentFoldersProp(form)
+
+	// Add include team drives field
+	form.CheckboxField("includeTeamDrives", "Include Team Drives").
+		Placeholder("Enter a value for Include Team Drives.").
+		Required(false).
+		HelpText("Whether to include team drives in the folder selection.")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *CreateFileAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *CreateFileAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"name": autoform.NewShortTextField().
-			SetDisplayName("File name").
-			SetDescription("The name of the new file with extension.").
-			SetRequired(true).
-			Build(),
-		"content": autoform.NewFileField().
-			SetDisplayName("File").
-			SetDescription("file to upload.").
-			SetRequired(true).
-			Build(),
-		"parentFolder":      shared.GetParentFoldersInput(),
-		"includeTeamDrives": shared.IncludeTeamFieldInput,
-	}
-}
-
-func (a *CreateFileAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createFileActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *CreateFileAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[createFileActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	// Get the token source from the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -83,24 +103,12 @@ func (a *CreateFileAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 		Fields("id, name, mimeType, webViewLink, kind, createdTime").
 		SupportsAllDrives(input.IncludeTeamDrives).
 		Do()
-	return folder, err
-}
 
-func (a *CreateFileAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *CreateFileAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"kind":     "drive#file",
-		"mimeType": "image/jpeg",
-		"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
-		"name":     "example.jpg",
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *CreateFileAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
+	return folder, nil
 }
 
 func NewCreateFileAction() sdk.Action {
