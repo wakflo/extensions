@@ -22,16 +22,27 @@ import (
 	"net/http"
 
 	"github.com/gookit/goutil/arrutil"
-
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/core"
+
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 var (
 	// #nosec
-	tokenURL   = "https://github.com/login/oauth/access_token"
-	SharedAuth = autoform.NewOAuthField("https://github.com/login/oauth/authorize", &tokenURL, []string{"admin:repo_hook admin:org repo"}).SetRequired(true).Build()
+	tokenURL = "https://github.com/login/oauth/access_token"
+	form     = smartform.NewAuthForm("github-auth", "GitHub OAuth", smartform.AuthStrategyOAuth2)
+	_        = form.
+			OAuthField("oauth", "GitHub OAuth").
+			AuthorizationURL("https://github.com/login/oauth/authorize").
+			TokenURL("https://github.com/login/oauth/access_token").
+			Scopes([]string{"admin:repo_hook", "admin:org", "repo"}).
+			Build()
+
+	SharedGithubAuth = form.Build()
 )
 
 const baseURL = "https://api.github.com/graphql"
@@ -397,4 +408,148 @@ var LockIssueReason = []*sdkcore.AutoFormSchema{
 	{Const: "TOO_HEATED", Title: "Too heated"},
 	{Const: "RESOLVED", Title: "resolved"},
 	{Const: "SPAM", Title: "Spam"},
+}
+
+// GetRepositories is a dynamic field function that retrieves a list of repositories
+func GetRepositories(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
+	query := `{
+	  viewer {
+	    repositories(first: 100) {
+	      nodes {
+	        name
+	        id
+	      }
+	    }
+	  }
+	}`
+
+	queryBody := map[string]string{
+		"query": query,
+	}
+	jsonQuery, err := json.Marshal(queryBody)
+	if err != nil {
+		return nil, err
+	}
+
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, baseURL, bytes.NewBuffer(jsonQuery))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Add("Accept", "application/vnd.github+json")
+	req.Header.Add("Authorization", "Bearer "+authCtx.AccessToken)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var response struct {
+		Data struct {
+			Viewer struct {
+				Repositories struct {
+					Nodes []struct {
+						Name string `json:"name"`
+						ID   string `json:"id"`
+					} `json:"nodes"`
+				} `json:"repositories"`
+			} `json:"viewer"`
+		} `json:"data"`
+	}
+
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	repositories := response.Data.Viewer.Repositories.Nodes
+
+	return ctx.Respond(repositories, len(repositories))
+}
+
+// GetIssues is a dynamic field function that retrieves a list of issues for a repository
+func GetIssues(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
+	input := sdk.DynamicInputToType[struct {
+		Repository string `json:"repository"`
+	}](ctx)
+
+	query := fmt.Sprintf(` {
+	  node(id: "%s") {
+	    ... on Repository {
+	      issues(first: 100) {
+	        nodes {
+	          title
+	          id
+	        }
+	      }
+	    }
+	  }
+	}`, input.Repository)
+
+	queryBody := map[string]interface{}{
+		"query": query,
+	}
+	jsonQuery, err := json.Marshal(queryBody)
+	if err != nil {
+		return nil, err
+	}
+
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, baseURL, bytes.NewBuffer(jsonQuery))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+authCtx.AccessToken)
+	req.Header.Add("Accept", "application/vnd.github+json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var response struct {
+		Data struct {
+			Node struct {
+				Issues struct {
+					Nodes []struct {
+						Title string `json:"title"`
+						ID    string `json:"id"`
+					} `json:"nodes"`
+				} `json:"issues"`
+			} `json:"node"`
+		} `json:"data"`
+	}
+
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	issues := response.Data.Node.Issues.Nodes
+
+	return ctx.Respond(issues, len(issues))
 }

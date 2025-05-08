@@ -3,10 +3,11 @@ package actions
 import (
 	"context"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googledrive/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 )
@@ -19,47 +20,66 @@ type createFolderActionProps struct {
 
 type CreateFolderAction struct{}
 
-func (a *CreateFolderAction) Name() string {
-	return "Create Folder"
-}
-
-func (a *CreateFolderAction) Description() string {
-	return "Creates a new folder in the specified location, allowing you to organize and structure your files and data within your workflow."
-}
-
-func (a *CreateFolderAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateFolderAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createFolderDocs,
+// Metadata returns metadata about the action
+func (a *CreateFolderAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_folder",
+		DisplayName:   "Create Folder",
+		Description:   "Creates a new folder in the specified location, allowing you to organize and structure your files and data within your workflow.",
+		Type:          core.ActionTypeAction,
+		Documentation: createFolderDocs,
+		SampleOutput: map[string]any{
+			"kind":     "drive#file",
+			"mimeType": "image/jpeg",
+			"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
+			"name":     "example.jpg",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateFolderAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *CreateFolderAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_folder", "Create Folder")
+
+	form.TextField("folderName", "Folder name").
+		Placeholder("Enter a folder name").
+		Required(true).
+		HelpText("The name of the new folder.")
+
+	shared.RegisterParentFoldersProp(form)
+
+	// Add include team drives field
+	form.CheckboxField("includeTeamDrives", "Include Team Drives").
+		Placeholder("Enter a value for Include Team Drives.").
+		Required(false).
+		HelpText("Whether to include team drives in the folder selection.")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *CreateFolderAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *CreateFolderAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"folderName": autoform.NewShortTextField().
-			SetDisplayName("Folder name").
-			SetDescription("The name of the new folder.").
-			SetRequired(true).
-			Build(),
-		"parentFolder":      shared.RegisterParentFoldersProp(),
-		"includeTeamDrives": shared.IncludeTeamFieldInput,
-	}
-}
-
-func (a *CreateFolderAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createFolderActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *CreateFolderAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[createFolderActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	// Get the token source from the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -77,24 +97,12 @@ func (a *CreateFolderAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 		Fields("id, name, mimeType, webViewLink, kind, createdTime").
 		SupportsAllDrives(input.IncludeTeamDrives).
 		Do()
-	return folder, err
-}
 
-func (a *CreateFolderAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *CreateFolderAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"kind":     "drive#file",
-		"mimeType": "image/jpeg",
-		"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
-		"name":     "example.jpg",
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *CreateFolderAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
+	return folder, nil
 }
 
 func NewCreateFolderAction() sdk.Action {

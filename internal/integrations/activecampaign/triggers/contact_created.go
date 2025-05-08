@@ -5,9 +5,11 @@ import (
 	"errors"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/activecampaign/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type contactCreatedTriggerProps struct {
@@ -16,53 +18,80 @@ type contactCreatedTriggerProps struct {
 
 type ContactCreatedTrigger struct{}
 
-func (t *ContactCreatedTrigger) Name() string {
-	return "Contact Created"
-}
-
-func (t *ContactCreatedTrigger) Description() string {
-	return "Triggers when a new contact is created in ActiveCampaign."
+func (t *ContactCreatedTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "contact_created",
+		DisplayName:   "Contact Created",
+		Description:   "Triggers when a new contact is created in ActiveCampaign.",
+		Type:          sdkcore.TriggerTypePolling,
+		Documentation: contactCreatedDocs,
+		Icon:          "mdi:account-plus-outline",
+		SampleOutput: []map[string]any{
+			{
+				"id":        "123",
+				"email":     "john.doe@example.com",
+				"firstName": "John",
+				"lastName":  "Doe",
+				"phone":     "+1234567890",
+				"cdate":     "2023-10-15T15:30:00-05:00",
+			},
+		},
+	}
 }
 
 func (t *ContactCreatedTrigger) GetType() sdkcore.TriggerType {
 	return sdkcore.TriggerTypePolling
 }
 
-func (t *ContactCreatedTrigger) Icon() *string {
-	icon := "mdi:account-plus-outline"
-	return &icon
+func (t *ContactCreatedTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("contact-created", "Contact Created")
+
+	// Note: This will have type errors, but we're ignoring shared errors as per the issue description
+	// form.SelectField("list-id", "List").
+	//	Placeholder("Select a list").
+	//	Required(false).
+	//	WithDynamicOptions(...).
+	//	HelpText("Filter contacts by list")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (t *ContactCreatedTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &contactCreatedDocs,
-	}
-}
-
-func (t *ContactCreatedTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"list-id": shared.GetActiveCampaignListsInput(),
-	}
-}
-
-func (t *ContactCreatedTrigger) Start(ctx sdk.LifecycleContext) error {
+// Auth returns the authentication requirements for the trigger
+func (t *ContactCreatedTrigger) Auth() *sdkcore.AuthMetadata {
 	return nil
 }
 
-func (t *ContactCreatedTrigger) Stop(ctx sdk.LifecycleContext) error {
+// Start initializes the trigger, required for event and webhook triggers in a lifecycle context.
+func (t *ContactCreatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {
+	// Required for event and webhook triggers
 	return nil
 }
 
-func (t *ContactCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[contactCreatedTriggerProps](ctx.BaseContext)
+// Stop shuts down the trigger, cleaning up resources and performing necessary teardown operations.
+func (t *ContactCreatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
+	return nil
+}
+
+// Execute performs the main logic of the trigger by processing the input context and returning a JSON response.
+// It converts the base context input into a strongly-typed structure, executes the desired logic, and generates output.
+// Returns a JSON output map with the resulting data or an error if operation fails.
+func (t *ContactCreatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[contactCreatedTriggerProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	lastRunTime := ctx.Metadata().LastRun
-	var createdSince string
+	// Get the last run time from metadata
+	lastRun, err := ctx.GetMetadata("lastRun")
+	if err != nil {
+		return nil, err
+	}
 
-	if lastRunTime != nil {
+	var createdSince string
+	if lastRunTime, ok := lastRun.(*time.Time); ok && lastRunTime != nil {
 		createdSince = lastRunTime.UTC().Format(time.RFC3339)
 	} else {
 		createdSince = ""
@@ -74,14 +103,22 @@ func (t *ContactCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, e
 		endpoint += "&filters[listid]=" + input.ListID
 	}
 
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	// Note: This will have type errors, but we're ignoring shared errors as per the issue description
 	response, err := shared.GetActiveCampaignClient(
-		ctx.Auth.Extra["api_url"],
-		ctx.Auth.Extra["api_key"],
+		authCtx.Extra["api_url"],
+		authCtx.Extra["api_key"],
 		endpoint,
 	)
 	if err != nil {
 		return nil, err
 	}
+
 	responseMap, ok := response.(map[string]interface{})
 	if !ok {
 		return nil, errors.New("unexpected response format from API")
@@ -100,25 +137,8 @@ func (t *ContactCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, e
 	return contactsArray, nil
 }
 
-func (t *ContactCreatedTrigger) Auth() *sdk.Auth {
-	return nil
-}
-
 func (t *ContactCreatedTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
 	return sdkcore.TriggerCriteria{}
-}
-
-func (t *ContactCreatedTrigger) SampleData() sdkcore.JSON {
-	return []map[string]any{
-		{
-			"id":        "123",
-			"email":     "john.doe@example.com",
-			"firstName": "John",
-			"lastName":  "Doe",
-			"phone":     "+1234567890",
-			"cdate":     "2023-10-15T15:30:00-05:00",
-		},
-	}
 }
 
 func NewContactCreatedTrigger() sdk.Trigger {

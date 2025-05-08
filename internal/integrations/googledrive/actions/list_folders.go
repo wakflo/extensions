@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googledrive/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 )
@@ -19,45 +21,70 @@ type listFoldersActionProps struct {
 
 type ListFoldersAction struct{}
 
-func (a *ListFoldersAction) Name() string {
-	return "List Folders"
-}
-
-func (a *ListFoldersAction) Description() string {
-	return "List Folders integration action retrieves a list of folders from a specified source, such as a cloud storage service or file system. This action allows you to access and manipulate folder structures within your workflow automation process."
-}
-
-func (a *ListFoldersAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListFoldersAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listFoldersDocs,
+// Metadata returns metadata about the action
+func (a *ListFoldersAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_folders",
+		DisplayName:   "List Folders",
+		Description:   "List Folders integration action retrieves a list of folders from a specified source, such as a cloud storage service or file system. This action allows you to access and manipulate folder structures within your workflow automation process.",
+		Type:          core.ActionTypeAction,
+		Documentation: listFoldersDocs,
+		SampleOutput: map[string]any{
+			"files": []map[string]any{
+				{
+					"kind":     "drive#file",
+					"mimeType": "application/vnd.google-apps.folder",
+					"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
+					"name":     "example_folder",
+				},
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ListFoldersAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *ListFoldersAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_folders", "List Folders")
+
+	// Add folder ID field
+	shared.RegisterFoldersProp(form, "folderId", "Folder ID coming from | New Folder -> id | (or any other source)", false)
+
+	// Add include team drives field
+	form.CheckboxField("includeTeamDrives", "Include Team Drives").
+		Placeholder("Enter a value for Include Team Drives.").
+		Required(false).
+		HelpText("Whether to include team drives in the folder selection.")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *ListFoldersAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *ListFoldersAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"folderId":          shared.RegisterFoldersProp("Folder ID", "Folder ID coming from | New Folder -> id | (or any other source)", false),
-		"includeTeamDrives": shared.IncludeTeamFieldInput,
-	}
-}
-
-func (a *ListFoldersAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[listFoldersActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *ListFoldersAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[listFoldersActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	// Get the token source from the auth context
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
+
+	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
+	if err != nil {
+		return nil, err
+	}
+
 	var qarr []string
 	if input.FolderID != nil {
 		qarr = append(qarr, fmt.Sprintf("'%v' in parents", *input.FolderID))
@@ -70,21 +97,12 @@ func (a *ListFoldersAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 		SupportsAllDrives(input.IncludeTeamDrives).
 		Q(q)
 
-	return req.Do()
-}
-
-func (a *ListFoldersAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *ListFoldersAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
+	result, err := req.Do()
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *ListFoldersAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
+	return result, nil
 }
 
 func NewListFoldersAction() sdk.Action {

@@ -6,7 +6,8 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/activecampaign/actions"
 	"github.com/wakflo/extensions/internal/integrations/activecampaign/shared"
 	"github.com/wakflo/extensions/internal/integrations/activecampaign/triggers"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -15,14 +16,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
-var Integration = sdk.Register(NewActiveCampaign(), Flow, ReadME)
+var Integration = sdk.Register(NewActiveCampaign())
 
 type ActiveCampaign struct{}
 
-func (a *ActiveCampaign) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (a *ActiveCampaign) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (a *ActiveCampaign) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.SharedAuth,
+		Schema:   shared.SharedAuth,
 	}
 }
 

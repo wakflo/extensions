@@ -3,10 +3,11 @@ package actions
 import (
 	"context"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googledrive/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 )
@@ -20,52 +21,72 @@ type duplicateFileActionProps struct {
 
 type DuplicateFileAction struct{}
 
-func (a *DuplicateFileAction) Name() string {
-	return "Duplicate File"
-}
-
-func (a *DuplicateFileAction) Description() string {
-	return "Duplicates one or more files and saves them with a unique identifier appended to the original file name. This action is useful when you need to create multiple copies of a file for testing, backup, or other purposes."
-}
-
-func (a *DuplicateFileAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *DuplicateFileAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &duplicateFileDocs,
+// Metadata returns metadata about the action
+func (a *DuplicateFileAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "duplicate_file",
+		DisplayName:   "Duplicate File",
+		Description:   "Duplicates one or more files and saves them with a unique identifier appended to the original file name. This action is useful when you need to create multiple copies of a file for testing, backup, or other purposes.",
+		Type:          core.ActionTypeAction,
+		Documentation: duplicateFileDocs,
+		SampleOutput: map[string]any{
+			"kind":     "drive#file",
+			"mimeType": "image/jpeg",
+			"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
+			"name":     "example.jpg",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *DuplicateFileAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *DuplicateFileAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("duplicate_file", "Duplicate File")
+
+	form.TextField("fileId", "File ID").
+		Placeholder("Enter a file ID").
+		Required(true).
+		HelpText("The ID of the file to duplicate")
+
+	form.TextField("fileName", "Name").
+		Placeholder("Enter a file name").
+		Required(true).
+		HelpText("The name of the new file")
+
+	// Add folder ID field
+	shared.RegisterFoldersProp(form, "folderId", "The ID of the folder where the file will be duplicated", false)
+
+	// Add include team drives field
+	form.CheckboxField("includeTeamDrives", "Include Team Drives").
+		Placeholder("Enter a value for Include Team Drives.").
+		Required(false).
+		HelpText("Whether to include team drives in the folder selection.")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *DuplicateFileAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *DuplicateFileAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"fileId": autoform.NewShortTextField().
-			SetDisplayName("File ID").
-			SetDescription("The ID of the file to duplicate").
-			SetRequired(true).
-			Build(),
-		"fileName": autoform.NewShortTextField().
-			SetDisplayName("Name").
-			SetDescription("The name of the new file").
-			SetRequired(true).
-			Build(),
-		"folderId":          shared.RegisterFoldersProp("Folder ID", "The ID of the folder where the file will be duplicated", false),
-		"includeTeamDrives": shared.IncludeTeamFieldInput,
-	}
-}
-
-func (a *DuplicateFileAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[duplicateFileActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *DuplicateFileAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[duplicateFileActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	// Get the token source from the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -80,24 +101,12 @@ func (a *DuplicateFileAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 		Parents: parents,
 	}
 
-	return driveService.Files.Copy(input.FileID, in).SupportsAllDrives(input.IncludeTeamDrives).Do()
-}
-
-func (a *DuplicateFileAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *DuplicateFileAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"kind":     "drive#file",
-		"mimeType": "image/jpeg",
-		"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
-		"name":     "example.jpg",
+	result, err := driveService.Files.Copy(input.FileID, in).SupportsAllDrives(input.IncludeTeamDrives).Do()
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *DuplicateFileAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
+	return result, nil
 }
 
 func NewDuplicateFileAction() sdk.Action {

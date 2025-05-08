@@ -3,10 +3,11 @@ package actions
 import (
 	"context"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googledrive/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 )
@@ -20,52 +21,68 @@ type uploadFileActionProps struct {
 
 type UploadFileAction struct{}
 
-func (a *UploadFileAction) Name() string {
-	return "Upload File"
-}
-
-func (a *UploadFileAction) Description() string {
-	return "Upload File: This integration action allows you to upload files from various sources such as cloud storage services, local file systems, or email attachments to your workflow. You can specify the file type, size limit, and other parameters to control the upload process. The uploaded file is then stored in a designated location within your workflow, making it easily accessible for further processing or analysis."
-}
-
-func (a *UploadFileAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *UploadFileAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &uploadFileDocs,
+// Metadata returns metadata about the action
+func (a *UploadFileAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "upload_file",
+		DisplayName:   "Upload File",
+		Description:   "Upload File: This integration action allows you to upload files from various sources such as cloud storage services, local file systems, or email attachments to your workflow. You can specify the file type, size limit, and other parameters to control the upload process. The uploaded file is then stored in a designated location within your workflow, making it easily accessible for further processing or analysis.",
+		Type:          core.ActionTypeAction,
+		Documentation: uploadFileDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *UploadFileAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *UploadFileAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("upload_file", "Upload File")
+
+	form.TextField("fileName", "Name").
+		Placeholder("Enter a file name").
+		Required(true).
+		HelpText("The name of the new file")
+
+	form.FileField("file", "File").
+		Placeholder("Select a file to upload").
+		Required(true).
+		HelpText("The file URL or base64 to upload")
+
+	shared.RegisterParentFoldersProp(form)
+
+	// Add include team drives field
+	form.CheckboxField("includeTeamDrives", "Include Team Drives").
+		Placeholder("Enter a value for Include Team Drives.").
+		Required(false).
+		HelpText("Whether to include team drives in the folder selection.")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *UploadFileAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *UploadFileAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"fileName": autoform.NewShortTextField().
-			SetDisplayName("Name").
-			SetDescription("The name of the new file").
-			SetRequired(true).
-			Build(),
-		"file": autoform.NewFileField().
-			SetDisplayName("File").
-			SetDescription("The file URL or base64 to upload").
-			SetRequired(true).
-			Build(),
-		"parentFolder":      shared.RegisterParentFoldersProp(),
-		"includeTeamDrives": shared.IncludeTeamFieldInput,
-	}
-}
-
-func (a *UploadFileAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[uploadFileActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *UploadFileAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[uploadFileActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	// Get the token source from the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -86,24 +103,16 @@ func (a *UploadFileAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 		Parents:  parents,
 	}
 
-	return driveService.Files.Create(in).
+	result, err := driveService.Files.Create(in).
 		Media(fileData.Data).
 		SupportsAllDrives(input.IncludeTeamDrives).
 		Do()
-}
 
-func (a *UploadFileAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *UploadFileAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *UploadFileAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
+	return result, nil
 }
 
 func NewUploadFileAction() sdk.Action {

@@ -4,9 +4,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/github/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type unlockIssueActionProps struct {
@@ -16,37 +18,85 @@ type unlockIssueActionProps struct {
 
 type UnlockIssueAction struct{}
 
-func (a *UnlockIssueAction) Name() string {
-	return "Unlock Issue"
-}
-
-func (a *UnlockIssueAction) Description() string {
-	return "Unlock Issue: Manually unlock an issue in your project management tool, allowing team members to view and work on it again."
-}
-
-func (a *UnlockIssueAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *UnlockIssueAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &unlockIssueDocs,
+// Metadata returns metadata about the action
+func (a *UnlockIssueAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "unlock_issue",
+		DisplayName:   "Unlock Issue",
+		Description:   "Unlock Issue: Manually unlock an issue in your project management tool, allowing team members to view and work on it again.",
+		Type:          core.ActionTypeAction,
+		Documentation: unlockIssueDocs,
+		SampleOutput: map[string]any{
+			"locked": false,
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *UnlockIssueAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *UnlockIssueAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("unlock_issue", "Unlock Issue")
+
+	// Define the getRepositories function
+	getRepositories := func(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
+		return shared.GetRepositories(ctx)
+	}
+
+	// Define the getIssues function
+	getIssues := func(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
+		return shared.GetIssues(ctx)
+	}
+
+	// Add repository field
+	form.SelectField("repository", "Repository").
+		Placeholder("Select a repository").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getRepositories)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("The repository to unlock the issue in.")
+
+	// Add issue number field
+	form.SelectField("issue_number", "Issue Number").
+		Placeholder("Select an issue").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getIssues)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("The issue to unlock.")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *UnlockIssueAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *UnlockIssueAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"repository":   shared.GetRepositoryInput(),
-		"issue_number": shared.GetIssuesInput(),
+// Perform executes the action with the given context and input
+func (a *UnlockIssueAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[unlockIssueActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *UnlockIssueAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[unlockIssueActionProps](ctx.BaseContext)
+	// Get the token source from the auth context
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +110,7 @@ func (a *UnlockIssueAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 	    }
 	}`, input.IssueNumber)
 
-	response, err := shared.GithubGQL(ctx.Auth.AccessToken, mutation)
+	response, err := shared.GithubGQL(authCtx.AccessToken, mutation)
 	if err != nil {
 		return nil, errors.New("error making graphQL request")
 	}
@@ -71,20 +121,6 @@ func (a *UnlockIssueAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 	}
 
 	return issue, nil
-}
-
-func (a *UnlockIssueAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *UnlockIssueAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *UnlockIssueAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewUnlockIssueAction() sdk.Action {

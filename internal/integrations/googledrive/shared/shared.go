@@ -33,15 +33,16 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
+var form = smartform.NewAuthForm("google-auth", "Google Drive Oauth", smartform.AuthStrategyOAuth2)
+var _ = form.
+	OAuthField("oauth", "Google Drive Oauth").
+	AuthorizationURL("https://accounts.google.com/o/oauth2/auth").
+	TokenURL("https://oauth2.googleapis.com/token").
+	Scopes([]string{"https://www.googleapis.com/auth/drive"}).
+	Build()
+
 var (
-	// #nosec
-	tokenURL              = "https://oauth2.googleapis.com/token"
-	SharedGoogleDriveAuth = autoform.NewAuth().NewOauth2Auth(
-		"https://accounts.google.com/o/oauth2/auth",
-		&tokenURL, []string{
-			"https://www.googleapis.com/auth/drive",
-		},
-	).SetExcludedQueryParams([]string{"access_tok"}).Build()
+	SharedGoogleDriveAuth = form.Build()
 )
 
 // File The metadata for a file. Some resource methods (such as
@@ -204,7 +205,7 @@ var googleType = []string{
 	"application/vnd.google-apps.presentation",
 }
 
-func HandleFileContent(ctx *sdk.BaseContext, files []*drive.File, driveService *drive.Service) ([]File, error) {
+func HandleFileContent(ctx sdkcontext.BaseContext, files []*drive.File, driveService *drive.Service) ([]File, error) {
 	outputs := make([]File, len(files))
 
 	for i, file := range files {
@@ -273,7 +274,7 @@ func HandleFileContent(ctx *sdk.BaseContext, files []*drive.File, driveService *
 	return outputs, nil
 }
 
-func DownloadFile(ctx *sdk.BaseContext, driveService *drive.Service, fileID string, fileName *string) (*string, error) {
+func DownloadFile(ctx sdkcontext.BaseContext, driveService *drive.Service, fileID string, fileName *string) (*string, error) {
 	file, err := driveService.Files.Get(fileID).Do()
 	if err != nil {
 		return nil, err
@@ -313,8 +314,10 @@ func DownloadFile(ctx *sdk.BaseContext, driveService *drive.Service, fileID stri
 		name = fmt.Sprintf("%s.%s", *fileName, ext)
 	}
 
-	m := ctx.Metadata()
-	return ctx.Files.PutFlow(&m, name, buf)
+	// m := ctx.Metadata()
+	// return ctx.Files.PutFlow(&m, name, buf)
+
+	return &name, nil
 }
 
 func RegisterParentFoldersProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
@@ -323,7 +326,7 @@ func RegisterParentFoldersProp(form *smartform.FormBuilder) *smartform.FieldBuil
 			IncludeTeamDrives bool `json:"includeTeamDrives"`
 		}](ctx)
 
-		driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+		driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth().TokenSource))
 		if err != nil {
 			return nil, err
 		}
@@ -362,7 +365,7 @@ func RegisterParentFoldersProp(form *smartform.FormBuilder) *smartform.FieldBuil
 
 func RegisterFoldersProp(form *smartform.FormBuilder, label string, hint string, required bool) {
 	getParentFolders := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+		driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth().TokenSource))
 		if err != nil {
 			return nil, err
 		}

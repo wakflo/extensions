@@ -3,9 +3,10 @@ package actions
 import (
 	"context"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 )
@@ -16,45 +17,58 @@ type getFileActionProps struct {
 
 type GetFileAction struct{}
 
-func (a *GetFileAction) Name() string {
-	return "Get File"
-}
-
-func (a *GetFileAction) Description() string {
-	return "Retrieves a file from a specified location and makes it available for further processing in the workflow."
-}
-
-func (a *GetFileAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetFileAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getFileDocs,
+// Metadata returns metadata about the action
+func (a *GetFileAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_file",
+		DisplayName:   "Get File",
+		Description:   "Retrieves a file from a specified location and makes it available for further processing in the workflow.",
+		Type:          core.ActionTypeAction,
+		Documentation: getFileDocs,
+		SampleOutput: map[string]any{
+			"kind":     "drive#file",
+			"mimeType": "image/jpeg",
+			"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
+			"name":     "example.jpg",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetFileAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *GetFileAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_file", "Get File")
+
+	form.TextField("fileId", "File / Folder ID").
+		Placeholder("Enter a file or folder ID").
+		Required(true).
+		HelpText("The ID of the file/folder to search for.")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *GetFileAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *GetFileAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"fileId": autoform.NewShortTextField().
-			SetDisplayName("File / Folder ID").
-			SetDescription("The ID of the file/folder to search for.").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *GetFileAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getFileActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *GetFileAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[getFileActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	// Get the token source from the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -62,24 +76,12 @@ func (a *GetFileAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 	file, err := driveService.Files.Get(input.FileID).
 		Fields("id, name, mimeType, webViewLink, kind, createdTime").
 		Do()
-	return file, err
-}
 
-func (a *GetFileAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *GetFileAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"kind":     "drive#file",
-		"mimeType": "image/jpeg",
-		"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
-		"name":     "example.jpg",
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *GetFileAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
+	return file, nil
 }
 
 func NewGetFileAction() sdk.Action {

@@ -6,9 +6,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googledrive/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 )
@@ -18,65 +20,73 @@ type newFolderTriggerProps struct {
 }
 
 type NewFolderTrigger struct {
-	timezoneOptions []*sdkcore.AutoFormSchema
-	hodOptions      []*sdkcore.AutoFormSchema
 }
 
-func (t *NewFolderTrigger) Name() string {
-	return "New Folder"
+func (t *NewFolderTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "new_folder",
+		DisplayName:   "New Folder",
+		Description:   "Triggers when a new folder is created or uploaded to a specified directory or location, allowing you to automate workflows and processes as soon as a new folder becomes available.",
+		Type:          sdkcore.TriggerTypePolling,
+		Documentation: newFolderDocs,
+		SampleOutput: map[string]any{
+			"files": []map[string]any{
+				{
+					"kind": "drive#file",
+				},
+			},
+		},
+	}
 }
 
-func (t *NewFolderTrigger) Description() string {
-	return "New Folder trigger is designed to monitor a specific folder or directory for new files or subfolders. Whenever a new folder is created within the monitored directory, this trigger will automatically initiate the workflow automation process, allowing you to streamline tasks and automate workflows related to file organization, data processing, or other business-critical activities."
+func (t *NewFolderTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("google-drive-new-folder", "New File")
+
+	shared.RegisterParentFoldersProp(form)
+
+	// Add include team drives field
+	form.CheckboxField("includeTeamDrives", "Include Team Drives").
+		Placeholder("Enter a value for Include Team Drives.").
+		Required(false).
+		HelpText("Whether to include team drives in the folder selection.")
+
+	schema := form.Build()
+
+	return schema
+}
+
+func (t *NewFolderTrigger) Auth() *sdkcore.AuthMetadata {
+	return nil
 }
 
 func (t *NewFolderTrigger) GetType() sdkcore.TriggerType {
 	return sdkcore.TriggerTypePolling
 }
 
-func (t *NewFolderTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &newFolderDocs,
-	}
-}
-
-func (t *NewFolderTrigger) Icon() *string {
-	return nil
-}
-
-func (t *NewFolderTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"parentFolder":      shared.RegisterParentFoldersProp(),
-		"includeTeamDrives": shared.IncludeTeamFieldInput,
-	}
-}
-
 // Start initializes the newFolderTrigger, required for event and webhook triggers in a lifecycle context.
-func (t *NewFolderTrigger) Start(ctx sdk.LifecycleContext) error {
+func (t *NewFolderTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	// Required for event and webhook triggers
 	return nil
 }
 
 // Stop shuts down the newFolderTrigger, cleaning up resources and performing necessary teardown operations.
-func (t *NewFolderTrigger) Stop(ctx sdk.LifecycleContext) error {
+func (t *NewFolderTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
 // Execute performs the main action logic of newFolderTrigger by processing the input context and returning a JSON response.
 // It converts the base context input into a strongly-typed structure, executes the desired logic, and generates output.
 // Returns a JSON output map with the resulting data or an error if operation fails. required for Pooling triggers
-func (t *NewFolderTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[newFolderTriggerProps](ctx.BaseContext)
+func (t *NewFolderTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[newFolderTriggerProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth().TokenSource))
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("ctx.Metadata.LastRun %+v \n", ctx.Metadata().LastRun)
 
 	var qarr []string
 	if input.ParentFolder != nil {
@@ -84,7 +94,11 @@ func (t *NewFolderTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error)
 	}
 
 	if input.CreatedTime == nil {
-		input.CreatedTime = ctx.Metadata().LastRun
+		lr, err := ctx.GetMetadata("lastRun")
+		if err != nil {
+			return nil, err
+		}
+		input.CreatedTime = lr.(*time.Time)
 	}
 
 	if input.CreatedTime != nil {
@@ -115,10 +129,6 @@ func (t *NewFolderTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error)
 
 func (t *NewFolderTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
 	return sdkcore.TriggerCriteria{}
-}
-
-func (t *NewFolderTrigger) Auth() *sdk.Auth {
-	return nil
 }
 
 func (t *NewFolderTrigger) SampleData() sdkcore.JSON {

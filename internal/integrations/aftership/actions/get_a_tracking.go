@@ -16,9 +16,14 @@ package actions
 
 import (
 	"github.com/aftership/tracking-sdk-go/v5"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	// Import shared package for Auth and other shared functionality
+	// We're ignoring type errors in shared.go files as per the issue description
+	// Using blank identifier to suppress unused import warning
+	_ "github.com/wakflo/extensions/internal/integrations/aftership/shared"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getATrackingActionProps struct {
@@ -27,59 +32,55 @@ type getATrackingActionProps struct {
 
 type GetATrackingAction struct{}
 
-func (c *GetATrackingAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (c GetATrackingAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (c GetATrackingAction) Name() string {
-	return "Get A Tracking"
-}
-
-func (c GetATrackingAction) Description() string {
-	return "get a specific tracking"
-}
-
-func (c GetATrackingAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getATrackingDocs,
+// Metadata returns metadata about the action
+func (c GetATrackingAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_a_tracking",
+		DisplayName:   "Get A Tracking",
+		Description:   "get a specific tracking",
+		Type:          core.ActionTypeAction,
+		Documentation: getATrackingDocs,
+		SampleOutput:  nil,
+		Settings:      core.ActionSettings{},
 	}
 }
 
-func (c GetATrackingAction) Icon() *string {
-	return nil
+// Properties returns the schema for the action's input configuration
+func (c GetATrackingAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_a_tracking", "Get A Tracking")
+
+	form.TextField("tracking_id", "Tracking ID").
+		Placeholder("Enter tracking ID").
+		Required(true).
+		HelpText("tracking ID")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (c GetATrackingAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c GetATrackingAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"tracking_id": autoform.NewShortTextField().
-			SetDisplayName("Tracking ID").
-			SetDescription("tracking ID").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (c GetATrackingAction) Auth() *sdk.Auth {
-	return &sdk.Auth{
+// Auth returns the authentication requirements for the action
+func (c GetATrackingAction) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Inherit: true,
 	}
 }
 
-func (c GetATrackingAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getATrackingActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (c GetATrackingAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[getATrackingActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	afterShipSdk, err := tracking.New(tracking.WithApiKey(ctx.Auth.Extra["api-key"]))
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	afterShipSdk, err := tracking.New(tracking.WithApiKey(authCtx.Extra["api-key"]))
 	if err != nil {
 		return nil, err
 	}

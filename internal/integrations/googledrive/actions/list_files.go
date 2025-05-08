@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googledrive/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 )
@@ -18,45 +20,70 @@ type listFilesActionProps struct {
 
 type ListFilesAction struct{}
 
-func (a *ListFilesAction) Name() string {
-	return "List Files"
-}
-
-func (a *ListFilesAction) Description() string {
-	return "Lists files in a specified directory or folder, allowing you to retrieve and process file information such as names, sizes, and timestamps."
-}
-
-func (a *ListFilesAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListFilesAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listFilesDocs,
+// Metadata returns metadata about the action
+func (a *ListFilesAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_files",
+		DisplayName:   "List Files",
+		Description:   "Lists files in a specified directory or folder, allowing you to retrieve and process file information such as names, sizes, and timestamps.",
+		Type:          core.ActionTypeAction,
+		Documentation: listFilesDocs,
+		SampleOutput: map[string]any{
+			"files": []map[string]any{
+				{
+					"kind":     "drive#file",
+					"mimeType": "image/jpeg",
+					"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
+					"name":     "example.jpg",
+				},
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ListFilesAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *ListFilesAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_files", "List Files")
+
+	// Add folder ID field
+	shared.RegisterFoldersProp(form, "folderId", "Folder ID coming from | New Folder -> id | (or any other source)", false)
+
+	// Add include team drives field
+	form.CheckboxField("includeTeamDrives", "Include Team Drives").
+		Placeholder("Enter a value for Include Team Drives.").
+		Required(false).
+		HelpText("Whether to include team drives in the folder selection.")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *ListFilesAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *ListFilesAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"folderId":          shared.RegisterFoldersProp("Folder ID", "Folder ID coming from | New Folder -> id | (or any other source)", false),
-		"includeTeamDrives": shared.IncludeTeamFieldInput,
-	}
-}
-
-func (a *ListFilesAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[listFilesActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *ListFilesAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[listFilesActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	// Get the token source from the auth context
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
+
+	driveService, err := drive.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
+	if err != nil {
+		return nil, err
+	}
+
 	var qarr []string
 	if input.FolderID != nil {
 		qarr = append(qarr, fmt.Sprintf("'%v' in parents", *input.FolderID))
@@ -69,26 +96,12 @@ func (a *ListFilesAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) 
 		SupportsAllDrives(input.IncludeTeamDrives).
 		Q(q)
 
-	return req.Do()
-}
-
-func (a *ListFilesAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *ListFilesAction) SampleData() sdkcore.JSON {
-	return []map[string]any{
-		{
-			"kind":     "drive#file",
-			"mimeType": "image/jpeg",
-			"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
-			"name":     "example.jpg",
-		},
+	result, err := req.Do()
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *ListFilesAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
+	return result, nil
 }
 
 func NewListFilesAction() sdk.Action {
