@@ -1,0 +1,13 @@
+[integration]
+name = "SendOwl"
+description = """Integrate SendOwl's digital product delivery platform with your workflow automation. Connect your digital product sales data to automate post-purchase workflows, monitor sales performance, and enhance customer experience. Use this integration to:
+
+* Monitor sales and automatically process order completions
+* Track product performance and popularity metrics
+* Automate customer communication based on purchase events
+* Sync order data with your CRM, email marketing, or accounting systems
+* Create real-time reporting and analytics dashboards"""
+version = "0.0.1"
+icon = "material-symbols:owl-outline"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

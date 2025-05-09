@@ -86,7 +86,6 @@ func GetTypeformFormsInput(title string, desc string, required bool) *sdkcore.Au
 		}
 
 		return ctx.Respond(options, len(options))
-
 	}
 
 	// Return the AutoFormSchema using the dynamic form data
