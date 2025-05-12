@@ -19,7 +19,8 @@ import (
 
 	"github.com/wakflo/extensions/internal/integrations/easyship/actions"
 	"github.com/wakflo/extensions/internal/integrations/easyship/shared"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -28,12 +29,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
+var Integration = sdk.Register(NewEasyShip())
+
 type EasyShip struct{}
 
-func (n *EasyShip) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *EasyShip) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *EasyShip) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.EasyShipSharedAuth,
+		Schema:   shared.EasyShipSharedAuthV2,
 	}
 }
 
@@ -51,5 +58,3 @@ func (n *EasyShip) Actions() []sdk.Action {
 func NewEasyShip() sdk.Integration {
 	return &EasyShip{}
 }
-
-var Integration = sdk.Register(NewEasyShip(), Flow, ReadME)

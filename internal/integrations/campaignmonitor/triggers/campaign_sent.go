@@ -7,10 +7,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/campaignmonitor/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type campaignSentTriggerProps struct {
@@ -19,65 +20,100 @@ type campaignSentTriggerProps struct {
 
 type CampaignSentTrigger struct{}
 
-func (t *CampaignSentTrigger) Name() string {
-	return "Campaign Sent"
-}
-
-func (t *CampaignSentTrigger) Description() string {
-	return "Trigger a workflow when a campaign is sent."
+func (t *CampaignSentTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "campaign_sent",
+		DisplayName:   "Campaign Sent",
+		Description:   "Trigger a workflow when a campaign is sent.",
+		Type:          sdkcore.TriggerTypePolling,
+		Documentation: campaignSentDocs,
+		Icon:          "mdi:email-check-outline",
+		SampleOutput: map[string]interface{}{
+			"newlySentCampaigns": []interface{}{
+				map[string]interface{}{
+					"CampaignID":        "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+					"Name":              "Monthly Newsletter",
+					"Subject":           "March 2025 Updates",
+					"SentDate":          "2025-03-15 14:30",
+					"FromName":          "Marketing Team",
+					"FromEmail":         "marketing@example.com",
+					"WebVersionURL":     "https://example.com/campaign/view",
+					"WebVersionTextURL": "https://example.com/campaign/viewtext",
+				},
+				map[string]interface{}{
+					"CampaignID":        "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+					"Name":              "Product Announcement",
+					"Subject":           "Introducing Our New Product",
+					"SentDate":          "2025-03-16 09:45",
+					"FromName":          "Product Team",
+					"FromEmail":         "products@example.com",
+					"WebVersionURL":     "https://example.com/campaign/view2",
+					"WebVersionTextURL": "https://example.com/campaign/viewtext2",
+				},
+			},
+			"count":    "2",
+			"clientId": "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3",
+		},
+	}
 }
 
 func (t *CampaignSentTrigger) GetType() sdkcore.TriggerType {
 	return sdkcore.TriggerTypePolling
 }
 
-func (t *CampaignSentTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &campaignSentDocs,
-	}
-}
+func (t *CampaignSentTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("campaign_sent", "Campaign Sent")
 
-func (t *CampaignSentTrigger) Icon() *string {
-	icon := "mdi:email-check-outline"
-	return &icon
-}
+	form.TextField("clientId", "Client ID").
+		Placeholder("Enter client ID").
+		Required(false).
+		HelpText("The Client ID for which to monitor sent campaigns. If not provided, the Client ID from the authentication will be used.")
 
-func (t *CampaignSentTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"clientId": autoform.NewShortTextField().
-			SetDisplayName("Client ID").
-			SetDescription("The Client ID for which to monitor sent campaigns. If not provided, the Client ID from the authentication will be used.").
-			SetRequired(false).
-			Build(),
-	}
+	schema := form.Build()
+
+	return schema
 }
 
 // Start initializes the trigger
-func (t *CampaignSentTrigger) Start(ctx sdk.LifecycleContext) error {
+func (t *CampaignSentTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
 // Stop shuts down the trigger
-func (t *CampaignSentTrigger) Stop(ctx sdk.LifecycleContext) error {
+func (t *CampaignSentTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
 // Execute performs the main action logic of CampaignSentTrigger
-func (t *CampaignSentTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
+func (t *CampaignSentTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
 	// Get the input parameters
-	input, err := sdk.InputToTypeSafely[campaignSentTriggerProps](ctx.BaseContext)
+	input, err := sdk.InputToTypeSafely[campaignSentTriggerProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get the last run time from metadata
-	lastRunTime := ctx.Metadata().LastRun
+	lastRun, err := ctx.GetMetadata("lastRun")
+	if err != nil {
+		return nil, err
+	}
+
+	var lastRunTime *time.Time
+	if lr, ok := lastRun.(*time.Time); ok {
+		lastRunTime = lr
+	}
+
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
 
 	// Determine which client ID to use
 	clientID := input.ClientID
 	if clientID == "" {
 		// Use the client ID from authentication if not provided in input
-		clientID = ctx.Auth.Extra["client-id"]
+		clientID = authCtx.Extra["client-id"]
 		if clientID == "" {
 			return nil, errors.New("client ID is required either as a parameter or in authentication")
 		}
@@ -86,7 +122,7 @@ func (t *CampaignSentTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, err
 	endpoint := fmt.Sprintf("clients/%s/campaigns.json", clientID)
 
 	response, err := shared.GetCampaignMonitorClient(
-		ctx.Auth.Extra["api-key"],
+		authCtx.Extra["api-key"],
 		clientID,
 		endpoint,
 		http.MethodGet,
@@ -145,37 +181,8 @@ func (t *CampaignSentTrigger) Criteria(ctx context.Context) sdkcore.TriggerCrite
 	return sdkcore.TriggerCriteria{}
 }
 
-func (t *CampaignSentTrigger) Auth() *sdk.Auth {
+func (t *CampaignSentTrigger) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (t *CampaignSentTrigger) SampleData() sdkcore.JSON {
-	return map[string]interface{}{
-		"newlySentCampaigns": []interface{}{
-			map[string]interface{}{
-				"CampaignID":        "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
-				"Name":              "Monthly Newsletter",
-				"Subject":           "March 2025 Updates",
-				"SentDate":          "2025-03-15 14:30",
-				"FromName":          "Marketing Team",
-				"FromEmail":         "marketing@example.com",
-				"WebVersionURL":     "https://example.com/campaign/view",
-				"WebVersionTextURL": "https://example.com/campaign/viewtext",
-			},
-			map[string]interface{}{
-				"CampaignID":        "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
-				"Name":              "Product Announcement",
-				"Subject":           "Introducing Our New Product",
-				"SentDate":          "2025-03-16 09:45",
-				"FromName":          "Product Team",
-				"FromEmail":         "products@example.com",
-				"WebVersionURL":     "https://example.com/campaign/view2",
-				"WebVersionTextURL": "https://example.com/campaign/viewtext2",
-			},
-		},
-		"count":    "2",
-		"clientId": "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3",
-	}
 }
 
 func NewCampaignSentTrigger() sdk.Trigger {

@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/convertkit/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createTagActionProps struct {
@@ -18,47 +19,61 @@ type createTagActionProps struct {
 
 type CreateTagAction struct{}
 
-func (a *CreateTagAction) Name() string {
-	return "Create Tag"
-}
-
-func (a *CreateTagAction) Description() string {
-	return "Create a new tag in your ConvertKit account."
-}
-
-func (a *CreateTagAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateTagAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createTagDocs,
+// Metadata returns metadata about the action
+func (a *CreateTagAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_tag",
+		DisplayName:   "Create Tag",
+		Description:   "Create a new tag in your ConvertKit account.",
+		Type:          core.ActionTypeAction,
+		Documentation: createTagDocs,
+		Icon:          "mdi:tag",
+		SampleOutput: map[string]any{
+			"tag": map[string]any{
+				"id":         "123456",
+				"name":       "Example Tag",
+				"created_at": "2024-03-15T10:30:00Z",
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateTagAction) Icon() *string {
-	icon := "mdi:tag"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *CreateTagAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_tag", "Create Tag")
+
+	form.TextField("tag_name", "Tag Name").
+		Placeholder("Enter tag name").
+		Required(true).
+		HelpText("Name of the tag to create")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *CreateTagAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"tag_name": autoform.NewShortTextField().
-			SetDisplayName("Tag Name").
-			SetDescription("Name of the tag to create").
-			SetRequired(true).
-			Build(),
+// Auth returns the authentication requirements for the action
+func (a *CreateTagAction) Auth() *core.AuthMetadata {
+	return nil
+}
+
+// Perform executes the action with the given context and input
+func (a *CreateTagAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[createTagActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *CreateTagAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createTagActionProps](ctx.BaseContext)
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
 
 	payload := map[string]interface{}{
-		"api_secret": ctx.Auth.Extra["api-secret"],
+		"api_secret": authCtx.Extra["api-secret"],
 		"tag": map[string]string{
 			"name": input.TagName,
 		},
@@ -75,24 +90,6 @@ func (a *CreateTagAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) 
 	}
 
 	return response, nil
-}
-
-func (a *CreateTagAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *CreateTagAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"tag": map[string]any{
-			"id":         "123456",
-			"name":       "Example Tag",
-			"created_at": "2024-03-15T10:30:00Z",
-		},
-	}
-}
-
-func (a *CreateTagAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateTagAction() sdk.Action {

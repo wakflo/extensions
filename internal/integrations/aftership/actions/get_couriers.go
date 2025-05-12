@@ -18,64 +18,70 @@ import (
 	"errors"
 
 	"github.com/aftership/tracking-sdk-go/v5"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	// Import shared package for Auth and other shared functionality
+	// We're ignoring type errors in shared.go files as per the issue description
+	// Using blank identifier to suppress unused import warning
+	_ "github.com/wakflo/extensions/internal/integrations/aftership/shared"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type GetCouriersAction struct{}
 
-func (c *GetCouriersAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (c GetCouriersAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (c GetCouriersAction) Name() string {
-	return "Get All Couriers"
-}
-
-func (c GetCouriersAction) Description() string {
-	return "get all couriers"
-}
-
-func (c GetCouriersAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getCouriersDocs,
+// Metadata returns metadata about the action
+func (c GetCouriersAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_couriers",
+		DisplayName:   "Get All Couriers",
+		Description:   "get all couriers",
+		Type:          core.ActionTypeAction,
+		Documentation: getCouriersDocs,
+		SampleOutput:  nil,
+		Settings:      core.ActionSettings{},
 	}
 }
 
-func (c GetCouriersAction) Icon() *string {
-	return nil
+// Properties returns the schema for the action's input configuration
+func (c GetCouriersAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_couriers", "Get All Couriers")
+
+	// No input properties needed for this action
+	schema := form.Build()
+
+	return schema
 }
 
-func (c GetCouriersAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c GetCouriersAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{}
-}
-
-func (c GetCouriersAction) Auth() *sdk.Auth {
-	return &sdk.Auth{
+// Auth returns the authentication requirements for the action
+func (c GetCouriersAction) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Inherit: true,
 	}
 }
 
-func (c GetCouriersAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	if ctx.Auth.Extra["api-key"] == "" {
-		return nil, errors.New("missing aftership api key")
-	}
-	afterShipSdk, err := tracking.New(tracking.WithApiKey(ctx.Auth.Extra["api-key"]))
+// Perform executes the action with the given context and input
+func (c GetCouriersAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
+
+	if authCtx.Extra["api-key"] == "" {
+		return nil, errors.New("missing aftership api key")
+	}
+
+	afterShipSdk, err := tracking.New(tracking.WithApiKey(authCtx.Extra["api-key"]))
+	if err != nil {
+		return nil, err
+	}
+
 	result, err := afterShipSdk.Courier.GetAllCouriers().Execute()
 	if err != nil {
 		return nil, err
 	}
+
 	return result.Couriers, nil
 }
 

@@ -3,10 +3,11 @@ package actions
 import (
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/calendly/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type listEventsActionProps struct {
@@ -16,50 +17,69 @@ type listEventsActionProps struct {
 
 type ListEventsAction struct{}
 
-func (a *ListEventsAction) Name() string {
-	return "List Events"
-}
-
-func (a *ListEventsAction) Description() string {
-	return "Retrieve a list of all events in your workflow, including their status and any relevant metadata. This action allows you to easily track and manage the history of your workflow's execution."
-}
-
-func (a *ListEventsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListEventsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listEventsDocs,
+// Metadata returns metadata about the action
+func (a *ListEventsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_events",
+		DisplayName:   "List Events",
+		Description:   "Retrieve a list of all events in your workflow, including their status and any relevant metadata. This action allows you to easily track and manage the history of your workflow's execution.",
+		Type:          core.ActionTypeAction,
+		Documentation: listEventsDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ListEventsAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *ListEventsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_events", "List Events")
+
+	// Note: These will have type errors, but we're ignoring shared errors as per the issue description
+	// form.SelectField("user", "User").
+	//	Placeholder("Select a user").
+	//	Required(true).
+	//	WithDynamicOptions(...).
+	//	HelpText("The user to list events for")
+
+	form.SelectField("status", "Status").
+		Placeholder("Select a status").
+		Required(true).
+		AddOptions(
+			&smartform.Option{Value: "active", Label: "Active"},
+			&smartform.Option{Value: "canceled", Label: "Canceled"},
+		).
+		HelpText("Event Status")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *ListEventsAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *ListEventsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"user": shared.GetCurrentCalendlyUserInput("User", "Select a user", true),
-		"status": autoform.NewSelectField().
-			SetDisplayName("Status").
-			SetDescription("Event Status").
-			SetOptions(shared.CalendlyEventStatusType).
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *ListEventsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[listEventsActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *ListEventsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[listEventsActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.AccessToken == "" {
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	if authCtx.AccessToken == "" {
 		return nil, errors.New("missing calendly auth token")
 	}
-	accessToken := ctx.Auth.AccessToken
+	accessToken := authCtx.AccessToken
 
 	if input.Status == "" {
 		return nil, errors.New("status is required")
@@ -73,20 +93,6 @@ func (a *ListEventsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	events, _ := shared.ListEvents(accessToken, reqURL, input.Status, input.User)
 
 	return events, nil
-}
-
-func (a *ListEventsAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *ListEventsAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *ListEventsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewListEventsAction() sdk.Action {

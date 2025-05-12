@@ -353,11 +353,11 @@ func RegisterParentFoldersProp(form *smartform.FormBuilder) *smartform.FieldBuil
 			smartform.NewOptionsBuilder().
 				Dynamic().
 				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getParentFolders)).
-				// WithFieldReference("state", "state").
+				WithFieldReference("includeTeamDrives", "includeTeamDrives").
 				WithSearchSupport().
 				WithPagination(10).
 				End().
-				// RefreshOn("state").
+				RefreshOn("includeTeamDrives").
 				GetDynamicSource(),
 		).
 		HelpText("The folder where the file will be created.")

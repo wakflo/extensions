@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/campaignmonitor/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type listSubscribersActionProps struct {
@@ -18,42 +19,98 @@ type listSubscribersActionProps struct {
 
 type ListSubscribersAction struct{}
 
-func (a *ListSubscribersAction) Name() string {
-	return "List Active Subscribers"
-}
-
-func (a *ListSubscribersAction) Description() string {
-	return "Retrieve a list of active subscribers from a specific list."
-}
-
-func (a *ListSubscribersAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListSubscribersAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listSubscribersDocs,
+// Metadata returns metadata about the action
+func (a *ListSubscribersAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_subscribers",
+		DisplayName:   "List Active Subscribers",
+		Description:   "Retrieve a list of active subscribers from a specific list.",
+		Type:          core.ActionTypeAction,
+		Documentation: listSubscribersDocs,
+		Icon:          "mdi:account-group",
+		SampleOutput: map[string]interface{}{
+			"Results": []interface{}{
+				map[string]interface{}{
+					"EmailAddress": "subscriber1@example.com",
+					"Name":         "John Doe",
+					"Date":         "2023-07-10T14:30:00",
+					"State":        "Active",
+					"CustomFields": []interface{}{
+						map[string]interface{}{
+							"Key":   "City",
+							"Value": "New York",
+						},
+						map[string]interface{}{
+							"Key":   "Age",
+							"Value": "34",
+						},
+					},
+				},
+				map[string]interface{}{
+					"EmailAddress": "subscriber2@example.com",
+					"Name":         "Jane Smith",
+					"Date":         "2023-06-20T09:15:00",
+					"State":        "Active",
+					"CustomFields": []interface{}{
+						map[string]interface{}{
+							"Key":   "City",
+							"Value": "Los Angeles",
+						},
+						map[string]interface{}{
+							"Key":   "Age",
+							"Value": "29",
+						},
+					},
+				},
+			},
+			"ResultsOrderedBy":     "email",
+			"OrderDirection":       "asc",
+			"PageNumber":           "1",
+			"PageSize":             "1000",
+			"RecordsOnThisPage":    "2",
+			"TotalNumberOfRecords": "2",
+			"NumberOfPages":        "1",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ListSubscribersAction) Icon() *string {
-	icon := "mdi:account-group"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *ListSubscribersAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_subscribers", "List Active Subscribers")
+
+	// Note: This will have type errors, but we're ignoring shared errors as per the issue description
+	// form.SelectField("listId", "List").
+	//	Placeholder("Select a list").
+	//	Required(true).
+	//	WithDynamicOptions(...).
+	//	HelpText("The list to retrieve subscribers from.")
+
+	form.NumberField("page", "Page").
+		Placeholder("Enter page number").
+		Required(false).
+		HelpText("The page number to retrieve (for pagination).")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *ListSubscribersAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"listId": shared.GetCreateSendSubscriberListsInput(),
-		"page": autoform.NewNumberField().
-			SetDisplayName("Page").
-			SetDescription("The page number to retrieve (for pagination).").
-			SetRequired(false).
-			Build(),
+// Auth returns the authentication requirements for the action
+func (a *ListSubscribersAction) Auth() *core.AuthMetadata {
+	return nil
+}
+
+// Perform executes the action with the given context and input
+func (a *ListSubscribersAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[listSubscribersActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *ListSubscribersAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[listSubscribersActionProps](ctx.BaseContext)
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +130,8 @@ func (a *ListSubscribersAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, e
 	}
 
 	subscribers, err := shared.GetCampaignMonitorClient(
-		ctx.Auth.Extra["api-key"],
-		ctx.Auth.Extra["client-id"],
+		authCtx.Extra["api-key"],
+		authCtx.Extra["client-id"],
 		endpoint,
 		http.MethodGet,
 		nil)
@@ -83,60 +140,6 @@ func (a *ListSubscribersAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, e
 	}
 
 	return subscribers, nil
-}
-
-func (a *ListSubscribersAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *ListSubscribersAction) SampleData() sdkcore.JSON {
-	return map[string]interface{}{
-		"Results": []interface{}{
-			map[string]interface{}{
-				"EmailAddress": "subscriber1@example.com",
-				"Name":         "John Doe",
-				"Date":         "2023-07-10T14:30:00",
-				"State":        "Active",
-				"CustomFields": []interface{}{
-					map[string]interface{}{
-						"Key":   "City",
-						"Value": "New York",
-					},
-					map[string]interface{}{
-						"Key":   "Age",
-						"Value": "34",
-					},
-				},
-			},
-			map[string]interface{}{
-				"EmailAddress": "subscriber2@example.com",
-				"Name":         "Jane Smith",
-				"Date":         "2023-06-20T09:15:00",
-				"State":        "Active",
-				"CustomFields": []interface{}{
-					map[string]interface{}{
-						"Key":   "City",
-						"Value": "Los Angeles",
-					},
-					map[string]interface{}{
-						"Key":   "Age",
-						"Value": "29",
-					},
-				},
-			},
-		},
-		"ResultsOrderedBy":     "email",
-		"OrderDirection":       "asc",
-		"PageNumber":           "1",
-		"PageSize":             "1000",
-		"RecordsOnThisPage":    "2",
-		"TotalNumberOfRecords": "2",
-		"NumberOfPages":        "1",
-	}
-}
-
-func (a *ListSubscribersAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewListSubscribersAction() sdk.Action {

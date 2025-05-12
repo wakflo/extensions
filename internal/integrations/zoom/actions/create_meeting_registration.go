@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/zoom/shared"
 	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type createMeetingRegistrationActionProps struct {
@@ -16,6 +18,23 @@ type createMeetingRegistrationActionProps struct {
 }
 
 type CreateMeetingRegistrationAction struct{}
+
+func (a *CreateMeetingRegistrationAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		DisplayName: "Create Meeting Registration",
+		Description: "Crea",
+	}
+}
+
+func (a *CreateMeetingRegistrationAction) Properties() *smartform.FormSchema {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (a *CreateMeetingRegistrationAction) Auth() *sdkcore.AuthMetadata {
+	// TODO implement me
+	panic("implement me")
+}
 
 func (a *CreateMeetingRegistrationAction) Name() string {
 	return "Create Meeting Registration"
@@ -112,8 +131,8 @@ func (a *CreateMeetingRegistrationAction) Properties() map[string]*sdkcore.AutoF
 	}
 }
 
-func (a *CreateMeetingRegistrationAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createMeetingRegistrationActionProps](ctx.BaseContext)
+func (a *CreateMeetingRegistrationAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createMeetingRegistrationActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +144,7 @@ func (a *CreateMeetingRegistrationAction) Perform(ctx sdk.PerformContext) (sdkco
 
 	reqURL := fmt.Sprintf("%s/v2/meetings/%s/registrants", shared.ZoomBaseURL, input.MeetingID)
 
-	resp, err := shared.ZoomRequest(ctx.Auth.AccessToken, reqURL, meetingRegistrant)
+	resp, err := shared.ZoomRequest(ctx.Auth().AccessToken, reqURL, meetingRegistrant)
 	if err != nil {
 		return nil, err
 	}

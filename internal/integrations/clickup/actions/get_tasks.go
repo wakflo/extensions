@@ -1,56 +1,70 @@
 package actions
 
 import (
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/clickup/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 // GetTasksOperation structure and methods
 type getTasksProps struct {
-	WorkspaceID string `json:"workspace-id"`
-	SpaceID     string `json:"space-id"`
-	FolderID    string `json:"folder-id"`
-	ListID      string `json:"list-id"`
+	WorkspaceID string `json:"workspace_id"`
+	SpaceID     string `json:"space_id"`
+	FolderID    string `json:"folder_id"`
+	ListID      string `json:"list_id"`
 }
 
 type GetTasksOperation struct{}
 
-func (o *GetTasksOperation) Name() string {
-	return "Get Tasks"
-}
-
-func (o *GetTasksOperation) Description() string {
-	return "Retrieves all tasks from a specified ClickUp list."
-}
-
-func (o *GetTasksOperation) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (o *GetTasksOperation) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getTasksDocs,
+func (o *GetTasksOperation) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_tasks",
+		DisplayName:   "Get Tasks",
+		Description:   "Retrieves all tasks from a specified ClickUp list.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: getTasksDocs,
+		SampleOutput: map[string]any{
+			"tasks": []map[string]any{
+				{
+					"id":   "abc123",
+					"name": "Example Task 1",
+					"status": map[string]string{
+						"status": "Open",
+						"color":  "#d3d3d3",
+					},
+				},
+				{
+					"id":   "def456",
+					"name": "Example Task 2",
+				},
+			},
+		},
+		Icon: "material-symbols:task-alt-outline",
 	}
 }
 
-func (o *GetTasksOperation) Icon() *string {
-	icon := "material-symbols:task-alt-outline"
-	return &icon
+func (o *GetTasksOperation) Auth() *sdkcore.AuthMetadata {
+	return nil
 }
 
-func (o *GetTasksOperation) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"workspace-id": shared.GetWorkSpaceInput("Workspaces", "select a workspace", true),
-		"space-id":     shared.GetSpacesInput("Spaces", "select a space", true),
-		"folder-id":    shared.GetFoldersInput("Folders", "select a folder", true),
-		"list-id":      shared.GetListsInput("Lists", "select a list to get tasks from", true),
-	}
+func (o *GetTasksOperation) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_task", "Get Task")
+
+	shared.RegisterWorkSpaceInput(form, "Workspace", "select a workspace", true)
+	shared.RegisterSpacesInput(form, "Space", "select a space", true)
+	shared.RegisterFoldersInput(form, "Folder", "select a folder", true)
+	shared.RegisterListsInput(form, "List", "select a list to create task in", true)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (o *GetTasksOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	accessToken := ctx.Auth.AccessToken
-	input, err := sdk.InputToTypeSafely[getTasksProps](ctx.BaseContext)
+func (o *GetTasksOperation) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	accessToken := ctx.Auth().AccessToken
+	input, err := sdk.InputToTypeSafely[getTasksProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -62,10 +76,6 @@ func (o *GetTasksOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 	}
 
 	return tasks, nil
-}
-
-func (o *GetTasksOperation) Auth() *sdk.Auth {
-	return nil
 }
 
 func (o *GetTasksOperation) SampleData() sdkcore.JSON {
@@ -95,6 +105,6 @@ func (o *GetTasksOperation) Settings() sdkcore.ActionSettings {
 	return sdkcore.ActionSettings{}
 }
 
-func NewGetTasksOperation() sdk.Action {
+func NewGetTasksAction() sdk.Action {
 	return &GetTasksOperation{}
 }

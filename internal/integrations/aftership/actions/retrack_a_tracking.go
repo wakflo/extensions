@@ -18,72 +18,79 @@ import (
 	"errors"
 
 	"github.com/aftership/tracking-sdk-go/v5"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	// Import shared package for Auth and other shared functionality
+	// We're ignoring type errors in shared.go files as per the issue description
+	// Using blank identifier to suppress unused import warning
+	_ "github.com/wakflo/extensions/internal/integrations/aftership/shared"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
+
+type retrackATrackingActionProps struct {
+	TrackingID string `json:"tracking_id"`
+}
 
 type RetrackATrackingAction struct{}
 
-func (c *RetrackATrackingAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (c RetrackATrackingAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (c RetrackATrackingAction) Name() string {
-	return "Retrack a specific tracking"
-}
-
-func (c RetrackATrackingAction) Description() string {
-	return "retrack an expired tracking. Max 3 times per tracking."
-}
-
-func (c RetrackATrackingAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &retrackATracking,
+// Metadata returns metadata about the action
+func (c RetrackATrackingAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "retrack_a_tracking",
+		DisplayName:   "Retrack a specific tracking",
+		Description:   "retrack an expired tracking. Max 3 times per tracking.",
+		Type:          core.ActionTypeAction,
+		Documentation: retrackATracking,
+		SampleOutput:  nil,
+		Settings:      core.ActionSettings{},
 	}
 }
 
-func (c RetrackATrackingAction) Icon() *string {
-	return nil
+// Properties returns the schema for the action's input configuration
+func (c RetrackATrackingAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("retrack_a_tracking", "Retrack a specific tracking")
+
+	form.TextField("tracking_id", "Tracking ID").
+		Placeholder("Enter tracking ID").
+		Required(true).
+		HelpText("tracking ID")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (c RetrackATrackingAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c RetrackATrackingAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"tracking_id": autoform.NewShortTextField().
-			SetDisplayName("Tracking ID").
-			SetDescription("tracking ID").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (c RetrackATrackingAction) Auth() *sdk.Auth {
-	return &sdk.Auth{
+// Auth returns the authentication requirements for the action
+func (c RetrackATrackingAction) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Inherit: true,
 	}
 }
 
-func (c RetrackATrackingAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	if ctx.Auth.Extra["api-key"] == "" {
-		return nil, errors.New("missing aftership api key")
-	}
-	input, err := sdk.InputToTypeSafely[getATrackingActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (c RetrackATrackingAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
 
-	afterShipSdk, err := tracking.New(tracking.WithApiKey(ctx.Auth.Extra["api-key"]))
+	if authCtx.Extra["api-key"] == "" {
+		return nil, errors.New("missing aftership api key")
+	}
+
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[retrackATrackingActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	afterShipSdk, err := tracking.New(tracking.WithApiKey(authCtx.Extra["api-key"]))
+	if err != nil {
+		return nil, err
+	}
+
 	result, err := afterShipSdk.Tracking.
 		RetrackTrackingById().
 		BuildPath(input.TrackingID).

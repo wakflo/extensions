@@ -1,8 +1,10 @@
 package actions
 
 import (
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type addActionProps struct {
@@ -11,34 +13,51 @@ type addActionProps struct {
 
 type AddAction struct{}
 
-func (a *AddAction) Name() string {
-	return "Add"
-}
-
-func (a *AddAction) Description() string {
-	return "Adds one or more items to a specified collection or list within your workflow. This action is useful when you need to append new data to an existing dataset or update a list of values in your workflow."
-}
-
-func (a *AddAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *AddAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &addDocs,
+// Metadata returns metadata about the action
+func (a *AddAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "add",
+		DisplayName:   "Add",
+		Description:   "Adds one or more items to a specified collection or list within your workflow. This action is useful when you need to append new data to an existing dataset or update a list of values in your workflow.",
+		Type:          core.ActionTypeAction,
+		Documentation: addDocs,
+		SampleOutput: map[string]any{
+			"first_number":  23,
+			"second_number": 37,
+			"result":        60,
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *AddAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *AddAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("add", "Add")
+
+	form.NumberField("firstNumber", "First number").
+		Placeholder("Enter first number").
+		Required(true).
+		HelpText("The first number to add")
+
+	form.NumberField("secondNumber", "Second number").
+		Placeholder("Enter second number").
+		Required(true).
+		HelpText("The second number to add")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *AddAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *AddAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return inputFields
-}
-
-func (a *AddAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[addActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *AddAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[addActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -51,22 +70,6 @@ func (a *AddAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 		"secondNumber": sNumber,
 		"result":       fNumber + sNumber,
 	}, nil
-}
-
-func (a *AddAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *AddAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"first_number":  23,
-		"second_number": 37,
-		"result":        60,
-	}
-}
-
-func (a *AddAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewAddAction() sdk.Action {

@@ -6,7 +6,8 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/campaignmonitor/actions"
 	"github.com/wakflo/extensions/internal/integrations/campaignmonitor/shared"
 	"github.com/wakflo/extensions/internal/integrations/campaignmonitor/triggers"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -15,12 +16,16 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
-var Integration = sdk.Register(NewCampaignMonitor(), Flow, ReadME)
+var Integration = sdk.Register(NewCampaignMonitor())
 
 type CampaignMonitor struct{}
 
-func (n *CampaignMonitor) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *CampaignMonitor) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *CampaignMonitor) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
 		Schema:   *shared.SharedAuth,
 	}

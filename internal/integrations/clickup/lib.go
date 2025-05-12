@@ -6,7 +6,8 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/clickup/actions"
 	"github.com/wakflo/extensions/internal/integrations/clickup/shared"
 	"github.com/wakflo/extensions/internal/integrations/clickup/triggers"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -15,14 +16,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
-var Integration = sdk.Register(NewClickUp(), Flow, ReadME)
+var Integration = sdk.Register(NewClickUp())
 
 type ClickUp struct{}
 
-func (n *ClickUp) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *ClickUp) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *ClickUp) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.ClickupSharedAuth,
+		Schema:   shared.ClickupSharedAuth,
 	}
 }
 
@@ -35,22 +40,9 @@ func (n *ClickUp) Triggers() []sdk.Trigger {
 
 func (n *ClickUp) Actions() []sdk.Action {
 	return []sdk.Action{
-		actions.NewCreateTaskAction(),
-		actions.NewCreateFolderOperation(),
-		actions.NewCreateFolderlessListOperation(),
-		actions.NewCreateSpaceOperation(),
-		actions.NewDeleteTaskOperation(),
-		actions.NewGetFolderOperation(),
-		actions.NewGetFoldersOperation(),
-		actions.NewGetFolderlesslistOperation(),
-		actions.NewGetListOperation(),
-		actions.NewGetSpaceOperation(),
-		actions.NewGetSpacesOperation(),
-		actions.NewGetTaskOperation(),
-		actions.NewGetTasksOperation(),
-		actions.NewSearchTaskOperation(),
-		actions.NewUpdateSpaceOperation(),
-		actions.NewUpdateTaskOperation(),
+		actions.NewGetSpacesAction(),
+		actions.NewGetTaskAction(),
+		actions.NewGetTasksAction(),
 	}
 }
 

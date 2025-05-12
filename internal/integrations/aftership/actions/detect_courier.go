@@ -17,9 +17,14 @@ package actions
 import (
 	"github.com/aftership/tracking-sdk-go/v5"
 	"github.com/aftership/tracking-sdk-go/v5/model"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	// Import shared package for Auth and other shared functionality
+	// We're ignoring type errors in shared.go files as per the issue description
+	// Using blank identifier to suppress unused import warning
+	_ "github.com/wakflo/extensions/internal/integrations/aftership/shared"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type detectCourierActionProps struct {
@@ -28,59 +33,55 @@ type detectCourierActionProps struct {
 
 type DetectCourierAction struct{}
 
-func (c *DetectCourierAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (c *DetectCourierAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (c *DetectCourierAction) Name() string {
-	return "Detect Courier"
-}
-
-func (c *DetectCourierAction) Description() string {
-	return "Returns a list of matched couriers based on tracking number format"
-}
-
-func (c *DetectCourierAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &detectCourierDocs,
+// Metadata returns metadata about the action
+func (c DetectCourierAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "detect_courier",
+		DisplayName:   "Detect Courier",
+		Description:   "Returns a list of matched couriers based on tracking number format",
+		Type:          core.ActionTypeAction,
+		Documentation: detectCourierDocs,
+		SampleOutput:  nil,
+		Settings:      core.ActionSettings{},
 	}
 }
 
-func (c *DetectCourierAction) Icon() *string {
-	return nil
+// Properties returns the schema for the action's input configuration
+func (c DetectCourierAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("detect_courier", "Detect Courier")
+
+	form.TextField("tracking_number", "Tracking Number").
+		Placeholder("Enter tracking number").
+		Required(true).
+		HelpText("tracking number of the shipment")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (c *DetectCourierAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c *DetectCourierAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"tracking_number": autoform.NewShortTextField().
-			SetDisplayName("Tracking Number").
-			SetDescription("tracking number of the shipment").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (c *DetectCourierAction) Auth() *sdk.Auth {
-	return &sdk.Auth{
+// Auth returns the authentication requirements for the action
+func (c DetectCourierAction) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Inherit: true,
 	}
 }
 
-func (c *DetectCourierAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[detectCourierActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (c DetectCourierAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[detectCourierActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	afterShipSdk, err := tracking.New(tracking.WithApiKey(ctx.Auth.Extra["api-key"]))
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	afterShipSdk, err := tracking.New(tracking.WithApiKey(authCtx.Extra["api-key"]))
 	if err != nil {
 		return nil, err
 	}

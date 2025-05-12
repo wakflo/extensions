@@ -32,15 +32,13 @@ import (
 )
 
 var (
-	// #nosec
-	tokenURL = "https://github.com/login/oauth/access_token"
-	form     = smartform.NewAuthForm("github-auth", "GitHub OAuth", smartform.AuthStrategyOAuth2)
-	_        = form.
-			OAuthField("oauth", "GitHub OAuth").
-			AuthorizationURL("https://github.com/login/oauth/authorize").
-			TokenURL("https://github.com/login/oauth/access_token").
-			Scopes([]string{"admin:repo_hook", "admin:org", "repo"}).
-			Build()
+	form = smartform.NewAuthForm("github-auth", "GitHub OAuth", smartform.AuthStrategyOAuth2)
+	_    = form.
+		OAuthField("oauth", "GitHub OAuth").
+		AuthorizationURL("https://github.com/login/oauth/authorize").
+		TokenURL("https://github.com/login/oauth/access_token").
+		Scopes([]string{"admin:repo_hook", "admin:org", "repo"}).
+		Build()
 
 	SharedGithubAuth = form.Build()
 )

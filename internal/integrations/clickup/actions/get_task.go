@@ -1,60 +1,88 @@
 package actions
 
 import (
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/clickup/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
-type getTaskProps struct {
-	TaskID string `json:"task-id"`
+type getTaskActionProps struct {
+	TaskID string `json:"task_id"`
 }
 
-type GetTaskOperation struct{}
+type GetTaskAction struct{}
 
-func (o *GetTaskOperation) Name() string {
-	return "Get Task"
-}
-
-func (o *GetTaskOperation) Description() string {
-	return "Retrieves details of a specific ClickUp task by ID."
-}
-
-func (o *GetTaskOperation) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (o *GetTaskOperation) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getTaskDocs,
+// Metadata returns metadata about the action
+func (a *GetTaskAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_task",
+		DisplayName:   "Get Task",
+		Description:   "Retrieves details of a specific ClickUp task by ID.",
+		Type:          core.ActionTypeAction,
+		Documentation: getTaskDocs,
+		SampleOutput: map[string]any{
+			"id":          "abc123",
+			"name":        "Example Task",
+			"description": "This is a sample task",
+			"status": map[string]string{
+				"status": "Open",
+				"color":  "#d3d3d3",
+			},
+			"priority": map[string]any{
+				"priority": "High",
+				"color":    "#f50000",
+			},
+			"date_created": "1647354847362",
+			"date_updated": "1647354847362",
+			"creator": map[string]any{
+				"id":       "123456",
+				"username": "John Doe",
+				"email":    "john@example.com",
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (o *GetTaskOperation) Icon() *string {
-	icon := "material-symbols:task"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *GetTaskAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_task", "Get Task")
+
+	shared.RegisterWorkSpaceInput(form, "Workspaces", "select a workspace", true)
+	shared.RegisterSpacesInput(form, "Spaces", "select a space", true)
+	shared.RegisterFoldersInput(form, "Folders", "select a folder", true)
+	shared.RegisterListsInput(form, "Lists", "select a list to create task in", true)
+	shared.RegisterTasksInput(form, "Tasks", "select a task to update", true)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (o *GetTaskOperation) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"workspace-id": shared.GetWorkSpaceInput("Workspaces", "select a workspace", true),
-		"space-id":     shared.GetSpacesInput("Spaces", "select a space", true),
-		"folder-id":    shared.GetFoldersInput("Folders", "select a folder", true),
-		"list-id":      shared.GetListsInput("Lists", "select a list to create task in", true),
-		"task-id":      shared.GetTasksInput("Tasks", "select a task to update", true),
+// Auth returns the authentication requirements for the action
+func (a *GetTaskAction) Auth() *core.AuthMetadata {
+	return nil
+}
+
+// Perform executes the action with the given context and input
+func (a *GetTaskAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[getTaskActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (o *GetTaskOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	accessToken := ctx.Auth.AccessToken
-	input, err := sdk.InputToTypeSafely[getTaskProps](ctx.BaseContext)
+	// Get the token source from the auth context
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
 
 	url := "/v2/task/" + input.TaskID
 
-	tasks, err := shared.GetData(accessToken, url)
+	tasks, err := shared.GetData(authCtx.AccessToken, url)
 	if err != nil {
 		return nil, err
 	}
@@ -62,37 +90,6 @@ func (o *GetTaskOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	return tasks, nil
 }
 
-func (o *GetTaskOperation) Auth() *sdk.Auth {
-	return nil
-}
-
-func (o *GetTaskOperation) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"id":          "abc123",
-		"name":        "Example Task",
-		"description": "This is a sample task",
-		"status": map[string]string{
-			"status": "Open",
-			"color":  "#d3d3d3",
-		},
-		"priority": map[string]any{
-			"priority": "High",
-			"color":    "#f50000",
-		},
-		"date_created": "1647354847362",
-		"date_updated": "1647354847362",
-		"creator": map[string]any{
-			"id":       "123456",
-			"username": "John Doe",
-			"email":    "john@example.com",
-		},
-	}
-}
-
-func (o *GetTaskOperation) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func NewGetTaskOperation() sdk.Action {
-	return &GetTaskOperation{}
+func NewGetTaskAction() sdk.Action {
+	return &GetTaskAction{}
 }

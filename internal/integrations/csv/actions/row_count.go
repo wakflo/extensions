@@ -2,9 +2,10 @@ package actions
 
 import (
 	"github.com/gocarina/gocsv"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type rowCountActionProps struct {
@@ -13,40 +14,45 @@ type rowCountActionProps struct {
 
 type RowCountAction struct{}
 
-func (a *RowCountAction) Name() string {
-	return "Row Count"
-}
-
-func (a *RowCountAction) Description() string {
-	return "The Row Count integration action counts the number of rows in a specified table or dataset and returns the result as an output variable. This action is useful for tracking changes to data sets, monitoring data growth, or verifying data integrity."
-}
-
-func (a *RowCountAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *RowCountAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &rowCountDocs,
+// Metadata returns metadata about the action
+func (a *RowCountAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "row_count",
+		DisplayName:   "Row Count",
+		Description:   "The Row Count integration action counts the number of rows in a specified table or dataset and returns the result as an output variable. This action is useful for tracking changes to data sets, monitoring data growth, or verifying data integrity.",
+		Type:          core.ActionTypeAction,
+		Documentation: rowCountDocs,
+		SampleOutput: map[string]any{
+			"rowCount": 0,
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *RowCountAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *RowCountAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("row_count", "Row Count")
+
+	// Add content field
+	form.TextField("content", "CSV Content").
+		Placeholder("csv content").
+		Required(true).
+		HelpText("The CSV content to count rows in")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *RowCountAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *RowCountAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"content": autoform.NewShortTextField().
-			SetLabel("CSV Content").
-			SetRequired(true).
-			SetPlaceholder("csv content").
-			Build(),
-	}
-}
-
-func (a *RowCountAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[rowCountActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *RowCountAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[rowCountActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -58,20 +64,6 @@ func (a *RowCountAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 	}
 
 	return map[string]any{"rowCount": len(rows)}, nil
-}
-
-func (a *RowCountAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *RowCountAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"rowCount": 0,
-	}
-}
-
-func (a *RowCountAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewRowCountAction() sdk.Action {

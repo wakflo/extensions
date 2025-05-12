@@ -1,8 +1,10 @@
 package actions
 
 import (
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type subtractActionProps struct {
@@ -11,34 +13,51 @@ type subtractActionProps struct {
 
 type SubtractAction struct{}
 
-func (a *SubtractAction) Name() string {
-	return "Subtract"
-}
-
-func (a *SubtractAction) Description() string {
-	return "Subtracts one or more values from another value in a specified field, allowing you to perform arithmetic operations and manipulate data within your workflows."
-}
-
-func (a *SubtractAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *SubtractAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &subtractDocs,
+// Metadata returns metadata about the action
+func (a *SubtractAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "subtract",
+		DisplayName:   "Subtract",
+		Description:   "Subtracts one or more values from another value in a specified field, allowing you to perform arithmetic operations and manipulate data within your workflows.",
+		Type:          core.ActionTypeAction,
+		Documentation: subtractDocs,
+		SampleOutput: map[string]any{
+			"firstNumber":  76.23,
+			"secondNumber": 16.03,
+			"result":       60.2,
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *SubtractAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *SubtractAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("subtract", "Subtract")
+
+	form.NumberField("firstNumber", "First number").
+		Placeholder("Enter first number").
+		Required(true).
+		HelpText("The number to subtract from")
+
+	form.NumberField("secondNumber", "Second number").
+		Placeholder("Enter second number").
+		Required(true).
+		HelpText("The number to subtract")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *SubtractAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *SubtractAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return inputFields
-}
-
-func (a *SubtractAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[subtractActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *SubtractAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[subtractActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -51,22 +70,6 @@ func (a *SubtractAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 		"secondNumber": sNumber,
 		"result":       fNumber - sNumber,
 	}, nil
-}
-
-func (a *SubtractAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *SubtractAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"firstNumber":  76.23,
-		"secondNumber": 16.03,
-		"result":       60.2,
-	}
-}
-
-func (a *SubtractAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewSubtractAction() sdk.Action {

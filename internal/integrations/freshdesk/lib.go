@@ -7,10 +7,9 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/freshdesk/shared"
 	// "github.com/wakflo/extensions/internal/integrations/freshdesk/triggers"
 
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
-
-var Integration = sdk.Register(NewFreshdesk(), Flow, ReadME)
 
 //go:embed README.md
 var ReadME string
@@ -18,12 +17,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
+var Integration = sdk.Register(NewFreshdesk())
+
 type Freshdesk struct{}
 
-func (n *Freshdesk) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *Freshdesk) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *Freshdesk) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.SharedAuth,
+		Schema:   shared.FreshdeskSharedAuth,
 	}
 }
 

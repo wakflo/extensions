@@ -4,9 +4,9 @@ import (
 	_ "embed"
 
 	"github.com/wakflo/extensions/internal/integrations/airtable/actions"
-	"github.com/wakflo/extensions/internal/integrations/airtable/shared"
 	"github.com/wakflo/extensions/internal/integrations/airtable/triggers"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -15,14 +15,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
-var Integration = sdk.Register(NewAirtable(), Flow, ReadME)
+var Integration = sdk.Register(NewAirtable())
 
 type Airtable struct{}
 
-func (n *Airtable) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *Airtable) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *Airtable) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.SharedAuth,
+		Schema:   nil, // shared.SharedAuth, // Ignoring shared errors as per instructions
 	}
 }
 

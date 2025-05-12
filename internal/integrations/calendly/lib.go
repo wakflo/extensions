@@ -5,15 +5,26 @@ import (
 
 	"github.com/wakflo/extensions/internal/integrations/calendly/actions"
 	"github.com/wakflo/extensions/internal/integrations/calendly/shared"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
-var Integration = sdk.Register(NewCalendly(), Flow, ReadME)
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+var Integration = sdk.Register(NewCalendly())
 
 type Calendly struct{}
 
-func (n *Calendly) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *Calendly) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *Calendly) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: false,
 		Schema:   *shared.SharedAuth,
 	}
@@ -34,9 +45,3 @@ func (n *Calendly) Actions() []sdk.Action {
 func NewCalendly() sdk.Integration {
 	return &Calendly{}
 }
-
-//go:embed README.md
-var ReadME string
-
-//go:embed flo.toml
-var Flow string

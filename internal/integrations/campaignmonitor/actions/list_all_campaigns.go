@@ -4,54 +4,92 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/campaignmonitor/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type ListAllCampaignsAction struct{}
 
-func (a *ListAllCampaignsAction) Name() string {
-	return "List All Campaigns"
-}
-
-func (a *ListAllCampaignsAction) Description() string {
-	return "Retrieve all campaigns (sent, draft, and scheduled) from Campaign Monitor."
-}
-
-func (a *ListAllCampaignsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListAllCampaignsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listCampaignsDocs,
+// Metadata returns metadata about the action
+func (a *ListAllCampaignsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_all_campaigns",
+		DisplayName:   "List All Campaigns",
+		Description:   "Retrieve all campaigns (sent, draft, and scheduled) from Campaign Monitor.",
+		Type:          core.ActionTypeAction,
+		Documentation: listCampaignsDocs,
+		Icon:          "mdi:email-multiple-outline",
+		SampleOutput: map[string]interface{}{
+			"campaigns": []map[string]interface{}{
+				{
+					"CampaignID": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+					"Name":       "Monthly Newsletter",
+					"Subject":    "March 2025 Updates",
+					"SentDate":   "2025-03-10 14:30",
+					"Status":     "Sent",
+					"FromName":   "Marketing Team",
+					"FromEmail":  "marketing@example.com",
+				},
+				{
+					"CampaignID": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
+					"Name":       "Product Announcement",
+					"Subject":    "Introducing Our New Product",
+					"Status":     "Draft",
+					"FromName":   "Product Team",
+					"FromEmail":  "products@example.com",
+				},
+				{
+					"CampaignID":    "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3",
+					"Name":          "Special Promotion",
+					"Subject":       "25% Off This Weekend",
+					"ScheduledDate": "2025-03-21 09:00",
+					"Status":        "Scheduled",
+					"FromName":      "Sales Team",
+					"FromEmail":     "sales@example.com",
+				},
+			},
+			"count": "3",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ListAllCampaignsAction) Icon() *string {
-	icon := "mdi:email-multiple-outline"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *ListAllCampaignsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_all_campaigns", "List All Campaigns")
+
+	form.NumberField("page", "Page").
+		Placeholder("Enter page number").
+		Required(false).
+		HelpText("The page number to retrieve (for pagination).")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *ListAllCampaignsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"page": autoform.NewNumberField().
-			SetDisplayName("Page").
-			SetDescription("The page number to retrieve (for pagination).").
-			SetRequired(false).
-			Build(),
+// Auth returns the authentication requirements for the action
+func (a *ListAllCampaignsAction) Auth() *core.AuthMetadata {
+	return nil
+}
+
+// Perform executes the action with the given context and input
+func (a *ListAllCampaignsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *ListAllCampaignsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	clientID := ctx.Auth.Extra["client-id"]
+	clientID := authCtx.Extra["client-id"]
 	if clientID == "" {
 		return nil, fmt.Errorf("client ID is required")
 	}
 
-	apiKey := ctx.Auth.Extra["api-key"]
+	apiKey := authCtx.Extra["api-key"]
 	if apiKey == "" {
 		return nil, fmt.Errorf("API key is required")
 	}
@@ -122,48 +160,6 @@ func (a *ListAllCampaignsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, 
 		"campaigns": campaigns,
 		"count":     len(campaigns),
 	}, nil
-}
-
-func (a *ListAllCampaignsAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *ListAllCampaignsAction) SampleData() sdkcore.JSON {
-	return map[string]interface{}{
-		"campaigns": []map[string]interface{}{
-			{
-				"CampaignID": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
-				"Name":       "Monthly Newsletter",
-				"Subject":    "March 2025 Updates",
-				"SentDate":   "2025-03-10 14:30",
-				"Status":     "Sent",
-				"FromName":   "Marketing Team",
-				"FromEmail":  "marketing@example.com",
-			},
-			{
-				"CampaignID": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
-				"Name":       "Product Announcement",
-				"Subject":    "Introducing Our New Product",
-				"Status":     "Draft",
-				"FromName":   "Product Team",
-				"FromEmail":  "products@example.com",
-			},
-			{
-				"CampaignID":    "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3",
-				"Name":          "Special Promotion",
-				"Subject":       "25% Off This Weekend",
-				"ScheduledDate": "2025-03-21 09:00",
-				"Status":        "Scheduled",
-				"FromName":      "Sales Team",
-				"FromEmail":     "sales@example.com",
-			},
-		},
-		"count": "3",
-	}
-}
-
-func (a *ListAllCampaignsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewListAllCampaignsAction() sdk.Action {

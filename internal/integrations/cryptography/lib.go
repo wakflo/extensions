@@ -4,10 +4,9 @@ import (
 	_ "embed"
 
 	"github.com/wakflo/extensions/internal/integrations/cryptography/actions"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
-
-var Integration = sdk.Register(NewCryptography(), Flow, ReadME)
 
 //go:embed README.md
 var ReadME string
@@ -15,10 +14,16 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
+var Integration = sdk.Register(NewCryptography())
+
 type Cryptography struct{}
 
-func (n *Cryptography) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *Cryptography) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *Cryptography) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: false,
 	}
 }
@@ -30,7 +35,6 @@ func (n *Cryptography) Triggers() []sdk.Trigger {
 func (n *Cryptography) Actions() []sdk.Action {
 	return []sdk.Action{
 		actions.NewHashTextAction(),
-
 		actions.NewGenerateTextAction(),
 	}
 }

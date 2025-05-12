@@ -27,5 +27,5 @@ var updateTaskDocs string
 //go:embed list_tasks.md
 var listTasksDocs string
 
-//go:embed create_task.md
+//go:embed get_task.md
 var getTaskDocs string
