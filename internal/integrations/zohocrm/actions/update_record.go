@@ -7,10 +7,11 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/zohocrm/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type updateRecordActionProps struct {
@@ -21,51 +22,59 @@ type updateRecordActionProps struct {
 
 type UpdateRecordAction struct{}
 
-func (a *UpdateRecordAction) Name() string {
-	return "Update Record"
-}
+// func (a *UpdateRecordAction) Name() string {
+// 	return "Update Record"
+// }
 
-func (a *UpdateRecordAction) Description() string {
-	return "Updates an existing record in a specified Zoho CRM module with the provided data"
-}
-
-func (a *UpdateRecordAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *UpdateRecordAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &updateRecordDocs,
+func (a *UpdateRecordAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "update_record",
+		DisplayName:   "Update Record",
+		Description:   "Updates an existing record in a specified Zoho CRM module with the provided data",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: updateRecordDocs,
+		SampleOutput: map[string]interface{}{
+			"id":            "3477061000000419001",
+			"Modified_Time": "2023-01-15T16:30:45+05:30",
+			"Modified_By": map[string]interface{}{
+				"id":   "3477061000000319001",
+				"name": "John Doe",
+			},
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *UpdateRecordAction) Icon() *string {
-	return nil
+func (a *UpdateRecordAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("update_record", "Update Record")
+
+	form.SelectField("module", "Module").
+		Placeholder("Select a module").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(shared.GetModulesFunction())).
+				WithSearchSupport().
+				End().GetDynamicSource(),
+		)
+
+	form.TextField("recordId", "Record ID").
+		Placeholder("Enter the record ID").
+		Required(true).
+		HelpText("Enter the ID of the record you want to update.")
+
+		// form.CodeEditorField("data", "Record Data").
+	// Placeholder("Enter JSON data").
+	// Required(true)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *UpdateRecordAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"module": autoform.NewDynamicField(sdkcore.String).
-			SetDisplayName("Module").
-			SetDescription("The Zoho CRM module where the record will be updated (e.g., Leads, Contacts, Accounts)").
-			SetDynamicOptions(shared.GetModulesFunction()).
-			SetRequired(true).
-			Build(),
-		"recordId": autoform.NewShortTextField().
-			SetDisplayName("Record ID").
-			SetDescription("The ID of the record to update").
-			SetRequired(true).
-			Build(),
-		"data": autoform.NewCodeEditorField().
-			SetDisplayName("Record Data").
-			SetDescription("The updated data for the record in JSON format").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *UpdateRecordAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[updateRecordActionProps](ctx.BaseContext)
+func (a *UpdateRecordAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[updateRecordActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +100,7 @@ func (a *UpdateRecordAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 	}
 
 	endpoint := fmt.Sprintf("%s/%s", input.Module, input.RecordID)
-	result, err := shared.GetZohoCRMClient(ctx.Auth.AccessToken, http.MethodPut, endpoint, requestData)
+	result, err := shared.GetZohoCRMClient(ctx.Auth().AccessToken, http.MethodPut, endpoint, requestData)
 	if err != nil {
 		return nil, fmt.Errorf("error calling Zoho CRM API: %v", err)
 	}
@@ -104,23 +113,8 @@ func (a *UpdateRecordAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 	return data[0], nil
 }
 
-func (a *UpdateRecordAction) Auth() *sdk.Auth {
+func (a *UpdateRecordAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *UpdateRecordAction) SampleData() sdkcore.JSON {
-	return map[string]interface{}{
-		"id":            "3477061000000419001",
-		"Modified_Time": "2023-01-15T16:30:45+05:30",
-		"Modified_By": map[string]interface{}{
-			"id":   "3477061000000319001",
-			"name": "John Doe",
-		},
-	}
-}
-
-func (a *UpdateRecordAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewUpdateRecordAction() sdk.Action {

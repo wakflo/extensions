@@ -7,10 +7,11 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/zohocrm/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type createRecordActionProps struct {
@@ -20,49 +21,55 @@ type createRecordActionProps struct {
 
 type CreateRecordAction struct{}
 
-func (a *CreateRecordAction) Name() string {
-	return "Create Record"
-}
-
-func (a *CreateRecordAction) Description() string {
-	return "Creates a new record in a specified Zoho CRM module with the provided data"
-}
-
-func (a *CreateRecordAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateRecordAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createRecordDocs,
+func (a *CreateRecordAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_record",
+		DisplayName:   "Create Record",
+		Description:   "Creates a new record in a specified Zoho CRM module with the provided data",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: createRecordDocs,
+		SampleOutput: map[string]any{
+			"message": "hello world",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *CreateRecordAction) Icon() *string {
-	return nil
+func (a *CreateRecordAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_record", "Create Record")
+
+	form.SelectField("module", "Module").
+		Placeholder("Select a module").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(shared.GetModulesFunction())).
+				WithSearchSupport().
+				End().GetDynamicSource(),
+		)
+
+	// form.CodeEditorField("data", "Record Data").
+	// Placeholder("Enter JSON data").
+	// Required(true)
+
+	schema := form.Build()
+
+	return schema
+
 }
 
-func (a *CreateRecordAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"module": autoform.NewDynamicField(sdkcore.String).
-			SetDisplayName("Module").
-			SetDescription("The Zoho CRM module where the record will be created (e.g., Leads, Contacts, Accounts)").
-			SetDynamicOptions(shared.GetModulesFunction()).
-			SetRequired(true).
-			Build(),
-		"data": autoform.NewCodeEditorField().
-			SetDisplayName("Record Data").
-			SetDescription("The data for the new record in JSON format").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *CreateRecordAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createRecordActionProps](ctx.BaseContext)
+func (a *CreateRecordAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createRecordActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
 
 	var dataMap map[string]interface{}
 	if err := json.Unmarshal([]byte(input.Data), &dataMap); err != nil {
@@ -74,7 +81,7 @@ func (a *CreateRecordAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 	}
 
 	endpoint := input.Module
-	result, err := shared.GetZohoCRMClient(ctx.Auth.AccessToken, http.MethodPost, endpoint, requestData)
+	result, err := shared.GetZohoCRMClient(token, http.MethodPost, endpoint, requestData)
 	if err != nil {
 		if strings.Contains(err.Error(), "201") {
 			return map[string]interface{}{
@@ -95,28 +102,8 @@ func (a *CreateRecordAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 	return data[0], nil
 }
 
-func (a *CreateRecordAction) Auth() *sdk.Auth {
+func (a *CreateRecordAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *CreateRecordAction) SampleData() sdkcore.JSON {
-	return map[string]interface{}{
-		"id":            "3477061000000419001",
-		"Created_Time":  "2023-01-15T15:45:30+05:30",
-		"Modified_Time": "2023-01-15T15:45:30+05:30",
-		"Created_By": map[string]interface{}{
-			"id":   "3477061000000319001",
-			"name": "John Doe",
-		},
-		"Modified_By": map[string]interface{}{
-			"id":   "3477061000000319001",
-			"name": "John Doe",
-		},
-	}
-}
-
-func (a *CreateRecordAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateRecordAction() sdk.Action {

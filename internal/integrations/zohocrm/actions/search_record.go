@@ -8,10 +8,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/zohocrm/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type searchRecordsActionProps struct {
@@ -25,96 +26,95 @@ type searchRecordsActionProps struct {
 
 type SearchRecordsAction struct{}
 
-func (a *SearchRecordsAction) Name() string {
-	return "Search Records"
-}
-
-func (a *SearchRecordsAction) Description() string {
-	return "Searches for records in a Zoho CRM module based on specified criteria"
-}
-
-func (a *SearchRecordsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *SearchRecordsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &searchRecordsDocs,
+func (a *SearchRecordsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "search_records",
+		DisplayName:   "Search Records",
+		Description:   "Searches for records in a Zoho CRM module based on specified criteria",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: searchRecordsDocs,
+		SampleOutput: map[string]interface{}{
+			"records": []interface{}{
+				map[string]interface{}{
+					"id":          "3477061000000419001",
+					"Last_Name":   "Smith",
+					"Email":       "john.smith@example.com",
+					"Company":     "ACME Corp",
+					"Lead_Status": "Qualified",
+				},
+				map[string]interface{}{
+					"id":          "3477061000000419005",
+					"Last_Name":   "Smith",
+					"Email":       "robert.smith@example.com",
+					"Company":     "ABC Ltd",
+					"Lead_Status": "Contacted",
+				},
+			},
+			"info": map[string]interface{}{
+				"per_page":     "100",
+				"count":        "2",
+				"page":         "1",
+				"more_records": false,
+			},
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *SearchRecordsAction) Icon() *string {
-	return nil
+func (a *SearchRecordsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("search_records", "Search Records")
+
+	form.SelectField("module", "Module").
+		Placeholder("Select a module").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(shared.GetModulesFunction())).
+				WithSearchSupport().
+				End().GetDynamicSource(),
+		)
+
+	form.TextField("criteria", "Search Criteria").
+		Placeholder("Last_Name:equals:Smith").
+		Required(true).
+		HelpText("Search criteria in the format: field:operator:value. Example: Last_Name:equals:Smith or Email:contains:example.com")
+
+	form.NumberField("page", "Page").
+		Placeholder("Page number").
+		Required(false).
+		DefaultValue(1).
+		HelpText("Page number")
+
+	form.NumberField("perPage", "Records Per Page").
+		Placeholder("Records per page").
+		Required(false).
+		HelpText("Number of records to retrieve per page (max 200)")
+
+	form.SelectField("sortField", "Sort Field").
+		Placeholder("Sort field").
+		Required(false).
+		HelpText("Field to sort results by (e.g., Created_Time, Last_Name)").
+		AddOption("", "None").
+		AddOption("id", "ID").
+		AddOption("Created_Time", "Created Time").
+		AddOption("Modified_Time", "Modified Time").
+		DefaultValue("")
+
+	form.SelectField("sortOrder", "Sort Order").
+		Placeholder("Sort order").
+		Required(false).
+		HelpText("Order of sorted results").
+		AddOption("asc", "Ascending").
+		AddOption("desc", "Descending")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *SearchRecordsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"module": autoform.NewDynamicField(sdkcore.String).
-			SetDisplayName("Module").
-			SetDescription("The Zoho CRM module to search records in (e.g., Leads, Contacts, Accounts)").
-			SetDynamicOptions(shared.GetModulesFunction()).
-			SetRequired(true).
-			SetPlaceholder("Leads").
-			Build(),
-		"criteria": autoform.NewShortTextField().
-			SetDisplayName("Search Criteria").
-			SetDescription("Search criteria in the format: field:operator:value. Example: Last_Name:equals:Smith or Email:contains:example.com").
-			SetRequired(true).
-			SetPlaceholder("Last_Name:equals:Smith").
-			Build(),
-		"page": autoform.NewNumberField().
-			SetDisplayName("Page").
-			SetDescription("Page number for pagination (starts from 1)").
-			SetPlaceholder("1").
-			Build(),
-		"perPage": autoform.NewNumberField().
-			SetDisplayName("Records Per Page").
-			SetDescription("Number of records to retrieve per page (max 200)").
-			SetPlaceholder("100").
-			Build(),
-		"sortField": autoform.NewSelectField().
-			SetDisplayName("Sort Field").
-			SetDescription("Field to sort results by (only certain fields are supported by Zoho CRM)").
-			SetOptions([]*sdkcore.AutoFormSchema{
-				{
-					Title: "None",
-					Const: "",
-				},
-				{
-					Title: "ID",
-					Const: "id",
-				},
-				{
-					Title: "Created Time",
-					Const: "Created_Time",
-				},
-				{
-					Title: "Modified Time",
-					Const: "Modified_Time",
-				},
-			}).
-			SetDefaultValue("").
-			Build(),
-		"sortOrder": autoform.NewSelectField().
-			SetDisplayName("Sort Order").
-			SetDescription("Order of sorted results").
-			SetOptions([]*sdkcore.AutoFormSchema{
-				{
-					Title: "Ascending",
-					Const: "asc",
-				},
-				{
-					Title: "Descending",
-					Const: "desc",
-				},
-			}).
-			SetDefaultValue("asc").
-			Build(),
-	}
-}
-
-func (a *SearchRecordsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[searchRecordsActionProps](ctx.BaseContext)
+func (a *SearchRecordsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[searchRecordsActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +169,7 @@ func (a *SearchRecordsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 		endpoint = endpoint + "?" + queryParams.Encode()
 	}
 
-	result, err := shared.GetZohoCRMClient(ctx.Auth.AccessToken, http.MethodGet, endpoint, nil)
+	result, err := shared.GetZohoCRMClient(ctx.Auth().AccessToken, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error calling Zoho CRM API: %v", err)
 	}
@@ -204,39 +204,8 @@ func (a *SearchRecordsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	return response, nil
 }
 
-func (a *SearchRecordsAction) Auth() *sdk.Auth {
+func (a *SearchRecordsAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *SearchRecordsAction) SampleData() sdkcore.JSON {
-	return map[string]interface{}{
-		"records": []interface{}{
-			map[string]interface{}{
-				"id":          "3477061000000419001",
-				"Last_Name":   "Smith",
-				"Email":       "john.smith@example.com",
-				"Company":     "ACME Corp",
-				"Lead_Status": "Qualified",
-			},
-			map[string]interface{}{
-				"id":          "3477061000000419005",
-				"Last_Name":   "Smith",
-				"Email":       "robert.smith@example.com",
-				"Company":     "ABC Ltd",
-				"Lead_Status": "Contacted",
-			},
-		},
-		"info": map[string]interface{}{
-			"per_page":     "100",
-			"count":        "2",
-			"page":         "1",
-			"more_records": false,
-		},
-	}
-}
-
-func (a *SearchRecordsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewSearchRecordsAction() sdk.Action {

@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/zohocrm/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type recordCreatedTriggerProps struct {
@@ -19,61 +21,84 @@ type recordCreatedTriggerProps struct {
 
 type RecordCreatedTrigger struct{}
 
-func (t *RecordCreatedTrigger) Name() string {
-	return "Record Created"
-}
-
-func (t *RecordCreatedTrigger) Description() string {
-	return "Triggers when a new record is created in a specified Zoho CRM module"
-}
-
-func (t *RecordCreatedTrigger) GetType() sdkcore.TriggerType {
-	return sdkcore.TriggerTypePolling
-}
-
-func (t *RecordCreatedTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &recordCreatedDocs,
+func (t *RecordCreatedTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "record_created",
+		DisplayName:   "Record Created",
+		Description:   "Triggers when a new record is created in a specified Zoho CRM module",
+		Type:          sdkcore.TriggerTypePolling,
+		Documentation: recordCreatedDocs,
+		SampleOutput: map[string]interface{}{
+			"records": []interface{}{
+				map[string]interface{}{
+					"id":            "3477061000000419002",
+					"Last_Name":     "Johnson",
+					"First_Name":    "Emily",
+					"Email":         "emily.johnson@example.com",
+					"Company":       "XYZ Inc.",
+					"Phone":         "+1-555-123-4567",
+					"Lead_Source":   "Website",
+					"Lead_Status":   "New",
+					"Created_Time":  "2023-03-10T09:30:45+05:30",
+					"Modified_Time": "2023-03-10T09:30:45+05:30",
+				},
+			},
+			"count":  1,
+			"module": "Leads",
+		},
 	}
 }
 
-func (t *RecordCreatedTrigger) Icon() *string {
+func (t *RecordCreatedTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("record_created", "Record Created")
+
+	form.SelectField("module", "Module").
+		Placeholder("Select a module").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(shared.GetModulesFunction())).
+				WithSearchSupport().
+				End().GetDynamicSource(),
+		)
+
+	schema := form.Build()
+
+	return schema
+}
+
+func (t *RecordCreatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (t *RecordCreatedTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"module": autoform.NewDynamicField(sdkcore.String).
-			SetDisplayName("Module").
-			SetDescription("The Zoho CRM module to monitor for newly created records (e.g., Leads, Contacts, Accounts)").
-			SetDynamicOptions(shared.GetModulesFunction()).
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (t *RecordCreatedTrigger) Start(ctx sdk.LifecycleContext) error {
+func (t *RecordCreatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (t *RecordCreatedTrigger) Stop(ctx sdk.LifecycleContext) error {
-	return nil
-}
-
-func (t *RecordCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[recordCreatedTriggerProps](ctx.BaseContext)
+func (t *RecordCreatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[recordCreatedTriggerProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
+
 	// Construct the search endpoint
 	var endpoint string
-	if ctx.Metadata().LastRun == nil {
+
+	lr, err := ctx.GetMetadata("lastrun")
+
+	if lr == nil {
 		// If no last run time, fetch all records
 		endpoint = fmt.Sprintf("https://www.zohoapis.com/crm/v7/%s/search", input.Module)
 	} else {
 		// If last run time exists, use it in the criteria
-		lastRunTime := *ctx.Metadata().LastRun
+		lastRunTime := lr.(*time.Time)
 		lastRunFormatted := lastRunTime.UTC().Format("2006-01-02T15:04:05+00:00")
 
 		// URL encode the criteria to handle special characters
@@ -85,7 +110,7 @@ func (t *RecordCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, er
 	}
 
 	// Make API call
-	result, err := shared.GetZohoCRMClient(ctx.Auth.AccessToken, http.MethodGet, endpoint, nil)
+	result, err := shared.GetZohoCRMClient(token, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error calling Zoho CRM API: %v", err)
 	}
@@ -114,7 +139,7 @@ func (t *RecordCreatedTrigger) Criteria(ctx context.Context) sdkcore.TriggerCrit
 	return sdkcore.TriggerCriteria{}
 }
 
-func (t *RecordCreatedTrigger) Auth() *sdk.Auth {
+func (t *RecordCreatedTrigger) Auth() *sdkcore.AuthMetadata {
 	return nil
 }
 

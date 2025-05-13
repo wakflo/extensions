@@ -22,19 +22,29 @@ import (
 	"net/http"
 
 	"github.com/gookit/goutil/arrutil"
+	"github.com/juicycleff/smartform/v1"
 	fastshot "github.com/opus-domini/fast-shot"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 var (
 	// #nosec
-	tokenURL   = "https://accounts.zoho.com/oauth/v2/token"
-	authURL    = "https://accounts.zoho.com/oauth/v2/auth"
-	SharedAuth = autoform.NewOAuthField(authURL, &tokenURL, []string{
-		"ZohoInventory.FullAccess.all",
-	}).Build()
+	tokenURL = "https://accounts.zoho.com/oauth/v2/token"
+	authURL  = "https://accounts.zoho.com/oauth/v2/auth"
+)
+
+var form = smartform.NewAuthForm("zoho-auth", "Zoho Inventory Oauth", smartform.AuthStrategyOAuth2)
+var _ = form.OAuthField("oauth", "Zoho Inventory Oauth").
+	AuthorizationURL(authURL).
+	TokenURL(tokenURL).
+	Scopes([]string{"ZohoInventory.FullAccess.all"}).
+	Build()
+
+var (
+	SharedAuth = form.Build()
 )
 
 const BaseURL = "https://www.zohoapis.com/inventory"
@@ -74,10 +84,17 @@ func GetZohoClient(accessToken, endpoint string) (map[string]interface{}, error)
 	return result, nil
 }
 
-func GetOrganizationsInput() *sdkcore.AutoFormSchema {
-	getOrganizations := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetOrganizationsProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getOrganizations := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+
+		tokenSource := ctx.Auth().Token
+		if tokenSource == nil {
+			return nil, errors.New("missing authentication token")
+		}
+		token := tokenSource.AccessToken
+
 		client := fastshot.NewClient(BaseURL).
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(token).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -105,18 +122,25 @@ func GetOrganizationsInput() *sdkcore.AutoFormSchema {
 		organization := organizations.Organizations
 		items := arrutil.Map[Organization, map[string]any](organization, func(input Organization) (target map[string]any, find bool) {
 			return map[string]any{
-				"id":   input.OrganizationID,
-				"name": input.Name,
+				"value": input.OrganizationID,
+				"label": input.Name,
 			}, true
 		})
 
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Organizations").
-		SetDescription("Select organization").
-		SetDependsOn([]string{"connection"}).
-		SetDynamicOptions(&getOrganizations).
-		SetRequired(true).Build()
+	return form.SelectField("organization_id", "Organizations").
+		Placeholder("Select organization").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getOrganizations)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select organization")
 }

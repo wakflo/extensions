@@ -23,23 +23,32 @@ import (
 	"net/http"
 
 	"github.com/gookit/goutil/arrutil"
+	"github.com/juicycleff/smartform/v1"
 	fastshot "github.com/opus-domini/fast-shot"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 const baseURL = "https://api.xero.com/api.xro/2.0"
 
 var (
 	// #nosec
-	tokenURL   = "https://identity.xero.com/connect/token"
-	authURL    = "https://login.xero.com/identity/connect/authorize"
-	SharedAuth = autoform.NewOAuthField(authURL, &tokenURL, []string{
-		"openid profile email accounting.transactions accounting.contacts accounting.attachments offline_access",
-	}).
-		Build()
+	tokenURL = "https://identity.xero.com/connect/token"
+	authURL  = "https://login.xero.com/identity/connect/authorize"
+)
+
+var form = smartform.NewAuthForm("xero-auth", "Xero Oauth", smartform.AuthStrategyOAuth2)
+var _ = form.OAuthField("oauth", "Xero Oauth").
+	AuthorizationURL(authURL).
+	TokenURL(tokenURL).
+	Scopes([]string{"openid profile email accounting.transactions accounting.contacts accounting.attachments offline_access"}).
+	Build()
+
+var (
+	SharedAuth = form.Build()
 )
 
 // GetXeroNewClient sends a request to the Xero API using the provided access token.
@@ -82,10 +91,17 @@ func GetXeroNewClient(accessToken, endpoint, tenant string) (map[string]interfac
 	return result, nil
 }
 
-func GetTenantInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getTenantID := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetTenantProps(id string, title string, desc string, required bool, form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getTenantID := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+
+		tokenSource := ctx.Auth().Token
+		if tokenSource == nil {
+			return nil, errors.New("missing authentication token")
+		}
+		token := tokenSource.AccessToken
+
 		client := fastshot.NewClient("https://api.xero.com").
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(token).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -117,23 +133,30 @@ func GetTenantInput(title string, desc string, required bool) *sdkcore.AutoFormS
 		sheet := body
 		items := arrutil.Map[Tenant, map[string]any](sheet, func(input Tenant) (target map[string]any, find bool) {
 			return map[string]any{
-				"id":   input.TenantID,
-				"name": input.TenantName,
+				"value": input.TenantID,
+				"label": input.TenantName,
 			}, true
 		})
 
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getTenantID).
-		SetRequired(required).Build()
+	return form.SelectField(id, title).
+		Placeholder("Select Tenant").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getTenantID)).
+				WithSearchSupport().
+				End().
+				GetDynamicSource(),
+		).
+		HelpText(desc)
 }
 
-func GetInvoiceInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getInvoices := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetInvoiceProp(id string, title string, desc string, required bool, form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getInvoices := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			TenantID string `json:"tenant_id,omitempty"`
 		}](ctx)
@@ -143,8 +166,14 @@ func GetInvoiceInput(title string, desc string, required bool) *sdkcore.AutoForm
 		if err != nil {
 			return nil, fmt.Errorf("failed to create request: %v", err)
 		}
+		tokenSource := ctx.Auth().Token
+		if tokenSource == nil {
+			return nil, errors.New("missing authentication token")
+		}
+		token := tokenSource.AccessToken
+
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+ctx.Auth.AccessToken)
+		req.Header.Set("Authorization", "Bearer "+token)
 		req.Header.Set("Xero-Tenant-Id", input.TenantID)
 
 		client := &http.Client{}
@@ -171,18 +200,25 @@ func GetInvoiceInput(title string, desc string, required bool) *sdkcore.AutoForm
 		invoice := result.Invoices
 		items := arrutil.Map[Invoice, map[string]any](invoice, func(input Invoice) (target map[string]any, find bool) {
 			return map[string]any{
-				"id":   input.InvoiceID,
-				"name": input.InvoiceNumber,
+				"value": input.InvoiceID,
+				"label": input.InvoiceNumber,
 			}, true
 		})
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getInvoices).
-		SetRequired(required).Build()
+	return form.SelectField(id, title).
+		Placeholder("Select Invoice").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getInvoices)).
+				WithSearchSupport().
+				End().
+				GetDynamicSource(),
+		).
+		HelpText(desc)
 }
 
 func SendInvoiceEmail(accessToken, endpoint, tenant string) error {
@@ -214,7 +250,7 @@ func SendInvoiceEmail(accessToken, endpoint, tenant string) error {
 	return nil
 }
 
-func CreateDraftInvoice(accessToken, tenant string, body map[string]interface{}) (sdk.JSON, error) {
+func CreateDraftInvoice(accessToken, tenant string, body map[string]interface{}) (sdkcore.JSON, error) {
 	invoiceData, err := json.Marshal(body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal invoice data: %v", err)
@@ -251,13 +287,5 @@ func CreateDraftInvoice(accessToken, tenant string, body map[string]interface{})
 		return nil, fmt.Errorf("failed to decode response: %v", errs)
 	}
 
-	return sdk.JSON(result), nil
-}
-
-var XeroInvoiceStatus = []*sdkcore.AutoFormSchema{
-	{Const: "DRAFT", Title: "Draft"},
-	{Const: "SUBMITTED", Title: "Submitted"},
-	{Const: "AUTHORISED", Title: "Authorised"},
-	{Const: "DELETED", Title: "Delete"},
-	{Const: "VOIDED", Title: "Voided"},
+	return sdkcore.JSON(result), nil
 }

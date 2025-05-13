@@ -22,17 +22,27 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 var (
 	// #nosec
-	tokenURL   = "https://accounts.zoho.com/oauth/v2/token"
-	authURL    = "https://accounts.zoho.com/oauth/v2/auth"
-	SharedAuth = autoform.NewOAuthField(authURL, &tokenURL, []string{
-		"ZohoCRM.modules.ALL", "ZohoCRM.settings.ALL",
-	}).Build()
+	tokenURL = "https://accounts.zoho.com/oauth/v2/token"
+	authURL  = "https://accounts.zoho.com/oauth/v2/auth"
+)
+
+var form = smartform.NewAuthForm("zoho-crm-auth", "Zoho CRM Oauth", smartform.AuthStrategyOAuth2)
+var _ = form.OAuthField("oauth", "Zoho CRM Oauth").
+	AuthorizationURL(authURL).
+	TokenURL(tokenURL).
+	Scopes([]string{"ZohoCRM.modules.ALL", "ZohoCRM.settings.ALL"}).
+	Build()
+
+var (
+	SharedAuth = form.Build()
 )
 
 const BaseURL = "https://www.zohoapis.com/crm/v7/"
@@ -88,9 +98,15 @@ func GetZohoCRMClient(accessToken, method, endpoint string, body interface{}) (m
 	return result, nil
 }
 
-func GetModulesFunction() *sdkcore.DynamicOptionsFn {
-	getModules := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		result, err := GetZohoCRMClient(ctx.Auth.AccessToken, http.MethodGet, "settings/modules", nil)
+func GetModulesFunction() *sdk.DynamicOptionsFn {
+	getModules := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		tokenSource := ctx.Auth().Token
+		if tokenSource == nil {
+			return nil, errors.New("missing authentication token")
+		}
+		token := tokenSource.AccessToken
+
+		result, err := GetZohoCRMClient(token, http.MethodGet, "settings/modules", nil)
 		if err != nil {
 			return nil, fmt.Errorf("error fetching modules: %v", err)
 		}
