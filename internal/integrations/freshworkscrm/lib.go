@@ -7,10 +7,9 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/freshworkscrm/shared"
 	"github.com/wakflo/extensions/internal/integrations/freshworkscrm/triggers"
 
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
-
-var Integration = sdk.Register(NewFreshWorksCRM(), Flow, ReadME)
 
 //go:embed README.md
 var ReadME string
@@ -18,12 +17,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
+var Integration = sdk.Register(NewFreshWorksCRM())
+
 type FreshWorksCRM struct{}
 
-func (n *FreshWorksCRM) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *FreshWorksCRM) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *FreshWorksCRM) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.FreshworksSharedAuth,
+		Schema:   shared.FreshworksCRMSharedAuth,
 	}
 }
 

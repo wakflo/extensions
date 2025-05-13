@@ -19,10 +19,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/easyship/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createCourierPickupActionProps struct {
@@ -33,74 +34,65 @@ type createCourierPickupActionProps struct {
 
 type CreateCourierPickupAction struct{}
 
-func (c *CreateCourierPickupAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (c CreateCourierPickupAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (c CreateCourierPickupAction) Name() string {
-	return "Create Courier Pickup"
-}
-
-func (c CreateCourierPickupAction) Description() string {
-	return "creates a courier pickup"
-}
-
-func (c CreateCourierPickupAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createCourierDocs,
+// Metadata returns metadata about the action
+func (a *CreateCourierPickupAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_courier_pickup",
+		DisplayName:   "Create Courier Pickup",
+		Description:   "creates a courier pickup",
+		Type:          core.ActionTypeAction,
+		Documentation: createCourierDocs,
+		SampleOutput:  nil,
+		Settings:      core.ActionSettings{},
 	}
 }
 
-func (c CreateCourierPickupAction) Icon() *string {
-	return nil
+// Properties returns the schema for the action's input configuration
+func (a *CreateCourierPickupAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_courier_pickup", "Create Courier Pickup")
+
+	// Add courier-id field
+	form.TextField("courier-id", "Courier ID").
+		Placeholder("Enter a courier ID").
+		Required(true).
+		HelpText("Courier ID in case you need to overwrite the one suggested by default")
+
+	// Add shipment_ids field
+	form.ArrayField("shipment_ids", "Shipment IDs").
+		Required(false).
+		HelpText("All shipments to be requested. Shipments must have the same courier and their labels must be pending or generated.")
+
+	// Add selected-date field
+	form.DateTimeField("dueDate", "Selected date").
+		Required(true).
+		HelpText("Selected date for pickup")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (c CreateCourierPickupAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c CreateCourierPickupAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"courier-id": autoform.NewShortTextField().
-			SetDisplayName("Courier ID").
-			SetDescription("Courier ID in case you need to overwrite the one suggested by default").
-			SetRequired(true).
-			Build(),
-		"shipment_ids": autoform.NewArrayField().
-			SetDisplayName("Shipment IDs").
-			SetDescription("All shipments to be requested. Shipments must have the same courier and their labels must be pending or generated.").
-			SetItems(
-				autoform.NewShortTextField().
-					SetDisplayName("Shipment ID").
-					SetDescription("shipment Id").
-					SetRequired(true).
-					Build(),
-			).
-			SetRequired(false).Build(),
-		"selected-date": autoform.NewDateTimeField().
-			SetDisplayName("Selected date").
-			SetDescription("Selected date for pickup").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (c CreateCourierPickupAction) Auth() *sdk.Auth {
-	return &sdk.Auth{
+// Auth returns the authentication requirements for the action
+func (a *CreateCourierPickupAction) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Inherit: true,
 	}
 }
 
-func (c CreateCourierPickupAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	if ctx.Auth.Extra["api-key"] == "" {
+// Perform executes the action with the given context and input
+func (a *CreateCourierPickupAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	if authCtx.Extra["api-key"] == "" {
 		return nil, errors.New("missing easyship api key")
 	}
 
-	input, err := sdk.InputToTypeSafely[createCourierPickupActionProps](ctx.BaseContext)
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[createCourierPickupActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +105,7 @@ func (c CreateCourierPickupAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON
 		"selected_date":         input.SelectedDate,
 	}
 
-	response, err := shared.PostRequest(endpoint, ctx.Auth.Extra["api-key"], shipmentData)
+	response, err := shared.PostRequest(endpoint, authCtx.Extra["api-key"], shipmentData)
 	if err != nil {
 		return nil, fmt.Errorf("error requesting pickup:  %v", err)
 	}

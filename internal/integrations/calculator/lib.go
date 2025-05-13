@@ -4,10 +4,9 @@ import (
 	_ "embed"
 
 	"github.com/wakflo/extensions/internal/integrations/calculator/actions"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
-
-var Integration = sdk.Register(NewCalculator(), Flow, ReadME)
 
 //go:embed README.md
 var ReadME string
@@ -15,10 +14,16 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
+var Integration = sdk.Register(NewCalculator())
+
 type Calculator struct{}
 
-func (n *Calculator) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *Calculator) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *Calculator) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: false,
 	}
 }

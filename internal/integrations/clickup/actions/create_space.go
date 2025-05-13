@@ -45,7 +45,7 @@ func (o *CreateSpaceOperation) Icon() *string {
 
 func (o *CreateSpaceOperation) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
-		"workspace-id": shared.GetWorkSpaceInput("Workspaces", "select a workspace", true),
+		"workspace-id": shared.RegisterWorkSpaceInput("Workspaces", "select a workspace", true),
 		"name": autoform.NewShortTextField().
 			SetDisplayName("Space Name").
 			SetDescription("The name of the space").

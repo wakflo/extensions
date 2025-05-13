@@ -1,8 +1,10 @@
 package actions
 
 import (
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type divideActionProps struct {
@@ -11,34 +13,51 @@ type divideActionProps struct {
 
 type DivideAction struct{}
 
-func (a *DivideAction) Name() string {
-	return "Divide"
-}
-
-func (a *DivideAction) Description() string {
-	return "Splits an input array or string into multiple equal parts based on a specified number of segments."
-}
-
-func (a *DivideAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *DivideAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &divideDocs,
+// Metadata returns metadata about the action
+func (a *DivideAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "divide",
+		DisplayName:   "Divide",
+		Description:   "Splits an input array or string into multiple equal parts based on a specified number of segments.",
+		Type:          core.ActionTypeAction,
+		Documentation: divideDocs,
+		SampleOutput: map[string]any{
+			"firstNumber":  50,
+			"secondNumber": 2,
+			"result":       25,
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *DivideAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *DivideAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("divide", "Divide")
+
+	form.NumberField("firstNumber", "First number").
+		Placeholder("Enter first number").
+		Required(true).
+		HelpText("The number to be divided (dividend)")
+
+	form.NumberField("secondNumber", "Second number").
+		Placeholder("Enter second number").
+		Required(true).
+		HelpText("The number to divide by (divisor)")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *DivideAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *DivideAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return inputFields
-}
-
-func (a *DivideAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[divideActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *DivideAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[divideActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -59,22 +78,6 @@ func (a *DivideAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 		"secondNumber": sNumber,
 		"result":       fNumber / sNumber,
 	}, nil
-}
-
-func (a *DivideAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *DivideAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"firstNumber":  50,
-		"secondNumber": 2,
-		"result":       25,
-	}
-}
-
-func (a *DivideAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewDivideAction() sdk.Action {

@@ -9,17 +9,24 @@ import (
 	"net/http"
 
 	"github.com/gookit/goutil/arrutil"
+	"github.com/juicycleff/smartform/v1"
 	fastshot "github.com/opus-domini/fast-shot"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdk "github.com/wakflo/go-sdk/connector"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
+var form = smartform.NewAuthForm("clickup-auth", "ClickUp OAuth", smartform.AuthStrategyOAuth2)
+var _ = form.
+	OAuthField("oauth", "ClickUp OAuth").
+	AuthorizationURL("https://app.clickup.com/api").
+	TokenURL("https://api.clickup.com/api/v2/oauth/token").
+	Scopes([]string{}).
+	Build()
+
 var (
-	// #nosec
-	tokenURL          = "https://api.clickup.com/api/v2/oauth/token"
-	ClickupSharedAuth = autoform.NewOAuthField("https://app.clickup.com/api", &tokenURL, []string{}).Build()
+	ClickupSharedAuth = form.Build()
 )
 
 const BaseURL = "https://api.clickup.com/api"
@@ -188,10 +195,10 @@ func GetTeams(accessToken string) ([]Team, error) {
 	return parsedResponse.Teams, nil
 }
 
-func GetWorkSpaceInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getWorkspaces := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterWorkSpaceInput(form *smartform.FormBuilder, title string, desc string, required bool) {
+	getWorkspaces := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		client := fastshot.NewClient(BaseURL).
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(ctx.Auth().AccessToken).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -222,21 +229,31 @@ func GetWorkSpaceInput(title string, desc string, required bool) *sdkcore.AutoFo
 		return ctx.Respond(body.Teams, len(body.Teams))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getWorkspaces).
-		SetRequired(required).Build()
+	form.SelectField("workspace_id", title).
+		Placeholder("Select a workspace").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getWorkspaces)).
+				// WithFieldReference("state", "state").
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				// RefreshOn("state").
+				GetDynamicSource(),
+		).
+		HelpText(desc)
 }
 
-func GetSpacesInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getSpaces := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterSpacesInput(form *smartform.FormBuilder, title string, desc string, required bool) {
+	getSpaces := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			WorkspaceID string `json:"workspace-id,omitempty"`
 		}](ctx)
 
 		client := fastshot.NewClient(BaseURL).
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(ctx.Auth().AccessToken).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -268,21 +285,31 @@ func GetSpacesInput(title string, desc string, required bool) *sdkcore.AutoFormS
 		return ctx.Respond(body.Spaces, len(body.Spaces))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getSpaces).
-		SetRequired(required).Build()
+	form.SelectField("space_id", title).
+		Placeholder("Select a space").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getSpaces)).
+				// WithFieldReference("state", "state").
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				// RefreshOn("state").
+				GetDynamicSource(),
+		).
+		HelpText(desc)
 }
 
-func GetFoldersInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getFolders := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterFoldersInput(form *smartform.FormBuilder, title string, desc string, required bool) {
+	getFolders := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			SpaceID string `json:"space-id,omitempty"`
 		}](ctx)
 
 		client := fastshot.NewClient(BaseURL).
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(ctx.Auth().AccessToken).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -314,21 +341,31 @@ func GetFoldersInput(title string, desc string, required bool) *sdkcore.AutoForm
 		return ctx.Respond(body.Folders, len(body.Folders))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getFolders).
-		SetRequired(required).Build()
+	form.SelectField("folder_id", title).
+		Placeholder("Select a folder").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getFolders)).
+				// WithFieldReference("state", "state").
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				// RefreshOn("state").
+				GetDynamicSource(),
+		).
+		HelpText(desc)
 }
 
-func GetListsInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getLists := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterListsInput(form *smartform.FormBuilder, title string, desc string, required bool) {
+	getLists := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			FolderID string `json:"folder-id,omitempty"`
 		}](ctx)
 
 		client := fastshot.NewClient(BaseURL).
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(ctx.Auth().AccessToken).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -360,21 +397,31 @@ func GetListsInput(title string, desc string, required bool) *sdkcore.AutoFormSc
 		return ctx.Respond(body.Lists, len(body.Lists))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getLists).
-		SetRequired(required).Build()
+	form.SelectField("list_id", title).
+		Placeholder("Select a list").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getLists)).
+				// WithFieldReference("state", "state").
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				// RefreshOn("state").
+				GetDynamicSource(),
+		).
+		HelpText(desc)
 }
 
-func GetTasksInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getTasks := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterTasksInput(form *smartform.FormBuilder, title string, desc string, required bool) {
+	getTasks := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			ListID string `json:"list-id,omitempty"`
 		}](ctx)
 
 		client := fastshot.NewClient(BaseURL).
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(ctx.Auth().AccessToken).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -405,21 +452,31 @@ func GetTasksInput(title string, desc string, required bool) *sdkcore.AutoFormSc
 		return ctx.Respond(body.Tasks, len(body.Tasks))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getTasks).
-		SetRequired(required).Build()
+	form.SelectField("task_id", title).
+		Placeholder("Choose a task").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getTasks)).
+				// WithFieldReference("state", "state").
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				// RefreshOn("state").
+				GetDynamicSource(),
+		).
+		HelpText(desc)
 }
 
-func GetAssigneeInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getAssignees := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetAssigneeInput(form *smartform.FormBuilder, title string, desc string, required bool) {
+	getAssignees := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			ListID string `json:"list-id,omitempty"`
 		}](ctx)
 
 		client := fastshot.NewClient(BaseURL).
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(ctx.Auth().AccessToken).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -460,11 +517,21 @@ func GetAssigneeInput(title string, desc string, required bool) *sdkcore.AutoFor
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getAssignees).
-		SetRequired(required).Build()
+	form.SelectField("assignees_id", title).
+		Placeholder("Choose a task").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getAssignees)).
+				// WithFieldReference("state", "state").
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				// RefreshOn("state").
+				GetDynamicSource(),
+		).
+		HelpText(desc)
 }
 
 func CreateItem(accessToken, name, url string) (map[string]interface{}, error) {
@@ -540,7 +607,7 @@ func GetSpace(accessToken string, spaceID string) (map[string]interface{}, error
 	return respData, nil
 }
 
-var ClickupPriorityType = []*sdkcore.AutoFormSchema{
+var ClickupPriorityType = []*smartform.AutoFormSchema{
 	{Const: "1", Title: "Urgent"},
 	{Const: "2", Title: "High"},
 	{Const: "3", Title: "Normal"},

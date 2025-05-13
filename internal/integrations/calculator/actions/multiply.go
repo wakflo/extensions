@@ -1,8 +1,10 @@
 package actions
 
 import (
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type multiplyActionProps struct {
@@ -11,34 +13,51 @@ type multiplyActionProps struct {
 
 type MultiplyAction struct{}
 
-func (a *MultiplyAction) Name() string {
-	return "Multiply"
-}
-
-func (a *MultiplyAction) Description() string {
-	return "Multiplies two input values together and returns the result."
-}
-
-func (a *MultiplyAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *MultiplyAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &multiplyDocs,
+// Metadata returns metadata about the action
+func (a *MultiplyAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "multiply",
+		DisplayName:   "Multiply",
+		Description:   "Multiplies two input values together and returns the result.",
+		Type:          core.ActionTypeAction,
+		Documentation: multiplyDocs,
+		SampleOutput: map[string]any{
+			"firstNumber":  45.63,
+			"secondNumber": 67.23,
+			"result":       3067.7049,
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *MultiplyAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *MultiplyAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("multiply", "Multiply")
+
+	form.NumberField("firstNumber", "First number").
+		Placeholder("Enter first number").
+		Required(true).
+		HelpText("The first number to multiply")
+
+	form.NumberField("secondNumber", "Second number").
+		Placeholder("Enter second number").
+		Required(true).
+		HelpText("The second number to multiply")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *MultiplyAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *MultiplyAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return inputFields
-}
-
-func (a *MultiplyAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[multiplyActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *MultiplyAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[multiplyActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -51,22 +70,6 @@ func (a *MultiplyAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 		"secondNumber": sNumber,
 		"result":       fNumber * sNumber,
 	}, nil
-}
-
-func (a *MultiplyAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *MultiplyAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"firstNumber":  45.63,
-		"secondNumber": 67.23,
-		"result":       3067.7049,
-	}
-}
-
-func (a *MultiplyAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewMultiplyAction() sdk.Action {

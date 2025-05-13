@@ -3,10 +3,9 @@ package flexport
 import (
 	_ "embed"
 
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
-
-var Integration = sdk.Register(NewFlexport(), Flow, ReadME)
 
 //go:embed README.md
 var ReadME string
@@ -14,10 +13,16 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
+var Integration = sdk.Register(NewFlexport())
+
 type Flexport struct{}
 
-func (n *Flexport) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *Flexport) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *Flexport) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: false,
 	}
 }

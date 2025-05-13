@@ -17,69 +17,75 @@ package actions
 import (
 	"github.com/aftership/tracking-sdk-go/v5"
 	"github.com/aftership/tracking-sdk-go/v5/model"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	// Import shared package for Auth and other shared functionality
+	// We're ignoring type errors in shared.go files as per the issue description
+	// Using blank identifier to suppress unused import warning
+	_ "github.com/wakflo/extensions/internal/integrations/aftership/shared"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
+
+type markTrackingAsCompletedActionProps struct {
+	TrackingID string `json:"tracking_id"`
+}
 
 type MarkTrackingAsCompletedAction struct{}
 
-func (c *MarkTrackingAsCompletedAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (c MarkTrackingAsCompletedAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (c MarkTrackingAsCompletedAction) Name() string {
-	return "Mark a tracking as completed"
-}
-
-func (c MarkTrackingAsCompletedAction) Description() string {
-	return "mark a tracking as completed. The tracking won't auto update until retrack it."
-}
-
-func (c MarkTrackingAsCompletedAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &markTrackingAsCompletedDocs,
+// Metadata returns metadata about the action
+func (c MarkTrackingAsCompletedAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "mark_tracking_as_completed",
+		DisplayName:   "Mark a tracking as completed",
+		Description:   "mark a tracking as completed. The tracking won't auto update until retrack it.",
+		Type:          core.ActionTypeAction,
+		Documentation: markTrackingAsCompletedDocs,
+		SampleOutput:  nil,
+		Settings:      core.ActionSettings{},
 	}
 }
 
-func (c MarkTrackingAsCompletedAction) Icon() *string {
-	return nil
+// Properties returns the schema for the action's input configuration
+func (c MarkTrackingAsCompletedAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("mark_tracking_as_completed", "Mark a tracking as completed")
+
+	form.TextField("tracking_id", "Tracking ID").
+		Placeholder("Enter tracking ID").
+		Required(true).
+		HelpText("tracking ID")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (c MarkTrackingAsCompletedAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c MarkTrackingAsCompletedAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"tracking_id": autoform.NewShortTextField().
-			SetDisplayName("Tracking ID").
-			SetDescription("tracking ID").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (c MarkTrackingAsCompletedAction) Auth() *sdk.Auth {
-	return &sdk.Auth{
+// Auth returns the authentication requirements for the action
+func (c MarkTrackingAsCompletedAction) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Inherit: true,
 	}
 }
 
-func (c MarkTrackingAsCompletedAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getATrackingActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (c MarkTrackingAsCompletedAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[markTrackingAsCompletedActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	afterShipSdk, err := tracking.New(tracking.WithApiKey(ctx.Auth.Extra["api-key"]))
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
+
+	afterShipSdk, err := tracking.New(tracking.WithApiKey(authCtx.Extra["api-key"]))
+	if err != nil {
+		return nil, err
+	}
+
 	result, err := afterShipSdk.Tracking.
 		MarkTrackingCompletedById().
 		BuildPath(input.TrackingID).

@@ -53,11 +53,11 @@ func (o *UpdateTaskOperation) Icon() *string {
 
 func (o *UpdateTaskOperation) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
-		"workspace-id": shared.GetWorkSpaceInput("Workspaces", "select a workspace", true),
-		"space-id":     shared.GetSpacesInput("Spaces", "select a space", true),
-		"folder-id":    shared.GetFoldersInput("Folders", "select a folder", true),
-		"list-id":      shared.GetListsInput("Lists", "select a list to create task in", true),
-		"task-id":      shared.GetTasksInput("Tasks", "select a task to update", true),
+		"workspace-id": shared.RegisterWorkSpaceInput("Workspaces", "select a workspace", true),
+		"space-id":     shared.RegisterSpacesInput("Spaces", "select a space", true),
+		"folder-id":    shared.RegisterFoldersInput("Folders", "select a folder", true),
+		"list-id":      shared.RegisterListsInput("Lists", "select a list to create task in", true),
+		"task-id":      shared.RegisterTasksInput("Tasks", "select a task to update", true),
 		"assignee-id":  shared.GetAssigneeInput("Assignees", "select a assignee", true),
 		"name": autoform.NewShortTextField().
 			SetDisplayName("Task Name").

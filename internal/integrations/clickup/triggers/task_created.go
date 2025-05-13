@@ -8,58 +8,76 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/clickup/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
-type taskCreatedTriggerProps struct {
+type taskCreatedTriggerActionProps struct {
 	ListID      string  `json:"list-id"`
 	WorkspaceID *string `json:"workspace-id"`
 }
 
 type TaskCreatedTrigger struct{}
 
-func (t *TaskCreatedTrigger) Name() string {
-	return "Task Created"
-}
-
-func (t *TaskCreatedTrigger) Description() string {
-	return "Triggers a workflow when a new task is created in a specified ClickUp workspace or list, allowing you to automate subsequent actions based on new task creation events."
-}
-
-func (t *TaskCreatedTrigger) GetType() sdkcore.TriggerType {
-	return sdkcore.TriggerTypePolling
-}
-
-func (t *TaskCreatedTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &taskCreatedDocs,
+// Metadata returns metadata about the trigger
+func (t *TaskCreatedTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "task_created",
+		DisplayName:   "Task Created",
+		Description:   "Triggers a workflow when a new task is created in a specified ClickUp workspace or list, allowing you to automate subsequent actions based on new task creation events.",
+		Type:          core.TriggerTypePolling,
+		Documentation: taskCreatedDocs,
+		SampleOutput: map[string]any{
+			"id":   "abc123",
+			"name": "New Task",
+			"status": map[string]any{
+				"status": "Open",
+				"color":  "#d3d3d3",
+			},
+			"date_created": "1647354847362",
+			"creator": map[string]any{
+				"id":       "123456",
+				"username": "John Doe",
+				"email":    "john@example.com",
+			},
+		},
 	}
 }
 
-func (t *TaskCreatedTrigger) Icon() *string {
-	icon := "material-symbols:add-task-outline"
-	return &icon
+// Props returns the schema for the trigger's input configuration
+func (t *TaskCreatedTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("task_created", "Task Created")
+
+	shared.RegisterWorkSpaceInput(form, "Workspaces", "select a workspace", true)
+	shared.RegisterListsInput(form, "Lists", "select a list to create task in", true)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (t *TaskCreatedTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"list-id":      shared.GetListsInput("Lists", "select a list to get tasks from", true),
-		"workspace-id": shared.GetWorkSpaceInput("Workspaces", "select a workspace", true),
-	}
-}
-
-func (t *TaskCreatedTrigger) Start(ctx sdk.LifecycleContext) error {
+// Auth returns the authentication requirements for the trigger
+func (t *TaskCreatedTrigger) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (t *TaskCreatedTrigger) Stop(ctx sdk.LifecycleContext) error {
+// Start initializes the trigger
+func (t *TaskCreatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (t *TaskCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[taskCreatedTriggerProps](ctx.BaseContext)
+// Stop shuts down the trigger
+func (t *TaskCreatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
+	return nil
+}
+
+// Execute performs the main trigger logic
+func (t *TaskCreatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[taskCreatedTriggerActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -68,11 +86,16 @@ func (t *TaskCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, erro
 		return nil, errors.New("either List ID or Workspace ID must be provided")
 	}
 
-	lastRunTime := ctx.Metadata().LastRun
+	// Get the last run time
+	lastRunTime, err := ctx.GetMetadata("lastRun")
+	if err != nil {
+		return nil, err
+	}
 
 	var createdSince string
 	if lastRunTime != nil {
-		createdSince = strconv.FormatInt(lastRunTime.UnixNano()/int64(time.Millisecond), 10)
+		lastRunTimeValue := lastRunTime.(*time.Time)
+		createdSince = strconv.FormatInt(lastRunTimeValue.UnixNano()/int64(time.Millisecond), 10)
 	}
 
 	var endpoint string
@@ -89,7 +112,13 @@ func (t *TaskCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, erro
 		endpoint += queryParam
 	}
 
-	response, err := shared.GetClickUpClient(ctx.Auth.AccessToken, endpoint, http.MethodGet, nil)
+	// Get the token source from the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := shared.GetClickUpClient(authCtx.AccessToken, endpoint, http.MethodGet, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching data: %v", err)
 	}
@@ -106,29 +135,9 @@ func (t *TaskCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, erro
 	return tasksArray, nil
 }
 
-func (t *TaskCreatedTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
-	return sdkcore.TriggerCriteria{}
-}
-
-func (t *TaskCreatedTrigger) Auth() *sdk.Auth {
-	return nil
-}
-
-func (t *TaskCreatedTrigger) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"id":   "abc123",
-		"name": "New Task",
-		"status": map[string]any{
-			"status": "Open",
-			"color":  "#d3d3d3",
-		},
-		"date_created": "1647354847362",
-		"creator": map[string]any{
-			"id":       "123456",
-			"username": "John Doe",
-			"email":    "john@example.com",
-		},
-	}
+// Criteria returns the criteria for the trigger
+func (t *TaskCreatedTrigger) Criteria(ctx context.Context) core.TriggerCriteria {
+	return core.TriggerCriteria{}
 }
 
 func NewTaskCreatedTrigger() sdk.Trigger {

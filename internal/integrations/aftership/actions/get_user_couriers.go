@@ -18,60 +18,65 @@ import (
 	"errors"
 
 	"github.com/aftership/tracking-sdk-go/v5"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	// Import shared package for Auth and other shared functionality
+	// We're ignoring type errors in shared.go files as per the issue description
+	// Using blank identifier to suppress unused import warning
+	_ "github.com/wakflo/extensions/internal/integrations/aftership/shared"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type GetUserCouriersAction struct{}
 
-func (c *GetUserCouriersAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (c GetUserCouriersAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (c GetUserCouriersAction) Name() string {
-	return "Get User Activated Couriers"
-}
-
-func (c GetUserCouriersAction) Description() string {
-	return "get couriers activated by user"
-}
-
-func (c GetUserCouriersAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getUserCouriersDocs,
+// Metadata returns metadata about the action
+func (c GetUserCouriersAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_user_couriers",
+		DisplayName:   "Get User Activated Couriers",
+		Description:   "get couriers activated by user",
+		Type:          core.ActionTypeAction,
+		Documentation: getUserCouriersDocs,
+		SampleOutput:  nil,
+		Settings:      core.ActionSettings{},
 	}
 }
 
-func (c GetUserCouriersAction) Icon() *string {
-	return nil
+// Properties returns the schema for the action's input configuration
+func (c GetUserCouriersAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_user_couriers", "Get User Activated Couriers")
+
+	// No input properties needed for this action
+	schema := form.Build()
+
+	return schema
 }
 
-func (c GetUserCouriersAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c GetUserCouriersAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{}
-}
-
-func (c GetUserCouriersAction) Auth() *sdk.Auth {
-	return &sdk.Auth{
+// Auth returns the authentication requirements for the action
+func (c GetUserCouriersAction) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Inherit: true,
 	}
 }
 
-func (c GetUserCouriersAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	if ctx.Auth.Extra["api-key"] == "" {
-		return nil, errors.New("missing aftership api key")
-	}
-	afterShipSdk, err := tracking.New(tracking.WithApiKey(ctx.Auth.Extra["api-key"]))
+// Perform executes the action with the given context and input
+func (c GetUserCouriersAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
+
+	if authCtx.Extra["api-key"] == "" {
+		return nil, errors.New("missing aftership api key")
+	}
+
+	afterShipSdk, err := tracking.New(tracking.WithApiKey(authCtx.Extra["api-key"]))
+	if err != nil {
+		return nil, err
+	}
+
 	result, err := afterShipSdk.Courier.GetUserCouriers().Execute()
 	if err != nil {
 		return nil, err

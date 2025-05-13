@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/convertkit/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type listSubscribersActionProps struct {
@@ -18,45 +19,80 @@ type listSubscribersActionProps struct {
 
 type ListSubscribersAction struct{}
 
-func (a *ListSubscribersAction) Name() string {
-	return "List Subscribers"
-}
-
-func (a *ListSubscribersAction) Description() string {
-	return "Retrieve a list of subscribers from your ConvertKit account with their details and tags."
-}
-
-func (a *ListSubscribersAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListSubscribersAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listSubscribersDocs,
+// Metadata returns metadata about the action
+func (a *ListSubscribersAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_subscribers",
+		DisplayName:   "List Subscribers",
+		Description:   "Retrieve a list of subscribers from your ConvertKit account with their details and tags.",
+		Type:          core.ActionTypeAction,
+		Documentation: listSubscribersDocs,
+		Icon:          "mdi:account-group",
+		SampleOutput: map[string]any{
+			"subscribers": []map[string]any{
+				{
+					"id":            "123456",
+					"first_name":    "Jane",
+					"email_address": "jane@example.com",
+					"state":         "active",
+					"created_at":    "2023-01-15T10:30:00Z",
+					"fields": map[string]string{
+						"company": "Acme Inc",
+					},
+				},
+				{
+					"id":            "789012",
+					"first_name":    "John",
+					"email_address": "john@example.com",
+					"state":         "active",
+					"created_at":    "2023-01-16T14:20:00Z",
+					"fields": map[string]string{
+						"company": "XYZ Corp",
+					},
+				},
+			},
+			"total_subscribers": "156",
+			"page":              "1",
+			"page_size":         "50",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ListSubscribersAction) Icon() *string {
-	icon := "mdi:account-group"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *ListSubscribersAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_subscribers", "List Subscribers")
+
+	form.NumberField("page", "Page").
+		Placeholder("Enter page number").
+		Required(false).
+		HelpText("The page number to retrieve (pagination)")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *ListSubscribersAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"page": autoform.NewNumberField().
-			SetDisplayName("Page").
-			SetDescription("The page number to retrieve (pagination)").
-			Build(),
-	}
+// Auth returns the authentication requirements for the action
+func (a *ListSubscribersAction) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (a *ListSubscribersAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	_, err := sdk.InputToTypeSafely[listSubscribersActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *ListSubscribersAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	_, err := sdk.InputToTypeSafely[listSubscribersActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/subscribers?api_secret=" + ctx.Auth.Extra["api-secret"]
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	path := "/subscribers?api_secret=" + authCtx.Extra["api-secret"]
 
 	response, err := shared.GetConvertKitClient(path, http.MethodGet, nil)
 	if err != nil {
@@ -74,44 +110,6 @@ func (a *ListSubscribersAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, e
 	}
 
 	return subscribers, nil
-}
-
-func (a *ListSubscribersAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *ListSubscribersAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"subscribers": []map[string]any{
-			{
-				"id":            "123456",
-				"first_name":    "Jane",
-				"email_address": "jane@example.com",
-				"state":         "active",
-				"created_at":    "2023-01-15T10:30:00Z",
-				"fields": map[string]string{
-					"company": "Acme Inc",
-				},
-			},
-			{
-				"id":            "789012",
-				"first_name":    "John",
-				"email_address": "john@example.com",
-				"state":         "active",
-				"created_at":    "2023-01-16T14:20:00Z",
-				"fields": map[string]string{
-					"company": "XYZ Corp",
-				},
-			},
-		},
-		"total_subscribers": "156",
-		"page":              "1",
-		"page_size":         "50",
-	}
-}
-
-func (a *ListSubscribersAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewListSubscribersAction() sdk.Action {

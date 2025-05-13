@@ -4,10 +4,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/freshworkscrm/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type updateContactActionProps struct {
@@ -21,63 +22,97 @@ type updateContactActionProps struct {
 
 type UpdateContactAction struct{}
 
-func (a *UpdateContactAction) Name() string {
-	return "Update a Contact"
-}
-
-func (a *UpdateContactAction) Description() string {
-	return "Update a contact in Freshworks CRM with specified information."
-}
-
-func (a *UpdateContactAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *UpdateContactAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &updateContactDocs,
+// Metadata returns metadata about the action
+func (a *UpdateContactAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "update_contact",
+		DisplayName:   "Update a Contact",
+		Description:   "Update a contact in Freshworks CRM with specified information.",
+		Type:          core.ActionTypeAction,
+		Documentation: updateContactDocs,
+		SampleOutput: map[string]any{
+			"contact": map[string]any{
+				"id":         "12345",
+				"first_name": "John",
+				"last_name":  "Doe",
+				"email":      "john.doe@example.com",
+				"created_at": "2023-01-01T12:00:00Z",
+				"updated_at": "2023-01-01T12:00:00Z",
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *UpdateContactAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *UpdateContactAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("update_contact", "Update a Contact")
+
+	// Add contact_view_id field
+	form.TextField("contact_view_id", "Contact View ID").
+		Placeholder("Enter contact view ID").
+		Required(true).
+		HelpText("The ID of the contact view")
+
+	// Add contact_id field
+	form.TextField("contact_id", "Contact ID").
+		Placeholder("Enter contact ID").
+		Required(true).
+		HelpText("The ID of the contact to update")
+
+	// Add first_name field
+	form.TextField("first_name", "First Name").
+		Placeholder("Enter first name").
+		Required(false).
+		HelpText("Contact's first name")
+
+	// Add last_name field
+	form.TextField("last_name", "Last Name").
+		Placeholder("Enter last name").
+		Required(false).
+		HelpText("Contact's last name")
+
+	// Add email field
+	form.TextField("email", "Email").
+		Placeholder("Enter email").
+		Required(false).
+		HelpText("Contact's email")
+
+	// Add mobile_number field
+	form.TextField("mobile_number", "Mobile Number").
+		Placeholder("Enter mobile number").
+		Required(false).
+		HelpText("Contact's mobile number")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *UpdateContactAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *UpdateContactAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"first_name": autoform.NewShortTextField().
-			SetDisplayName("First Name").
-			SetDescription("Contact's first name").
-			SetRequired(false).
-			Build(),
-		"last_name": autoform.NewShortTextField().
-			SetDisplayName("Last Name").
-			SetDescription("Contact's last name").
-			SetRequired(false).
-			Build(),
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Email").
-			SetDescription("Contact's email").
-			SetRequired(false).
-			Build(),
-		"mobile_number": autoform.NewShortTextField().
-			SetDisplayName("Mobile Number").
-			SetDescription("Contact's mobile number").
-			SetRequired(false).
-			Build(),
-		"contact_view_id": shared.GetContactViewInput(),
-		"contact_id":      shared.GetContactsInput(),
+// Perform executes the action with the given context and input
+func (a *UpdateContactAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *UpdateContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	if ctx.Auth.Extra["api-key"] == "" || ctx.Auth.Extra["domain"] == "" {
+	if authCtx.Extra["api-key"] == "" || authCtx.Extra["domain"] == "" {
 		return nil, errors.New("missing freshworks auth parameters")
 	}
 
-	input := sdk.InputToType[updateContactActionProps](ctx.BaseContext)
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[updateContactActionProps](ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	domain := ctx.Auth.Extra["domain"]
+	domain := authCtx.Extra["domain"]
 	freshworksDomain := "https://" + domain + ".myfreshworks.com"
 
 	contact := make(map[string]interface{})
@@ -91,33 +126,12 @@ func (a *UpdateContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 		"contact": contact,
 	}
 
-	response, err := shared.UpdateContact(freshworksDomain, ctx.Auth.Extra["api-key"], input.ContactID, contactData)
+	response, err := shared.UpdateContact(freshworksDomain, authCtx.Extra["api-key"], input.ContactID, contactData)
 	if err != nil {
 		return nil, fmt.Errorf("error updating contact:  %v", err)
 	}
 
 	return response, nil
-}
-
-func (a *UpdateContactAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *UpdateContactAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"contact": map[string]any{
-			"id":         "12345",
-			"first_name": "John",
-			"last_name":  "Doe",
-			"email":      "john.doe@example.com",
-			"created_at": "2023-01-01T12:00:00Z",
-			"updated_at": "2023-01-01T12:00:00Z",
-		},
-	}
-}
-
-func (a *UpdateContactAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewUpdateContactAction() sdk.Action {

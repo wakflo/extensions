@@ -9,35 +9,11 @@ import (
 	"errors"
 	"hash"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
-
-type CryptographyAlgorithm struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-var supportedAlgorithms = []*sdkcore.AutoFormSchema{
-	{
-		Const: "MD5",
-		Title: "MD5",
-	},
-	{
-		Const: "SHA1",
-		Title: "SHA1",
-	},
-	{
-		Const: "SHA256",
-		Title: "SHA256",
-	},
-	{
-		Const: "SHA512",
-		Title: "SHA512",
-	},
-	// RIPEMD160 removed due to deprecation
-}
 
 type hashTextActionProps struct {
 	Algorithm string `json:"algorithm"`
@@ -46,46 +22,59 @@ type hashTextActionProps struct {
 
 type HashTextAction struct{}
 
-func (a *HashTextAction) Name() string {
-	return "Hash Text"
-}
-
-func (a *HashTextAction) Description() string {
-	return "Hashes the input text and returns a unique digital fingerprint (hash value) that can be used to verify the integrity of the original text."
-}
-
-func (a *HashTextAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *HashTextAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &hashTextDocs,
+// Metadata returns metadata about the action
+func (a *HashTextAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "hash_text",
+		DisplayName:   "Hash Text",
+		Description:   "Hashes the input text and returns a unique digital fingerprint (hash value) that can be used to verify the integrity of the original text.",
+		Type:          core.ActionTypeAction,
+		Documentation: hashTextDocs,
+		SampleOutput: map[string]any{
+			"name":         "cryptography-hash-text",
+			"usage_mode":   "operation",
+			"algorithm_id": "MD5",
+			"text":         "This is the string to be hashed",
+			"hashed_text":  "b2ba2dca5dd2ae6a18bb3f72ec1b9389",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *HashTextAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *HashTextAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("hash_text", "Hash Text")
+
+	// Add algorithm field
+	form.SelectField("algorithm", "Algorithm").
+		Placeholder("Select a hashing algorithm").
+		Required(true).
+		HelpText("Hashing algorithm").
+		AddOption("MD5", "MD5").
+		AddOption("SHA1", "SHA1").
+		AddOption("SHA256", "SHA256").
+		AddOption("SHA512", "SHA512")
+
+	// Add text field
+	form.TextField("text", "Text").
+		Placeholder("Enter text to hash").
+		Required(true).
+		HelpText("Text to be hashed")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *HashTextAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *HashTextAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"algorithm": autoform.NewSelectField().
-			SetDisplayName("Algorithm").
-			SetDescription("Hashing algorithm").
-			SetOptions(supportedAlgorithms).
-			SetRequired(true).
-			Build(),
-		"text": autoform.NewShortTextField().
-			SetDisplayName("Text").
-			SetDescription("Text to be hashed").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *HashTextAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[hashTextActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *HashTextAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[hashTextActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -96,24 +85,20 @@ func (a *HashTextAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 	var hashedString hash.Hash
 
 	switch algo {
-	case supportedAlgorithms[0].Const:
+	case "MD5":
 		// #nosec
 		hashedString = md5.New()
 		hashedString.Write([]byte(inputText))
-		break
-	case supportedAlgorithms[1].Const:
+	case "SHA1":
 		// #nosec
 		hashedString = sha1.New()
 		hashedString.Write([]byte(inputText))
-		break
-	case supportedAlgorithms[2].Const:
+	case "SHA256":
 		hashedString = sha256.New()
 		hashedString.Write([]byte(inputText))
-		break
-	case supportedAlgorithms[3].Const:
+	case "SHA512":
 		hashedString = sha512.New()
 		hashedString.Write([]byte(inputText))
-		break
 	default:
 		return nil, errors.New("given hashing algorithm isn't supported")
 	}
@@ -125,24 +110,6 @@ func (a *HashTextAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 		"text":         inputText,
 		"hashed_text":  hex.EncodeToString(hashedString.Sum(nil)),
 	}, nil
-}
-
-func (a *HashTextAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *HashTextAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"name":         "cryptography-hash-text",
-		"usage_mode":   "operation",
-		"algorithm_id": "MD5",
-		"text":         "This is the string to be hashed",
-		"hashed_text":  "b2ba2dca5dd2ae6a18bb3f72ec1b9389",
-	}
-}
-
-func (a *HashTextAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewHashTextAction() sdk.Action {

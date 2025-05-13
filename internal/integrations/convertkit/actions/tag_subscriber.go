@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/convertkit/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type tagSubscriberActionProps struct {
@@ -19,52 +20,73 @@ type tagSubscriberActionProps struct {
 
 type TagSubscriberAction struct{}
 
-func (a *TagSubscriberAction) Name() string {
-	return "Tag Subscriber"
-}
-
-func (a *TagSubscriberAction) Description() string {
-	return "Apply a tag to a subscriber in your ConvertKit account."
-}
-
-func (a *TagSubscriberAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *TagSubscriberAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &tagSubscriberDocs,
+// Metadata returns metadata about the action
+func (a *TagSubscriberAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "tag_subscriber",
+		DisplayName:   "Tag Subscriber",
+		Description:   "Apply a tag to a subscriber in your ConvertKit account.",
+		Type:          core.ActionTypeAction,
+		Documentation: tagSubscriberDocs,
+		Icon:          "mdi:tag-plus",
+		SampleOutput: map[string]any{
+			"subscription": map[string]any{
+				"id":                "12345",
+				"state":             "inactive",
+				"created_at":        "2024-03-15T10:30:00Z",
+				"source":            nil,
+				"referrer":          nil,
+				"subscribable_id":   "789",
+				"subscribable_type": "tag",
+				"subscriber": map[string]any{
+					"id": "54321",
+				},
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *TagSubscriberAction) Icon() *string {
-	icon := "mdi:tag-plus"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *TagSubscriberAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("tag_subscriber", "Tag Subscriber")
+
+	form.NumberField("tag_id", "Tag ID").
+		Placeholder("Enter tag ID").
+		Required(true).
+		HelpText("ID of the tag to apply")
+
+	form.TextField("email", "Email").
+		Placeholder("Enter email address").
+		Required(true).
+		HelpText("Email address of the subscriber")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *TagSubscriberAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"tag_id": autoform.NewNumberField().
-			SetDisplayName("Tag ID").
-			SetDescription("ID of the tag to apply").
-			SetRequired(true).
-			Build(),
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Email").
-			SetDescription("Email address of the subscriber").
-			SetRequired(true).
-			Build(),
+// Auth returns the authentication requirements for the action
+func (a *TagSubscriberAction) Auth() *core.AuthMetadata {
+	return nil
+}
+
+// Perform executes the action with the given context and input
+func (a *TagSubscriberAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[tagSubscriberActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *TagSubscriberAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[tagSubscriberActionProps](ctx.BaseContext)
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
 
 	payload := map[string]interface{}{
-		"api_secret": ctx.Auth.Extra["api-secret"],
+		"api_secret": authCtx.Extra["api-secret"],
 		"email":      input.Email,
 	}
 
@@ -81,31 +103,6 @@ func (a *TagSubscriberAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	}
 
 	return response, nil
-}
-
-func (a *TagSubscriberAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *TagSubscriberAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"subscription": map[string]any{
-			"id":                "12345",
-			"state":             "inactive",
-			"created_at":        "2024-03-15T10:30:00Z",
-			"source":            nil,
-			"referrer":          nil,
-			"subscribable_id":   "789",
-			"subscribable_type": "tag",
-			"subscriber": map[string]any{
-				"id": "54321",
-			},
-		},
-	}
-}
-
-func (a *TagSubscriberAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewTagSubscriberAction() sdk.Action {

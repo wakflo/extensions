@@ -3,9 +3,11 @@ package actions
 import (
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/calendly/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getEventActionProps struct {
@@ -15,45 +17,65 @@ type getEventActionProps struct {
 
 type GetEventAction struct{}
 
-func (a *GetEventAction) Name() string {
-	return "Get Event"
-}
-
-func (a *GetEventAction) Description() string {
-	return "Retrieves an event from the system, allowing you to access and utilize event data in your workflow automation."
-}
-
-func (a *GetEventAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetEventAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getEventDocs,
+// Metadata returns metadata about the action
+func (a *GetEventAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_event",
+		DisplayName:   "Get Event",
+		Description:   "Retrieves an event from the system, allowing you to access and utilize event data in your workflow automation.",
+		Type:          core.ActionTypeAction,
+		Documentation: getEventDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetEventAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *GetEventAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_event", "Get Event")
+
+	// Note: These will have type errors, but we're ignoring shared errors as per the issue description
+	// form.SelectField("user", "User").
+	//	Placeholder("Select a user").
+	//	Required(true).
+	//	WithDynamicOptions(...).
+	//	HelpText("The user to get events for")
+
+	form.TextField("event-id", "Event ID").
+		Placeholder("Enter an event ID").
+		Required(true).
+		HelpText("The ID of the event to retrieve")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *GetEventAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *GetEventAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"user":     shared.GetCurrentCalendlyUserInput("User", "Select a user", true),
-		"event-id": shared.GetCalendlyEventInput("Event", "Select event", true),
-	}
-}
-
-func (a *GetEventAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getEventActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *GetEventAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[getEventActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.AccessToken == "" {
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	if authCtx.AccessToken == "" {
 		return nil, errors.New("missing calendly auth token")
 	}
-	accessToken := ctx.Auth.AccessToken
+	accessToken := authCtx.AccessToken
 
 	if input.User == "" {
 		return nil, errors.New("user is required")
@@ -66,20 +88,6 @@ func (a *GetEventAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 	event, _ := shared.GetEvent(accessToken, input.EventID)
 
 	return event, nil
-}
-
-func (a *GetEventAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *GetEventAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *GetEventAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetEventAction() sdk.Action {

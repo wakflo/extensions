@@ -40,8 +40,8 @@ func (o *CreateFolderlessListOperation) Icon() *string {
 
 func (o *CreateFolderlessListOperation) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
-		"workspace-id": shared.GetWorkSpaceInput("Workspaces", "select a workspace", true),
-		"space-id":     shared.GetSpacesInput("Spaces", "select a space", true),
+		"workspace-id": shared.RegisterWorkSpaceInput("Workspaces", "select a workspace", true),
+		"space-id":     shared.RegisterSpacesInput("Spaces", "select a space", true),
 		"name": autoform.NewShortTextField().
 			SetDisplayName("List Name").
 			SetDescription("The name of the list").

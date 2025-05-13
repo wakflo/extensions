@@ -7,49 +7,69 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type GetSubscriberListsAction struct{}
 
-func (a *GetSubscriberListsAction) Name() string {
-	return "Get Subscriber Lists"
-}
-
-func (a *GetSubscriberListsAction) Description() string {
-	return "Retrieve all subscriber lists for a client."
-}
-
-func (a *GetSubscriberListsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetSubscriberListsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getSubscriberList,
+// Metadata returns metadata about the action
+func (a *GetSubscriberListsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_subscriber_lists",
+		DisplayName:   "Get Subscriber Lists",
+		Description:   "Retrieve all subscriber lists for a client.",
+		Type:          core.ActionTypeAction,
+		Documentation: getSubscriberList,
+		Icon:          "mdi:format-list-bulleted",
+		SampleOutput: map[string]interface{}{
+			"lists": []map[string]interface{}{
+				{
+					"id":   "a58ee1d3039b8bec838e6d1482a8a965",
+					"name": "List One",
+				},
+				{
+					"id":   "99bc35084a5739127a8ab81eae5bd305",
+					"name": "List Two",
+				},
+			},
+			"count": "2",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetSubscriberListsAction) Icon() *string {
-	icon := "mdi:format-list-bulleted"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *GetSubscriberListsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_subscriber_lists", "Get Subscriber Lists")
+
+	form.NumberField("page", "Page").
+		Placeholder("Enter page number").
+		Required(false).
+		HelpText("The page number to retrieve (for pagination).")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *GetSubscriberListsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"page": autoform.NewNumberField().
-			SetDisplayName("Page").
-			SetDescription("The page number to retrieve (for pagination).").
-			SetRequired(false).
-			Build(),
+// Auth returns the authentication requirements for the action
+func (a *GetSubscriberListsAction) Auth() *core.AuthMetadata {
+	return nil
+}
+
+// Perform executes the action with the given context and input
+func (a *GetSubscriberListsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *GetSubscriberListsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	clientID, clientIDExists := ctx.Auth.Extra["client-id"]
-	apiKey, apiKeyExists := ctx.Auth.Extra["api-key"]
+	clientID, clientIDExists := authCtx.Extra["client-id"]
+	apiKey, apiKeyExists := authCtx.Extra["api-key"]
 
 	if !clientIDExists || !apiKeyExists || clientID == "" || apiKey == "" {
 		return nil, errors.New("client ID and API Key are required")
@@ -89,30 +109,6 @@ func (a *GetSubscriberListsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON
 	}
 
 	return lists, nil
-}
-
-func (a *GetSubscriberListsAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *GetSubscriberListsAction) SampleData() sdkcore.JSON {
-	return map[string]interface{}{
-		"lists": []map[string]interface{}{
-			{
-				"id":   "a58ee1d3039b8bec838e6d1482a8a965",
-				"name": "List One",
-			},
-			{
-				"id":   "99bc35084a5739127a8ab81eae5bd305",
-				"name": "List Two",
-			},
-		},
-		"count": "2",
-	}
-}
-
-func (a *GetSubscriberListsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetSubscriberListsAction() sdk.Action {

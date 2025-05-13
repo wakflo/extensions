@@ -38,9 +38,9 @@ func (o *GetFolderOperation) Icon() *string {
 
 func (o *GetFolderOperation) Properties() map[string]*sdkcore.AutoFormSchema {
 	return map[string]*sdkcore.AutoFormSchema{
-		"workspace-id": shared.GetWorkSpaceInput("Workspaces", "select a workspace", true),
-		"space-id":     shared.GetSpacesInput("Spaces", "select a space", true),
-		"folder-id":    shared.GetFoldersInput("Folders", "select a folder", true),
+		"workspace-id": shared.RegisterWorkSpaceInput("Workspaces", "select a workspace", true),
+		"space-id":     shared.RegisterSpacesInput("Spaces", "select a space", true),
+		"folder-id":    shared.RegisterFoldersInput("Folders", "select a folder", true),
 	}
 }
 

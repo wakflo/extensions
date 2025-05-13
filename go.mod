@@ -14,6 +14,7 @@ require (
 	github.com/gocarina/gocsv v0.0.0-20240520201108-78e41c74b4b1
 	github.com/google/generative-ai-go v0.19.0
 	github.com/gookit/goutil v0.6.18
+	github.com/gosimple/slug v1.15.0
 	github.com/hiscaler/woocommerce-go v1.0.3
 	github.com/juicycleff/smartform v0.3.0
 	github.com/opus-domini/fast-shot v1.1.4
@@ -52,7 +53,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.1 // indirect
-	github.com/gosimple/slug v1.15.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/grokify/goauth v0.23.5 // indirect
 	github.com/grokify/mogo v0.67.9 // indirect
