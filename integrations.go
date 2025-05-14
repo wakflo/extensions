@@ -33,7 +33,7 @@ import (
 	// "github.com/wakflo/extensions/internal/integrations/linear"
 	// "github.com/wakflo/extensions/internal/integrations/mailchimp"
 	// "github.com/wakflo/extensions/internal/integrations/mailjet"
-	// "github.com/wakflo/extensions/internal/integrations/monday"
+	"github.com/wakflo/extensions/internal/integrations/monday"
 	// "github.com/wakflo/extensions/internal/integrations/notion"
 	// "github.com/wakflo/extensions/internal/integrations/openai"
 	// "github.com/wakflo/extensions/internal/integrations/prisync"
@@ -81,7 +81,7 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		// prisync.Integration,           // Prisync
 		// openai.Integration,            // OpenAI
 		// gemini.Integration,            // Gemini
-		// monday.Integration,            // Monday
+		monday.Integration, // Monday
 		// mailchimp.Integration,         // Mailchimp
 		// csv.Integration,               // CSV
 		// cryptography.Integration,      // Cryptography

@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/monday/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type createGroupActionProps struct {
@@ -18,42 +20,49 @@ type createGroupActionProps struct {
 
 type CreateGroupAction struct{}
 
-func (a *CreateGroupAction) Name() string {
-	return "Create Group"
+// func (a *CreateGroupAction) Name() string {
+// 	return "Create Group"
+// }
+
+func (a *CreateGroupAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_group",
+		DisplayName:   "Create Group",
+		Description:   "Create Group: Creates a new group in your organization's directory, allowing you to categorize and manage users with similar roles or responsibilities. This integration action enables you to automate the process of creating groups, streamlining your workflow and improving collaboration among team members.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: createGroupDocs,
+		SampleOutput: map[string]any{
+			"data": map[string]interface{}{
+				"id":   "123456789",
+				"name": "New Group",
+			},
+		},
+		Settings: sdkcore.ActionSettings{},
+	}
 }
 
 func (a *CreateGroupAction) Description() string {
 	return "Create Group: Creates a new group in your organization's directory, allowing you to categorize and manage users with similar roles or responsibilities. This integration action enables you to automate the process of creating groups, streamlining your workflow and improving collaboration among team members."
 }
 
-func (a *CreateGroupAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
+func (a *CreateGroupAction) Properties() *smartform.FormSchema {
+
+	form := smartform.NewForm("create_group", "Create Group")
+
+	shared.GetWorkspaceProp(form)
+	shared.GetBoardProp("board_id", "Board ID", "Select Board", form)
+	form.TextField("group_name", "Group Name").
+		Placeholder("New Group").
+		Required(true).
+		HelpText("Group name.")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *CreateGroupAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createGroupDocs,
-	}
-}
-
-func (a *CreateGroupAction) Icon() *string {
-	return nil
-}
-
-func (a *CreateGroupAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"workspace_id": shared.GetWorkspaceInput(),
-		"board_id":     shared.GetBoardInput("Board ID", "Select Board"),
-		"group_name": autoform.NewShortTextField().
-			SetDisplayName("Group Name").
-			SetDescription("Group name").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *CreateGroupAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createGroupActionProps](ctx.BaseContext)
+func (a *CreateGroupAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createGroupActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +83,7 @@ func (a *CreateGroupAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 		}
 }`, strings.Join(fieldStrings, "\n"))
 
-	response, err := shared.MondayClient(ctx.BaseContext, mutation)
+	response, err := shared.MondayClient(ctx, mutation)
 	if err != nil {
 		return nil, err
 		// return nil, errors.New("request not successful")
@@ -88,18 +97,8 @@ func (a *CreateGroupAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 	return group, nil
 }
 
-func (a *CreateGroupAction) Auth() *sdk.Auth {
+func (a *CreateGroupAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *CreateGroupAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateGroupAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateGroupAction() sdk.Action {
