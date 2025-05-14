@@ -3,10 +3,11 @@ package actions
 import (
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/notion/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type updatePageActionProps struct {
@@ -18,55 +19,54 @@ type updatePageActionProps struct {
 
 type UpdatePageAction struct{}
 
-func (a *UpdatePageAction) Name() string {
-	return "Update Page"
-}
-
-func (a *UpdatePageAction) Description() string {
-	return "Updates an existing page with new content, replacing any existing text, images, or other elements."
-}
-
-func (a *UpdatePageAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *UpdatePageAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &updatePageDocs,
+func (a *UpdatePageAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "update_page",
+		DisplayName:   "Update Page",
+		Description:   "Update Page: Updates an existing page with new content, replacing any existing text, images, or other elements.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: updatePageDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *UpdatePageAction) Icon() *string {
-	return nil
+func (a *UpdatePageAction) Properties() *smartform.FormSchema {
+
+	form := smartform.NewForm("update_page", "Update Page")
+
+	form.TextField("title", "Title").
+		Placeholder("Enter a title").
+		Required(true).
+		HelpText("The title of the page")
+
+	form.TextareaField("content", "Content").
+		Placeholder("Enter content").
+		Required(true).
+		HelpText("The content of the page")
+
+	shared.GetNotionDatabasesProp(form)
+
+	shared.GetNotionPagesProp("Page ID", "Select a page", false, form)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *UpdatePageAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"title": autoform.NewShortTextField().
-			SetDisplayName("Title").
-			SetDescription("The title of the page").
-			SetRequired(true).
-			Build(),
-		"content": autoform.NewLongTextField().
-			SetDisplayName("Content").
-			SetDescription("The content of the page").
-			SetRequired(true).
-			Build(),
-		"database": shared.GetNotionDatabasesInput("Database", "Select a database", true),
-		"page_id":  shared.GetNotionPagesInput("Page", "Select a page", true),
-	}
-}
-
-func (a *UpdatePageAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[updatePageActionProps](ctx.BaseContext)
+func (a *UpdatePageAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[updatePageActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.AccessToken == "" {
-		return nil, errors.New("missing calendly auth token")
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
 	}
-	accessToken := ctx.Auth.AccessToken
+	token := tokenSource.AccessToken
 
 	if input.Title == "" {
 		return nil, errors.New("title is required")
@@ -80,23 +80,13 @@ func (a *UpdatePageAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 		return nil, errors.New("parent page is required")
 	}
 
-	notionPage, _ := shared.UpdateNotionPage(accessToken, input.PageID, input.Title, input.Content)
+	notionPage, _ := shared.UpdateNotionPage(token, input.PageID, input.Title, input.Content)
 
 	return notionPage, nil
 }
 
-func (a *UpdatePageAction) Auth() *sdk.Auth {
+func (a *UpdatePageAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *UpdatePageAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *UpdatePageAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewUpdatePageAction() sdk.Action {
