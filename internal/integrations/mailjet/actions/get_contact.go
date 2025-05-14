@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/mailjet/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type getContactActionProps struct {
@@ -18,44 +19,66 @@ type getContactActionProps struct {
 
 type GetContactAction struct{}
 
-func (a *GetContactAction) Name() string {
-	return "Get Contact"
-}
-
-func (a *GetContactAction) Description() string {
-	return "Retrieve detailed information about a specific contact from your Mailjet account."
-}
-
-func (a *GetContactAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetContactAction) Icon() *string {
-	icon := "mdi:account-details"
-	return &icon
-}
-
-func (a *GetContactAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"contact_id": autoform.NewNumberField().
-			SetDisplayName("Contact ID").
-			SetDescription("ID of the contact to retrieve").
-			SetRequired(false).Build(),
-
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Email").
-			SetDescription("Email address of the contact to retrieve").
-			SetRequired(false).Build(),
+func (a *GetContactAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_contact",
+		DisplayName:   "Get Contact",
+		Description:   "Retrieve detailed information about a specific contact from your Mailjet account.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: getContactDocs,
+		SampleOutput: map[string]any{
+			"Count": 1,
+			"Data": []map[string]any{
+				{
+					"ContactID":               "123456",
+					"Email":                   "contact@example.com",
+					"Name":                    "Example Contact",
+					"IsExcludedFromCampaigns": false,
+					"CreatedAt":               "2023-01-01T00:00:00Z",
+					"DeliveredCount":          "10",
+					"IsOptInPending":          false,
+					"IsSpamComplaining":       false,
+					"LastActivityAt":          "2023-02-01T00:00:00Z",
+				},
+			},
+			"Total": 1,
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *GetContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getContactActionProps](ctx.BaseContext)
+func (a *GetContactAction) Properties() *smartform.FormSchema {
+
+	form := smartform.NewForm("get_contact", "Get Contact")
+
+	form.TextField("contact_id", "Contact ID").
+		Placeholder("contact ID").
+		Required(false).
+		HelpText("ID of the contact to retrieve.")
+
+	form.TextField("email", "Email").
+		Placeholder("email").
+		Required(false).
+		HelpText("Email address of the contact to retrieve.")
+
+	schema := form.Build()
+
+	return schema
+}
+
+func (a *GetContactAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getContactActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.GetMailJetClient(ctx.Auth.Extra["api_key"], ctx.Auth.Extra["secret_key"])
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := shared.GetMailJetClient(authCtx.Extra["api_key"], authCtx.Extra["secret_key"])
 	if err != nil {
 		return nil, err
 	}
@@ -85,38 +108,8 @@ func (a *GetContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	return result, nil
 }
 
-func (a *GetContactAction) Auth() *sdk.Auth {
+func (a *GetContactAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *GetContactAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"Count": 1,
-		"Data": []map[string]any{
-			{
-				"ContactID":               "123456",
-				"Email":                   "contact@example.com",
-				"Name":                    "Example Contact",
-				"IsExcludedFromCampaigns": false,
-				"CreatedAt":               "2023-01-01T00:00:00Z",
-				"DeliveredCount":          "10",
-				"IsOptInPending":          false,
-				"IsSpamComplaining":       false,
-				"LastActivityAt":          "2023-02-01T00:00:00Z",
-			},
-		},
-		"Total": 1,
-	}
-}
-
-func (a *GetContactAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (a *GetContactAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getContactDocs,
-	}
 }
 
 func NewGetContactAction() sdk.Action {

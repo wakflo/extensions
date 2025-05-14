@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/mailjet/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type contactUpdatedTriggerProps struct {
@@ -21,56 +22,86 @@ type contactUpdatedTriggerProps struct {
 
 type ContactUpdatedTrigger struct{}
 
-func (t *ContactUpdatedTrigger) Name() string {
-	return "Contact Updated"
-}
-
-func (t *ContactUpdatedTrigger) Description() string {
-	return "Triggers a workflow when a contact is created or updated in your Mailjet account."
-}
-
-func (t *ContactUpdatedTrigger) GetType() sdkcore.TriggerType {
-	return sdkcore.TriggerTypePolling
-}
-
-func (t *ContactUpdatedTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &contactUpdatedDocs,
+func (t *ContactUpdatedTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "contact_updated",
+		DisplayName:   "Contact Updated",
+		Description:   "Triggers a workflow when a contact is created or updated in your Mailjet account.",
+		Type:          sdkcore.TriggerTypePolling,
+		Documentation: contactUpdatedDocs,
+		SampleOutput: map[string]any{
+			"Count": "2",
+			"Data": []map[string]any{
+				{
+					"ContactID":               "123456",
+					"Email":                   "contact1@example.com",
+					"Name":                    "Contact One Updated",
+					"IsExcludedFromCampaigns": false,
+					"CreatedAt":               "2023-01-01T00:00:00Z",
+					"LastActivityAt":          "2023-04-01T14:25:36Z",
+					"DeliveredCount":          "15",
+					"IsOptInPending":          false,
+					"IsSpamComplaining":       false,
+				},
+				{
+					"ContactID":               "123457",
+					"Email":                   "newcontact@example.com",
+					"Name":                    "New Contact",
+					"IsExcludedFromCampaigns": false,
+					"CreatedAt":               "2023-04-01T12:30:00Z",
+					"LastActivityAt":          "2023-04-01T12:30:00Z",
+					"DeliveredCount":          "0",
+					"IsOptInPending":          true,
+					"IsSpamComplaining":       false,
+				},
+			},
+			"Total": "2",
+		},
 	}
 }
 
-func (t *ContactUpdatedTrigger) Icon() *string {
-	icon := "mdi:account-edit"
-	return &icon
+func (t *ContactUpdatedTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("contact_updated", "Contact Updated")
+
+	form.NumberField("limit", "Limit").
+		Placeholder("50").
+		Required(false).
+		HelpText("Maximum number of contacts to process per poll (default: 50, max: 1000)")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (t *ContactUpdatedTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"limit": autoform.NewNumberField().
-			SetDisplayName("Limit").
-			SetDescription("Maximum number of contacts to process per poll (default: 50, max: 1000)").
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (t *ContactUpdatedTrigger) Start(ctx sdk.LifecycleContext) error {
+func (t *ContactUpdatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (t *ContactUpdatedTrigger) Stop(ctx sdk.LifecycleContext) error {
+func (t *ContactUpdatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (t *ContactUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	lastRunTime := ctx.Metadata().LastRun
+func (t *ContactUpdatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
 
-	input, err := sdk.InputToTypeSafely[contactUpdatedTriggerProps](ctx.BaseContext)
+	input, err := sdk.InputToTypeSafely[contactUpdatedTriggerProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.GetMailJetClient(ctx.Auth.Extra["api_key"], ctx.Auth.Extra["secret_key"])
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	lr, err := ctx.GetMetadata("lastRun")
+	if err != nil {
+		return nil, err
+	}
+
+	lastRunTime := lr.(*time.Time)
+
+	client, err := shared.GetMailJetClient(authCtx.Extra["api_key"], authCtx.Extra["secret_key"])
 	if err != nil {
 		return nil, err
 	}
@@ -130,39 +161,8 @@ func (t *ContactUpdatedTrigger) Criteria(ctx context.Context) sdkcore.TriggerCri
 	return sdkcore.TriggerCriteria{}
 }
 
-func (t *ContactUpdatedTrigger) Auth() *sdk.Auth {
+func (t *ContactUpdatedTrigger) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (t *ContactUpdatedTrigger) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"Count": "2",
-		"Data": []map[string]any{
-			{
-				"ContactID":               "123456",
-				"Email":                   "contact1@example.com",
-				"Name":                    "Contact One Updated",
-				"IsExcludedFromCampaigns": false,
-				"CreatedAt":               "2023-01-01T00:00:00Z",
-				"LastActivityAt":          "2023-04-01T14:25:36Z",
-				"DeliveredCount":          "15",
-				"IsOptInPending":          false,
-				"IsSpamComplaining":       false,
-			},
-			{
-				"ContactID":               "123457",
-				"Email":                   "newcontact@example.com",
-				"Name":                    "New Contact",
-				"IsExcludedFromCampaigns": false,
-				"CreatedAt":               "2023-04-01T12:30:00Z",
-				"LastActivityAt":          "2023-04-01T12:30:00Z",
-				"DeliveredCount":          "0",
-				"IsOptInPending":          true,
-				"IsSpamComplaining":       false,
-			},
-		},
-		"Total": "2",
-	}
 }
 
 func NewContactUpdatedTrigger() sdk.Trigger {
