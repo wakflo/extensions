@@ -4,10 +4,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/mailchimp/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type addMemberToListActionProps struct {
@@ -21,75 +23,72 @@ type addMemberToListActionProps struct {
 
 type AddMemberToListAction struct{}
 
-func (a *AddMemberToListAction) Name() string {
-	return "Add Member To List"
-}
-
-func (a *AddMemberToListAction) Description() string {
-	return "Adds a new member to an existing list in your workflow, allowing you to easily manage and track team members, stakeholders, or other relevant parties involved in the process. This integration action enables seamless addition of new members to lists, streamlining collaboration and communication within your workflow."
-}
-
-func (a *AddMemberToListAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *AddMemberToListAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &addMemberToListDocs,
+func (a *AddMemberToListAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		DisplayName:   "Add Member To List",
+		Description:   "Adds a new member to an existing list in your workflow, allowing you to easily manage and track team members, stakeholders, or other relevant parties involved in the process. This integration action enables seamless addition of new members to lists, streamlining collaboration and communication within your workflow.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: addMemberToListDocs,
+		SampleOutput: map[string]any{
+			"success": "Contact Added!",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *AddMemberToListAction) Icon() *string {
-	return nil
+func (a *AddMemberToListAction) Properties() *smartform.FormSchema {
+
+	form := smartform.NewForm("add_member_to_list", "Add Member To List")
+
+	form.TextField("list-id", "List ID").
+		Placeholder("Enter a value for List ID.").
+		Required(true).
+		HelpText("The ID of the list to add the contact to.")
+
+	form.TextField("first-name", "First Name").
+		Placeholder("Enter a value for First Name.").
+		Required(true).
+		HelpText("The first name of the new contact.")
+
+	form.TextField("last-name", "Last Name").
+		Placeholder("Enter a value for Last Name.").
+		Required(true).
+		HelpText("The last name of the new contact.")
+
+	form.TextField("email", "Email").
+		Placeholder("Enter a value for Email.").
+		Required(true).
+		HelpText("The email of the new contact.")
+
+	form.SelectField("status", "Status").
+		Placeholder("Enter a value for Status.").
+		Required(true).
+		HelpText("The status of the new contact.").
+		AddOptions(shared.MailchimpStatusType...)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *AddMemberToListAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"list-id": autoform.NewShortTextField().
-			SetDisplayName(" List ID").
-			SetDescription("").
-			SetRequired(true).
-			Build(),
-		"first-name": autoform.NewShortTextField().
-			SetDisplayName(" First Name").
-			SetDescription("First name of the new contact").
-			SetRequired(true).
-			Build(),
-		"last-name": autoform.NewShortTextField().
-			SetDisplayName(" Last Name").
-			SetDescription("Last name of the new contact").
-			SetRequired(true).
-			Build(),
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Email").
-			SetDescription("Email of the new contact").
-			SetRequired(true).
-			Build(),
-		"status": autoform.NewSelectField().
-			SetDisplayName("Status").
-			SetOptions(shared.MailchimpStatusType).
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *AddMemberToListAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[addMemberToListActionProps](ctx.BaseContext)
+func (a *AddMemberToListAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[addMemberToListActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.AccessToken == "" {
-		return nil, errors.New("missing mailchimp auth token")
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
 	}
-	accessToken := ctx.Auth.AccessToken
+	token := tokenSource.AccessToken
 
-	dc, err := shared.GetMailChimpServerPrefix(accessToken)
+	dc, err := shared.GetMailChimpServerPrefix(token)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to get mailchimp server prefix: %v", err))
 	}
 
-	err = shared.AddContactToList(accessToken, dc, input.ListID, input.Email, input.FirstName, input.Status, input.LastName)
+	err = shared.AddContactToList(token, dc, input.ListID, input.Email, input.FirstName, input.Status, input.LastName)
 	if err != nil {
 		return nil, err
 	}
@@ -99,18 +98,8 @@ func (a *AddMemberToListAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, e
 	}, err
 }
 
-func (a *AddMemberToListAction) Auth() *sdk.Auth {
+func (a *AddMemberToListAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *AddMemberToListAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *AddMemberToListAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewAddMemberToListAction() sdk.Action {

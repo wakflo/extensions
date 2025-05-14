@@ -31,7 +31,7 @@ import (
 	// "github.com/wakflo/extensions/internal/integrations/jsonconverter"
 	// "github.com/wakflo/extensions/internal/integrations/keapcrm"
 	// "github.com/wakflo/extensions/internal/integrations/linear"
-	// "github.com/wakflo/extensions/internal/integrations/mailchimp"
+	"github.com/wakflo/extensions/internal/integrations/mailchimp"
 	// "github.com/wakflo/extensions/internal/integrations/mailjet"
 	// "github.com/wakflo/extensions/internal/integrations/monday"
 	// "github.com/wakflo/extensions/internal/integrations/notion"
@@ -82,7 +82,7 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		// openai.Integration,            // OpenAI
 		// gemini.Integration,            // Gemini
 		// monday.Integration,            // Monday
-		// mailchimp.Integration,         // Mailchimp
+		mailchimp.Integration, // Mailchimp
 		// csv.Integration,               // CSV
 		// cryptography.Integration,      // Cryptography
 		// notion.Integration,            // Notion
