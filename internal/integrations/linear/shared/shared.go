@@ -9,19 +9,23 @@ import (
 
 	"github.com/gookit/goutil/arrutil"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
-var SharedAuth = autoform.NewAuth().NewCustomAuth().
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"api-key": autoform.NewShortTextField().SetDisplayName("Api Key").
-			SetDescription("The api key used to authenticate linear.").
-			SetRequired(true).
-			Build(),
-	}).
-	Build()
+var (
+	form = smartform.NewAuthForm("linear-auth", "Linear Oauth", smartform.AuthStrategyOAuth2)
+
+	_ = form.TextField("api-key", "Api Key").
+		HelpText("The api key used to authenticate linear.").
+		Required(true).
+		Build()
+
+	SharedAuth = form.Build()
+)
 
 const baseURL = "https://api.linear.app/graphql"
 
@@ -62,8 +66,8 @@ func MakeGraphQLRequest(apiKEY, query string) (map[string]interface{}, error) {
 	return result, nil
 }
 
-func GetTeamsInput() *sdkcore.AutoFormSchema {
-	getTeams := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetTeamsProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getTeams := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		query := `{
 		 teams {
 			nodes {
@@ -86,8 +90,14 @@ func GetTeamsInput() *sdkcore.AutoFormSchema {
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 
+		// Get the auth context
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", ctx.Auth.Extra["api-key"])
+		req.Header.Set("Authorization", authCtx.Extra["api-key"])
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -118,15 +128,23 @@ func GetTeamsInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(teams, len(teams))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Teams").
-		SetDescription("Select a team").
-		SetDynamicOptions(&getTeams).
-		SetRequired(true).Build()
+	return form.SelectField("team-id", "Teams").
+		Placeholder("Select a team").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getTeams)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select a team")
 }
 
-func GetIssuesInput(title, description string) *sdkcore.AutoFormSchema {
-	getIssues := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetIssuesProp(id string, title string, description string, form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getIssues := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			TeamID string `json:"team-id"`
 		}](ctx)
@@ -155,8 +173,14 @@ func GetIssuesInput(title, description string) *sdkcore.AutoFormSchema {
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 
+		// Get the auth context
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", ctx.Auth.Extra["api-key"])
+		req.Header.Set("Authorization", authCtx.Extra["api-key"])
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -189,22 +213,30 @@ func GetIssuesInput(title, description string) *sdkcore.AutoFormSchema {
 
 		items := arrutil.Map[Issue, map[string]any](issues, func(input Issue) (target map[string]any, find bool) {
 			return map[string]any{
-				"id":   input.ID,
-				"name": input.Title,
+				"value": input.ID,
+				"label": input.Title,
 			}, true
 		})
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(description).
-		SetDynamicOptions(&getIssues).
-		SetRequired(true).Build()
+	return form.SelectField(id, title).
+		Placeholder(description).
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getIssues)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText(description)
 }
 
-func GetPriorityInput(title, description string) *sdkcore.AutoFormSchema {
-	getPriorities := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetPriorityProp(id string, title string, description string, form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getPriorities := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		query := `
 		{
 			issuePriorityValues {
@@ -226,8 +258,14 @@ func GetPriorityInput(title, description string) *sdkcore.AutoFormSchema {
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 
+		// Get the auth context
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", ctx.Auth.Extra["api-key"])
+		req.Header.Set("Authorization", authCtx.Extra["api-key"])
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -269,22 +307,30 @@ func GetPriorityInput(title, description string) *sdkcore.AutoFormSchema {
 		},
 		) (target map[string]any, find bool) {
 			return map[string]any{
-				"id":   input.Priority,
-				"name": input.Label,
+				"value": input.Priority,
+				"label": input.Label,
 			}, true
 		})
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(description).
-		SetDynamicOptions(&getPriorities).
-		SetRequired(false).Build()
+	return form.SelectField(id, title).
+		Placeholder(description).
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getPriorities)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText(description)
 }
 
-func GetTeamLabelsInput(title, description string) *sdkcore.AutoFormSchema {
-	getLabels := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetTeamLabelsProp(id string, title string, description string, form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getLabels := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			TeamID string `json:"team-id"`
 		}](ctx)
@@ -314,8 +360,14 @@ func GetTeamLabelsInput(title, description string) *sdkcore.AutoFormSchema {
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 
+		// Get the auth context
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", ctx.Auth.Extra["api-key"])
+		req.Header.Set("Authorization", authCtx.Extra["api-key"])
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -348,15 +400,23 @@ func GetTeamLabelsInput(title, description string) *sdkcore.AutoFormSchema {
 		return ctx.Respond(labels, len(labels))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(description).
-		SetDynamicOptions(&getLabels).
-		SetRequired(false).Build()
+	return form.SelectField(id, title).
+		Placeholder(description).
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getLabels)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText(description)
 }
 
-func GetAssigneesInput(title, description string) *sdkcore.AutoFormSchema {
-	getAssignees := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetAssigneesProp(id string, title string, description string, form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getAssignees := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		query := `
 		query Assignees {
 		  issues {
@@ -382,8 +442,14 @@ func GetAssigneesInput(title, description string) *sdkcore.AutoFormSchema {
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 
+		// Get the auth context
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", ctx.Auth.Extra["api-key"])
+		req.Header.Set("Authorization", authCtx.Extra["api-key"])
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -428,15 +494,23 @@ func GetAssigneesInput(title, description string) *sdkcore.AutoFormSchema {
 		return ctx.Respond(assignees, len(assignees))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(description).
-		SetDynamicOptions(&getAssignees).
-		SetRequired(false).Build()
+	return form.SelectField(id, title).
+		Placeholder(description).
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getAssignees)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText(description)
 }
 
-func GetIssueStatesInput(title, description string, required bool) *sdkcore.AutoFormSchema {
-	getIssueStates := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetIssueStatesProp(id string, title string, description string, required bool, form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getIssueStates := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		query := `{
           workflowStates {
     		nodes {
@@ -459,8 +533,14 @@ func GetIssueStatesInput(title, description string, required bool) *sdkcore.Auto
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 
+		// Get the auth context
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", ctx.Auth.Extra["api-key"])
+		req.Header.Set("Authorization", authCtx.Extra["api-key"])
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -491,15 +571,23 @@ func GetIssueStatesInput(title, description string, required bool) *sdkcore.Auto
 		return ctx.Respond(issueStates, len(issueStates))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(description).
-		SetDynamicOptions(&getIssueStates).
-		SetRequired(required).Build()
+	return form.SelectField(id, title).
+		Placeholder(description).
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getIssueStates)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText(description)
 }
 
-func GetLabelsInput(title, description string) *sdkcore.AutoFormSchema {
-	getLabels := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetLabelsProp(id string, title string, description string, form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getLabels := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		query := `{
           issueLabels {
     		nodes {
@@ -522,8 +610,14 @@ func GetLabelsInput(title, description string) *sdkcore.AutoFormSchema {
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 
+		// Get the auth context
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", ctx.Auth.Extra["api-key"])
+		req.Header.Set("Authorization", authCtx.Extra["api-key"])
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -554,9 +648,17 @@ func GetLabelsInput(title, description string) *sdkcore.AutoFormSchema {
 		return ctx.Respond(labels, len(labels))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(description).
-		SetDynamicOptions(&getLabels).
-		SetRequired(false).Build()
+	return form.SelectField(id, title).
+		Placeholder(description).
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getLabels)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText(description)
 }

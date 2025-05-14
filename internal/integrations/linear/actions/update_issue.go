@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/linear/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type updateIssueActionProps struct {
@@ -24,58 +26,64 @@ type updateIssueActionProps struct {
 
 type UpdateIssueAction struct{}
 
-func (a *UpdateIssueAction) Name() string {
-	return "Update Issue"
-}
-
-func (a *UpdateIssueAction) Description() string {
-	return "Updates an existing issue in your project management tool with the latest information from other connected systems, ensuring seamless data synchronization and reducing manual errors."
-}
-
-func (a *UpdateIssueAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *UpdateIssueAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &updateIssueDocs,
+func (a *UpdateIssueAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "update_issue",
+		DisplayName:   "Update Issue",
+		Description:   "Update Issue: Automatically updates an existing issue in your project management tool with the latest information from other connected systems, ensuring seamless data synchronization and reducing manual errors.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: updateIssueDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *UpdateIssueAction) Icon() *string {
-	return nil
+func (a *UpdateIssueAction) Properties() *smartform.FormSchema {
+
+	form := smartform.NewForm("update_issue", "Update Issue")
+
+	form.TextField("title", "Issue Name").
+		Placeholder("Issue Name").
+		Required(false).
+		HelpText("The name of the issue.")
+
+	form.TextField("description", "Description").
+		Placeholder("Description").
+		Required(false).
+		HelpText("Issue description.")
+
+	shared.GetTeamsProp(form)
+
+	shared.GetIssuesProp("issue-id", "Issue", "select an issue to update", form)
+
+	shared.GetAssigneesProp("assignee-id", "Assignee", "select an assignee for the issue", form)
+
+	shared.GetPriorityProp("priority", "Priority", "select issue priority", form)
+
+	shared.GetTeamLabelsProp("label-id", "Labels", "select an issue label", form)
+
+	shared.GetIssueStatesProp("state-id", "Issue State", "select issue state", false, form)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *UpdateIssueAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"title": autoform.NewShortTextField().
-			SetDisplayName("Issue Name").
-			SetDescription("The issue name").
-			SetRequired(false).
-			Build(),
-		"description": autoform.NewLongTextField().
-			SetDisplayName("Description").
-			SetDescription("Issue description").
-			Build(),
-		"team-id":     shared.GetTeamsInput(),
-		"issue-id":    shared.GetIssuesInput("Select issue", "select an issue to update"),
-		"assignee-id": shared.GetAssigneesInput("Assignee", "Select assignee"),
-		"priority":    shared.GetPriorityInput("Priority", "Select priority"),
-		"label-id":    shared.GetTeamLabelsInput("Label", "Select label"),
-		"state-id":    shared.GetIssueStatesInput("Issue State", "select issue state", false),
-	}
-}
-
-func (a *UpdateIssueAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[updateIssueActionProps](ctx.BaseContext)
+func (a *UpdateIssueAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[updateIssueActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.Extra["api-key"] == "" {
-		return nil, errors.New("missing linear api key")
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
 	}
-	apiKEY := ctx.Auth.Extra["api-key"]
+
+	apiKEY := authCtx.Extra["api-key"]
 
 	if !strings.HasPrefix(apiKEY, "lin_api_") {
 		return nil, errors.New("invalid Linear API key: must start with 'lin_api_'")
@@ -130,18 +138,8 @@ func (a *UpdateIssueAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 	return issue, nil
 }
 
-func (a *UpdateIssueAction) Auth() *sdk.Auth {
+func (a *UpdateIssueAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *UpdateIssueAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *UpdateIssueAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewUpdateIssueAction() sdk.Action {
