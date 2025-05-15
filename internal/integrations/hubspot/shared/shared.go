@@ -20,34 +20,39 @@ import (
 	"io"
 	"net/http"
 
-	sdkcore "github.com/wakflo/go-sdk/core"
-
-	"github.com/wakflo/go-sdk/autoform"
+	"github.com/juicycleff/smartform/v1"
 )
+
+const baseAPI = "https://api.hubapi.com"
 
 var (
-	// #nosec
-	tokenURL          = "https://api.hubapi.com/oauth/v1/token"
-	HubspotSharedAuth = autoform.NewOAuthField("https://app.hubspot.com/oauth/authorize", &tokenURL, []string{
-		"oauth" +
-			" crm.lists.read " +
-			"crm.lists.write " +
-			"crm.objects.contacts.read" +
-			" crm.objects.contacts.write " +
-			"crm.objects.owners.read " +
-			"crm.objects.companies.read " +
-			"crm.objects.companies.write " +
-			"crm.objects.deals.read" +
-			" crm.objects.deals.write " +
-			"crm.objects.line_items.read " +
-			"crm.schemas.line_items.read " +
-			"crm.schemas.companies.read " +
-			"crm.schemas.contacts.read " +
-			"crm.schemas.deals.read tickets",
-	}).SetRequired(true).Build()
+	hubspotForm = smartform.NewAuthForm("hubspot-auth", "Hubspot OAuth", smartform.AuthStrategyOAuth2)
+	_           = hubspotForm.
+			OAuthField("oauth", "Hubspot OAuth").
+			AuthorizationURL("https://app.hubspot.com/oauth/authorize").
+			TokenURL("https://api.hubapi.com/oauth/v1/token").
+			Scopes([]string{
+			"oauth" +
+				" crm.lists.read " +
+				"crm.lists.write " +
+				"crm.objects.contacts.read" +
+				" crm.objects.contacts.write " +
+				"crm.objects.owners.read " +
+				"crm.objects.companies.read " +
+				"crm.objects.companies.write " +
+				"crm.objects.deals.read" +
+				" crm.objects.deals.write " +
+				"crm.objects.line_items.read " +
+				"crm.schemas.line_items.read " +
+				"crm.schemas.companies.read " +
+				"crm.schemas.contacts.read " +
+				"crm.schemas.deals.read tickets",
+		}).
+		Required(true).
+		Build()
 )
 
-var baseAPI = "https://api.hubapi.com"
+var HubspotSharedAuth = hubspotForm.Build()
 
 func HubspotClient(reqURL, accessToken, method string, request []byte) (interface{}, error) {
 	fullURL := baseAPI + reqURL
@@ -169,8 +174,8 @@ func HubspotClient(reqURL, accessToken, method string, request []byte) (interfac
 //			SetRequired(true).Build()
 //	}
 
-var HubspotPriority = []*sdkcore.AutoFormSchema{
-	{Const: "HIGH", Title: "High"},
-	{Const: "MEDIUM", Title: "Medium"},
-	{Const: "LOW", Title: "Low"},
-}
+// var HubspotPriority = []*sdkcore.AutoFormSchema{
+// 	{Const: "HIGH", Title: "High"},
+// 	{Const: "MEDIUM", Title: "Medium"},
+// 	{Const: "LOW", Title: "Low"},
+// }

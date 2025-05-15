@@ -23,8 +23,7 @@ type newFileTriggerProps struct {
 	CreatedTimeOp      *string    `json:"createdTimeOp"`
 }
 
-type NewFileTrigger struct {
-}
+type NewFileTrigger struct{}
 
 func (t *NewFileTrigger) Metadata() sdk.TriggerMetadata {
 	return sdk.TriggerMetadata{

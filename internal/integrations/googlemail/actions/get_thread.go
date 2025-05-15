@@ -3,10 +3,10 @@ package actions
 import (
 	"context"
 
-	"github.com/wakflo/extensions/internal/integrations/googlemail/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/gmail/v1"
 	"google.golang.org/api/option"
 )
@@ -18,51 +18,63 @@ type getThreadActionProps struct {
 
 type GetThreadAction struct{}
 
-func (a *GetThreadAction) Name() string {
-	return "Get Thread"
-}
-
-func (a *GetThreadAction) Description() string {
-	return "Retrieves a specific thread or conversation from a messaging platform, allowing you to incorporate its contents into your automated workflow."
-}
-
-func (a *GetThreadAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetThreadAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getThreadDocs,
+// Metadata returns metadata about the action
+func (a *GetThreadAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_thread",
+		DisplayName:   "Get Thread",
+		Description:   "Retrieves a specific thread or conversation from a messaging platform, allowing you to incorporate its contents into your automated workflow.",
+		Type:          core.ActionTypeAction,
+		Documentation: getThreadDocs,
+		Icon:          "",
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetThreadAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *GetThreadAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_thread", "Get Thread")
+
+	form.TextField("id", "id").
+		Placeholder("Thread ID").
+		HelpText("The thread Id of the mail to read").
+		Required(true)
+
+	form.SelectField("format", "format").
+		Placeholder("Format").
+		HelpText("The format of the email to read").
+		AddOption("full", "Full").
+		AddOption("metadata", "Metadata").
+		AddOption("minimal", "Minimal").
+		AddOption("raw", "Raw").
+		Required(false)
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *GetThreadAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *GetThreadAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"id": autoform.NewShortTextField().
-			SetDisplayName("Thread ID").
-			SetDescription("The thread Id of the mail to read").
-			SetRequired(true).
-			Build(),
-		"format": autoform.NewSelectField().
-			SetDisplayName("Format").
-			SetDescription("The format of the email to read").
-			SetOptions(shared.ViewMailFormat).
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (a *GetThreadAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getThreadActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *GetThreadAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getThreadActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	gmailService, err := gmail.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	gmailService, err := gmail.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -80,20 +92,6 @@ func (a *GetThreadAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) 
 	}
 
 	return mail, nil
-}
-
-func (a *GetThreadAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *GetThreadAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *GetThreadAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetThreadAction() sdk.Action {

@@ -22,18 +22,18 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	"github.com/juicycleff/smartform/v1"
 )
 
-var TrackingMoreSharedAuth = autoform.NewCustomAuthField().
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"key": autoform.NewShortTextField().SetDisplayName("Tracking Api Key (Required)").
-			SetDescription("API Key").
-			SetRequired(true).
-			Build(),
-	}).
-	Build()
+var (
+	form = smartform.NewAuthForm("trackingmore-auth", "TrackingMore API Authentication", smartform.AuthStrategyCustom)
+
+	_ = form.TextField("key", "API Key (Required)").
+		Required(true).
+		HelpText("The TrackingMore API Key")
+
+	TrackingMoreSharedAuth = form.Build()
+)
 
 const baseURL = "https://api.trackingmore.com"
 

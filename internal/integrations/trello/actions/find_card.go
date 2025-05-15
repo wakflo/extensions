@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/trello/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type findCardActionProps struct {
@@ -17,73 +18,62 @@ type findCardActionProps struct {
 
 type FindCardAction struct{}
 
-func (a *FindCardAction) Name() string {
-	return "Find Card"
-}
-
-func (a *FindCardAction) Description() string {
-	return "Searches for a specific card within a specified deck or collection, returning the card's details if found."
-}
-
-func (a *FindCardAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *FindCardAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &findCardDocs,
+func (a *FindCardAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "find_card",
+		DisplayName:   "Find Card",
+		Description:   "Searches for a specific card within a specified deck or collection, returning the card's details if found.",
+		Type:          core.ActionTypeAction,
+		Documentation: findCardDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *FindCardAction) Icon() *string {
-	return nil
+func (a *FindCardAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("find_card", "Find Card")
+
+	form.TextField("cardId", "Card ID").
+		Placeholder("The id of the card to find").
+		Required(true).
+		HelpText("The id of the card to find")
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *FindCardAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"name": autoform.NewShortTextField().
-			SetLabel("Name").
-			SetRequired(true).
-			SetPlaceholder("Your name").
-			Build(),
-	}
-}
-
-func (a *FindCardAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[findCardActionProps](ctx.BaseContext)
+func (a *FindCardAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[findCardActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.Extra["api-key"] == "" {
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	authExtra := authCtx.Extra
+	if authExtra["api-key"] == "" {
 		return nil, errors.New("missing trello api credentials")
 	}
-	apiKey := ctx.Auth.Extra["api-key"]
-	apiToken := ctx.Auth.Extra["api-token"]
+	apiKey := authExtra["api-key"]
+	apiToken := authExtra["api-token"]
+
 	fullURL := fmt.Sprintf("%s/cards/%s?key=%s&token=%s", shared.BaseURL, input.CardID, apiKey, apiToken)
 
-	_, err = shared.TrelloRequest(http.MethodDelete, fullURL, nil)
+	response, err := shared.TrelloRequest(http.MethodGet, fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching data: %v", err)
 	}
 
-	return map[string]interface{}{
-		"Result": "Card deleted Successfully",
-	}, nil
+	return response, nil
 }
 
-func (a *FindCardAction) Auth() *sdk.Auth {
+func (a *FindCardAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *FindCardAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *FindCardAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewFindCardAction() sdk.Action {

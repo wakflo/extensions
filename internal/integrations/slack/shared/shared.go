@@ -20,37 +20,36 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/juicycleff/smartform/v1"
 	fastshot "github.com/opus-domini/fast-shot"
-
-	"github.com/wakflo/go-sdk/autoform"
 )
 
 const SlackAPIURL = "https://slack.com/api"
 
-var SharedLongMessageAutoform = autoform.
-	NewLongTextField().
-	SetDisplayName("Message").
-	SetDescription("Message that will be sent").
-	SetMinLength(1).
-	//nolint:mnd
-	SetMaxLength(4000). // https://api.slack.com/apis/rate-limits#rtm-posting-messages
-	SetRequired(false).
-	Build()
+func RegisterSharedLongMessageField(form *smartform.FormBuilder) {
+	form.TextareaField("message", "Message").
+		Placeholder("Message that will be sent").
+		HelpText("Message that will be sent").
+		Required(false)
+}
 
 var (
-	// #nosec
-	authURL = "https://slack.com/oauth/v2/authorize"
-	// #nosec
-	tokenURL = "https://slack.com/api/oauth.v2.access"
+	slackForm = smartform.NewAuthForm("slack-auth", "Slack OAuth", smartform.AuthStrategyOAuth2)
+	_         = slackForm.
+			OAuthField("oauth", "Slack OAuth").
+			AuthorizationURL("https://slack.com/oauth/v2/authorize").
+			TokenURL("https://slack.com/api/oauth.v2.access").
+			Scopes([]string{
+			"channels:read",
+			"chat:write",
+			"chat:write.public",
+			"groups:read",
+			"users:read",
+		}).
+		Build()
 )
 
-var SharedAuth = autoform.NewOAuthField(authURL, &tokenURL, []string{
-	"channels:read",
-	"chat:write",
-	"chat:write.public",
-	"groups:read",
-	"users:read",
-}).Build()
+var SharedSlackAuth = slackForm.Build()
 
 func GetSlackClient(accessToken string) fastshot.ClientHttpMethods {
 	return fastshot.NewClient(SlackAPIURL).

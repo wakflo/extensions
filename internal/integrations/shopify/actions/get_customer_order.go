@@ -5,10 +5,11 @@ import (
 	"fmt"
 
 	goshopify "github.com/bold-commerce/go-shopify/v4"
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getCustomerOrderActionProps struct {
@@ -17,45 +18,39 @@ type getCustomerOrderActionProps struct {
 
 type GetCustomerOrderAction struct{}
 
-func (a *GetCustomerOrderAction) Name() string {
-	return "Get Customer Order"
-}
-
-func (a *GetCustomerOrderAction) Description() string {
-	return "Retrieves customer orders from the specified system or database, allowing you to automate tasks that require access to order information."
-}
-
-func (a *GetCustomerOrderAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetCustomerOrderAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getCustomerOrderDocs,
+func (a *GetCustomerOrderAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_customer_order",
+		DisplayName:   "Get Customer Order",
+		Description:   "Retrieves customer orders from the specified system or database, allowing you to automate tasks that require access to order information.",
+		Type:          core.ActionTypeAction,
+		Documentation: getCustomerOrderDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetCustomerOrderAction) Icon() *string {
-	return nil
+func (a *GetCustomerOrderAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_customer_order", "Get Customer Order")
+
+	form.NumberField("customerId", "Customer ID").
+		Placeholder("The ID of the customer.").
+		Required(true).
+		HelpText("The ID of the customer.")
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *GetCustomerOrderAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"customerId": autoform.NewNumberField().
-			SetDisplayName("Customer ID").
-			SetDescription("The ID of the customer.").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *GetCustomerOrderAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getCustomerOrderActionProps](ctx.BaseContext)
+func (a *GetCustomerOrderAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getCustomerOrderActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.CreateClient(ctx.BaseContext)
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -84,18 +79,8 @@ func (a *GetCustomerOrderAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, 
 	}, nil
 }
 
-func (a *GetCustomerOrderAction) Auth() *sdk.Auth {
+func (a *GetCustomerOrderAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *GetCustomerOrderAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *GetCustomerOrderAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetCustomerOrderAction() sdk.Action {

@@ -45,7 +45,7 @@ import (
 	// "github.com/wakflo/extensions/internal/integrations/trackingmore"
 	// "github.com/wakflo/extensions/internal/integrations/trello"
 	// "github.com/wakflo/extensions/internal/integrations/typeform"
-	// "github.com/wakflo/extensions/internal/integrations/woocommerce"
+	"github.com/wakflo/extensions/internal/integrations/woocommerce"
 	// "github.com/wakflo/extensions/internal/integrations/wrike"
 	// "github.com/wakflo/extensions/internal/integrations/xero"
 	// "github.com/wakflo/extensions/internal/integrations/zohocrm"
@@ -75,7 +75,7 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		// calculator.Integration,        // Calculator
 		// zohoinventory.Integration,     // ZohoInventory
 		// xero.Integration,              // Xero
-		// woocommerce.Integration,       // WooCommerce
+		woocommerce.Integration, // WooCommerce
 		// trello.Integration,            // Trello
 		// shopify.Integration,           // Shopify
 		// prisync.Integration,           // Prisync

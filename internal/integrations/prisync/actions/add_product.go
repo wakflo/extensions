@@ -3,10 +3,11 @@ package actions
 import (
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/prisync/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type addProductActionProps struct {
@@ -21,63 +22,71 @@ type addProductActionProps struct {
 
 type AddProductAction struct{}
 
-func (a *AddProductAction) Name() string {
-	return "Add Product"
-}
-
-func (a *AddProductAction) Description() string {
-	return "Adds a new product to your inventory or database, allowing you to track and manage products efficiently. This integration action can be used to populate product information from various sources, such as e-commerce platforms, marketplaces, or product information management systems."
-}
-
-func (a *AddProductAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *AddProductAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &addProductDocs,
+// Metadata returns metadata about the action
+func (a *AddProductAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "add_product",
+		DisplayName:   "Add Product",
+		Description:   "Adds a new product to your inventory or database, allowing you to track and manage products efficiently. This integration action can be used to populate product information from various sources, such as e-commerce platforms, marketplaces, or product information management systems.",
+		Type:          core.ActionTypeAction,
+		Documentation: addProductDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *AddProductAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *AddProductAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("add_product", "Add Product")
+
+	form.TextField("name", "Product Name").
+		Required(true).
+		HelpText("name of product")
+
+	form.TextField("brand", "Brand").
+		Required(true).
+		HelpText("Brand name")
+
+	form.TextField("category", "Category").
+		Required(true).
+		HelpText("Category name")
+
+	form.TextField("product_code", "Product Code").
+		Required(false).
+		HelpText("Product code")
+
+	form.TextField("barcode", "Bar Code").
+		Required(false).
+		HelpText("Bar code")
+
+	form.TextField("cost", "Product Cost").
+		Required(false).
+		HelpText("Product cost")
+
+	form.TextField("tags", "Product Tags").
+		Required(false).
+		HelpText("Product tags")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *AddProductAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *AddProductAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"name": autoform.NewShortTextField().
-			SetDisplayName("Product Name").
-			SetDescription("name of product").
-			SetRequired(true).Build(),
-		"brand": autoform.NewShortTextField().
-			SetDisplayName("Brand").
-			SetDescription("Brand name").
-			SetRequired(true).Build(),
-		"category": autoform.NewShortTextField().
-			SetDisplayName("Category").
-			SetDescription("Category name").
-			SetRequired(true).Build(),
-		"product_code": autoform.NewShortTextField().
-			SetDisplayName("Product Code").
-			SetDescription("Product code").
-			SetRequired(false).Build(),
-		"barcode": autoform.NewShortTextField().
-			SetDisplayName("Bar Code").
-			SetDescription("Bar code").
-			SetRequired(false).Build(),
-		"cost": autoform.NewShortTextField().
-			SetDisplayName("Product Cost").
-			SetDescription("Product cost").
-			SetRequired(false).Build(),
-		"tags": autoform.NewLongTextField().
-			SetDisplayName("Product Tags").
-			SetDescription("Product tags").
-			SetRequired(false).Build(),
+// Perform executes the action with the given context and input
+func (a *AddProductAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[addProductActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *AddProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[addProductActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
@@ -105,25 +114,11 @@ func (a *AddProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	}
 
 	endpoint := "/api/v2/add/product/"
-	resp, err := shared.PrisyncRequest(ctx.Auth.Extra["api-key"], ctx.Auth.Extra["api-token"], endpoint, http.MethodPost, formData)
+	resp, err := shared.PrisyncRequest(authCtx.Extra["api-key"], authCtx.Extra["api-token"], endpoint, http.MethodPost, formData)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
-}
-
-func (a *AddProductAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *AddProductAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *AddProductAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewAddProductAction() sdk.Action {

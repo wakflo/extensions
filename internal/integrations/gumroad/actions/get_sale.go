@@ -3,9 +3,11 @@ package actions
 import (
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/gumroad/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getSaleActionProps struct {
@@ -14,45 +16,70 @@ type getSaleActionProps struct {
 
 type GetSaleAction struct{}
 
-func (a *GetSaleAction) Name() string {
-	return "Get Sale"
-}
-
-func (a *GetSaleAction) Description() string {
-	return "Retrieves a sale from your Gumroad store."
-}
-
-func (a *GetSaleAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetSaleAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getSaleDocs,
+// Metadata returns metadata about the action
+func (a *GetSaleAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_sale",
+		DisplayName:   "Get Sale",
+		Description:   "Retrieves a sale from your Gumroad store.",
+		Type:          core.ActionTypeAction,
+		Documentation: getSaleDocs,
+		Icon:          "mdi:package-variant-closed-multiple",
+		SampleOutput: map[string]any{
+			"sale": map[string]any{
+				"id":             "xyz789",
+				"product_id":     "abc123",
+				"product_name":   "Digital Product",
+				"price":          "19.99",
+				"email":          "customer@example.com",
+				"full_name":      "John Doe",
+				"currency":       "usd",
+				"order_number":   "10051",
+				"sale_timestamp": "2023-05-15T14:30:45Z",
+				"refunded":       false,
+				"variants": map[string]string{
+					"Package": "Standard",
+				},
+				"license_key": "GUMROAD-XYZ123-ABC789",
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetSaleAction) Icon() *string {
-	icon := "mdi:package-variant-closed-multiple"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *GetSaleAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_sale", "Get Sale")
+
+	// Register sales selection field
+	shared.RegisterSalesProps(form)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *GetSaleAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"sale_id": shared.ListSalesInput("Sales ID", "Sales ID", true),
-	}
+// Auth returns the authentication requirements for the action
+func (a *GetSaleAction) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (a *GetSaleAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getSaleActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *GetSaleAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getSaleActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.AccessToken == "" {
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	if authCtx.AccessToken == "" {
 		return nil, errors.New("missing Gumroad auth token")
 	}
-	accessToken := ctx.Auth.AccessToken
+	accessToken := authCtx.Token.AccessToken
 
 	if input.SaleID == "" {
 		return nil, errors.New("sale ID is required")
@@ -61,20 +88,6 @@ func (a *GetSaleAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 	sale, err := shared.GetSale(accessToken, input.SaleID)
 
 	return sale, nil
-}
-
-func (a *GetSaleAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *GetSaleAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *GetSaleAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetSaleAction() sdk.Action {

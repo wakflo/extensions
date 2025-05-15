@@ -5,8 +5,9 @@ import (
 
 	"github.com/wakflo/extensions/internal/integrations/jiracloudsoftware/actions"
 	"github.com/wakflo/extensions/internal/integrations/jiracloudsoftware/shared"
-	// "github.com/wakflo/extensions/internal/integrations/jiracloudsoftware/triggers"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/extensions/internal/integrations/jiracloudsoftware/triggers"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -15,19 +16,26 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
-var Integration = sdk.Register(NewJiraCloudSoftware(), Flow, ReadME)
+var Integration = sdk.Register(NewJiraCloudSoftware())
 
 type JiraCloudSoftware struct{}
 
-func (n *JiraCloudSoftware) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *JiraCloudSoftware) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *JiraCloudSoftware) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.SharedAuth,
+		Schema:   shared.JiraSharedAuth,
 	}
 }
 
 func (n *JiraCloudSoftware) Triggers() []sdk.Trigger {
-	return []sdk.Trigger{}
+	return []sdk.Trigger{
+		triggers.NewIssueCreatedTrigger(),
+		triggers.NewIssueUpdatedTrigger(),
+	}
 }
 
 func (n *JiraCloudSoftware) Actions() []sdk.Action {

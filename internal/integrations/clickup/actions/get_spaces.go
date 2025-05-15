@@ -9,7 +9,7 @@ import (
 )
 
 type getSpacesProps struct {
-	TeamID string `json:"workspace_id"`
+	TeamID string `json:"workspace-id"` // Changed to match kebab-case convention
 }
 
 type GetSpacesAction struct{}
@@ -84,7 +84,7 @@ func (a *GetSpacesAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, err
 		return nil, err
 	}
 
-	spaces, err := shared.GetAllSpaces(authCtx.AccessToken, input.TeamID)
+	spaces, err := shared.GetAllSpaces(authCtx.Token.AccessToken, input.TeamID)
 	if err != nil {
 		return nil, err
 	}

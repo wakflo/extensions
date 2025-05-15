@@ -6,8 +6,8 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/hubspot/actions"
 	"github.com/wakflo/extensions/internal/integrations/hubspot/shared"
 	"github.com/wakflo/extensions/internal/integrations/hubspot/triggers"
-
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -16,14 +16,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
-var Integration = sdk.Register(NewHubspot(), Flow, ReadME)
+var Integration = sdk.Register(NewHubspot())
 
 type Hubspot struct{}
 
-func (n *Hubspot) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *Hubspot) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *Hubspot) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.HubspotSharedAuth,
+		Schema:   shared.HubspotSharedAuth,
 	}
 }
 
@@ -32,6 +36,8 @@ func (n *Hubspot) Triggers() []sdk.Trigger {
 		triggers.NewContactUpdatedTrigger(),
 
 		triggers.NewDealUpdatedTrigger(),
+
+		triggers.NewTaskCreatedTrigger(),
 	}
 }
 

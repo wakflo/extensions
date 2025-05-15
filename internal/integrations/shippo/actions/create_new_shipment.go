@@ -1,27 +1,14 @@
-// Copyright 2022-present Wakflo
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package actions
 
 import (
 	"errors"
 	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/shippo/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createNewShipmentActionProps struct {
@@ -51,159 +38,140 @@ type createNewShipmentActionProps struct {
 
 type CreateNewShipmentAction struct{}
 
-func (c *CreateNewShipmentAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (c CreateNewShipmentAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (c CreateNewShipmentAction) Name() string {
-	return "Create A New Shipment"
-}
-
-func (c CreateNewShipmentAction) Description() string {
-	return "creates a new shipment"
-}
-
-func (c CreateNewShipmentAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createNewShipmentDocs,
+// Metadata returns metadata about the action
+func (a *CreateNewShipmentAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_new_shipment",
+		DisplayName:   "Create A New Shipment",
+		Description:   "creates a new shipment",
+		Type:          core.ActionTypeAction,
+		Documentation: createNewShipmentDocs,
+		SampleOutput: map[string]any{
+			"shipment": map[string]any{},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (c CreateNewShipmentAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *CreateNewShipmentAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_new_shipment", "Create A New Shipment")
+
+	form.TextField("sender-name", "Sender's Name").
+		Required(true)
+
+	form.TextField("sender-street1", "Sender's Street 1").
+		Required(true).
+		HelpText("street")
+
+	form.TextField("sender-email", "Sender's Email").
+		Required(true).
+		HelpText("Sender's email")
+
+	form.TextField("sender-city", "Sender's City").
+		Required(true).
+		HelpText("city")
+
+	form.TextField("sender-state", "Sender's State").
+		Required(true).
+		HelpText("Sender's state")
+
+	form.TextField("sender-zip", "Sender's Zip").
+		Required(true).
+		HelpText("Sender's zip")
+
+	form.TextField("sender-phone", "Sender's Phone").
+		Required(true).
+		HelpText("Sender's phone number")
+
+	form.TextField("receiver-name", "Receiver's Name").
+		Required(true).
+		HelpText("receiver name")
+
+	form.TextField("receiver-street1", "Receiver's Street 1").
+		Required(true).
+		HelpText("receiver's street")
+
+	form.TextField("receiver-email", "Receiver's Email").
+		Required(true).
+		HelpText("receiver's email")
+
+	form.TextField("receiver-city", "Receiver's City").
+		Required(true).
+		HelpText("receiver's city")
+
+	form.TextField("receiver-state", "Receiver's State").
+		Required(true).
+		HelpText("Receiver's state")
+
+	form.TextField("receiver-zip", "Receiver's Zip").
+		Required(true).
+		HelpText("Receiver's zip")
+
+	form.TextField("receiver-phone", "Receiver's Phone").
+		Required(true).
+		HelpText("Receiver's phone number")
+
+	form.TextField("length", "Parcel length").
+		Required(true).
+		HelpText("parcel length")
+
+	form.TextField("width", "Parcel width").
+		Required(true).
+		HelpText("parcel width")
+
+	form.TextField("height", "Parcel height").
+		Required(true).
+		HelpText("parcel height")
+
+	form.SelectField("distance-unit", "Distance Unit").
+		Required(true).
+		AddOption("in", "Inches").
+		AddOption("cm", "Centimeters").
+		AddOption("mm", "Millimeters").
+		AddOption("yd", "Yards").
+		AddOption("m", "Meters").
+		AddOption("ft", "Feet").
+		HelpText("distance unit")
+
+	form.TextField("weight", "Parcel weight").
+		Required(true).
+		HelpText("parcel weight")
+
+	form.SelectField("mass-unit", "Mass Unit").
+		Required(true).
+		AddOption("kg", "Kilogram").
+		AddOption("lb", "Pound").
+		AddOption("oz", "Ounce").
+		AddOption("g", "Gram").
+		HelpText("mass unit")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *CreateNewShipmentAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (c CreateNewShipmentAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c CreateNewShipmentAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"sender-name": autoform.NewShortTextField().
-			SetDisplayName("Sender's Name").
-			SetDescription("").
-			SetRequired(true).
-			Build(),
-		"sender-street1": autoform.NewLongTextField().
-			SetDisplayName(" Sender's Street 1").
-			SetDescription("street ").
-			SetRequired(true).
-			Build(),
-		"sender-email": autoform.NewShortTextField().
-			SetDisplayName("Sender's Email").
-			SetDescription("Sender's email").
-			SetRequired(true).
-			Build(),
-		"sender-city": autoform.NewShortTextField().
-			SetDisplayName("Sender's City").
-			SetDescription("city").
-			SetRequired(true).
-			Build(),
-		"sender-country": shared.GetCountriesInput(),
-		"sender-state": autoform.NewShortTextField().
-			SetDisplayName(" Sender's State").
-			SetDescription("Sender's state").
-			SetRequired(true).
-			Build(),
-		"sender-zip": autoform.NewShortTextField().
-			SetDisplayName("Sender's City").
-			SetDescription("Sender's city").
-			SetRequired(true).
-			Build(),
-		"sender-phone": autoform.NewShortTextField().
-			SetDisplayName("Sender's Phone").
-			SetDescription("Sender's phone number").
-			SetRequired(true).
-			Build(),
-		"receiver-name": autoform.NewShortTextField().
-			SetDisplayName("Receiver's Name").
-			SetDescription("receiver name").
-			SetRequired(true).
-			Build(),
-		"receiver-street1": autoform.NewLongTextField().
-			SetDisplayName(" Receiver's Street 1").
-			SetDescription("receiver's street ").
-			SetRequired(true).
-			Build(),
-		"receiver-email": autoform.NewShortTextField().
-			SetDisplayName("Receiver's Email").
-			SetDescription("receiver's email").
-			SetRequired(true).
-			Build(),
-		"receiver-city": autoform.NewShortTextField().
-			SetDisplayName("Receiver's City").
-			SetDescription("receiver's city").
-			SetRequired(true).
-			Build(),
-		"receiver-country": shared.GetCountriesInput(),
-		"receiver-state": autoform.NewShortTextField().
-			SetDisplayName(" Receiver's State").
-			SetDescription("Receiver's state").
-			SetRequired(true).
-			Build(),
-		"receiver-zip": autoform.NewShortTextField().
-			SetDisplayName("Receiver's City").
-			SetDescription("Receiver's city").
-			SetRequired(true).
-			Build(),
-		"receiver-phone": autoform.NewShortTextField().
-			SetDisplayName("Receiver's Phone").
-			SetDescription("Receiver's phone number").
-			SetRequired(true).
-			Build(),
-		"length": autoform.NewShortTextField().
-			SetDisplayName("Parcel length").
-			SetDescription("parcel length").
-			SetRequired(true).
-			Build(),
-		"width": autoform.NewShortTextField().
-			SetDisplayName("Parcel width").
-			SetDescription("parcel width").
-			SetRequired(true).
-			Build(),
-		"height": autoform.NewShortTextField().
-			SetDisplayName("Parcel height").
-			SetDescription("parcel height").
-			SetRequired(true).
-			Build(),
-		"distance-unit": autoform.NewSelectField().
-			SetDisplayName("Distance Unit").
-			SetDescription("distance unit").
-			SetOptions(shared.DistanceUnit).
-			SetRequired(true).
-			Build(),
-		"weight": autoform.NewShortTextField().
-			SetDisplayName("Parcel weight").
-			SetDescription("parcel weight").
-			SetRequired(true).
-			Build(),
-		"mass-unit": autoform.NewSelectField().
-			SetDisplayName("Mass Unit").
-			SetDescription("mass unit").
-			SetOptions(shared.MassUnit).
-			SetRequired(true).
-			Build(),
+// Perform executes the action with the given context and input
+func (a *CreateNewShipmentAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Get the auth context and API key
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (c CreateNewShipmentAction) Auth() *sdk.Auth {
-	return &sdk.Auth{
-		Inherit: true,
-	}
-}
-
-func (c CreateNewShipmentAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	if ctx.Auth.Extra["api-key"] == "" {
+	if authCtx.Extra["api-key"] == "" {
 		return nil, errors.New("missing shippo api key")
 	}
 
 	endpoint := "/shipments"
 
-	input, err := sdk.InputToTypeSafely[createNewShipmentActionProps](ctx.BaseContext)
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[createNewShipmentActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -241,9 +209,9 @@ func (c CreateNewShipmentAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, 
 		},
 	}
 
-	response, err := shared.CreateAShipment(endpoint, ctx.Auth.Extra["api-key"], shipmentData)
+	response, err := shared.CreateAShipment(endpoint, authCtx.Extra["api-key"], shipmentData)
 	if err != nil {
-		return nil, fmt.Errorf("error creating shipment:  %v", err)
+		return nil, fmt.Errorf("error creating shipment: %v", err)
 	}
 
 	return response, nil

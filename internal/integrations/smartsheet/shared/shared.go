@@ -21,16 +21,22 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wakflo/go-sdk/autoform"
+	"github.com/juicycleff/smartform/v1"
 )
 
 var (
-	// #nosec
-	tokenURL             = "https://api.smartsheet.com/2.0/token"
-	SmartsheetSharedAuth = autoform.NewOAuthField("https://app.smartsheet.com/b/authorize", &tokenURL, []string{
-		"ADMIN_SHEETS ADMIN_USERS ADMIN_WEBHOOKS SHARE_SHEETS WRITE_SHEETS ADMIN_WORKSPACES CREATE_SHEETS READ_CONTACTS DELETE_SHEETS READ_SHEETS READ_USERS",
-	}).Build()
+	smartsheetForm = smartform.NewAuthForm("smartsheet-auth", "Smartsheet OAuth", smartform.AuthStrategyOAuth2)
+	_              = smartsheetForm.
+			OAuthField("oauth", "Smartsheet OAuth").
+			AuthorizationURL("https://app.smartsheet.com/b/authorize").
+			TokenURL("https://api.smartsheet.com/2.0/token").
+			Scopes([]string{
+			"ADMIN_SHEETS ADMIN_USERS ADMIN_WEBHOOKS SHARE_SHEETS WRITE_SHEETS ADMIN_WORKSPACES CREATE_SHEETS READ_CONTACTS DELETE_SHEETS READ_SHEETS READ_USERS",
+		}).
+		Build()
 )
+
+var SmartsheetSharedAuth = smartsheetForm.Build()
 
 const baseURL = "https://api.smartsheet.com"
 

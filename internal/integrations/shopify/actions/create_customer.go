@@ -5,10 +5,11 @@ import (
 	"errors"
 
 	shopify "github.com/bold-commerce/go-shopify/v4"
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createCustomerActionProps struct {
@@ -21,65 +22,54 @@ type createCustomerActionProps struct {
 
 type CreateCustomerAction struct{}
 
-func (a *CreateCustomerAction) Name() string {
-	return "Create Customer"
-}
-
-func (a *CreateCustomerAction) Description() string {
-	return "Create a new customer in your CRM system by providing required details such as name, email, phone number, and other relevant information. This integration action allows you to automate the process of creating new customers, reducing manual errors and increasing efficiency."
-}
-
-func (a *CreateCustomerAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateCustomerAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createCustomerDocs,
+func (a *CreateCustomerAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_customer",
+		DisplayName:   "Create Customer",
+		Description:   "Create a new customer in your CRM system by providing required details such as name, email, phone number, and other relevant information. This integration action allows you to automate the process of creating new customers, reducing manual errors and increasing efficiency.",
+		Type:          core.ActionTypeAction,
+		Documentation: createCustomerDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateCustomerAction) Icon() *string {
-	return nil
+func (a *CreateCustomerAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_customer", "Create Customer")
+
+	form.TextField("firstName", "First name").
+		Placeholder("Customer first name.").
+		HelpText("Customer first name.")
+
+	form.TextField("lastName", "Last name").
+		Placeholder("Customer last name.").
+		HelpText("Customer last name.")
+
+	form.TextField("phone", "Phone").
+		Placeholder("Customer phone number.").
+		HelpText("Customer phone number.")
+
+	form.TextField("email", "Email").
+		Placeholder("Customer email address.").
+		HelpText("Customer email address.")
+
+	form.TextareaField("tags", "Tags").
+		Placeholder("A string of comma-separated tags for filtering and search").
+		HelpText("A string of comma-separated tags for filtering and search")
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *CreateCustomerAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"firstName": autoform.NewShortTextField().
-			SetDisplayName("First name").
-			SetDescription("Customer first name.").
-			SetRequired(false).
-			Build(),
-		"lastName": autoform.NewShortTextField().
-			SetDisplayName("Last name").
-			SetDescription("Customer last name.").
-			SetRequired(false).
-			Build(),
-		"phone": autoform.NewShortTextField().
-			SetDisplayName("Phone").
-			SetDescription("Customer phone number.").
-			SetRequired(false).
-			Build(),
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Email").
-			SetDescription("Customer email address.").
-			SetRequired(false).
-			Build(),
-		"tags": autoform.NewLongTextField().
-			SetDisplayName("Tags").
-			SetDescription("A string of comma-separated tags for filtering and search").
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (a *CreateCustomerAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createCustomerActionProps](ctx.BaseContext)
+func (a *CreateCustomerAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createCustomerActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.CreateClient(ctx.BaseContext)
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -103,18 +93,8 @@ func (a *CreateCustomerAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, er
 	}, nil
 }
 
-func (a *CreateCustomerAction) Auth() *sdk.Auth {
+func (a *CreateCustomerAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *CreateCustomerAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateCustomerAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateCustomerAction() sdk.Action {

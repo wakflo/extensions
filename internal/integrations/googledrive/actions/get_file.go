@@ -76,7 +76,6 @@ func (a *GetFileAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error
 	file, err := driveService.Files.Get(input.FileID).
 		Fields("id, name, mimeType, webViewLink, kind, createdTime").
 		Do()
-
 	if err != nil {
 		return nil, err
 	}

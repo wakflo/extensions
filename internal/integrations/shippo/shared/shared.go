@@ -23,20 +23,22 @@ import (
 	"net/http"
 
 	"github.com/gookit/goutil/arrutil"
+	"github.com/juicycleff/smartform/v1"
 	fastshot "github.com/opus-domini/fast-shot"
 
 	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/core"
 )
 
-var ShippoSharedAuth = autoform.NewCustomAuthField().
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"api-key": autoform.NewShortTextField().SetDisplayName("API Key").
-			SetDescription("API Application Key").
-			SetRequired(true).
-			Build(),
-	}).
-	Build()
+var (
+	form = smartform.NewAuthForm("shippo-auth", "Shippo API Authentication", smartform.AuthStrategyCustom)
+
+	_ = form.TextField("api-key", "API Key (Required)").
+		Required(true).
+		HelpText("API Application Key")
+
+	ShippoSharedAuth = form.Build()
+)
 
 const baseURL = "https://api.goshippo.com"
 
@@ -134,20 +136,4 @@ func GetCountriesInput() *sdkcore.AutoFormSchema {
 		SetDescription("select a country").
 		SetDynamicOptions(&getCountries).
 		SetRequired(false).Build()
-}
-
-var DistanceUnit = []*sdkcore.AutoFormSchema{
-	{Const: "cm", Title: " Centimeters"},
-	{Const: "in", Title: "Inches"},
-	{Const: "ft", Title: "Feet"},
-	{Const: "mm", Title: "Millimeters"},
-	{Const: "m", Title: "Meters"},
-	{Const: "yd", Title: "Yards"},
-}
-
-var MassUnit = []*sdkcore.AutoFormSchema{
-	{Const: "g", Title: "Grams"},
-	{Const: "kg", Title: "Kilogram"},
-	{Const: "lb", Title: "Pounds"},
-	{Const: "oz", Title: "Ounces"},
 }

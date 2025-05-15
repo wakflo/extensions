@@ -1,10 +1,11 @@
 package actions
 
 import (
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/woocommerce/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getCustomerByIDActionProps struct {
@@ -13,45 +14,40 @@ type getCustomerByIDActionProps struct {
 
 type GetCustomerByIDAction struct{}
 
-func (a *GetCustomerByIDAction) Name() string {
-	return "Get Customer By ID"
-}
-
-func (a *GetCustomerByIDAction) Description() string {
-	return "Retrieves a customer record by their unique identifier (ID) from your CRM or database, allowing you to access and utilize customer information in subsequent workflow steps."
-}
-
-func (a *GetCustomerByIDAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetCustomerByIDAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getCustomerByIDDocs,
+func (a *GetCustomerByIDAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_customer_by_id",
+		DisplayName:   "Get Customer By ID",
+		Description:   "Retrieves a customer record by their unique identifier (ID)",
+		Type:          core.ActionTypeAction,
+		Documentation: getCustomerByIDDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetCustomerByIDAction) Icon() *string {
-	return nil
+func (a *GetCustomerByIDAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_customer_by_id", "Get Customer By ID")
+
+	form.NumberField("customer-id", "Customer ID").
+		Placeholder("Enter customer ID").
+		Required(true).
+		HelpText("Enter customer ID")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *GetCustomerByIDAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"customer-id": autoform.NewNumberField().
-			SetDisplayName("Customer ID").
-			SetDescription("Enter customer ID").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *GetCustomerByIDAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getCustomerByIDActionProps](ctx.BaseContext)
+func (a *GetCustomerByIDAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getCustomerByIDActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	wooClient, err := shared.InitClient(ctx.BaseContext)
+	wooClient, err := shared.InitClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -64,18 +60,8 @@ func (a *GetCustomerByIDAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, e
 	return customer, nil
 }
 
-func (a *GetCustomerByIDAction) Auth() *sdk.Auth {
+func (a *GetCustomerByIDAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *GetCustomerByIDAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *GetCustomerByIDAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetCustomerByIDAction() sdk.Action {

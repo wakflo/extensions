@@ -1,8 +1,8 @@
 package actions
 
 import (
-	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/github/shared"
@@ -12,9 +12,10 @@ import (
 )
 
 type createIssueActionProps struct {
-	Repository  string `json:"repository"`
-	Body        string `json:"body"`
-	IssueNumber string `json:"issue_number"`
+	Repository string `json:"repository"`
+	Title      string `json:"title"`
+	Body       string `json:"body"`
+	Labels     string `json:"labels"`
 }
 
 type CreateIssueAction struct{}
@@ -24,65 +25,36 @@ func (a *CreateIssueAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
 		ID:            "create_issue",
 		DisplayName:   "Create Issue",
-		Description:   "Create Issue: Automatically generates a new issue in your project management tool (e.g., Jira, Trello) based on specific conditions or triggers, ensuring timely and organized tracking of tasks and projects.",
+		Description:   "Create Issue: Creates a new issue in a GitHub repository with customizable title, body, and labels.",
 		Type:          core.ActionTypeAction,
 		Documentation: createIssueDocs,
 		SampleOutput: map[string]any{
-			"message": "Hello World!",
+			"issue": map[string]any{
+				"id":    "MDU6SXNzdWUyMzEzOTAxNDg=",
+				"title": "Example Issue",
+				"url":   "https://github.com/example/repo/issues/1",
+			},
 		},
 		Settings: core.ActionSettings{},
 	}
 }
 
-// Properties returns the schema for the action's input configuration
 func (a *CreateIssueAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("create_issue", "Create Issue")
 
-	// Define the getRepositories function
-	getRepositories := func(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
-		return shared.GetRepositories(ctx)
-	}
+	shared.RegisterRepositoryProps(form)
 
-	// Define the getIssues function
-	getIssues := func(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
-		return shared.GetIssues(ctx)
-	}
+	shared.RegisterLabelProps(form)
 
-	// Add repository field
-	form.SelectField("repository", "Repository").
-		Placeholder("Select a repository").
+	form.TextField("title", "Issue Title").
+		Placeholder("Enter an issue title").
 		Required(true).
-		WithDynamicOptions(
-			smartform.NewOptionsBuilder().
-				Dynamic().
-				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getRepositories)).
-				WithSearchSupport().
-				WithPagination(10).
-				End().
-				GetDynamicSource(),
-		).
-		HelpText("The repository to create the issue in.")
+		HelpText("The title of the issue")
 
-	// Add issue number field
-	form.SelectField("issue_number", "Issue Number").
-		Placeholder("Select an issue").
-		Required(true).
-		WithDynamicOptions(
-			smartform.NewOptionsBuilder().
-				Dynamic().
-				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getIssues)).
-				WithSearchSupport().
-				WithPagination(10).
-				End().
-				GetDynamicSource(),
-		).
-		HelpText("The issue to comment on.")
-
-	// Add body field
-	form.TextareaField("body", "Comment").
-		Placeholder("Enter your comment").
-		Required(true).
-		HelpText("Issue comment")
+	form.TextareaField("body", "Description").
+		Placeholder("Enter a description").
+		Required(false).
+		HelpText("Issue description")
 
 	schema := form.Build()
 
@@ -108,30 +80,43 @@ func (a *CreateIssueAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, e
 		return nil, err
 	}
 
+	// Create a map to store fields conditionally
+	fields := make(map[string]string)
+	fields["title"] = fmt.Sprintf(`"%s"`, input.Title)
+	fields["repositoryId"] = fmt.Sprintf(`"%s"`, input.Repository)
+
+	if input.Body != "" {
+		fields["body"] = fmt.Sprintf(`"%s"`, input.Body)
+	}
+
+	if input.Labels != "" {
+		fields["labelIds"] = fmt.Sprintf(`"%s"`, input.Labels)
+	}
+
+	fieldStrings := make([]string, 0, len(fields))
+	for key, value := range fields {
+		fieldStrings = append(fieldStrings, fmt.Sprintf("%s: %s", key, value))
+	}
+
 	mutation := fmt.Sprintf(`
-			mutation {
-			  addComment(input: { subjectId: "%s", body: "%s" }) {
-				commentEdge {
-				  node {
+		mutation CreateNewIssue {
+			createIssue(input: {
+				%s
+			}) {
+				issue {
 					id
-					body
-					createdAt
-				  }
+					title
+					url
 				}
-			  }
-			}`, input.IssueNumber, input.Body)
+			}
+		}`, strings.Join(fieldStrings, "\n"))
 
-	response, err := shared.GithubGQL(authCtx.AccessToken, mutation)
+	response, err := shared.GithubGQL(authCtx.Token.AccessToken, mutation)
 	if err != nil {
-		return nil, errors.New("error making graphQL request")
+		return nil, fmt.Errorf("error making graphQL request: %w", err)
 	}
 
-	issue, ok := response["data"].(map[string]interface{})["addComment"].(map[string]interface{})["commentEdge"].(map[string]interface{})
-	if !ok {
-		return nil, errors.New("failed to extract issue from response")
-	}
-
-	return issue, nil
+	return response, nil
 }
 
 func NewCreateIssueAction() sdk.Action {

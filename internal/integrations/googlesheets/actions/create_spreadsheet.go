@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
@@ -17,45 +18,54 @@ type createSpreadsheetActionProps struct {
 
 type CreateSpreadsheetAction struct{}
 
-func (a *CreateSpreadsheetAction) Name() string {
-	return "Create Spreadsheet"
-}
-
-func (a *CreateSpreadsheetAction) Description() string {
-	return "Create a new spreadsheet in Google Sheets or Microsoft Excel with customizable settings such as sheet name, row and column count, and formatting options."
-}
-
-func (a *CreateSpreadsheetAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateSpreadsheetAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createSpreadsheetDocs,
+// Metadata returns metadata about the action
+func (a *CreateSpreadsheetAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_spreadsheet",
+		DisplayName:   "Create Spreadsheet",
+		Description:   "Create a new spreadsheet in Google Sheets or Microsoft Excel with customizable settings such as sheet name, row and column count, and formatting options.",
+		Type:          core.ActionTypeAction,
+		Documentation: createSpreadsheetDocs,
+		Icon:          "",
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateSpreadsheetAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *CreateSpreadsheetAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_spreadsheet", "Create Spreadsheet")
+
+	form.TextField("name", "name").
+		Placeholder("Sheet Name").
+		HelpText("The name of the sheet.").
+		Required(true)
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *CreateSpreadsheetAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *CreateSpreadsheetAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"name": autoform.NewShortTextField().
-			SetDisplayName("Sheet Name").
-			SetDescription("The name of the sheet.").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *CreateSpreadsheetAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createSpreadsheetActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *CreateSpreadsheetAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createSpreadsheetActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	sheetService, err := sheets.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	sheetService, err := sheets.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -71,20 +81,6 @@ func (a *CreateSpreadsheetAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON,
 	}).
 		Do()
 	return document, err
-}
-
-func (a *CreateSpreadsheetAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *CreateSpreadsheetAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateSpreadsheetAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateSpreadsheetAction() sdk.Action {

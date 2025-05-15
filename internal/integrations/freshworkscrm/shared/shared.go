@@ -8,27 +8,14 @@ import (
 	"net/http"
 	"net/url"
 
-	sdk "github.com/wakflo/go-sdk/connector"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
 
 	"github.com/gookit/goutil/arrutil"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
-
-var FreshworksSharedAuth = autoform.NewCustomAuthField().
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"domain": autoform.NewShortTextField().
-			SetDisplayName("Freshworks Domain").
-			SetDescription("The domain name of the freshworks account. eg. xyz.freshworks.com, type in only 'xyz'").
-			SetRequired(true).
-			Build(),
-		"api-key": autoform.NewShortTextField().SetDisplayName("Api Key").
-			SetDescription("Your Freshworks CRM API key").
-			SetRequired(true).
-			Build(),
-	}).
-	Build()
 
 func NewFreshWorksAPIClient(baseURL, apiKey string) *http.Client {
 	return &http.Client{}
@@ -69,10 +56,15 @@ func CreateContact(baseURL, apiKey string, contactData map[string]interface{}) (
 	return result, nil
 }
 
-func GetContactViewInput() *sdkcore.AutoFormSchema {
-	getContactView := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		baseAPI := "https://" + ctx.Auth.Extra["domain"] + ".myfreshworks.com"
-		apiKey := ctx.Auth.Extra["api-key"]
+func RegisterContactViewProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getContactView := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
+		baseAPI := "https://" + authCtx.Extra["domain"] + ".myfreshworks.com"
+		apiKey := authCtx.Extra["api-key"]
 
 		// Build the request
 		req, err := http.NewRequest(http.MethodGet, baseAPI+"/crm/sales/api/contacts/filters", nil)
@@ -115,20 +107,33 @@ func GetContactViewInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Contact View").
-		SetDescription("Select to view list of contacts in a specific view").
-		SetDynamicOptions(&getContactView).
-		SetRequired(true).Build()
+	return form.SelectField("contact_view_id", "Contact View").
+		Placeholder("Select a contact view").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getContactView)).
+				WithSearchSupport().
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select to view list of contacts in a specific view")
 }
 
-func GetContactsInput() *sdkcore.AutoFormSchema {
-	getContacts := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterContactsProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getContacts := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		input := sdk.DynamicInputToType[struct {
 			ContactViewID string `json:"contact_view_id"`
 		}](ctx)
-		baseAPI := "https://" + ctx.Auth.Extra["domain"] + ".myfreshworks.com"
-		apiKey := ctx.Auth.Extra["api-key"]
+
+		baseAPI := "https://" + authCtx.Extra["domain"] + ".myfreshworks.com"
+		apiKey := authCtx.Extra["api-key"]
 
 		request := fmt.Sprintf("%s/crm/sales/api/contacts/view/%s", baseAPI, input.ContactViewID)
 
@@ -169,11 +174,20 @@ func GetContactsInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Contacts").
-		SetDescription("Select a contact to update").
-		SetDynamicOptions(&getContacts).
-		SetRequired(true).Build()
+	return form.SelectField("contact_id", "Contacts").
+		Placeholder("Select a contact").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getContacts)).
+				WithFieldReference("contact_view_id", "contactView").
+				WithSearchSupport().
+				End().
+				RefreshOn("contactView").
+				GetDynamicSource(),
+		).
+		HelpText("Select a contact to update")
 }
 
 func UpdateContact(baseURL, apiKey, contactID string, contactData map[string]interface{}) (interface{}, error) {

@@ -1,10 +1,11 @@
 package actions
 
 import (
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/prisync/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type addBatchProductActionProps struct {
@@ -23,40 +24,85 @@ type ProductInput struct {
 
 type AddBatchProductAction struct{}
 
-func (a *AddBatchProductAction) Name() string {
-	return "Add Batch Product"
-}
-
-func (a *AddBatchProductAction) Description() string {
-	return "Add Batch Product: Automatically adds a new product to your batch, allowing you to manage and track multiple products within a single batch. This integration action enables seamless product management, streamlining your workflow and reducing manual errors."
-}
-
-func (a *AddBatchProductAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *AddBatchProductAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &addBatchProductDocs,
+// Metadata returns metadata about the action
+func (a *AddBatchProductAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "add_batch_product",
+		DisplayName:   "Add Batch Product",
+		Description:   "Add Batch Product: Automatically adds a new product to your batch, allowing you to manage and track multiple products within a single batch. This integration action enables seamless product management, streamlining your workflow and reducing manual errors.",
+		Type:          core.ActionTypeAction,
+		Documentation: addBatchProductDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *AddBatchProductAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *AddBatchProductAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("add_batch_product", "Add Batch Product")
+
+	// Create a products array field
+	productsArray := form.ArrayField("products", "Products")
+
+	// Configure the product item template
+	productGroup := productsArray.ObjectTemplate("product", "")
+
+	// Add all the required fields to the product template
+	productGroup.TextField("name", "Product Name").
+		Placeholder("Enter product name").
+		Required(true).
+		HelpText("The name of the product")
+
+	productGroup.TextField("brand", "Brand").
+		Placeholder("Enter brand name").
+		Required(true).
+		HelpText("The brand of the product")
+
+	productGroup.TextField("category", "Category").
+		Placeholder("Enter product category").
+		Required(true).
+		HelpText("The category of the product")
+
+	productGroup.TextField("product_code", "Product Code").
+		Placeholder("Enter product code").
+		Required(false).
+		HelpText("The unique code for the product")
+
+	productGroup.TextField("barcode", "Barcode").
+		Placeholder("Enter barcode").
+		Required(false).
+		HelpText("The barcode of the product")
+
+	productGroup.TextField("cost", "Cost").
+		Placeholder("Enter cost").
+		Required(false).
+		HelpText("The cost of the product")
+
+	productGroup.TextField("additional_cost", "Additional Cost").
+		Placeholder("Enter additional cost").
+		Required(false).
+		HelpText("Any additional costs associated with the product")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *AddBatchProductAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *AddBatchProductAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"name": autoform.NewShortTextField().
-			SetLabel("Name").
-			SetRequired(true).
-			SetPlaceholder("Your name").
-			Build(),
+// Perform executes the action with the given context and input
+func (a *AddBatchProductAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[addBatchProductActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *AddBatchProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[addBatchProductActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
@@ -76,25 +122,11 @@ func (a *AddBatchProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, e
 	}
 
 	endpoint := "/api/v2/add/batch/"
-	resp, err := shared.PrisyncBatchRequest(ctx.Auth.Extra["api-key"], ctx.Auth.Extra["api-token"], endpoint, formData, false)
+	resp, err := shared.PrisyncBatchRequest(authCtx.Extra["api-key"], authCtx.Extra["api-token"], endpoint, formData, false)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
-}
-
-func (a *AddBatchProductAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *AddBatchProductAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *AddBatchProductAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewAddBatchProductAction() sdk.Action {

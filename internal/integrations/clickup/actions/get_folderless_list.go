@@ -1,9 +1,11 @@
 package actions
 
 import (
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/clickup/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getFolderlessListProps struct {
@@ -13,72 +15,69 @@ type getFolderlessListProps struct {
 
 type GetFolderlesslistOperation struct{}
 
-func (o *GetFolderlesslistOperation) Name() string {
-	return "Get Folderless Lists"
-}
-
-func (o *GetFolderlesslistOperation) Description() string {
-	return "Retrieves all lists directly in a space that do not belong to any folder."
-}
-
-func (o *GetFolderlesslistOperation) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (o *GetFolderlesslistOperation) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getFolderlessListDocs,
+// Metadata returns metadata about the action
+func (o *GetFolderlesslistOperation) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_folderless_lists",
+		DisplayName:   "Get Folderless Lists",
+		Description:   "Retrieves all lists directly in a space that do not belong to any folder.",
+		Type:          core.ActionTypeAction,
+		Documentation: getFolderlessListDocs,
+		Icon:          "material-symbols:folder-off-outline",
+		SampleOutput: map[string]any{
+			"lists": []map[string]any{
+				{
+					"id":         "list123",
+					"name":       "Folderless List 1",
+					"content":    "First list",
+					"orderindex": "1",
+				},
+				{
+					"id":         "list456",
+					"name":       "Folderless List 2",
+					"content":    "Second list",
+					"orderindex": "2",
+				},
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (o *GetFolderlesslistOperation) Icon() *string {
-	icon := "material-symbols:folder-off-outline"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (o *GetFolderlesslistOperation) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_folderless_lists", "Get Folderless Lists")
+
+	shared.RegisterWorkSpaceInput(form, "Workspaces", "select a workspace", true)
+
+	shared.RegisterSpacesInput(form, "Spaces", "select a space", true)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (o *GetFolderlesslistOperation) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"workspace-id": shared.RegisterWorkSpaceInput("Workspaces", "select a workspace", true),
-		"space-id":     shared.RegisterSpacesInput("Spaces", "select a space", true),
-	}
-}
-
-func (o *GetFolderlesslistOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	accessToken := ctx.Auth.AccessToken
-	input, err := sdk.InputToTypeSafely[getFolderlessListProps](ctx.BaseContext)
-	if err != nil {
-		return nil, err
-	}
-	folderlessList, _ := shared.GetSpace(accessToken, input.SpaceID)
-
-	return folderlessList, nil
-}
-
-func (o *GetFolderlesslistOperation) Auth() *sdk.Auth {
+// Auth returns the authentication requirements for the action
+func (o *GetFolderlesslistOperation) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (o *GetFolderlesslistOperation) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"lists": []map[string]any{
-			{
-				"id":         "list123",
-				"name":       "Folderless List 1",
-				"content":    "First list",
-				"orderindex": "1",
-			},
-			{
-				"id":         "list456",
-				"name":       "Folderless List 2",
-				"content":    "Second list",
-				"orderindex": "2",
-			},
-		},
+// Perform executes the action with the given context and input
+func (o *GetFolderlesslistOperation) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getFolderlessListProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (o *GetFolderlesslistOperation) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken := authCtx.Token.AccessToken
+	folderlessList, _ := shared.GetSpace(accessToken, input.SpaceID)
+
+	return folderlessList, nil
 }
 
 func NewGetFolderlesslistOperation() sdk.Action {

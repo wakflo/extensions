@@ -1,9 +1,11 @@
 package actions
 
 import (
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/clickup/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getListProps struct {
@@ -12,75 +14,73 @@ type getListProps struct {
 
 type GetListOperation struct{}
 
-func (o *GetListOperation) Name() string {
-	return "Get List"
-}
-
-func (o *GetListOperation) Description() string {
-	return "Retrieves details of a specific ClickUp list by ID."
-}
-
-func (o *GetListOperation) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (o *GetListOperation) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getListDocs,
+// Metadata returns metadata about the action
+func (o *GetListOperation) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_list",
+		DisplayName:   "Get List",
+		Description:   "Retrieves details of a specific ClickUp list by ID.",
+		Type:          core.ActionTypeAction,
+		Documentation: getListDocs,
+		Icon:          "material-symbols:format-list-bulleted",
+		SampleOutput: map[string]any{
+			"id":      "list123",
+			"name":    "Example List",
+			"content": "List description",
+			"statuses": []map[string]any{
+				{
+					"id":     "st123",
+					"status": "Open",
+					"color":  "#d3d3d3",
+				},
+			},
+			"task_count": "24",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (o *GetListOperation) Icon() *string {
-	icon := "material-symbols:format-list-bulleted"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (o *GetListOperation) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_list", "Get List")
+
+	shared.RegisterWorkSpaceInput(form, "Workspaces", "select a workspace", true)
+
+	shared.RegisterSpacesInput(form, "space-id", "select a space", true)
+
+	shared.RegisterFoldersInput(form, "Folders", "select a folder", true)
+
+	shared.RegisterListsInput(form, "Lists", "select a list to create task in", true)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (o *GetListOperation) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"workspace-id": shared.RegisterWorkSpaceInput("Workspaces", "select a workspace", true),
-		"space-id":     shared.RegisterSpacesInput("Spaces", "select a space", true),
-		"folder-id":    shared.RegisterFoldersInput("Folders", "select a folder", true),
-		"list-id":      shared.RegisterListsInput("Lists", "select a list to create task in", true),
-	}
+// Auth returns the authentication requirements for the action
+func (o *GetListOperation) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (o *GetListOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	accessToken := ctx.Auth.AccessToken
-	input, err := sdk.InputToTypeSafely[getListProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (o *GetListOperation) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getListProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken := authCtx.Token.AccessToken
 	list, err := shared.GetList(accessToken, input.ListID)
 	if err != nil {
 		return nil, err
 	}
 
 	return list, nil
-}
-
-func (o *GetListOperation) Auth() *sdk.Auth {
-	return nil
-}
-
-func (o *GetListOperation) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"id":      "list123",
-		"name":    "Example List",
-		"content": "List description",
-		"statuses": []map[string]any{
-			{
-				"id":     "st123",
-				"status": "Open",
-				"color":  "#d3d3d3",
-			},
-		},
-		"task_count": "24",
-	}
-}
-
-func (o *GetListOperation) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetListOperation() sdk.Action {

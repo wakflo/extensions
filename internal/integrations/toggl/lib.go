@@ -19,7 +19,8 @@ import (
 
 	"github.com/wakflo/extensions/internal/integrations/toggl/actions"
 	"github.com/wakflo/extensions/internal/integrations/toggl/shared"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -28,12 +29,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
+var Integration = sdk.Register(NewToggl())
+
 type Toggl struct{}
 
-func (n *Toggl) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *Toggl) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *Toggl) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.TogglSharedAuth,
+		Schema:   shared.TogglSharedAuth,
 	}
 }
 
@@ -50,5 +57,3 @@ func (n *Toggl) Actions() []sdk.Action {
 func NewToggl() sdk.Integration {
 	return &Toggl{}
 }
-
-var Integration = sdk.Register(NewToggl(), Flow, ReadME)

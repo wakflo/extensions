@@ -1,10 +1,11 @@
 package actions
 
 import (
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/harvest/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getInvoiceActionProps struct {
@@ -13,64 +14,73 @@ type getInvoiceActionProps struct {
 
 type GetInvoiceAction struct{}
 
-func (a *GetInvoiceAction) Name() string {
-	return "Get Invoice"
-}
-
-func (a *GetInvoiceAction) Description() string {
-	return "Retrieves an invoice from the accounting system, allowing you to automate tasks that require access to invoice data."
-}
-
-func (a *GetInvoiceAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetInvoiceAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getInvoiceDocs,
+// Metadata returns metadata about the action
+func (a *GetInvoiceAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_invoice",
+		DisplayName:   "Get Invoice",
+		Description:   "Retrieves an invoice from the accounting system, allowing you to automate tasks that require access to invoice data.",
+		Type:          core.ActionTypeAction,
+		Documentation: getInvoiceDocs,
+		SampleOutput: map[string]any{
+			"id":             "13150453",
+			"client_id":      "5735776",
+			"number":         "1001",
+			"purchase_order": "",
+			"amount":         "88.23",
+			"due_amount":     "88.23",
+			"tax_amount":     "0",
+			"tax2":           "0",
+			"tax2_amount":    "0",
+			"discount":       "0",
+			"subject":        "Web Design",
+			"notes":          "Thank you for your business!",
+			"state":          "open",
+			"issue_date":     "2023-05-01",
+			"due_date":       "2023-05-31",
+			"payment_term":   "net 30",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetInvoiceAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *GetInvoiceAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_invoice", "Get Invoice")
+
+	form.TextField("invoice-id", "Invoice ID").
+		Required(true).
+		HelpText("the ID of the invoice.")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *GetInvoiceAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *GetInvoiceAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"invoice-id": autoform.NewShortTextField().
-			SetDisplayName("Invoice ID").
-			SetDescription("the ID of the invoice.").
-			SetRequired(true).Build(),
+// Perform executes the action with the given context and input
+func (a *GetInvoiceAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getInvoiceActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *GetInvoiceAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getInvoiceActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
 
 	url := "/v2/invoices/" + input.InvoiceID
 
-	invoice, err := shared.GetHarvestClient(ctx.Auth.AccessToken, url)
+	invoice, err := shared.GetHarvestClient(authCtx.Token.AccessToken, url)
 	if err != nil {
 		return nil, err
 	}
 	return invoice, nil
-}
-
-func (a *GetInvoiceAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *GetInvoiceAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *GetInvoiceAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetInvoiceAction() sdk.Action {

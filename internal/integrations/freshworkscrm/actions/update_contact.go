@@ -48,17 +48,8 @@ func (a *UpdateContactAction) Metadata() sdk.ActionMetadata {
 func (a *UpdateContactAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("update_contact", "Update a Contact")
 
-	// Add contact_view_id field
-	form.TextField("contact_view_id", "Contact View ID").
-		Placeholder("Enter contact view ID").
-		Required(true).
-		HelpText("The ID of the contact view")
-
-	// Add contact_id field
-	form.TextField("contact_id", "Contact ID").
-		Placeholder("Enter contact ID").
-		Required(true).
-		HelpText("The ID of the contact to update")
+	shared.RegisterContactViewProps(form)
+	shared.RegisterContactsProps(form)
 
 	// Add first_name field
 	form.TextField("first_name", "First Name").
@@ -96,7 +87,6 @@ func (a *UpdateContactAction) Auth() *core.AuthMetadata {
 
 // Perform executes the action with the given context and input
 func (a *UpdateContactAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
-	// Get the auth context
 	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err

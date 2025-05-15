@@ -4,81 +4,65 @@ import (
 	"context"
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
-type listProductsActionProps struct {
-	Name string `json:"name"`
-}
+type listProductsActionProps struct{}
 
 type ListProductsAction struct{}
 
-func (a *ListProductsAction) Name() string {
-	return "List Products"
-}
-
-func (a *ListProductsAction) Description() string {
-	return "Retrieves a list of products from a specified data source or API, allowing you to automate tasks that require product information, such as updating inventory levels or sending notifications."
-}
-
-func (a *ListProductsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListProductsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listProductsDocs,
+// Metadata returns metadata about the action
+func (a *ListProductsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_products",
+		DisplayName:   "List Products",
+		Description:   "Retrieves a list of products from a specified data source or API, allowing you to automate tasks that require product information, such as updating inventory levels or sending notifications.",
+		Type:          core.ActionTypeAction,
+		Documentation: listProductsDocs,
+		SampleOutput: map[string]any{
+			"products": []map[string]any{},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ListProductsAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *ListProductsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_products", "List Products")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *ListProductsAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *ListProductsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"name": autoform.NewShortTextField().
-			SetLabel("Name").
-			SetRequired(true).
-			SetPlaceholder("Your name").
-			Build(),
-	}
-}
-
-func (a *ListProductsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	client, err := shared.CreateClient(ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *ListProductsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Create Shopify client
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	// Get products from Shopify
 	products, err := client.Product.List(context.Background(), nil)
 	if err != nil {
 		return nil, err
 	}
+
 	if products == nil {
 		return nil, errors.New("no products found")
 	}
 
-	return sdk.JSON(map[string]interface{}{
-		"Total count of products": products,
-	}), err
-}
-
-func (a *ListProductsAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *ListProductsAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *ListProductsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
+	return products, nil
 }
 
 func NewListProductsAction() sdk.Action {

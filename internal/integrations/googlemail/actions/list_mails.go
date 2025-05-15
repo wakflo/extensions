@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/gmail/v1"
 	"google.golang.org/api/option"
 )
@@ -17,45 +18,54 @@ type listMailsActionProps struct {
 
 type ListMailsAction struct{}
 
-func (a *ListMailsAction) Name() string {
-	return "List Mails"
-}
-
-func (a *ListMailsAction) Description() string {
-	return "Retrieve a list of emails from your email account or service, allowing you to automate workflows based on specific mail criteria."
-}
-
-func (a *ListMailsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListMailsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listMailsDocs,
+// Metadata returns metadata about the action
+func (a *ListMailsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_mails",
+		DisplayName:   "List Mails",
+		Description:   "Retrieve a list of emails from your email account or service, allowing you to automate workflows based on specific mail criteria.",
+		Type:          core.ActionTypeAction,
+		Documentation: listMailsDocs,
+		Icon:          "",
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ListMailsAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *ListMailsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_mails", "List Mails")
+
+	form.TextField("label", "label").
+		Placeholder("Label").
+		HelpText("The mail label to read from (e.g, inbox, sent, drafts, etc)").
+		Required(true)
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *ListMailsAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *ListMailsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"label": autoform.NewShortTextField().
-			SetDisplayName("Label").
-			SetDescription("The mail label to read from (e.g, inbox, sent, drafts, etc)").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *ListMailsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[listMailsActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *ListMailsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[listMailsActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	gmailService, err := gmail.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	gmailService, err := gmail.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -72,20 +82,6 @@ func (a *ListMailsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) 
 	}
 
 	return listResponse, nil
-}
-
-func (a *ListMailsAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *ListMailsAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *ListMailsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewListMailsAction() sdk.Action {

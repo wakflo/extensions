@@ -1,10 +1,11 @@
 package actions
 
 import (
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/clickup/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 // CreateFolderOperation structure and methods
@@ -16,47 +17,67 @@ type createFolderProps struct {
 
 type CreateFolderOperation struct{}
 
-func (o *CreateFolderOperation) Name() string {
-	return "Create Folder"
-}
-
-func (o *CreateFolderOperation) Description() string {
-	return "Creates a new folder in a specified ClickUp space."
-}
-
-func (o *CreateFolderOperation) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (o *CreateFolderOperation) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createFolderDocs,
+// Metadata returns metadata about the action
+func (o *CreateFolderOperation) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_folder",
+		DisplayName:   "Create Folder",
+		Description:   "Creates a new folder in a specified ClickUp space.",
+		Type:          core.ActionTypeAction,
+		Documentation: createFolderDocs,
+		Icon:          "material-symbols:create-new-folder",
+		SampleOutput: map[string]any{
+			"id":                "folder123",
+			"name":              "New Folder",
+			"orderindex":        "1",
+			"override_statuses": false,
+			"hidden":            false,
+			"space": map[string]any{
+				"id":   "space123",
+				"name": "Space Name",
+			},
+			"task_count": "0",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (o *CreateFolderOperation) Icon() *string {
-	icon := "material-symbols:create-new-folder"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (o *CreateFolderOperation) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_folder", "Create Folder")
+
+	shared.RegisterWorkSpaceInput(form, "Workspaces", "select a workspace", true)
+
+	shared.RegisterSpacesInput(form, "Spaces", "select a space", true)
+
+	form.TextField("name", "name").
+		Placeholder("Folder Name").
+		HelpText("The name of the folder").
+		Required(true)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (o *CreateFolderOperation) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"workspace-id": shared.RegisterWorkSpaceInput("Workspaces", "select a workspace", true),
-		"space-id":     shared.RegisterSpacesInput("Spaces", "select a space", true),
-		"name": autoform.NewShortTextField().
-			SetDisplayName("Folder Name").
-			SetDescription("The name of the folder").
-			SetRequired(true).
-			Build(),
-	}
+// Auth returns the authentication requirements for the action
+func (o *CreateFolderOperation) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (o *CreateFolderOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	accessToken := ctx.Auth.AccessToken
-	input, err := sdk.InputToTypeSafely[createFolderProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (o *CreateFolderOperation) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createFolderProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken := authCtx.Token.AccessToken
 	reqURL := "/v2/space/" + input.SpaceID + "/folder"
 
 	folder, err := shared.CreateItem(accessToken, input.Name, reqURL)
@@ -65,29 +86,6 @@ func (o *CreateFolderOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, e
 	}
 
 	return folder, nil
-}
-
-func (o *CreateFolderOperation) Auth() *sdk.Auth {
-	return nil
-}
-
-func (o *CreateFolderOperation) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"id":                "folder123",
-		"name":              "New Folder",
-		"orderindex":        "1",
-		"override_statuses": false,
-		"hidden":            false,
-		"space": map[string]any{
-			"id":   "space123",
-			"name": "Space Name",
-		},
-		"task_count": "0",
-	}
-}
-
-func (o *CreateFolderOperation) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateFolderOperation() sdk.Action {

@@ -16,50 +16,68 @@ package shared
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
+	"net/http"
+	"net/url"
 
-	"github.com/gookit/goutil/arrutil"
-	fastshot "github.com/opus-domini/fast-shot"
+	"github.com/juicycleff/smartform/v1"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
+
+const BaseAPI = "https://api.todoist.com/rest/v2"
 
 var (
-	// #nosec
-	tokenURL   = "https://todoist.com/oauth/access_token"
-	SharedAuth = autoform.NewOAuthField("https://todoist.com/oauth/authorize", &tokenURL, []string{
-		"data:read_write",
-	}).SetRequired(true).Build()
-)
-var BaseAPI = "https://api.todoist.com/rest/v2"
-
-func GetProjectsInput() *sdkcore.AutoFormSchema {
-	getProjects := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		client := fastshot.NewClient(BaseAPI).
-			Auth().BearerToken(ctx.Auth.AccessToken).
-			Header().
-			AddAccept("application/json").
+	todoistForm = smartform.NewAuthForm("todoist-auth", "Todoist OAuth", smartform.AuthStrategyOAuth2)
+	_           = todoistForm.
+			OAuthField("oauth", "Todoist OAuth").
+			AuthorizationURL("https://todoist.com/oauth/authorize").
+			TokenURL("https://todoist.com/oauth/access_token").
+			Scopes([]string{"data:read_write"}).
+			Required(true).
 			Build()
+)
 
-		rsp, err := client.GET("/projects").Send()
+var SharedTodoistAuth = todoistForm.Build()
+
+func RegisterProjectsProps(form *smartform.FormBuilder) {
+	getProjects := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+		url := BaseAPI + "/projects"
+
+		req, err := http.NewRequest(http.MethodGet, url, nil)
 		if err != nil {
 			return nil, err
 		}
 
-		if rsp.Status().IsError() {
-			return nil, errors.New(rsp.Status().Text())
+		req.Header.Set("Accept", "application/json")
+
+		req.Header.Set("Authorization", "Bearer "+authCtx.Token.AccessToken)
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("API returned non-200 status code: %d", resp.StatusCode)
 		}
 
-		bytes, err := io.ReadAll(rsp.Raw().Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
 
 		var projects []Project
-		err = json.Unmarshal(bytes, &projects)
+		err = json.Unmarshal(body, &projects)
 		if err != nil {
 			return nil, err
 		}
@@ -67,11 +85,19 @@ func GetProjectsInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(projects, len(projects))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Project").
-		SetDescription("Task project ID. If not set, task is put to user's Inbox.").
-		SetDynamicOptions(&getProjects).
-		SetRequired(false).Build()
+	form.SelectField("project_id", "Projects").
+		Placeholder("Select a project").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getProjects)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select a project")
 }
 
 type getSectionsFilter struct {
@@ -83,40 +109,57 @@ type getSectionsFilter struct {
 	IDs       []int   `json:"ids"`
 }
 
-func GetSectionsInput() *sdkcore.AutoFormSchema {
-	getProjects := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterSectionsProps(form *smartform.FormBuilder) {
+	getSections := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[getSectionsFilter](ctx)
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+		baseUrl := BaseAPI + "/sections"
 
-		qu := fastshot.NewClient(BaseAPI).
-			Auth().BearerToken(ctx.Auth.AccessToken).
-			Header().
-			AddAccept("application/json").
-			Build().GET("/sections")
+		queryParams := url.Values{}
 
 		if input.ProjectID != nil {
-			qu = qu.Query().AddParam("project_id", *input.ProjectID)
+			queryParams.Add("project_id", *input.ProjectID)
 		}
 
 		if input.SectionID != nil {
-			qu = qu.Query().AddParam("section_id", *input.SectionID)
+			queryParams.Add("section_id", *input.SectionID)
 		}
 
-		rsp, err := qu.Send()
+		fullUrl := baseUrl
+		if len(queryParams) > 0 {
+			fullUrl += "?" + queryParams.Encode()
+		}
+
+		req, err := http.NewRequest(http.MethodGet, fullUrl, nil)
 		if err != nil {
 			return nil, err
 		}
 
-		if rsp.Status().IsError() {
-			return nil, errors.New(rsp.Status().Text())
+		req.Header.Set("Accept", "application/json")
+
+		req.Header.Set("Authorization", "Bearer "+authCtx.Token.AccessToken)
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("API returned non-200 status code: %d", resp.StatusCode)
 		}
 
-		bytes, err := io.ReadAll(rsp.Raw().Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
 
 		var projects []ProjectSection
-		err = json.Unmarshal(bytes, &projects)
+		err = json.Unmarshal(body, &projects)
 		if err != nil {
 			return nil, err
 		}
@@ -124,81 +167,114 @@ func GetSectionsInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(projects, len(projects))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Section").
-		SetDescription("A section for the task. It should be a Section ID under the same project").
-		SetDynamicOptions(&getProjects).
-		SetRequired(false).Build()
+	form.SelectField("section_id", "Section").
+		Placeholder("Select a section").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getSections)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("A section for the task. It should be a Section ID under the same project")
 }
 
-var ViewStyleOptions = []*sdkcore.AutoFormSchema{
-	{Const: "list", Title: "List"},
-	{Const: "board", Title: "Board"},
-}
-
-func GetTasksInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getProjects := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		input := sdk.DynamicInputToType[getSectionsFilter](ctx)
-
-		qu := fastshot.NewClient(BaseAPI).
-			Auth().BearerToken(ctx.Auth.AccessToken).
-			Header().
-			AddAccept("application/json").
-			Build().GET("/tasks")
-
-		if input.ProjectID != nil {
-			qu = qu.Query().AddParam("project_id", *input.ProjectID)
-		}
-
-		if input.SectionID != nil {
-			qu = qu.Query().AddParam("section_id", *input.SectionID)
-		}
-
-		if input.Label != nil {
-			qu = qu.Query().AddParam("label", *input.Label)
-		}
-
-		if input.Filter != nil {
-			qu = qu.Query().AddParam("filter", *input.Filter)
-		}
-
-		if input.Lang != nil {
-			qu = qu.Query().AddParam("lang", *input.Lang)
-		}
-
-		rsp, err := qu.Send()
+func RegisterTasksProps(form *smartform.FormBuilder, formId string, title string, desc string, required bool) {
+	getTasks := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
 		if err != nil {
 			return nil, err
 		}
 
-		if rsp.Status().IsError() {
-			return nil, errors.New(rsp.Status().Text())
+		input := sdk.DynamicInputToType[getSectionsFilter](ctx)
+
+		// Build the URL with query parameters
+		baseUrl := BaseAPI + "/tasks"
+
+		// Create query parameters
+		queryParams := url.Values{}
+
+		if input.ProjectID != nil {
+			queryParams.Add("project_id", *input.ProjectID)
 		}
 
-		bytes, err := io.ReadAll(rsp.Raw().Body)
+		if input.SectionID != nil {
+			queryParams.Add("section_id", *input.SectionID)
+		}
+
+		if input.Label != nil {
+			queryParams.Add("label", *input.Label)
+		}
+
+		if input.Filter != nil {
+			queryParams.Add("filter", *input.Filter)
+		}
+
+		if input.Lang != nil {
+			queryParams.Add("lang", *input.Lang)
+		}
+
+		fullUrl := baseUrl
+		if len(queryParams) > 0 {
+			fullUrl += "?" + queryParams.Encode()
+		}
+
+		req, err := http.NewRequest(http.MethodGet, fullUrl, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Accept", "application/json")
+
+		req.Header.Set("Authorization", "Bearer "+authCtx.Token.AccessToken)
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("API returned non-200 status code: %d", resp.StatusCode)
+		}
+
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
 
 		var tasks []Task
-		err = json.Unmarshal(bytes, &tasks)
+		err = json.Unmarshal(body, &tasks)
 		if err != nil {
 			return nil, err
 		}
 
-		items := arrutil.Map[Task, map[string]any](tasks, func(input Task) (target map[string]any, find bool) {
-			return map[string]any{
-				"id":   input.ID,
-				"name": input.Content,
-			}, true
-		})
+		items := make([]map[string]interface{}, 0, len(tasks))
+		for _, task := range tasks {
+			items = append(items, map[string]interface{}{
+				"id":   task.ID,
+				"name": task.Content,
+			})
+		}
 
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getProjects).
-		SetRequired(required).Build()
+	form.SelectField(formId, title).
+		Placeholder("Select a task").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getTasks)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText(desc)
 }

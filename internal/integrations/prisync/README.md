@@ -12,7 +12,7 @@ The Prisync integration allows you to automate tasks and workflows with your e-c
 **Setup Requirements**
 
 1. **Prisync Account**: You need a valid Prisync account to integrate with our workflow automation software.
-2. **API Key**: Obtain an API key from Prisync to authenticate the integration.
+2. **API Key**: Obtain an API key and Token from Prisync to authenticate the integration.
 3. **Workflow Automation Software**: Ensure you have a subscription to our workflow automation software and are familiar with its features.
 
 **Integration Steps**
@@ -31,7 +31,7 @@ The Prisync integration allows you to automate tasks and workflows with your e-c
 
 **Troubleshooting Tips**
 
-1. **API Key Issues**: Verify that the API key is correct and not expired.
+1. **API Key Issues**: Verify that the API key and Token is correct and not expired.
 2. **Webhook Configuration**: Ensure the webhook is properly configured in Prisync to receive notifications from our workflow automation software.
 3. **Field Mapping**: Double-check field mappings to ensure accurate data exchange between Prisync and your workflow automation software.
 

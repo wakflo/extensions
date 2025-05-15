@@ -6,10 +6,11 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/clickup/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type updateSpaceProps struct {
@@ -22,66 +23,91 @@ type updateSpaceProps struct {
 
 type UpdateSpaceOperation struct{}
 
-func (o *UpdateSpaceOperation) Name() string {
-	return "Update Space"
-}
-
-func (o *UpdateSpaceOperation) Description() string {
-	return "Updates an existing space in ClickUp with modified details."
-}
-
-func (o *UpdateSpaceOperation) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (o *UpdateSpaceOperation) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &updateSpaceDocs,
+// Metadata returns metadata about the action
+func (o *UpdateSpaceOperation) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "update_space",
+		DisplayName:   "Update Space",
+		Description:   "Updates an existing space in ClickUp with modified details.",
+		Type:          core.ActionTypeAction,
+		Documentation: updateSpaceDocs,
+		Icon:          "material-symbols:space-dashboard-edit",
+		SampleOutput: map[string]any{
+			"id":      "123456",
+			"name":    "Updated Space",
+			"private": true,
+			"statuses": []map[string]any{
+				{
+					"id":     "st123",
+					"status": "Open",
+					"color":  "#d3d3d3",
+				},
+			},
+			"multiple_assignees": true,
+			"features": map[string]any{
+				"due_dates":     true,
+				"time_tracking": true,
+				"tags":          true,
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (o *UpdateSpaceOperation) Icon() *string {
-	icon := "material-symbols:space-dashboard-edit"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (o *UpdateSpaceOperation) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("update_space", "Update Space")
+
+	shared.RegisterWorkSpaceInput(form, "Workspaces", "select a workspace", true)
+
+	shared.RegisterSpacesInput(form, "Spaces", "select a space", true)
+
+	form.TextField("space-name", "space-name").
+		Placeholder("Update space Name").
+		HelpText("The space name to update").
+		Required(false)
+
+	form.CheckboxField("multiple-assignees", "multiple-assignees").
+		Placeholder("Multiple Assignees").
+		HelpText("Enable multiple assignees").
+		DefaultValue(true).
+		Required(false)
+
+	form.CheckboxField("custom-fields", "custom-fields").
+		Placeholder("Custom fields").
+		HelpText("Enable custom fields").
+		DefaultValue(true).
+		Required(false)
+
+	form.CheckboxField("tags", "tags").
+		Placeholder("Tags").
+		HelpText("Enable tags").
+		DefaultValue(true).
+		Required(false)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (o *UpdateSpaceOperation) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"workspace-id": shared.RegisterWorkSpaceInput("Workspaces", "select a workspace", true),
-		"space-id":     shared.RegisterSpacesInput("Spaces", "select a space", true),
-		"space-name": autoform.NewShortTextField().
-			SetDisplayName("Update space Name").
-			SetDescription("The space name to update").
-			SetRequired(false).
-			Build(),
-		"multiple-assignees": autoform.NewBooleanField().
-			SetDisplayName("Multiple Assignees").
-			SetDescription("Enable multiple assignees").
-			SetRequired(false).
-			SetDefaultValue(true).
-			Build(),
-		"custom-fields": autoform.NewBooleanField().
-			SetDisplayName("Custom fields").
-			SetDescription("Enable custom fields").
-			SetRequired(false).
-			SetDefaultValue(true).
-			Build(),
-		"tags": autoform.NewBooleanField().
-			SetDisplayName("Tags").
-			SetDescription("Enable tags").
-			SetRequired(false).
-			SetDefaultValue(true).
-			Build(),
-	}
+// Auth returns the authentication requirements for the action
+func (o *UpdateSpaceOperation) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (o *UpdateSpaceOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	accessToken := ctx.Auth.AccessToken
-
-	input, err := sdk.InputToTypeSafely[updateSpaceProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (o *UpdateSpaceOperation) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[updateSpaceProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken := authCtx.Token.AccessToken
 	reqURL := shared.BaseURL + "/v2/space/" + input.SpaceID
 	data := []byte(fmt.Sprintf(`{
 		"name": "%s",
@@ -141,35 +167,6 @@ func (o *UpdateSpaceOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, er
 	return map[string]interface{}{
 		"Result": "Space updated Successfully",
 	}, nil
-}
-
-func (o *UpdateSpaceOperation) Auth() *sdk.Auth {
-	return nil
-}
-
-func (o *UpdateSpaceOperation) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"id":      "123456",
-		"name":    "Updated Space",
-		"private": true,
-		"statuses": []map[string]any{
-			{
-				"id":     "st123",
-				"status": "Open",
-				"color":  "#d3d3d3",
-			},
-		},
-		"multiple_assignees": true,
-		"features": map[string]any{
-			"due_dates":     true,
-			"time_tracking": true,
-			"tags":          true,
-		},
-	}
-}
-
-func (o *UpdateSpaceOperation) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewUpdateSpaceOperation() sdk.Action {

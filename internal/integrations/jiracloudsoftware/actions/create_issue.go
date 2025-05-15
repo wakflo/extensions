@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/jiracloudsoftware/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createIssueActionProps struct {
@@ -21,57 +22,69 @@ type createIssueActionProps struct {
 
 type CreateIssueAction struct{}
 
-func (a *CreateIssueAction) Name() string {
-	return "Create Issue"
-}
-
-func (a *CreateIssueAction) Description() string {
-	return "Create a new issue in Jira with specified details"
-}
-
-func (a *CreateIssueAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateIssueAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createIssueDocs,
+// Metadata returns metadata about the action
+func (a *CreateIssueAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_issue",
+		DisplayName:   "Create Issue",
+		Description:   "Create a new issue in Jira with specified details",
+		Type:          core.ActionTypeAction,
+		Documentation: createIssueDocs,
+		Icon:          "lucide:ticket-plus",
+		SampleOutput: map[string]any{
+			"id":   "12345",
+			"key":  "PRJ-123",
+			"self": "https://yourcompany.atlassian.net/rest/api/3/issue/12345",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateIssueAction) Icon() *string {
-	icon := "lucide:ticket-plus"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *CreateIssueAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_issue", "Create Issue")
+
+	shared.RegisterProjectsProps(form)
+
+	shared.RegisterIssuesProps(form)
+
+	shared.RegisterIssueTypeProps(form, false)
+
+	form.TextField("summary", "Summary").
+		Required(true)
+
+	form.TextField("description", "Description").
+		Required(false)
+
+	shared.RegisterUsersProps(form)
+
+	form.TextField("parentKey", "Parent Key").
+		Required(false).
+		HelpText("If this issue is a subtask, insert the parent issue key")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *CreateIssueAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"projectId":   shared.GetProjectsInput(),
-		"issueTypeId": shared.GetIssueTypesInput(),
-		"summary": autoform.NewShortTextField().
-			SetDisplayName("Summary").
-			SetRequired(true).
-			Build(),
-		"description": autoform.NewLongTextField().
-			SetDisplayName("Description").
-			SetRequired(false).
-			Build(),
-		"assignee": shared.GetUsersInput(),
-		"parentKey": autoform.NewShortTextField().
-			SetDisplayName("Parent Key").
-			SetDescription("If this issue is a subtask, insert the parent issue key").
-			SetRequired(false).
-			Build(),
-	}
+// Auth returns the authentication requirements for the action
+func (a *CreateIssueAction) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (a *CreateIssueAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createIssueActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *CreateIssueAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createIssueActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	instanceURL := ctx.Auth.Extra["instance-url"] + "/rest/api/3/issue"
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	instanceURL := authCtx.Extra["instance-url"] + "/rest/api/3/issue"
 
 	payload := map[string]interface{}{
 		"fields": map[string]interface{}{
@@ -121,28 +134,12 @@ func (a *CreateIssueAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 	}
 
 	reqURL := instanceURL
-	resp, err := shared.JiraRequest(ctx.Auth.Extra["email"], ctx.Auth.Extra["api-token"], reqURL, http.MethodPost, "", data)
+	resp, err := shared.JiraRequest(authCtx.Extra["email"], authCtx.Extra["api-token"], reqURL, http.MethodPost, "", data)
 	if err != nil {
 		return nil, err
 	}
 
 	return resp, nil
-}
-
-func (a *CreateIssueAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *CreateIssueAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"id":   "12345",
-		"key":  "PRJ-123",
-		"self": "https://yourcompany.atlassian.net/rest/api/3/issue/12345",
-	}
-}
-
-func (a *CreateIssueAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateIssueAction() sdk.Action {

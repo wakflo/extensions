@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 var SharedAuth = autoform.NewAuth().NewCustomAuth().
@@ -26,11 +28,15 @@ var SharedAuth = autoform.NewAuth().NewCustomAuth().
 	}).
 	Build()
 
-func GetActiveCampaignListsInput() *sdkcore.AutoFormSchema {
-	getLists := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		apiURL, apiURLExists := ctx.Auth.Extra["api_url"]
-		apiKey, apiKeyExists := ctx.Auth.Extra["api_key"]
+func RegisterActiveCampaignListsProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getLists := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
 
+		apiURL, apiURLExists := authCtx.Extra["api_url"]
+		apiKey, apiKeyExists := authCtx.Extra["api_key"]
 		if !apiURLExists || !apiKeyExists || apiURL == "" || apiKey == "" {
 			return nil, errors.New("API URL and API Key are required")
 		}
@@ -54,6 +60,7 @@ func GetActiveCampaignListsInput() *sdkcore.AutoFormSchema {
 		if !ok {
 			return nil, errors.New("unexpected format for lists data")
 		}
+
 		items := make([]map[string]any, 0, len(listItems))
 		for _, item := range listItems {
 			list, ok := item.(map[string]interface{})
@@ -63,7 +70,6 @@ func GetActiveCampaignListsInput() *sdkcore.AutoFormSchema {
 
 			var id string
 			var name string
-
 			if idStr, ok := list["id"].(string); ok {
 				id = idStr
 			} else if idNum, ok := list["id"].(float64); ok {
@@ -85,9 +91,17 @@ func GetActiveCampaignListsInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Lists").
-		SetDescription("Select ActiveCampaign list").
-		SetDynamicOptions(&getLists).
-		SetRequired(false).Build()
+	return form.SelectField("list", "ActiveCampaign List").
+		Placeholder("Select an ActiveCampaign list").
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getLists)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select an ActiveCampaign list")
 }

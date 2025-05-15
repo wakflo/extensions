@@ -4,11 +4,12 @@ import (
 	"context"
 
 	goshopify "github.com/bold-commerce/go-shopify/v4"
+	"github.com/juicycleff/smartform/v1"
 	"github.com/shopspring/decimal"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createDraftOrderActionProps struct {
@@ -25,77 +26,67 @@ type createDraftOrderActionProps struct {
 
 type CreateDraftOrderAction struct{}
 
-func (a *CreateDraftOrderAction) Name() string {
-	return "Create Draft Order"
-}
-
-func (a *CreateDraftOrderAction) Description() string {
-	return "Create Draft Order: Automatically generates a draft order in your e-commerce platform, allowing you to review and customize order details before submitting it for fulfillment."
-}
-
-func (a *CreateDraftOrderAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateDraftOrderAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createDraftOrderDocs,
+func (a *CreateDraftOrderAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_draft_order",
+		DisplayName:   "Create Draft Order",
+		Description:   "Create Draft Order: Automatically generates a draft order in your e-commerce platform, allowing you to review and customize order details before submitting it for fulfillment.",
+		Type:          core.ActionTypeAction,
+		Documentation: createDraftOrderDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateDraftOrderAction) Icon() *string {
-	return nil
+func (a *CreateDraftOrderAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_draft_order", "Create Draft Order")
+
+	form.NumberField("productId", "Product ID").
+		Placeholder("The ID of the product to create the order with.").
+		HelpText("The ID of the product to create the order with.")
+
+	form.NumberField("variantId", "Product Variant").
+		Placeholder("The ID of the variant to create the order with.").
+		HelpText("The ID of the variant to create the order with.")
+
+	form.NumberField("customerId", "Customer ID").
+		Placeholder("The ID of the customer to use.").
+		HelpText("The ID of the customer to use.")
+
+	form.TextField("title", "Title").
+		Placeholder("Title").
+		HelpText("Title")
+
+	form.TextareaField("note", "Note about the order").
+		Placeholder("Note about the order").
+		HelpText("Note about the order")
+
+	form.TextareaField("tags", "Tags").
+		Placeholder("A string of comma-separated tags for filtering and search").
+		HelpText("A string of comma-separated tags for filtering and search")
+
+	form.NumberField("quantity", "Quantity").
+		Placeholder("The ID of the variant to create the order with.").
+		DefaultValue(1).
+		HelpText("The ID of the variant to create the order with.")
+
+	form.TextField("price", "Price").
+		Placeholder("Price").
+		HelpText("Price")
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *CreateDraftOrderAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"productId": autoform.NewNumberField().
-			SetDisplayName("Product ID").
-			SetDescription("The ID of the product to create the order with.").
-			SetRequired(false).
-			Build(),
-		"variantId": autoform.NewNumberField().
-			SetDisplayName("Product Variant").
-			SetDescription("The ID of the variant to create the order with.").
-			SetRequired(false).
-			Build(),
-		"customerId": autoform.NewNumberField().
-			SetDisplayName("Customer ID").
-			SetDescription("The ID of the customer to use.").
-			SetRequired(false).
-			Build(),
-		"title": autoform.NewShortTextField().
-			SetDisplayName("Title").
-			SetRequired(false).
-			Build(),
-		"note": autoform.NewLongTextField().
-			SetDisplayName("Note about the order").
-			SetRequired(false).
-			Build(),
-		"tags": autoform.NewLongTextField().
-			SetDisplayName("A string of comma-separated tags for filtering and search").
-			SetRequired(false).
-			Build(),
-		"quantity": autoform.NewNumberField().
-			SetDisplayName("Quantity").
-			SetDescription("The ID of the variant to create the order with.").
-			SetRequired(false).
-			SetDefaultValue(1).
-			Build(),
-		"price": autoform.NewShortTextField().
-			SetDisplayName("Price").
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (a *CreateDraftOrderAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createDraftOrderActionProps](ctx.BaseContext)
+func (a *CreateDraftOrderAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createDraftOrderActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.CreateClient(ctx.BaseContext)
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -121,18 +112,8 @@ func (a *CreateDraftOrderAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, 
 	}, nil
 }
 
-func (a *CreateDraftOrderAction) Auth() *sdk.Auth {
+func (a *CreateDraftOrderAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *CreateDraftOrderAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateDraftOrderAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateDraftOrderAction() sdk.Action {

@@ -20,30 +20,34 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wakflo/go-sdk/autoform"
-)
-
-var (
-	// #nosec
-	tokenURL         = "https://connect.squareup.com/oauth2/token"
-	authURL          = "https://connect.squareup.com/oauth2/authorize"
-	SquareSharedAuth = autoform.NewOAuthField(authURL, &tokenURL, []string{
-		"MERCHANT_PROFILE_READ",
-		"CUSTOMERS_READ",
-		"CUSTOMERS_WRITE",
-		"ITEMS_READ",
-		"ITEMS_WRITE",
-		"ORDERS_READ",
-		"ORDERS_WRITE",
-		"PAYMENTS_READ",
-		"INVOICES_READ",
-		"APPOINTMENTS_READ",
-		"APPOINTMENTS_WRITE",
-	}).
-		Build()
+	"github.com/juicycleff/smartform/v1"
 )
 
 const baseURL = "https://connect.squareup.com"
+
+var (
+	squareForm = smartform.NewAuthForm("square-auth", "Square OAuth", smartform.AuthStrategyOAuth2)
+	_          = squareForm.
+			OAuthField("oauth", "Square OAuth").
+			AuthorizationURL(baseURL + "/oauth2/authorize").
+			TokenURL(baseURL + "/oauth2/token").
+			Scopes([]string{
+			"MERCHANT_PROFILE_READ",
+			"CUSTOMERS_READ",
+			"CUSTOMERS_WRITE",
+			"ITEMS_READ",
+			"ITEMS_WRITE",
+			"ORDERS_READ",
+			"ORDERS_WRITE",
+			"PAYMENTS_READ",
+			"INVOICES_READ",
+			"APPOINTMENTS_READ",
+			"APPOINTMENTS_WRITE",
+		}).
+		Build()
+)
+
+var SquareSharedAuth = squareForm.Build()
 
 func GetSquareClient(accessToken, url string) (map[string]interface{}, error) {
 	fullURL := baseURL + url

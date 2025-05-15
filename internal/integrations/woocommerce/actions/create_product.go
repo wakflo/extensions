@@ -7,10 +7,11 @@ import (
 
 	"github.com/hiscaler/woocommerce-go"
 	"github.com/hiscaler/woocommerce-go/entity"
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/woocommerce/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createProductActionProps struct {
@@ -25,74 +26,71 @@ type createProductActionProps struct {
 
 type CreateProductAction struct{}
 
-func (a *CreateProductAction) Name() string {
-	return "Create Product"
-}
-
-func (a *CreateProductAction) Description() string {
-	return "Create Product: Automatically generates and creates new products in your system, including product details such as name, description, price, and inventory levels."
-}
-
-func (a *CreateProductAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateProductAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createProductDocs,
+func (a *CreateProductAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_product",
+		DisplayName:   "Create Product",
+		Description:   "Create Product: Automatically generates and creates new products in your woocommerce store, including product details such as name, description, price, and inventory levels.",
+		Type:          core.ActionTypeAction,
+		Documentation: createProductDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateProductAction) Icon() *string {
-	return nil
+func (a *CreateProductAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_product", "Create Product")
+
+	form.TextField("name", "Product Name").
+		Placeholder("Enter product Name").
+		Required(true).
+		HelpText("Enter product Name")
+
+	form.SelectField("type", "Type").
+		AddOption("simple", "Simple").
+		AddOption("grouped", "Grouped").
+		AddOption("external", "External").
+		AddOption("variable", "Variable").
+		Required(true).
+		HelpText("Select the type")
+
+	form.TextareaField("description", "Description").
+		Placeholder("Enter product description").
+		Required(true).
+		HelpText("Enter product description")
+
+	form.TextareaField("short_description", "Short Description").
+		Placeholder("Enter the short description").
+		Required(true).
+		HelpText("Enter the short description")
+
+	form.NumberField("regular_price", "Regular Price").
+		Placeholder("Enter Regular Price").
+		Required(true).
+		HelpText("Enter Regular Price")
+
+	form.TextField("categories", "Category").
+		Placeholder("Enter the category IDs (comma separated)").
+		HelpText("Enter the category IDs (comma separated)")
+
+	form.TextField("image_url", "Image URL").
+		Placeholder("Enter image URL. Must end with a valid image extension (.jpg, .jpeg, .png, .gif)").
+		HelpText("Enter image URL. Must end with a valid image extension (.jpg, .jpeg, .png, .gif)")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *CreateProductAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"name": autoform.NewShortTextField().
-			SetDisplayName("Product Name").
-			SetDescription("Enter product Name").
-			SetRequired(true).
-			Build(),
-		"type": autoform.NewSelectField().
-			SetDisplayName("Type").
-			SetDescription("Select the type").
-			SetOptions(shared.ProductType).
-			SetRequired(true).
-			Build(),
-		"description": autoform.NewLongTextField().
-			SetDisplayName(" Description").
-			SetDescription("Enter product description").
-			SetRequired(true).
-			Build(),
-		"short_description": autoform.NewLongTextField().
-			SetDisplayName("Short Description").
-			SetDescription("Enter the short description").
-			SetRequired(true).
-			Build(),
-		"regular_price": autoform.NewNumberField().
-			SetDisplayName("Regular Price").
-			SetDescription("Enter Regular Price").
-			SetRequired(true).
-			Build(),
-		"categories": autoform.NewShortTextField().
-			SetDisplayName("Category").
-			SetDescription("Enter the category IDs (comma separated)").
-			Build(),
-		"image_url": autoform.NewShortTextField().
-			SetDisplayName("Image URL").
-			SetDescription("Enter image URL. Must end with a valid image extension (.jpg, .jpeg, .png, .gif)").
-			Build(),
-	}
-}
-
-func (a *CreateProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createProductActionProps](ctx.BaseContext)
+func (a *CreateProductAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createProductActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	wooClient, err := shared.InitClient(ctx.BaseContext)
+	wooClient, err := shared.InitClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -134,18 +132,8 @@ func (a *CreateProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	return product, nil
 }
 
-func (a *CreateProductAction) Auth() *sdk.Auth {
+func (a *CreateProductAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *CreateProductAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateProductAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateProductAction() sdk.Action {

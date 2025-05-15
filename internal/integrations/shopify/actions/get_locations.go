@@ -3,9 +3,11 @@ package actions
 import (
 	"context"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getLocationsActionProps struct {
@@ -14,34 +16,31 @@ type getLocationsActionProps struct {
 
 type GetLocationsAction struct{}
 
-func (a *GetLocationsAction) Name() string {
-	return "Get Locations"
-}
-
-func (a *GetLocationsAction) Description() string {
-	return "Retrieves a list of locations from a specified data source or system, allowing you to integrate with various mapping and geolocation services."
-}
-
-func (a *GetLocationsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetLocationsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getLocationsDocs,
+func (a *GetLocationsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_locations",
+		DisplayName:   "Get Locations",
+		Description:   "Retrieves a list of locations from a specified data source or system, allowing you to integrate with various mapping and geolocation services.",
+		Type:          core.ActionTypeAction,
+		Documentation: getLocationsDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetLocationsAction) Icon() *string {
-	return nil
+func (a *GetLocationsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_locations", "Get Locations")
+
+	// No properties in the original implementation
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *GetLocationsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{}
-}
-
-func (a *GetLocationsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	client, err := shared.CreateClient(ctx.BaseContext)
+func (a *GetLocationsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -69,18 +68,8 @@ func (a *GetLocationsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 	}, nil
 }
 
-func (a *GetLocationsAction) Auth() *sdk.Auth {
+func (a *GetLocationsAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *GetLocationsAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *GetLocationsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetLocationsAction() sdk.Action {

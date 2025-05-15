@@ -6,7 +6,17 @@ import (
 	"io"
 	"strings"
 
+	"github.com/juicycleff/smartform/v1"
 	fastshot "github.com/opus-domini/fast-shot"
+)
+
+var (
+	form = smartform.NewAuthForm("openai-auth", "OpenAI API Authentication", smartform.AuthStrategyCustom)
+	_    = form.TextField("token", "OpenAI Token (Required*)").
+		Required(true).
+		HelpText("The api token used to authenticate OpenAI")
+
+	OpenAISharedAuth = form.Build()
 )
 
 func getOpenAiClient(token string) (fastshot.ClientHttpMethods, error) {

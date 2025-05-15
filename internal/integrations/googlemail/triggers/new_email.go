@@ -4,10 +4,11 @@ import (
 	"context"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googlemail/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/gmail/v1"
 	"google.golang.org/api/option"
 )
@@ -20,82 +21,114 @@ type newEmailTriggerProps struct {
 
 type NewEmailTrigger struct{}
 
-func (t *NewEmailTrigger) Name() string {
-	return "New Email"
+func (t *NewEmailTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "new_email",
+		DisplayName:   "New Email",
+		Description:   "Triggered when a new email is received in your inbox or mailbox, allowing you to automate workflows based on incoming emails.",
+		Type:          sdkcore.TriggerTypePolling,
+		Documentation: newEmailDocs,
+		SampleOutput: map[string]any{
+			"emails": []map[string]any{
+				{
+					"id":      "12345abcde",
+					"subject": "Important Message",
+					"from":    "sender@example.com",
+					"date":    "Mon, 01 Jan 2025 10:00:00 -0700",
+				},
+			},
+		},
+	}
 }
 
-func (t *NewEmailTrigger) Description() string {
-	return "Triggered when a new email is received in your inbox or mailbox, allowing you to automate workflows based on incoming emails."
+func (t *NewEmailTrigger) Auth() *sdkcore.AuthMetadata {
+	return nil
 }
 
 func (t *NewEmailTrigger) GetType() sdkcore.TriggerType {
 	return sdkcore.TriggerTypePolling
 }
 
-func (t *NewEmailTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &newEmailDocs,
-	}
-}
+func (t *NewEmailTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("google-mail-new-email", "New Email")
 
-func (t *NewEmailTrigger) Icon() *string {
-	return nil
-}
+	form.TextField("subject", "subject").
+		Placeholder("Subject").
+		HelpText("Subject of the email to trigger on").
+		Required(true)
 
-func (t *NewEmailTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"subject": autoform.NewShortTextField().
-			SetDisplayName("Subject").
-			SetDescription("Subject of the email to trigger on").
-			SetRequired(true).
-			Build(),
-		"from": autoform.NewShortTextField().
-			SetDisplayName("From").
-			SetDescription("Sender of the email to trigger on").
-			SetRequired(false).
-			Build(),
-		"maxResults": autoform.NewNumberField().
-			SetDisplayName("Max Results").
-			SetDescription("Maximum number of emails to return").
-			SetDefaultValue(50).
-			SetRequired(false).
-			Build(),
-	}
+	form.TextField("from", "from").
+		Placeholder("From").
+		HelpText("Sender of the email to trigger on").
+		Required(false)
+
+	form.NumberField("maxResults", "maxResults").
+		Placeholder("Max Results").
+		HelpText("Maximum number of emails to return").
+		DefaultValue(50).
+		Required(false)
+
+	schema := form.Build()
+
+	return schema
 }
 
 // Start initializes the newEmailTrigger, required for event and webhook triggers in a lifecycle context.
-func (t *NewEmailTrigger) Start(ctx sdk.LifecycleContext) error {
+func (t *NewEmailTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	// Required for event and webhook triggers
 	return nil
 }
 
 // Stop shuts down the newEmailTrigger, cleaning up resources and performing necessary teardown operations.
-func (t *NewEmailTrigger) Stop(ctx sdk.LifecycleContext) error {
+func (t *NewEmailTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
 // Execute performs the main action logic of newEmailTrigger by processing the input context and returning a JSON response.
 // It converts the base context input into a strongly-typed structure, executes the desired logic, and generates output.
 // Returns a JSON output map with the resulting data or an error if operation fails. required for Pooling triggers
-func (t *NewEmailTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	_, err := sdk.InputToTypeSafely[newEmailTriggerProps](ctx.BaseContext)
+func (t *NewEmailTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[newEmailTriggerProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	gmailService, err := gmail.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	gmailService, err := gmail.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
 
 	var lastRunTime time.Time
-	if ctx.Metadata().LastRun != nil {
-		lastRunTime = *ctx.Metadata().LastRun
+	lastRun, err := ctx.GetMetadata("lastRun")
+	if err == nil && lastRun != nil {
+		lastRunTime = *lastRun.(*time.Time)
 	}
 
 	query := "after:" + lastRunTime.Format(time.DateOnly)
 
-	messages, err := gmailService.Users.Messages.List("me").Q(query).Do()
+	// Add subject filter if provided
+	if input.Subject != "" {
+		query += " subject:" + input.Subject
+	}
+
+	// Add sender filter if provided
+	if input.From != "" {
+		query += " from:" + input.From
+	}
+
+	maxResults := int64(50)
+	if input.MaxResults > 0 {
+		maxResults = int64(input.MaxResults)
+	}
+
+	messages, err := gmailService.Users.Messages.List("me").
+		MaxResults(maxResults).
+		Q(query).Do()
 	if err != nil {
 		return nil, err
 	}
@@ -116,21 +149,15 @@ func (t *NewEmailTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) 
 		newEmails = append(newEmails, emailData)
 	}
 
+	// Update lastRun metadata to current time for next execution
+	now := time.Now()
+	ctx.SetMetadata("lastRun", &now)
+
 	return newEmails, nil
 }
 
 func (t *NewEmailTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
 	return sdkcore.TriggerCriteria{}
-}
-
-func (t *NewEmailTrigger) Auth() *sdk.Auth {
-	return nil
-}
-
-func (t *NewEmailTrigger) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
 }
 
 func NewNewEmailTrigger() sdk.Trigger {

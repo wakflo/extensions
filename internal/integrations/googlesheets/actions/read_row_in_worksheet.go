@@ -5,10 +5,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googlesheets/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
@@ -25,54 +26,69 @@ type readRowInWorksheetActionProps struct {
 
 type ReadRowInWorksheetAction struct{}
 
-func (a *ReadRowInWorksheetAction) Name() string {
-	return "Read Row in Worksheet"
-}
-
-func (a *ReadRowInWorksheetAction) Description() string {
-	return "Reads a single row from a worksheet and returns its values as an object. This action is useful when you need to retrieve specific data from a worksheet or perform actions based on the contents of a particular row."
-}
-
-func (a *ReadRowInWorksheetAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ReadRowInWorksheetAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &readRowInWorksheetDocs,
+// Metadata returns metadata about the action
+func (a *ReadRowInWorksheetAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "read_row_in_worksheet",
+		DisplayName:   "Read Row in Worksheet",
+		Description:   "Reads a single row from a worksheet and returns its values as an object. This action is useful when you need to retrieve specific data from a worksheet or perform actions based on the contents of a particular row.",
+		Type:          core.ActionTypeAction,
+		Documentation: readRowInWorksheetDocs,
+		Icon:          "",
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ReadRowInWorksheetAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *ReadRowInWorksheetAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("read_row_in_worksheet", "Read Row in Worksheet")
+
+	shared.RegisterSpreadsheetsProps(form, "spreadsheetId", "Spreadsheet", "spreadsheet ID", true)
+
+	shared.RegisterSheetIDProps(form, true)
+
+	shared.RegisterSheetTitleProps(form, true)
+
+	form.TextField("start-row", "start-row").
+		Placeholder("Start Row").
+		HelpText("The row range of the sheet in the format of A1 notation where to start.").
+		Required(true)
+
+	form.TextField("end-row", "end-row").
+		Placeholder("End Row").
+		HelpText("The row range of the sheet in the format of A1 notation where to end.").
+		Required(true)
+
+	form.CheckboxField("includeTeamDrives", "includeTeamDrives").
+		Placeholder("Include Team Drives").
+		HelpText("Include files from Team Drives in results")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *ReadRowInWorksheetAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *ReadRowInWorksheetAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"spreadsheetId": shared.GetSpreadsheetsInput("Spreadsheet", "spreadsheet ID", true),
-		"sheetId":       shared.GetSheetIDInput("Select Sheet to get the ID", "select sheet", true),
-		"sheetTitle":    shared.GetSheetTitleInput("Sheet ", "select sheet to read from", true),
-		"start-row": autoform.NewShortTextField().
-			SetDisplayName("Start Row").
-			SetDescription("The row range of the sheet in the format of A1 notation where to start.").
-			SetRequired(true).
-			Build(),
-		"end-row": autoform.NewShortTextField().
-			SetDisplayName("End Row").
-			SetDescription("The row range of the sheet in the format of A1 notation where to end.").
-			SetRequired(true).
-			Build(),
-		"includeTeamDrives": shared.IncludeTeamFieldInput,
-	}
-}
-
-func (a *ReadRowInWorksheetAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[readRowInWorksheetActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *ReadRowInWorksheetAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[readRowInWorksheetActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	sheetService, err := sheets.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	sheetService, err := sheets.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -134,21 +150,7 @@ func (a *ReadRowInWorksheetAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON
 		return nil, errors.New("no rows found in the specified range")
 	}
 
-	return sdk.JSON(rows), nil
-}
-
-func (a *ReadRowInWorksheetAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *ReadRowInWorksheetAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *ReadRowInWorksheetAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
+	return core.JSON(rows), nil
 }
 
 func NewReadRowInWorksheetAction() sdk.Action {

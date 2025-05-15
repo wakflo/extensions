@@ -21,28 +21,42 @@ import (
 	"strconv"
 
 	"github.com/gookit/goutil/arrutil"
+	"github.com/juicycleff/smartform/v1"
 	fastshot "github.com/opus-domini/fast-shot"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+
 	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 var (
-	// #nosec
-	tokenURL   = "https://oauth2.googleapis.com/token"
-	SharedAuth = autoform.NewOAuthField("https://accounts.google.com/o/oauth2/auth", &tokenURL, []string{
-		"https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly",
-	}).Build()
+	googleSheetsForm = smartform.NewAuthForm("google-sheets-auth", "Google Sheets OAuth", smartform.AuthStrategyOAuth2)
+	_                = googleSheetsForm.
+				OAuthField("oauth", "Google Sheets OAuth").
+				AuthorizationURL("https://accounts.google.com/o/oauth2/auth").
+				TokenURL("https://oauth2.googleapis.com/token").
+				Scopes([]string{
+			"https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly",
+		}).
+		Build()
 )
 
-func GetSpreadsheetsInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getSpreadsheetFiles := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+var SharedGoogleSheetsAuth = googleSheetsForm.Build()
+
+func RegisterSpreadsheetsProps(form *smartform.FormBuilder, value string, title string, description string, required bool) *smartform.FieldBuilder {
+	getSpreadsheetFiles := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		input := sdk.DynamicInputToType[struct {
 			IncludeTeamDrives bool `json:"includeTeamDrives"`
 		}](ctx)
 
 		client := fastshot.NewClient("https://www.googleapis.com/drive/v3").
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(authCtx.AccessToken).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -68,7 +82,6 @@ func GetSpreadsheetsInput(title string, desc string, required bool) *sdkcore.Aut
 			return nil, errors.New(rsp.Status().Text())
 		}
 
-		defer rsp.Body().Close()
 		byts, err := io.ReadAll(rsp.Body().Raw())
 		if err != nil {
 			return nil, err
@@ -83,21 +96,35 @@ func GetSpreadsheetsInput(title string, desc string, required bool) *sdkcore.Aut
 		return ctx.Respond(body.Files, len(body.Files))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getSpreadsheetFiles).
-		SetRequired(required).Build()
+	return form.SelectField(value, title).
+		Placeholder("Select a spreadsheet").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getSpreadsheetFiles)).
+				WithFieldReference("includeTeamDrives", "includeTeamDrives").
+				WithSearchSupport().
+				End().
+				RefreshOn("includeTeamDrives").
+				GetDynamicSource(),
+		).
+		HelpText(description)
 }
 
-func GetSheetIDInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getSheetID := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterSheetIDProps(form *smartform.FormBuilder, required bool) *smartform.FieldBuilder {
+	getSheetID := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		input := sdk.DynamicInputToType[struct {
 			SpreadSheetID string `json:"spreadsheetId,omitempty"`
 		}](ctx)
 
 		client := fastshot.NewClient("https://sheets.googleapis.com/v4/spreadsheets").
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(authCtx.AccessToken).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -113,7 +140,6 @@ func GetSheetIDInput(title string, desc string, required bool) *sdkcore.AutoForm
 			return nil, errors.New(rsp.Status().Text())
 		}
 
-		defer rsp.Body().Close()
 		byts, err := io.ReadAll(rsp.Body().Raw())
 		if err != nil {
 			return nil, err
@@ -136,21 +162,35 @@ func GetSheetIDInput(title string, desc string, required bool) *sdkcore.AutoForm
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getSheetID).
-		SetRequired(required).Build()
+	return form.SelectField("sheetId", "Sheet ID").
+		Placeholder("Select a sheet").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getSheetID)).
+				WithFieldReference("spreadsheetId", "spreadsheetId").
+				WithSearchSupport().
+				End().
+				RefreshOn("spreadsheetId").
+				GetDynamicSource(),
+		).
+		HelpText("Select a sheet ID")
 }
 
-func GetSheetTitleInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getSheetTitle := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterSheetTitleProps(form *smartform.FormBuilder, required bool) *smartform.FieldBuilder {
+	getSheetTitle := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		input := sdk.DynamicInputToType[struct {
 			SpreadSheetID string `json:"spreadsheetId,omitempty"`
 		}](ctx)
 
 		client := fastshot.NewClient("https://sheets.googleapis.com/v4/spreadsheets").
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(authCtx.AccessToken).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -166,7 +206,6 @@ func GetSheetTitleInput(title string, desc string, required bool) *sdkcore.AutoF
 			return nil, errors.New(rsp.Status().Text())
 		}
 
-		defer rsp.Body().Close()
 		byts, err := io.ReadAll(rsp.Body().Raw())
 		if err != nil {
 			return nil, err
@@ -189,11 +228,20 @@ func GetSheetTitleInput(title string, desc string, required bool) *sdkcore.AutoF
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getSheetTitle).
-		SetRequired(required).Build()
+	return form.SelectField("sheetTitle", "Sheet Title").
+		Placeholder("Select a sheet").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getSheetTitle)).
+				WithFieldReference("spreadsheetId", "spreadsheetId").
+				WithSearchSupport().
+				End().
+				RefreshOn("spreadsheetId").
+				GetDynamicSource(),
+		).
+		HelpText("Select a sheet title")
 }
 
 var IncludeTeamFieldInput = autoform.NewBooleanField().

@@ -107,7 +107,6 @@ func (a *UploadFileAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, er
 		Media(fileData.Data).
 		SupportsAllDrives(input.IncludeTeamDrives).
 		Do()
-
 	if err != nil {
 		return nil, err
 	}

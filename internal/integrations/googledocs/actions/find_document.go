@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/option"
 )
@@ -17,70 +18,65 @@ type findDocumentActionProps struct {
 
 type FindDocumentAction struct{}
 
-func (a *FindDocumentAction) Name() string {
-	return "Find Document"
-}
-
-func (a *FindDocumentAction) Description() string {
-	return "Searches for and retrieves a specific document from a designated repository or database, allowing you to automate tasks that require access to existing documents."
-}
-
-func (a *FindDocumentAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *FindDocumentAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &findDocumentDocs,
+// Metadata returns metadata about the action
+func (a *FindDocumentAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "find_document",
+		DisplayName:   "Find Document",
+		Description:   "Searches for and retrieves a specific document from a designated repository or database, allowing you to automate tasks that require access to existing documents.",
+		Type:          core.ActionTypeAction,
+		Documentation: findDocumentDocs,
+		Icon:          "",
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *FindDocumentAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *FindDocumentAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("find_document", "Find Document")
+
+	form.TextField("id", "Document ID").
+		Placeholder("Document ID").
+		HelpText("The id of the document.").
+		Required(true)
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *FindDocumentAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *FindDocumentAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"id": autoform.NewShortTextField().
-			SetDisplayName("Document ID").
-			SetDescription("The id of the document.").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *FindDocumentAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[findDocumentActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *FindDocumentAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[findDocumentActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	docService, err := docs.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	docService, err := docs.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
 
 	if input.DocumentID == "" {
-		return nil, errors.New("name is required")
+		return nil, errors.New("document ID is required")
 	}
 
 	document, err := docService.Documents.Get(input.DocumentID).
 		Do()
 	return document, err
-}
-
-func (a *FindDocumentAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *FindDocumentAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *FindDocumentAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewFindDocumentAction() sdk.Action {

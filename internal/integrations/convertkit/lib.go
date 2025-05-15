@@ -6,7 +6,8 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/convertkit/actions"
 	"github.com/wakflo/extensions/internal/integrations/convertkit/shared"
 	"github.com/wakflo/extensions/internal/integrations/convertkit/triggers"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -15,14 +16,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
-var Integration = sdk.Register(NewConvertKit(), Flow, ReadME)
+var Integration = sdk.Register(NewConvertKit())
 
 type ConvertKit struct{}
 
-func (n *ConvertKit) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *ConvertKit) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *ConvertKit) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.SharedAuth,
+		Schema:   shared.ConvertKitSharedAuth,
 	}
 }
 

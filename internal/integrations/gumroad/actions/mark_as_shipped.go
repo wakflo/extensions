@@ -3,9 +3,11 @@ package actions
 import (
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/gumroad/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type markasShippedActionProps struct {
@@ -14,45 +16,53 @@ type markasShippedActionProps struct {
 
 type MarkasShippedAction struct{}
 
-func (a *MarkasShippedAction) Name() string {
-	return "Mark Product as Shipped"
-}
-
-func (a *MarkasShippedAction) Description() string {
-	return "Mark a physical product as shipped."
-}
-
-func (a *MarkasShippedAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *MarkasShippedAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &markasShippedDocs,
+// Metadata returns metadata about the action
+func (a *MarkasShippedAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "mark_as_shipped",
+		DisplayName:   "Mark Product as Shipped",
+		Description:   "Mark a physical product as shipped.",
+		Type:          core.ActionTypeAction,
+		Documentation: markasShippedDocs,
+		Icon:          "mdi:package-variant-closed-multiple",
+		SampleOutput:  nil,
+		Settings:      core.ActionSettings{},
 	}
 }
 
-func (a *MarkasShippedAction) Icon() *string {
-	icon := "mdi:package-variant-closed-multiple"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *MarkasShippedAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("mark_as_shipped", "Mark Product as Shipped")
+
+	// Register sales selection field
+	shared.RegisterSalesProps(form)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *MarkasShippedAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"sale_id": shared.ListSalesInput("Sales ID", "Sales ID", true),
-	}
+// Auth returns the authentication requirements for the action
+func (a *MarkasShippedAction) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (a *MarkasShippedAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[markasShippedActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *MarkasShippedAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[markasShippedActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.AccessToken == "" {
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	if authCtx.AccessToken == "" {
 		return nil, errors.New("missing Gumroad auth token")
 	}
-	accessToken := ctx.Auth.AccessToken
+	accessToken := authCtx.Token.AccessToken
 
 	if input.SaleID == "" {
 		return nil, errors.New("sale ID is required")
@@ -61,18 +71,6 @@ func (a *MarkasShippedAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	sale, err := shared.DisableProduct(accessToken, input.SaleID)
 
 	return sale, nil
-}
-
-func (a *MarkasShippedAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *MarkasShippedAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (a *MarkasShippedAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewMarkasShippedAction() sdk.Action {

@@ -51,7 +51,7 @@ func (o *SearchTaskOperation) Properties() *smartform.FormSchema {
 
 	shared.RegisterWorkSpaceInput(form, "Workspaces", "select a workspace", true)
 
-	form.TextField("query", "Search Query").
+	form.TextareaField("query", "Search Query").
 		Placeholder("Search for tasks").
 		Required(true).
 		HelpText("The search query to find tasks")

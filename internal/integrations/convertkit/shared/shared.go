@@ -1,23 +1,19 @@
 package shared
 
 import (
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	"github.com/juicycleff/smartform/v1"
 )
 
-var SharedAuth = autoform.NewAuth().NewCustomAuth().
-	SetDescription("API Key").
-	SetLabel("ConvertKit Authentication").
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"api-key": autoform.NewShortTextField().
-			SetDisplayName("API Key").
-			SetDescription("ConvertKit API Key").
-			SetRequired(true).
-			Build(),
-		"api-secret": autoform.NewShortTextField().
-			SetDisplayName("API Secret").
-			SetDescription("ConvertKit API Secret").
-			SetRequired(true).
-			Build(),
-	}).
-	Build()
+var (
+	form = smartform.NewAuthForm("convertKit-auth", "ConvertKit API Authentication", smartform.AuthStrategyCustom)
+
+	_ = form.TextField("api-key", "ConvertKit API Key (Required)").
+		Required(true).
+		HelpText("The base URL of your app (e.g https://mystore.com) and it should start with HTTPS only")
+
+	_ = form.TextField("api-secret", "API Secret (Required)").
+		Required(true).
+		HelpText("ConvertKit API Secret")
+
+	ConvertKitSharedAuth = form.Build()
+)

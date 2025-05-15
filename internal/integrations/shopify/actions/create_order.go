@@ -4,11 +4,12 @@ import (
 	"context"
 
 	goshopify "github.com/bold-commerce/go-shopify/v4"
+	"github.com/juicycleff/smartform/v1"
 	"github.com/shopspring/decimal"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createOrderActionProps struct {
@@ -25,78 +26,67 @@ type createOrderActionProps struct {
 
 type CreateOrderAction struct{}
 
-func (a *CreateOrderAction) Name() string {
-	return "Create Order"
-}
-
-func (a *CreateOrderAction) Description() string {
-	return "Create Order: Automatically generates and submits a new order to your e-commerce platform or inventory management system, streamlining the ordering process and reducing manual errors."
-}
-
-func (a *CreateOrderAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateOrderAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createOrderDocs,
+func (a *CreateOrderAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_order",
+		DisplayName:   "Create Order",
+		Description:   "Create Order: Automatically generates and submits a new order to your e-commerce platform or inventory management system, streamlining the ordering process and reducing manual errors.",
+		Type:          core.ActionTypeAction,
+		Documentation: createOrderDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateOrderAction) Icon() *string {
-	return nil
+func (a *CreateOrderAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_order", "Create Order")
+
+	form.NumberField("productId", "Product ID").
+		Placeholder("The ID of the product to create the order with.").
+		HelpText("The ID of the product to create the order with.")
+
+	form.NumberField("variantId", "Product Variant").
+		Placeholder("The ID of the variant to create the order with.").
+		HelpText("The ID of the variant to create the order with.")
+
+	form.NumberField("customerId", "Customer ID").
+		Placeholder("The ID of the customer to use.").
+		HelpText("The ID of the customer to use.")
+
+	form.TextField("title", "Title").
+		Placeholder("Title").
+		HelpText("Title")
+
+	form.TextareaField("note", "Note about the order").
+		Placeholder("Note about the order.").
+		HelpText("Note about the order.")
+
+	form.TextareaField("tags", "Tags").
+		Placeholder("A string of comma-separated tags for filtering and search").
+		HelpText("A string of comma-separated tags for filtering and search")
+
+	form.NumberField("quantity", "Quantity").
+		Placeholder("The ID of the variant to create the order with.").
+		DefaultValue(1).
+		HelpText("The ID of the variant to create the order with.")
+
+	form.TextField("price", "Price").
+		Placeholder("Price").
+		HelpText("Price")
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *CreateOrderAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"productId": autoform.NewNumberField().
-			SetDisplayName("Product ID").
-			SetDescription("The ID of the product to create the order with.").
-			SetRequired(false).
-			Build(),
-		"variantId": autoform.NewNumberField().
-			SetDisplayName("Product Variant").
-			SetDescription("The ID of the variant to create the order with.").
-			SetRequired(false).
-			Build(),
-		"customerId": autoform.NewNumberField().
-			SetDisplayName("Customer ID").
-			SetDescription("The ID of the customer to use.").
-			SetRequired(false).
-			Build(),
-		"title": autoform.NewShortTextField().
-			SetDisplayName("Title").
-			SetRequired(false).
-			Build(),
-		"note": autoform.NewLongTextField().
-			SetDisplayName("Note about the order.").
-			SetRequired(false).
-			Build(),
-		"tags": autoform.NewLongTextField().
-			SetDisplayName("Tags").
-			SetDescription("A string of comma-separated tags for filtering and search").
-			SetRequired(false).
-			Build(),
-		"quantity": autoform.NewNumberField().
-			SetDisplayName("Quantity").
-			SetDescription("The ID of the variant to create the order with.").
-			SetRequired(false).
-			SetDefaultValue(1).
-			Build(),
-		"price": autoform.NewShortTextField().
-			SetDisplayName("Price").
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (a *CreateOrderAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createOrderActionProps](ctx.BaseContext)
+func (a *CreateOrderAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createOrderActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.CreateClient(ctx.BaseContext)
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -126,18 +116,8 @@ func (a *CreateOrderAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 	}, nil
 }
 
-func (a *CreateOrderAction) Auth() *sdk.Auth {
+func (a *CreateOrderAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *CreateOrderAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateOrderAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateOrderAction() sdk.Action {

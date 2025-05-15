@@ -2,12 +2,13 @@ package actions
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getTransactionActionProps struct {
@@ -17,50 +18,64 @@ type getTransactionActionProps struct {
 
 type GetTransactionAction struct{}
 
-func (a *GetTransactionAction) Name() string {
-	return "Get Transaction"
-}
-
-func (a *GetTransactionAction) Description() string {
-	return "Retrieves transaction details from a specified system or database, allowing you to access and utilize transactional data within your workflow."
-}
-
-func (a *GetTransactionAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetTransactionAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getTransactionDocs,
+func (a *GetTransactionAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_transaction",
+		DisplayName:   "Get Transaction",
+		Description:   "Retrieves transaction details from a Shopify order, allowing you to access and utilize transactional data within your workflow.",
+		Type:          core.ActionTypeAction,
+		Documentation: getTransactionDocs,
+		SampleOutput: map[string]any{
+			"transaction": map[string]any{
+				"id":                 123456789,
+				"order_id":           987654321,
+				"amount":             "100.00",
+				"kind":               "sale",
+				"gateway":            "shopify_payments",
+				"status":             "success",
+				"message":            "Approved",
+				"created_at":         "2023-01-01T12:00:00Z",
+				"processed_at":       "2023-01-01T12:01:00Z",
+				"currency":           "USD",
+				"authorization":      "auth_123456",
+				"error_code":         nil,
+				"source_name":        "web",
+				"payment_details":    map[string]string{},
+				"receipt":            map[string]string{},
+				"administration_url": "https://example.myshopify.com/admin/orders/987654321/transactions/123456789",
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetTransactionAction) Icon() *string {
+func (a *GetTransactionAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_transaction", "Get Transaction")
+
+	form.NumberField("orderId", "Order ID").
+		Required(true).
+		HelpText("The ID of the Shopify order.")
+
+	form.NumberField("transactionId", "Transaction ID").
+		Required(true).
+		HelpText("The ID of the transaction to retrieve.")
+
+	schema := form.Build()
+
+	return schema
+}
+
+func (a *GetTransactionAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *GetTransactionAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"orderId": autoform.NewNumberField().
-			SetDisplayName("Order ID").
-			SetDescription("The ID of the order.").
-			SetRequired(true).
-			Build(),
-		"transactionId": autoform.NewNumberField().
-			SetDisplayName("Transaction ID").
-			SetDescription("The ID of the transaction.").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *GetTransactionAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getTransactionActionProps](ctx.BaseContext)
+func (a *GetTransactionAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getTransactionActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.CreateClient(ctx.BaseContext)
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -71,26 +86,10 @@ func (a *GetTransactionAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, er
 	}
 
 	if transaction == nil {
-		return nil, errors.New("no transaction found with ID ")
+		return nil, fmt.Errorf("no transaction found with ID %d", input.TransactionID)
 	}
 
-	return sdk.JSON(map[string]interface{}{
-		"transaction": transaction,
-	}), nil
-}
-
-func (a *GetTransactionAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *GetTransactionAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *GetTransactionAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
+	return transaction, nil
 }
 
 func NewGetTransactionAction() sdk.Action {

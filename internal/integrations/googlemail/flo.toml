@@ -1,5 +1,5 @@
 [integration]
-name = "Google Mail"
+name = "Gmail"
 description = """Integrate your Gmail account with our workflow automation software to streamline your email-based workflows and automate repetitive tasks. With seamless connectivity, you can:
 
 * Send automated emails to team members or clients

@@ -4,10 +4,11 @@ import (
 	"errors"
 	"net/url"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/gumroad/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type listSalesActionProps struct {
@@ -21,74 +22,102 @@ type listSalesActionProps struct {
 
 type ListSalesAction struct{}
 
-func (a *ListSalesAction) Name() string {
-	return "List Sales"
-}
-
-func (a *ListSalesAction) Description() string {
-	return "Retrieves a list of sales from your Gumroad account with optional filtering."
-}
-
-func (a *ListSalesAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListSalesAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listSalesDocs,
+// Metadata returns metadata about the action
+func (a *ListSalesAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_sales",
+		DisplayName:   "List Sales",
+		Description:   "Retrieves a list of sales from your Gumroad account with optional filtering.",
+		Type:          core.ActionTypeAction,
+		Documentation: listSalesDocs,
+		Icon:          "mdi:receipt-text",
+		SampleOutput: map[string]any{
+			"sales": []map[string]any{
+				{
+					"id":             "xyz789",
+					"product_id":     "abc123",
+					"product_name":   "Digital Product",
+					"price":          19.99,
+					"email":          "customer1@example.com",
+					"full_name":      "John Doe",
+					"currency":       "usd",
+					"order_number":   "10051",
+					"sale_timestamp": "2023-05-15T14:30:45Z",
+					"refunded":       false,
+				},
+				{
+					"id":             "uvw456",
+					"product_id":     "def456",
+					"product_name":   "Creative Template",
+					"price":          "29.99",
+					"email":          "customer2@example.com",
+					"full_name":      "Jane Smith",
+					"currency":       "usd",
+					"order_number":   "10052",
+					"sale_timestamp": "2023-05-16T09:15:30Z",
+					"refunded":       false,
+				},
+			},
+			"next_page_key": "next_page_123",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ListSalesAction) Icon() *string {
-	icon := "mdi:receipt-text"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *ListSalesAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_sales", "List Sales")
+
+	form.DateTimeField("after", "After").
+		Required(false).
+		HelpText("Only return sales after this date.")
+
+	form.DateTimeField("before", "Before").
+		Required(false).
+		HelpText("Only return sales before this date.")
+
+	form.TextField("product_id", "Product ID").
+		Required(false).
+		HelpText("Filter sales by this product.")
+
+	form.TextField("email", "Email").
+		Required(false).
+		HelpText("Filter sales by this email.")
+
+	form.TextField("order_id", "Order ID").
+		Required(false).
+		HelpText("Filter sales by this Order ID.")
+
+	form.TextField("page_key", "Page Key").
+		Required(false).
+		HelpText("A key representing a page of results.")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *ListSalesAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"after": autoform.NewDateTimeField().
-			SetDisplayName("After").
-			SetDescription("Only return sales after this date.").
-			SetRequired(false).
-			Build(),
-		"before": autoform.NewDateTimeField().
-			SetDisplayName("Before").
-			SetDescription("Only return sales before this date.").
-			SetRequired(false).
-			Build(),
-		"product_id": autoform.NewShortTextField().
-			SetDisplayName("Product ID").
-			SetDescription("Filter sales by this product.").
-			SetRequired(false).
-			Build(),
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Email").
-			SetDescription("Filter sales by this email.").
-			SetRequired(false).
-			Build(),
-		"order_id": autoform.NewShortTextField().
-			SetDisplayName("Order ID").
-			SetDescription("Filter sales by this Order ID.").
-			SetRequired(false).
-			Build(),
-		"page_key": autoform.NewShortTextField().
-			SetDisplayName("Page Key").
-			SetDescription("A key representing a page of results.").
-			SetRequired(false).
-			Build(),
-	}
+// Auth returns the authentication requirements for the action
+func (a *ListSalesAction) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (a *ListSalesAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[listSalesActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *ListSalesAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[listSalesActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.AccessToken == "" {
-		return nil, errors.New("missing calendly auth token")
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
 	}
-	accessToken := ctx.Auth.AccessToken
+
+	if authCtx.AccessToken == "" {
+		return nil, errors.New("missing Gumroad auth token")
+	}
+	accessToken := authCtx.Token.AccessToken
 
 	// Build query parameters
 	params := url.Values{}
@@ -128,18 +157,6 @@ func (a *ListSalesAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) 
 	sales, err := shared.ListSales(accessToken, params)
 
 	return sales, nil
-}
-
-func (a *ListSalesAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *ListSalesAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (a *ListSalesAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewListSalesAction() sdk.Action {

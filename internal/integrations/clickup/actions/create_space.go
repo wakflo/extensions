@@ -6,10 +6,11 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/clickup/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createSpaceProps struct {
@@ -20,44 +21,76 @@ type createSpaceProps struct {
 
 type CreateSpaceOperation struct{}
 
-func (o *CreateSpaceOperation) Name() string {
-	return "Create Space"
-}
-
-func (o *CreateSpaceOperation) Description() string {
-	return "Creates a new space in a specified ClickUp workspace."
-}
-
-func (o *CreateSpaceOperation) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (o *CreateSpaceOperation) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createSpaceDocs,
+// Metadata returns metadata about the action
+func (o *CreateSpaceOperation) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_space",
+		DisplayName:   "Create Space",
+		Description:   "Creates a new space in a specified ClickUp workspace.",
+		Type:          core.ActionTypeAction,
+		Documentation: createSpaceDocs,
+		Icon:          "material-symbols:create-new-folder",
+		SampleOutput: map[string]any{
+			"id":      "123456",
+			"name":    "New Space",
+			"private": false,
+			"statuses": []map[string]any{
+				{
+					"id":     "st123",
+					"status": "Open",
+					"color":  "#d3d3d3",
+				},
+			},
+			"multiple_assignees": true,
+			"features": map[string]any{
+				"due_dates":     true,
+				"time_tracking": true,
+				"tags":          true,
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (o *CreateSpaceOperation) Icon() *string {
-	icon := "material-symbols:create-new-folder"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (o *CreateSpaceOperation) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_space", "Create Space")
+
+	shared.RegisterWorkSpaceInput(form, "Workspaces", "select a workspace", true)
+
+	form.TextField("name", "name").
+		Placeholder("Space Name").
+		HelpText("The name of the space").
+		Required(true)
+
+	form.CheckboxField("private", "private").
+		Placeholder("Private").
+		HelpText("Whether the space is private").
+		Required(false)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (o *CreateSpaceOperation) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"workspace-id": shared.RegisterWorkSpaceInput("Workspaces", "select a workspace", true),
-		"name": autoform.NewShortTextField().
-			SetDisplayName("Space Name").
-			SetDescription("The name of the space").
-			SetRequired(true).
-			Build(),
+// Auth returns the authentication requirements for the action
+func (o *CreateSpaceOperation) Auth() *core.AuthMetadata {
+	return nil
+}
+
+// Perform executes the action with the given context and input
+func (o *CreateSpaceOperation) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createSpaceProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (o *CreateSpaceOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	accessToken := ctx.Auth.AccessToken
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
 
-	input := sdk.InputToType[createSpaceProps](ctx.BaseContext)
+	accessToken := authCtx.Token.AccessToken
 
 	reqURL := shared.BaseURL + "/v2/team/" + input.WorkspaceID + "/space"
 	data := []byte(fmt.Sprintf(`{
@@ -118,35 +151,6 @@ func (o *CreateSpaceOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, er
 	return map[string]interface{}{
 		"Result": "Space created Successfully",
 	}, nil
-}
-
-func (o *CreateSpaceOperation) Auth() *sdk.Auth {
-	return nil
-}
-
-func (o *CreateSpaceOperation) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"id":      "123456",
-		"name":    "New Space",
-		"private": false,
-		"statuses": []map[string]any{
-			{
-				"id":     "st123",
-				"status": "Open",
-				"color":  "#d3d3d3",
-			},
-		},
-		"multiple_assignees": true,
-		"features": map[string]any{
-			"due_dates":     true,
-			"time_tracking": true,
-			"tags":          true,
-		},
-	}
-}
-
-func (o *CreateSpaceOperation) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateSpaceOperation() sdk.Action {

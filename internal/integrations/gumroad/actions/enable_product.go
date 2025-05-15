@@ -3,57 +3,68 @@ package actions
 import (
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/gumroad/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type enableProductActionProps struct {
 	ProductID string `json:"product_id"`
-	// Category  *string `json:"category"`
 }
 
 type EnableProductAction struct{}
 
-func (a *EnableProductAction) Name() string {
-	return "Enable Product"
-}
-
-func (a *EnableProductAction) Description() string {
-	return "Enable a product in your Gumroad store."
-}
-
-func (a *EnableProductAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *EnableProductAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getProductDocs,
+// Metadata returns metadata about the action
+func (a *EnableProductAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "enable_product",
+		DisplayName:   "Enable Product",
+		Description:   "Enable a product in your Gumroad store.",
+		Type:          core.ActionTypeAction,
+		Documentation: getProductDocs,
+		Icon:          "mdi:package-variant-closed-multiple",
+		SampleOutput: map[string]any{
+			"success": true,
+			"message": "Product successfully enabled.",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *EnableProductAction) Icon() *string {
-	icon := "mdi:package-variant-closed-multiple"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *EnableProductAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("enable_product", "Enable Product")
+
+	shared.RegisterProductsProps(form)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *EnableProductAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"product_id": shared.ListProductsInput("Product ID", "Product ID", true),
-	}
+// Auth returns the authentication requirements for the action
+func (a *EnableProductAction) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (a *EnableProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[enableProductActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *EnableProductAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[enableProductActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.AccessToken == "" {
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	if authCtx.AccessToken == "" {
 		return nil, errors.New("missing Gumroad auth token")
 	}
-	accessToken := ctx.Auth.AccessToken
+	accessToken := authCtx.AccessToken
 
 	if input.ProductID == "" {
 		return nil, errors.New("product ID is required")
@@ -62,18 +73,6 @@ func (a *EnableProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	product, err := shared.EnableProduct(accessToken, input.ProductID)
 
 	return product, nil
-}
-
-func (a *EnableProductAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *EnableProductAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (a *EnableProductAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewEnableProductAction() sdk.Action {

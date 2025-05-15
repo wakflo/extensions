@@ -37,45 +37,8 @@ func (a *UnlockIssueAction) Metadata() sdk.ActionMetadata {
 func (a *UnlockIssueAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("unlock_issue", "Unlock Issue")
 
-	// Define the getRepositories function
-	getRepositories := func(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
-		return shared.GetRepositories(ctx)
-	}
-
-	// Define the getIssues function
-	getIssues := func(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
-		return shared.GetIssues(ctx)
-	}
-
-	// Add repository field
-	form.SelectField("repository", "Repository").
-		Placeholder("Select a repository").
-		Required(true).
-		WithDynamicOptions(
-			smartform.NewOptionsBuilder().
-				Dynamic().
-				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getRepositories)).
-				WithSearchSupport().
-				WithPagination(10).
-				End().
-				GetDynamicSource(),
-		).
-		HelpText("The repository to unlock the issue in.")
-
-	// Add issue number field
-	form.SelectField("issue_number", "Issue Number").
-		Placeholder("Select an issue").
-		Required(true).
-		WithDynamicOptions(
-			smartform.NewOptionsBuilder().
-				Dynamic().
-				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getIssues)).
-				WithSearchSupport().
-				WithPagination(10).
-				End().
-				GetDynamicSource(),
-		).
-		HelpText("The issue to unlock.")
+	shared.RegisterRepositoryProps(form)
+	shared.RegisterIssuesProps(form)
 
 	schema := form.Build()
 

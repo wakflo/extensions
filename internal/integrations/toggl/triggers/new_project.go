@@ -4,77 +4,81 @@ import (
 	"context"
 	"errors"
 	"log"
+	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/toggl/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type newProjectProps struct {
 	WorkspaceID string `json:"workspace_id"`
 }
 
-type NewProjectTrigger struct {
-	timezoneOptions []*sdkcore.AutoFormSchema
-	hodOptions      []*sdkcore.AutoFormSchema
-}
+type NewProjectTrigger struct{}
 
-func (e *NewProjectTrigger) Name() string {
-	return "New Project"
-}
-
-func (e *NewProjectTrigger) Description() string {
-	return "Schedules a workflow to run every hour"
-}
-
-func (e *NewProjectTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &newProjectDocs,
+func (e *NewProjectTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "new_project",
+		DisplayName:   "New Project",
+		Description:   "Schedules a workflow to run every hour",
+		Type:          core.TriggerTypeScheduled,
+		Documentation: newProjectDocs,
+		SampleOutput:  nil,
 	}
 }
 
-func (e *NewProjectTrigger) Icon() *string {
+func (e *NewProjectTrigger) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (e *NewProjectTrigger) SampleData() sdkcore.JSON {
+func (e *NewProjectTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("new-project", "New Project")
+
+	shared.RegisterWorkspacesProp(form)
+
+	schema := form.Build()
+	return schema
+}
+
+func (e *NewProjectTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (e *NewProjectTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"workspace_id": shared.GetWorkSpaceInput(),
-	}
-}
-
-func (e *NewProjectTrigger) Auth() *sdk.Auth {
+func (e *NewProjectTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (e *NewProjectTrigger) Start(ctx sdk.LifecycleContext) error {
-	return nil
-}
-
-func (e *NewProjectTrigger) Stop(ctx sdk.LifecycleContext) error {
-	return nil
-}
-
-func (e *NewProjectTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	if ctx.Auth.Extra["api-key"] == "" {
-		return nil, errors.New("missing toggl api key")
-	}
-	apiKey := ctx.Auth.Extra["api-key"]
-
-	input, err := sdk.InputToTypeSafely[newProjectProps](ctx.BaseContext)
+func (e *NewProjectTrigger) Execute(ctx sdkcontext.ExecuteContext) (core.JSON, error) {
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
 
-	lastRunTime := ctx.Metadata().LastRun
+	if authCtx.Extra["api-key"] == "" {
+		return nil, errors.New("missing toggl api key")
+	}
+	apiKey := authCtx.Extra["api-key"]
+
+	input, err := sdk.InputToTypeSafely[newProjectProps](ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the last run time
+	lastRun, err := ctx.GetMetadata("lastRun")
+	if err != nil {
+		return nil, err
+	}
 
 	var updatedTime int64
-	if lastRunTime != nil {
-		updatedTime = lastRunTime.UTC().Unix()
+	if lastRun != nil {
+		lastRunTime, ok := lastRun.(*time.Time)
+		if ok && lastRunTime != nil {
+			updatedTime = lastRunTime.UTC().Unix()
+		}
 	}
 
 	response, err := shared.GetProject(apiKey, input.WorkspaceID, updatedTime)
@@ -85,13 +89,9 @@ func (e *NewProjectTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error
 	return response, nil
 }
 
-func (e *NewProjectTrigger) GetType() sdkcore.TriggerType {
-	return sdkcore.TriggerTypeScheduled
-}
-
-func (e *NewProjectTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
-	return sdkcore.TriggerCriteria{
-		Schedule: &sdkcore.ScheduleTriggerCriteria{
+func (e *NewProjectTrigger) Criteria(ctx context.Context) core.TriggerCriteria {
+	return core.TriggerCriteria{
+		Schedule: &core.ScheduleTriggerCriteria{
 			CronExpression: "",
 			StartTime:      nil,
 			EndTime:        nil,

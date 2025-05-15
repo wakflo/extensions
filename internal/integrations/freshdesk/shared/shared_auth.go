@@ -4,12 +4,14 @@ import (
 	"github.com/juicycleff/smartform/v1"
 )
 
-var authForm = smartform.NewAuthForm("freshdesk-auth", "Freshdesk Auth", smartform.AuthStrategyCustom)
-var _ = authForm.
-	CustomField("domain", "Freshdesk Domain").
-	Required(true).
-	HelpText("The domain name of the freshdesk account. eg. xyz.freshdesk.com, type in only 'xyz'").
-	Build()
+var (
+	authForm = smartform.NewAuthForm("freshdesk-auth", "Freshdesk Auth", smartform.AuthStrategyCustom)
+	_        = authForm.
+			CustomField("domain", "Freshdesk Domain").
+			Required(true).
+			HelpText("The domain name of the freshdesk account. eg. xyz.freshdesk.com, type in only 'xyz'").
+			Build()
+)
 
 var _ = authForm.
 	CustomField("api-key", "API Key").
@@ -17,6 +19,4 @@ var _ = authForm.
 	HelpText("The api key used to authenticate freshdesk.").
 	Build()
 
-var (
-	FreshdeskSharedAuth = authForm.Build()
-)
+var FreshdeskSharedAuth = authForm.Build()

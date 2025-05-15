@@ -1,10 +1,11 @@
 package actions
 
 import (
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/slack/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type sendPublicChannelMessageActionProps struct {
@@ -14,59 +15,82 @@ type sendPublicChannelMessageActionProps struct {
 
 type SendPublicChannelMessageAction struct{}
 
-func (a *SendPublicChannelMessageAction) Name() string {
-	return "Send Public Channel Message"
-}
-
-func (a *SendPublicChannelMessageAction) Description() string {
-	return "Sends a message to a public channel in your chosen messaging platform, allowing you to share updates and information with team members or stakeholders."
-}
-
-func (a *SendPublicChannelMessageAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *SendPublicChannelMessageAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &sendPublicChannelMessageDocs,
+func (a *SendPublicChannelMessageAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "send_public_channel_message",
+		DisplayName:   "Send Public Channel Message",
+		Description:   "Sends a message to a public channel in your chosen messaging platform, allowing you to share updates and information with team members or stakeholders.",
+		Type:          core.ActionTypeAction,
+		Documentation: sendPublicChannelMessageDocs,
+		SampleOutput: map[string]interface{}{
+			"name":       "slack-send-public-channel-message",
+			"usage_mode": "operation",
+			"message":    "Hello people in the public channel!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *SendPublicChannelMessageAction) Icon() *string {
-	return nil
-}
+func (a *SendPublicChannelMessageAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("send_public_channel_message", "Send Public Channel Message")
 
-func (a *SendPublicChannelMessageAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	getPublicChannels := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		client := shared.GetSlackClient(ctx.Auth.AccessToken)
+	// Define the function to get public channels
+	getPublicChannels := func(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
+		client := shared.GetSlackClient(authCtx.Token.AccessToken)
 
 		publicChannels, err := shared.GetChannels(client, "public_channel")
 		if err != nil {
 			return nil, err
 		}
 
-		return ctx.Respond(publicChannels, len(publicChannels))
+		options := make([]map[string]interface{}, 0, len(publicChannels))
+		for _, channel := range publicChannels {
+			options = append(options, map[string]interface{}{
+				"value": channel.ID,
+				"label": channel.Name,
+			})
+		}
+
+		return ctx.Respond(options, len(options))
 	}
 
-	return map[string]*sdkcore.AutoFormSchema{
-		"channel": autoform.NewDynamicField(sdkcore.String).
-			SetDisplayName("Public Channel").
-			SetDescription("Select public channel where message will be sent").
-			SetDynamicOptions(&getPublicChannels).
-			SetDependsOn([]string{"connection"}).
-			SetRequired(true).
-			Build(),
-		"message": shared.SharedLongMessageAutoform,
-	}
+	// Register the channel field with dynamic options
+	form.SelectField("channel", "Public Channel").
+		Placeholder("Select public channel where message will be sent").
+		Required(true).
+		HelpText("Select public channel where message will be sent").
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getPublicChannels)).
+				RefreshOn("connection").
+				GetDynamicSource(),
+		)
+
+	// Add message field
+	shared.RegisterSharedLongMessageField(form)
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *SendPublicChannelMessageAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[sendPublicChannelMessageActionProps](ctx.BaseContext)
+func (a *SendPublicChannelMessageAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[sendPublicChannelMessageActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client := shared.GetSlackClient(ctx.Auth.AccessToken)
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	client := shared.GetSlackClient(authCtx.Token.AccessToken)
 
 	message := input.Message
 	channelID := input.Channel
@@ -83,20 +107,8 @@ func (a *SendPublicChannelMessageAction) Perform(ctx sdk.PerformContext) (sdkcor
 	}, nil
 }
 
-func (a *SendPublicChannelMessageAction) Auth() *sdk.Auth {
+func (a *SendPublicChannelMessageAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *SendPublicChannelMessageAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"name":       "slack-send-public-channel-message",
-		"usage_mode": "operation",
-		"message":    "Hello people in the public channel!",
-	}
-}
-
-func (a *SendPublicChannelMessageAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewSendPublicChannelMessageAction() sdk.Action {

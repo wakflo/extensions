@@ -6,58 +6,56 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/juicycleff/smartform/v1"
 	fastshot "github.com/opus-domini/fast-shot"
 	"github.com/wakflo/extensions/internal/integrations/todoist/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type listProjectCollaboratorsActionProps struct {
-	ProjectID string `json:"id"`
+	ProjectID string `json:"project_id"`
 }
 
 type ListProjectCollaboratorsAction struct{}
 
-func (a *ListProjectCollaboratorsAction) Name() string {
-	return "List Project Collaborators"
-}
-
-func (a *ListProjectCollaboratorsAction) Description() string {
-	return "Retrieves a list of users who are currently collaborating on a specific project, including their roles and permissions."
-}
-
-func (a *ListProjectCollaboratorsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListProjectCollaboratorsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listProjectCollaboratorsDocs,
+func (a *ListProjectCollaboratorsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_project_collaborators",
+		DisplayName:   "List Project Collaborators",
+		Description:   "Retrieves a list of users who are currently collaborating on a specific project, including their roles and permissions.",
+		Type:          core.ActionTypeAction,
+		Documentation: listProjectCollaboratorsDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ListProjectCollaboratorsAction) Icon() *string {
-	return nil
+func (a *ListProjectCollaboratorsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_project_collaborators", "List Project Collaborators")
+
+	shared.RegisterProjectsProps(form)
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *ListProjectCollaboratorsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"id": autoform.NewShortTextField().
-			SetDisplayName("Project ID").
-			SetDescription("ID of the project.").
-			SetRequired(true).Build(),
+func (a *ListProjectCollaboratorsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[listProjectCollaboratorsActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *ListProjectCollaboratorsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[listProjectCollaboratorsActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
 
 	client := fastshot.NewClient(shared.BaseAPI).
-		Auth().BearerToken(ctx.Auth.AccessToken).
+		Auth().BearerToken(authCtx.Token.AccessToken).
 		Header().
 		AddAccept("application/json").
 		Build()
@@ -76,27 +74,17 @@ func (a *ListProjectCollaboratorsAction) Perform(ctx sdk.PerformContext) (sdkcor
 		return nil, err
 	}
 
-	var projects []shared.Collaborator
-	err = json.Unmarshal(bytes, &projects)
+	var collaborators []shared.Collaborator
+	err = json.Unmarshal(bytes, &collaborators)
 	if err != nil {
 		return nil, err
 	}
 
-	return projects, nil
+	return collaborators, nil
 }
 
-func (a *ListProjectCollaboratorsAction) Auth() *sdk.Auth {
+func (a *ListProjectCollaboratorsAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *ListProjectCollaboratorsAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *ListProjectCollaboratorsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewListProjectCollaboratorsAction() sdk.Action {

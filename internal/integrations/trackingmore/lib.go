@@ -20,7 +20,8 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/trackingmore/actions"
 	"github.com/wakflo/extensions/internal/integrations/trackingmore/shared"
 	"github.com/wakflo/extensions/internal/integrations/trackingmore/triggers"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -29,12 +30,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
+var Integration = sdk.Register(NewTrackingMore())
+
 type TrackingMore struct{}
 
-func (n *TrackingMore) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *TrackingMore) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *TrackingMore) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.TrackingMoreSharedAuth,
+		Schema:   shared.TrackingMoreSharedAuth,
 	}
 }
 
@@ -47,12 +54,10 @@ func (n *TrackingMore) Triggers() []sdk.Trigger {
 func (n *TrackingMore) Actions() []sdk.Action {
 	return []sdk.Action{
 		actions.NewTrackAPackageAction(),
-		actions.NewCreateTrackingsAction(),
+		// actions.NewCreateTrackingsAction(),
 	}
 }
 
 func NewTrackingMore() sdk.Integration {
 	return &TrackingMore{}
 }
-
-var Integration = sdk.Register(NewTrackingMore(), Flow, ReadME)

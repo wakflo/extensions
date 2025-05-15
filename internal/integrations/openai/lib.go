@@ -3,9 +3,10 @@ package openai
 import (
 	_ "embed"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/openai/actions"
-	"github.com/wakflo/go-sdk/autoform"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -14,16 +15,20 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
-var Integration = sdk.Register(NewOpenAI(), Flow, ReadME)
+var sharedAuth = smartform.NewAuthForm("openai", "OpenAI", smartform.AuthStrategyCustom)
 
-var sharedAuth = autoform.NewAuthSecretField().SetDisplayName("OpenAI API key").SetDescription("Your OpenAI api key").Build()
+var Integration = sdk.Register(NewOpenAI())
 
 type OpenAI struct{}
 
-func (n *OpenAI) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *OpenAI) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *OpenAI) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *sharedAuth,
+		Schema:   actions.OpenAISharedAuth,
 	}
 }
 

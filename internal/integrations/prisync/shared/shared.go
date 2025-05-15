@@ -23,23 +23,22 @@ import (
 	"mime/multipart"
 	"net/http"
 
-	sdkcore "github.com/wakflo/go-sdk/core"
-
-	"github.com/wakflo/go-sdk/autoform"
+	"github.com/juicycleff/smartform/v1"
 )
 
-var SharedAuth = autoform.NewCustomAuthField().
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"api-key": autoform.NewShortTextField().SetDisplayName("Api Key (Required*)").
-			SetDescription("The api key used to authenticate prisync.").
-			SetRequired(false).
-			Build(),
-		"api-token": autoform.NewShortTextField().SetDisplayName("Api Token (Required*)").
-			SetDescription("The api token used to authenticate prisync.").
-			SetRequired(true).
-			Build(),
-	}).
-	Build()
+var (
+	form = smartform.NewAuthForm("prisync-auth", "Prisync API Authentication", smartform.AuthStrategyCustom)
+
+	_ = form.TextField("api-key", "API Key (Required*)").
+		Required(true).
+		HelpText("The api key used to authenticate prisync.")
+
+	_ = form.TextField("api-token", "API Token (Required*)").
+		Required(true).
+		HelpText("The api token used to authenticate prisync.")
+
+	PrisyncSharedAuth = form.Build()
+)
 
 const baseAPI = "https://prisync.com"
 

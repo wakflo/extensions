@@ -15,13 +15,19 @@
 package shared
 
 import (
-	"github.com/wakflo/go-sdk/autoform"
+	"github.com/juicycleff/smartform/v1"
 )
 
 var (
-	// #nosec
-	tokenURL   = "https://oauth2.googleapis.com/token"
-	SharedAuth = autoform.NewOAuthField("https://accounts.google.com/o/oauth2/auth", &tokenURL, []string{
-		"https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.readonly",
-	}).Build()
+	googleDocsForm = smartform.NewAuthForm("google-docs-auth", "Google Docs OAuth", smartform.AuthStrategyOAuth2)
+	_              = googleDocsForm.
+			OAuthField("oauth", "Google Docs OAuth").
+			AuthorizationURL("https://accounts.google.com/o/oauth2/auth").
+			TokenURL("https://oauth2.googleapis.com/token").
+			Scopes([]string{
+			"https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.readonly",
+		}).
+		Build()
 )
+
+var SharedGoogleDocsAuth = googleDocsForm.Build()

@@ -39,47 +39,8 @@ func (a *LockIssueAction) Metadata() sdk.ActionMetadata {
 func (a *LockIssueAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("lock_issue", "Lock Issue")
 
-	// Define the getRepositories function
-	getRepositories := func(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
-		return shared.GetRepositories(ctx)
-	}
-
-	// Define the getIssues function
-	getIssues := func(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
-		return shared.GetIssues(ctx)
-	}
-
-	// Add repository field
-	form.SelectField("repository", "Repository").
-		Placeholder("Select a repository").
-		Required(true).
-		WithDynamicOptions(
-			smartform.NewOptionsBuilder().
-				Dynamic().
-				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getRepositories)).
-				WithSearchSupport().
-				WithPagination(10).
-				End().
-				GetDynamicSource(),
-		).
-		HelpText("The repository to lock the issue in.")
-
-	// Add issue number field
-	form.SelectField("issue_number", "Issue Number").
-		Placeholder("Select an issue").
-		Required(true).
-		WithDynamicOptions(
-			smartform.NewOptionsBuilder().
-				Dynamic().
-				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getIssues)).
-				WithSearchSupport().
-				WithPagination(10).
-				End().
-				GetDynamicSource(),
-		).
-		HelpText("The issue to lock.")
-
-	// Add lock reason field
+	shared.RegisterRepositoryProps(form)
+	shared.RegisterIssuesProps(form)
 	form.SelectField("lock_reason", "Lock Reason").
 		Placeholder("Select a reason").
 		Required(true).
@@ -125,7 +86,7 @@ func (a *LockIssueAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, err
 		}
 	}`, input.IssueNumber, input.LockReason)
 
-	response, err := shared.GithubGQL(authCtx.AccessToken, mutation)
+	response, err := shared.GithubGQL(authCtx.Token.AccessToken, mutation)
 	if err != nil {
 		return nil, errors.New("error making graphQL request")
 	}

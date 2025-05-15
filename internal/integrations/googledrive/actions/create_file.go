@@ -103,7 +103,6 @@ func (a *CreateFileAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, er
 		Fields("id, name, mimeType, webViewLink, kind, createdTime").
 		SupportsAllDrives(input.IncludeTeamDrives).
 		Do()
-
 	if err != nil {
 		return nil, err
 	}

@@ -7,10 +7,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googlemail/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/gmail/v1"
 	"google.golang.org/api/option"
 )
@@ -20,8 +21,6 @@ type sendEmailTemplateActionProps struct {
 	TemplateSubject string `json:"temp-subject"`
 	Subject         string `json:"subject"`
 	Body            string `json:"body"`
-	CC              string `json:"cc"`
-	BCC             string `json:"bcc"`
 	FirstName       string `json:"firstName"`
 	LastName        string `json:"lastName"`
 	FromName        string `json:"from"`
@@ -29,70 +28,79 @@ type sendEmailTemplateActionProps struct {
 
 type SendEmailTemplateAction struct{}
 
-func (a *SendEmailTemplateAction) Name() string {
-	return "Send Email Template"
-}
-
-func (a *SendEmailTemplateAction) Description() string {
-	return "Sends an email to one or more recipients using a pre-defined template. The template can include placeholders for dynamic data, such as variables and conditional statements. This action allows you to automate the sending of personalized emails as part of your workflow process."
-}
-
-func (a *SendEmailTemplateAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *SendEmailTemplateAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &sendEmailTemplateDocs,
+// Metadata returns metadata about the action
+func (a *SendEmailTemplateAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "send_email_template",
+		DisplayName:   "Send Email Template",
+		Description:   "Sends an email to one or more recipients using a pre-defined template. The template can include placeholders for dynamic data, such as variables and conditional statements. This action allows you to automate the sending of personalized emails as part of your workflow process.",
+		Type:          core.ActionTypeAction,
+		Documentation: sendEmailTemplateDocs,
+		Icon:          "",
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *SendEmailTemplateAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *SendEmailTemplateAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("send_email_template", "Send Email Template")
+
+	form.TextField("temp-subject", "temp-subject").
+		Placeholder("Template title").
+		HelpText("The template title.").
+		Required(true)
+
+	form.TextField("subject", "subject").
+		Placeholder("Subject").
+		HelpText("The template subject you want to send.").
+		Required(true)
+
+	form.TextField("to", "to").
+		Placeholder("To").
+		HelpText("The receiver of the message address").
+		Required(true)
+
+	form.TextField("from", "from").
+		Placeholder("From").
+		HelpText("The sender of the message address").
+		Required(false)
+
+	form.TextField("firstName", "firstName").
+		Placeholder("First Name").
+		HelpText("First name").
+		Required(true)
+
+	form.TextField("lastName", "lastName").
+		Placeholder("Last Name").
+		HelpText("Last name").
+		Required(false)
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *SendEmailTemplateAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *SendEmailTemplateAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"temp-subject": autoform.NewShortTextField().
-			SetDisplayName(" Template title").
-			SetDescription("The template title.").
-			SetRequired(true).
-			Build(),
-		"subject": autoform.NewShortTextField().
-			SetDisplayName(" Subject").
-			SetDescription("The template subject you want to send.").
-			SetRequired(true).
-			Build(),
-		"to": autoform.NewShortTextField().
-			SetDisplayName(" To").
-			SetDescription("The receiver of the message address").
-			SetRequired(true).
-			Build(),
-		"from": autoform.NewShortTextField().
-			SetDisplayName(" From").
-			SetDescription("The sender of the message address").
-			SetRequired(false).
-			Build(),
-		"firstName": autoform.NewShortTextField().
-			SetDisplayName("First Name").
-			SetDescription("First name").
-			SetRequired(true).
-			Build(),
-		"lastName": autoform.NewShortTextField().
-			SetDisplayName("Last Name").
-			SetDescription("Last name").
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (a *SendEmailTemplateAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[sendEmailTemplateActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *SendEmailTemplateAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[sendEmailTemplateActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	gmailService, err := gmail.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	gmailService, err := gmail.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -107,21 +115,21 @@ func (a *SendEmailTemplateAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON,
 		return nil, fmt.Errorf("invalid To email address: %s", input.To)
 	}
 
-	bccEmails := strings.Split(input.BCC, ",")
-	for _, email := range bccEmails {
-		email = strings.TrimSpace(email)
-		if email != "" && !shared.IsValidEmail(email) {
-			return nil, fmt.Errorf("invalid BCC email address: %s", email)
-		}
-	}
+	// bccEmails := strings.Split(input.BCC, ",")
+	// for _, email := range bccEmails {
+	// 	email = strings.TrimSpace(email)
+	// 	if email != "" && !shared.IsValidEmail(email) {
+	// 		return nil, fmt.Errorf("invalid BCC email address: %s", email)
+	// 	}
+	// }
 
-	ccEmails := strings.Split(input.CC, ",")
-	for _, email := range ccEmails {
-		email = strings.TrimSpace(email)
-		if email != "" && !shared.IsValidEmail(email) {
-			return nil, fmt.Errorf("invalid CC email address: %s", email)
-		}
-	}
+	// ccEmails := strings.Split(input.CC, ",")
+	// for _, email := range ccEmails {
+	// 	email = strings.TrimSpace(email)
+	// 	if email != "" && !shared.IsValidEmail(email) {
+	// 		return nil, fmt.Errorf("invalid CC email address: %s", email)
+	// 	}
+	// }
 
 	// Search for the template message
 	query := "subject:" + input.TemplateSubject
@@ -181,20 +189,6 @@ func (a *SendEmailTemplateAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON,
 	return map[string]interface{}{
 		"status": "Message sent successfully!",
 	}, nil
-}
-
-func (a *SendEmailTemplateAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *SendEmailTemplateAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *SendEmailTemplateAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewSendEmailTemplateAction() sdk.Action {

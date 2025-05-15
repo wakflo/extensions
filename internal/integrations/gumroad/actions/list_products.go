@@ -5,71 +5,93 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/gumroad/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type listProductsActionProps struct {
 	Published *bool `json:"published"`
 	Limit     *int  `json:"limit"`
 	Page      *int  `json:"page"`
-	// Category  *string `json:"category"`
 }
 
 type ListProductsAction struct{}
 
-func (a *ListProductsAction) Name() string {
-	return "List Products"
-}
-
-func (a *ListProductsAction) Description() string {
-	return "Retrieves a list of all products in your Gumroad store."
-}
-
-func (a *ListProductsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListProductsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listProductsDocs,
+// Metadata returns metadata about the action
+func (a *ListProductsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_products",
+		DisplayName:   "List Products",
+		Description:   "Retrieves a list of all products in your Gumroad store.",
+		Type:          core.ActionTypeAction,
+		Documentation: listProductsDocs,
+		Icon:          "mdi:package-variant-closed-multiple",
+		SampleOutput: map[string]any{
+			"products": []map[string]any{
+				{
+					"id":               "abc123",
+					"name":             "Digital Product",
+					"preview_url":      "https://gumroad.com/l/abc123",
+					"description":      "A great digital product for your needs",
+					"price":            19.99,
+					"custom_permalink": "my-digital-product",
+					"currency":         "usd",
+					"published":        true,
+					"sales_count":      152,
+				},
+			},
+			"total_products": 2,
+			"has_more":       false,
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ListProductsAction) Icon() *string {
-	icon := "mdi:package-variant-closed-multiple"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *ListProductsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_products", "List Products")
+
+	form.CheckboxField("published", "Published Only").
+		Required(false).
+		HelpText("If true, only returns published products.")
+
+	form.NumberField("limit", "Limit").
+		Required(false).
+		HelpText("Maximum number of products to return (default: 10).")
+
+	form.NumberField("page", "Page").
+		Required(false).
+		HelpText("Page number for pagination (default: 1).")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *ListProductsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"published": autoform.NewBooleanField().
-			SetDisplayName("Published Only").
-			SetDescription("If true, only returns published products.").
-			SetRequired(false).Build(),
-		"limit": autoform.NewNumberField().
-			SetDisplayName("Limit").
-			SetDescription("Maximum number of products to return (default: 10).").
-			SetRequired(false).Build(),
-		"page": autoform.NewNumberField().
-			SetDisplayName("Page").
-			SetDescription("Page number for pagination (default: 1).").
-			SetRequired(false).Build(),
-	}
+// Auth returns the authentication requirements for the action
+func (a *ListProductsAction) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (a *ListProductsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[listProductsActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *ListProductsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[listProductsActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.AccessToken == "" {
-		return nil, errors.New("missing calendly auth token")
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
 	}
-	accessToken := ctx.Auth.AccessToken
+
+	if authCtx.AccessToken == "" {
+		return nil, errors.New("missing Gumroad auth token")
+	}
+	accessToken := authCtx.AccessToken
 
 	// Build query parameters
 	params := url.Values{}
@@ -93,18 +115,6 @@ func (a *ListProductsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 	products, err := shared.ListProducts(accessToken, params)
 
 	return products, nil
-}
-
-func (a *ListProductsAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *ListProductsAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (a *ListProductsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewListProductsAction() sdk.Action {

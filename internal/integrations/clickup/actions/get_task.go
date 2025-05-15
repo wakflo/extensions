@@ -9,7 +9,7 @@ import (
 )
 
 type getTaskActionProps struct {
-	TaskID string `json:"task_id"`
+	TaskID string `json:"task-id"`
 }
 
 type GetTaskAction struct{}

@@ -4,10 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/jiracloudsoftware/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type issueUpdatedTriggerProps struct {
@@ -17,59 +20,123 @@ type issueUpdatedTriggerProps struct {
 
 type IssueUpdatedTrigger struct{}
 
-func (t *IssueUpdatedTrigger) Name() string {
-	return "Issue Updated"
-}
-
-func (t *IssueUpdatedTrigger) Description() string {
-	return "Trigger a workflow when an issue is updated in Jira"
-}
-
-func (t *IssueUpdatedTrigger) GetType() sdkcore.TriggerType {
-	return sdkcore.TriggerTypePolling
-}
-
-func (t *IssueUpdatedTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &issueUpdatedDocs,
+// Metadata returns metadata about the trigger
+func (t *IssueUpdatedTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "issue_updated",
+		DisplayName:   "Issue Updated",
+		Description:   "Trigger a workflow when an issue is updated in Jira",
+		Type:          core.TriggerTypePolling,
+		Documentation: issueUpdatedDocs,
+		Icon:          "mdi:ticket-confirmation",
+		SampleOutput: map[string]any{
+			"issues": []map[string]any{
+				{
+					"id":   "12345",
+					"key":  "PRJ-123",
+					"self": "https://yourcompany.atlassian.net/rest/api/3/issue/12345",
+					"fields": map[string]any{
+						"summary": "Updated issue",
+						"description": map[string]any{
+							"type": "doc",
+							"content": []map[string]any{
+								{
+									"type": "paragraph",
+									"content": []map[string]any{
+										{
+											"type": "text",
+											"text": "This issue has been updated",
+										},
+									},
+								},
+							},
+						},
+						"status": map[string]any{
+							"name": "In Progress",
+						},
+						"creator": map[string]any{
+							"displayName":  "John Doe",
+							"emailAddress": "john.doe@example.com",
+						},
+						"created": "2023-05-01T09:12:34.567Z",
+						"updated": "2023-05-05T14:23:45.678Z",
+						"priority": map[string]any{
+							"name": "High",
+						},
+						"assignee": map[string]any{
+							"displayName":  "Jane Smith",
+							"emailAddress": "jane.smith@example.com",
+						},
+					},
+				},
+			},
+			"total":      1,
+			"maxResults": 50,
+			"startAt":    0,
+		},
 	}
 }
 
-func (t *IssueUpdatedTrigger) Icon() *string {
-	icon := "mdi:ticket-confirmation"
-	return &icon
+// Auth returns the authentication requirements for the trigger
+func (t *IssueUpdatedTrigger) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (t *IssueUpdatedTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"projectId": shared.GetProjectsInput(),
-		"issueType": shared.GetIssueTypesInput(),
+// GetType returns the type of the trigger
+func (t *IssueUpdatedTrigger) GetType() core.TriggerType {
+	return core.TriggerTypePolling
+}
+
+// Props returns the schema for the trigger's input configuration
+func (t *IssueUpdatedTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("issue_updated", "Issue Updated")
+
+	shared.RegisterProjectsProps(form)
+
+	shared.RegisterIssueTypeProps(form, false)
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Start initializes the trigger, required for event and webhook triggers in a lifecycle context
+func (t *IssueUpdatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {
+	return nil
+}
+
+// Stop shuts down the trigger, cleaning up resources and performing necessary teardown operations
+func (t *IssueUpdatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
+	return nil
+}
+
+// Execute performs the trigger logic
+func (t *IssueUpdatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (core.JSON, error) {
+	// Get the last run time
+	var lastRunTime *string
+	lr, err := ctx.GetMetadata("lastRun")
+	if err == nil && lr != nil {
+		formatted := lr.(*time.Time).Format("2006-01-02 15:04")
+		lastRunTime = &formatted
 	}
-}
 
-func (t *IssueUpdatedTrigger) Start(ctx sdk.LifecycleContext) error {
-	return nil
-}
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
 
-func (t *IssueUpdatedTrigger) Stop(ctx sdk.LifecycleContext) error {
-	return nil
-}
-
-func (t *IssueUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	lastRunTime := ctx.Metadata().LastRun
-
-	email := ctx.Auth.Extra["email"]
-	apiToken := ctx.Auth.Extra["api-token"]
-	instanceURL := ctx.Auth.Extra["instance-url"]
+	email := authCtx.Extra["email"]
+	apiToken := authCtx.Extra["api-token"]
+	instanceURL := authCtx.Extra["instance-url"]
 
 	var jql string
 	if lastRunTime != nil {
-		jql = fmt.Sprintf("updated >= '%s' AND updated > created", lastRunTime.Format("2006-01-02 15:04"))
+		jql = fmt.Sprintf("updated >= '%s' AND updated > created", *lastRunTime)
 	} else {
-		jql = fmt.Sprintf("updated >= '%s' AND updated > created", "")
+		jql = "updated >= '' AND updated > created"
 	}
 
-	input, err := sdk.InputToTypeSafely[issueUpdatedTriggerProps](ctx.BaseContext)
+	input, err := sdk.InputToTypeSafely[issueUpdatedTriggerProps](ctx)
 	if err == nil {
 		if input.ProjectID != "" {
 			jql += fmt.Sprintf(" AND project = %s", input.ProjectID)
@@ -108,59 +175,27 @@ func (t *IssueUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, err
 	return response, nil
 }
 
-func (t *IssueUpdatedTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
-	return sdkcore.TriggerCriteria{}
+// Criteria returns the criteria for triggering this trigger
+func (t *IssueUpdatedTrigger) Criteria(ctx context.Context) core.TriggerCriteria {
+	return core.TriggerCriteria{}
 }
 
-func (t *IssueUpdatedTrigger) Auth() *sdk.Auth {
-	return nil
-}
-
-func (t *IssueUpdatedTrigger) SampleData() sdkcore.JSON {
+// SampleData returns sample data for this trigger
+func (t *IssueUpdatedTrigger) SampleData() core.JSON {
 	return map[string]any{
 		"issues": []map[string]any{
 			{
-				"id":   "12345",
-				"key":  "PRJ-123",
-				"self": "https://yourcompany.atlassian.net/rest/api/3/issue/12345",
+				"id":  "12345",
+				"key": "PRJ-123",
 				"fields": map[string]any{
-					"summary": "Updated issue",
-					"description": map[string]any{
-						"type": "doc",
-						"content": []map[string]any{
-							{
-								"type": "paragraph",
-								"content": []map[string]any{
-									{
-										"type": "text",
-										"text": "This issue has been updated",
-									},
-								},
-							},
-						},
-					},
-					"status": map[string]any{
-						"name": "In Progress",
-					},
-					"creator": map[string]any{
-						"displayName":  "John Doe",
-						"emailAddress": "john.doe@example.com",
-					},
-					"created": "2023-05-01T09:12:34.567Z",
-					"updated": "2023-05-05T14:23:45.678Z",
-					"priority": map[string]any{
-						"name": "High",
-					},
-					"assignee": map[string]any{
-						"displayName":  "Jane Smith",
-						"emailAddress": "jane.smith@example.com",
-					},
+					"summary":  "Updated issue",
+					"status":   map[string]any{"name": "In Progress"},
+					"created":  "2023-05-01T09:12:34.567Z",
+					"updated":  "2023-05-05T14:23:45.678Z",
+					"priority": map[string]any{"name": "High"},
 				},
 			},
 		},
-		"total":      1,
-		"maxResults": 50,
-		"startAt":    0,
 	}
 }
 

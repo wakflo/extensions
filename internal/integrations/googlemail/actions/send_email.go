@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googlemail/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/gmail/v1"
 	"google.golang.org/api/option"
 )
@@ -24,65 +25,72 @@ type sendEmailActionProps struct {
 
 type SendEmailAction struct{}
 
-func (a *SendEmailAction) Name() string {
-	return "Send Email"
-}
-
-func (a *SendEmailAction) Description() string {
-	return "Sends an email to one or more recipients using a customizable template and attachments."
-}
-
-func (a *SendEmailAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *SendEmailAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &sendEmailDocs,
+func (a *SendEmailAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "send_email",
+		DisplayName:   "Send Email",
+		Description:   "Sends an email to one or more recipients using a customizable template and attachments.",
+		Type:          core.ActionTypeAction,
+		Documentation: sendEmailDocs,
+		Icon:          "",
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *SendEmailAction) Icon() *string {
+func (a *SendEmailAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("send_email", "Send Email")
+
+	form.TextField("subject", "subject").
+		Placeholder("Subject").
+		HelpText("The subject of the message").
+		Required(true)
+
+	form.TextField("to", "to").
+		Placeholder("To").
+		HelpText("The receiver of the message address").
+		Required(true)
+
+	form.TextareaField("body", "body").
+		Placeholder("Body").
+		HelpText("Email body").
+		Required(true)
+
+	form.TextField("bcc", "bcc").
+		Placeholder("BCC").
+		HelpText("Blind carbon copy recipients (comma-separated)").
+		Required(false)
+
+	form.TextField("cc", "cc").
+		Placeholder("CC").
+		HelpText("Carbon copy recipients (comma-separated)").
+		Required(false)
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *SendEmailAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *SendEmailAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"subject": autoform.NewShortTextField().
-			SetDisplayName(" Subject").
-			SetDescription("The subject of the message").
-			SetRequired(true).
-			Build(),
-		"to": autoform.NewShortTextField().
-			SetDisplayName(" To").
-			SetDescription("The receiver of the message address").
-			SetRequired(true).
-			Build(),
-		"body": autoform.NewLongTextField().
-			SetDisplayName("Body").
-			SetDescription("Email body").
-			SetRequired(true).
-			Build(),
-		"bcc": autoform.NewShortTextField().
-			SetDisplayName("BCC").
-			SetDescription("Blind carbon copy recipients (comma-separated)").
-			SetRequired(false).
-			Build(),
-		"cc": autoform.NewLongTextField().
-			SetDisplayName("CC").
-			SetDescription("Carbon copy recipients (comma-separated)").
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (a *SendEmailAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[sendEmailActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *SendEmailAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[sendEmailActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	gmailService, err := gmail.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	gmailService, err := gmail.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -130,20 +138,6 @@ func (a *SendEmailAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) 
 	}
 
 	return "Message sent successfully!", nil
-}
-
-func (a *SendEmailAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *SendEmailAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *SendEmailAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewSendEmailAction() sdk.Action {

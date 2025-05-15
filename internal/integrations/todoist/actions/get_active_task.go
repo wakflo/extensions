@@ -5,10 +5,12 @@ import (
 	"errors"
 	"io"
 
+	"github.com/juicycleff/smartform/v1"
 	fastshot "github.com/opus-domini/fast-shot"
 	"github.com/wakflo/extensions/internal/integrations/todoist/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getActiveTaskActionProps struct {
@@ -17,42 +19,42 @@ type getActiveTaskActionProps struct {
 
 type GetActiveTaskAction struct{}
 
-func (a *GetActiveTaskAction) Name() string {
-	return "Get Active Task"
-}
-
-func (a *GetActiveTaskAction) Description() string {
-	return "Retrieves the currently active task in the workflow, allowing you to access and manipulate its properties or trigger subsequent actions based on its status."
-}
-
-func (a *GetActiveTaskAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetActiveTaskAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getActiveTaskDocs,
+func (a *GetActiveTaskAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_active_task",
+		DisplayName:   "Get Active Task",
+		Description:   "Retrieves the currently active task in the workflow, allowing you to access and manipulate its properties or trigger subsequent actions based on its status.",
+		Type:          core.ActionTypeAction,
+		Documentation: getActiveTaskDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetActiveTaskAction) Icon() *string {
-	return nil
+func (a *GetActiveTaskAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_active_task", "Get Active Task")
+
+	shared.RegisterTasksProps(form, "taskId", "Task ID", "ID of the active task you want to retrieve", true)
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *GetActiveTaskAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"taskId": shared.GetTasksInput("Task ID", "ID of the active task you want to retrieve", true),
+func (a *GetActiveTaskAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getActiveTaskActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *GetActiveTaskAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getActiveTaskActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
 
 	qu := fastshot.NewClient(shared.BaseAPI).
-		Auth().BearerToken(ctx.Auth.AccessToken).
+		Auth().BearerToken(authCtx.Token.AccessToken).
 		Header().
 		AddAccept("application/json").
 		Build().GET("/tasks/" + input.TaskID)
@@ -80,18 +82,8 @@ func (a *GetActiveTaskAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	return task, nil
 }
 
-func (a *GetActiveTaskAction) Auth() *sdk.Auth {
+func (a *GetActiveTaskAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *GetActiveTaskAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *GetActiveTaskAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetActiveTaskAction() sdk.Action {

@@ -6,15 +6,16 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/trello/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createCardActionProps struct {
-	BoardID     string `json:"board_id"`
-	ListID      string `json:"idList"`
+	BoardID     string `json:"boards"`
+	ListID      string `json:"list"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Position    string `json:"position"`
@@ -22,62 +23,61 @@ type createCardActionProps struct {
 
 type CreateCardAction struct{}
 
-func (a *CreateCardAction) Name() string {
-	return "Create Card"
-}
-
-func (a *CreateCardAction) Description() string {
-	return "Create Card: Automatically generates a new card in your chosen project management tool (e.g., Trello, Asana) with pre-populated fields and custom details, streamlining task creation and organization."
-}
-
-func (a *CreateCardAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateCardAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createCardDocs,
+func (a *CreateCardAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_card",
+		DisplayName:   "Create Card",
+		Description:   "Create Card: Automatically generates a new card in your chosen project management tool (e.g., Trello, Asana) with pre-populated fields and custom details, streamlining task creation and organization.",
+		Type:          core.ActionTypeAction,
+		Documentation: createCardDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateCardAction) Icon() *string {
-	return nil
+func (a *CreateCardAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_card", "Create Card")
+	shared.RegisterBoardsProp(form)
+	shared.RegisterBoardListsProp(form)
+
+	form.TextField("name", "Card Name").
+		Placeholder("The name of the card to create").
+		Required(true).
+		HelpText("The name of the card to create")
+
+	form.TextareaField("description", "Description").
+		Placeholder("The description of the card to create").
+		HelpText("The description of the card to create")
+
+	form.SelectField("position", "Position").
+		AddOption("top", "Top").
+		AddOption("bottom", "Bottom").
+		Placeholder("Place the card on top or bottom of the list").
+		HelpText("Place the card on top or bottom of the list")
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *CreateCardAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"board_id": shared.GetBoardsInput(),
-		"idList":   shared.GetBoardListsInput(),
-		"name": autoform.NewShortTextField().
-			SetDisplayName("Card Name").
-			SetDescription("The name of the card to create").
-			SetRequired(true).
-			Build(),
-		"description": autoform.NewLongTextField().
-			SetDisplayName("Description").
-			SetDescription("The description of the card to create").
-			SetRequired(false).
-			Build(),
-		"position": autoform.NewSelectField().
-			SetDisplayName("Position").
-			SetDescription("Place the card on top or bottom of the list").
-			SetOptions(shared.TrelloCardPosition).
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (a *CreateCardAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createCardActionProps](ctx.BaseContext)
+func (a *CreateCardAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createCardActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.Extra["api-key"] == "" {
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	authExtra := authCtx.Extra
+	if authExtra["api-key"] == "" {
 		return nil, errors.New("missing trello api credentials")
 	}
-	apiKey := ctx.Auth.Extra["api-key"]
-	apiToken := ctx.Auth.Extra["api-token"]
+	apiKey := authExtra["api-key"]
+	apiToken := authExtra["api-token"]
 
 	fullURL := fmt.Sprintf("%s/cards?idList=%s&key=%s&token=%s", shared.BaseURL, input.ListID, apiKey, apiToken)
 
@@ -97,18 +97,8 @@ func (a *CreateCardAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	return response, nil
 }
 
-func (a *CreateCardAction) Auth() *sdk.Auth {
+func (a *CreateCardAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *CreateCardAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateCardAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateCardAction() sdk.Action {

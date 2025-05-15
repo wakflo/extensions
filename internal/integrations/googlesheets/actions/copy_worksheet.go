@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googlesheets/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
@@ -19,43 +21,55 @@ type copyWorksheetActionProps struct {
 
 type CopyWorksheetAction struct{}
 
-func (a *CopyWorksheetAction) Name() string {
-	return "Copy Worksheet"
-}
-
-func (a *CopyWorksheetAction) Description() string {
-	return "Copies an existing worksheet to a new location within the same or different workbook, allowing you to duplicate and reuse worksheets with ease."
-}
-
-func (a *CopyWorksheetAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CopyWorksheetAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &copyWorksheetDocs,
+// Metadata returns metadata about the action
+func (a *CopyWorksheetAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "copy_worksheet",
+		DisplayName:   "Copy Worksheet",
+		Description:   "Copies an existing worksheet to a new location within the same or different workbook, allowing you to duplicate and reuse worksheets with ease.",
+		Type:          core.ActionTypeAction,
+		Documentation: copyWorksheetDocs,
+		Icon:          "",
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CopyWorksheetAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *CopyWorksheetAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("copy_worksheet", "Copy Worksheet")
+
+	shared.RegisterSpreadsheetsProps(form, "destinationSpreadSheetId", "SpreadSheet", "Select Spreadsheet", true)
+
+	shared.RegisterSheetIDProps(form, true)
+
+	shared.RegisterSpreadsheetsProps(form, "destinationSpreadSheetId", "Destination SpreadSheet", "Destination spreadsheet to copy to", true)
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *CopyWorksheetAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *CopyWorksheetAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"spreadsheetId":            shared.GetSpreadsheetsInput("Spreadsheet", "spreadsheet ID", true),
-		"sheetId":                  shared.GetSheetIDInput("Sheet", "select sheet", true),
-		"destinationSpreadSheetId": shared.GetSpreadsheetsInput("Destination Spreadsheet", "Destination spreadsheet to copy to", true),
-	}
-}
-
-func (a *CopyWorksheetAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[copyWorksheetActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *CopyWorksheetAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[copyWorksheetActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	sheetService, err := sheets.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	sheetService, err := sheets.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -74,20 +88,6 @@ func (a *CopyWorksheetAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	}
 
 	return spreadsheetCopy, err
-}
-
-func (a *CopyWorksheetAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *CopyWorksheetAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CopyWorksheetAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCopyWorksheetAction() sdk.Action {

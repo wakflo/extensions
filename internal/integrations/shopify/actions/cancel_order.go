@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type cancelOrderActionProps struct {
@@ -17,45 +18,39 @@ type cancelOrderActionProps struct {
 
 type CancelOrderAction struct{}
 
-func (a *CancelOrderAction) Name() string {
-	return "Cancel Order"
-}
-
-func (a *CancelOrderAction) Description() string {
-	return "Cancels an existing order, revoking any associated payment processing and updating the order status to reflect cancellation."
-}
-
-func (a *CancelOrderAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CancelOrderAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &cancelOrderDocs,
+func (a *CancelOrderAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "cancel_order",
+		DisplayName:   "Cancel Order",
+		Description:   "Cancels an existing order, revoking any associated payment processing and updating the order status to reflect cancellation.",
+		Type:          core.ActionTypeAction,
+		Documentation: cancelOrderDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CancelOrderAction) Icon() *string {
-	return nil
+func (a *CancelOrderAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("cancel_order", "Cancel Order")
+
+	form.NumberField("orderId", "Order").
+		Placeholder("The ID of the order to cancel.").
+		Required(true).
+		HelpText("The ID of the order to cancel.")
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *CancelOrderAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"orderId": autoform.NewNumberField().
-			SetDisplayName("Order").
-			SetDescription("The ID of the order to cancel.").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *CancelOrderAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[cancelOrderActionProps](ctx.BaseContext)
+func (a *CancelOrderAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[cancelOrderActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.CreateClient(ctx.BaseContext)
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -66,23 +61,13 @@ func (a *CancelOrderAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 	if order == nil {
 		return nil, fmt.Errorf("no order found with ID '%d'", input.OrderID)
 	}
-	return sdk.JSON(map[string]interface{}{
+	return core.JSON(map[string]interface{}{
 		"Result": "Order Successfully cancelled!",
 	}), nil
 }
 
-func (a *CancelOrderAction) Auth() *sdk.Auth {
+func (a *CancelOrderAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *CancelOrderAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CancelOrderAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCancelOrderAction() sdk.Action {

@@ -19,7 +19,8 @@ import (
 
 	"github.com/wakflo/extensions/internal/integrations/smartsheet/actions"
 	"github.com/wakflo/extensions/internal/integrations/smartsheet/shared"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -28,12 +29,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
+var Integration = sdk.Register(NewSmartsheet())
+
 type Smartsheet struct{}
 
-func (n *Smartsheet) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *Smartsheet) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *Smartsheet) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.SmartsheetSharedAuth,
+		Schema:   shared.SmartsheetSharedAuth,
 	}
 }
 
@@ -50,5 +57,3 @@ func (n *Smartsheet) Actions() []sdk.Action {
 func NewSmartsheet() sdk.Integration {
 	return &Smartsheet{}
 }
-
-var Integration = sdk.Register(NewSmartsheet(), Flow, ReadME)

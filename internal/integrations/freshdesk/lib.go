@@ -5,7 +5,7 @@ import (
 
 	"github.com/wakflo/extensions/internal/integrations/freshdesk/actions"
 	"github.com/wakflo/extensions/internal/integrations/freshdesk/shared"
-	// "github.com/wakflo/extensions/internal/integrations/freshdesk/triggers"
+	"github.com/wakflo/extensions/internal/integrations/freshdesk/triggers"
 
 	"github.com/wakflo/go-sdk/v2"
 	"github.com/wakflo/go-sdk/v2/core"
@@ -33,12 +33,19 @@ func (n *Freshdesk) Auth() *core.AuthMetadata {
 }
 
 func (n *Freshdesk) Triggers() []sdk.Trigger {
-	return []sdk.Trigger{}
+	return []sdk.Trigger{
+		triggers.NewTicketCreatedTrigger(),
+		triggers.NewTicketUpdatedTrigger(),
+	}
 }
 
 func (n *Freshdesk) Actions() []sdk.Action {
 	return []sdk.Action{
 		actions.NewCreateTicketAction(),
+		actions.NewGetTicketAction(),
+		actions.NewListTicketsAction(),
+		actions.NewUpdateTicketAction(),
+		actions.NewSearchTicketsAction(),
 	}
 }
 

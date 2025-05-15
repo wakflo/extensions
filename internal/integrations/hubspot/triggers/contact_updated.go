@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/hubspot/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type contactUpdatedTriggerProps struct {
@@ -18,54 +20,86 @@ type contactUpdatedTriggerProps struct {
 
 type ContactUpdatedTrigger struct{}
 
-func (t *ContactUpdatedTrigger) Name() string {
-	return "Contact Updated"
-}
-
-func (t *ContactUpdatedTrigger) Description() string {
-	return "Trigger a workflow when a contact is created or updated in your HubSpot CRM"
-}
-
-func (t *ContactUpdatedTrigger) GetType() sdkcore.TriggerType {
-	return sdkcore.TriggerTypePolling
-}
-
-func (t *ContactUpdatedTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &contactUpdatedDoc,
+// Metadata returns metadata about the trigger
+func (t *ContactUpdatedTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "contact_updated",
+		DisplayName:   "Contact Updated",
+		Description:   "Trigger a workflow when a contact is created or updated in your HubSpot CRM",
+		Type:          core.TriggerTypePolling,
+		Documentation: contactUpdatedDoc,
+		Icon:          "mdi:account-check",
+		SampleOutput: map[string]any{
+			"results": []map[string]any{
+				{
+					"id": "51",
+					"properties": map[string]any{
+						"firstname":        "John",
+						"lastname":         "Doe",
+						"email":            "john.doe@example.com",
+						"phone":            "+1234567890",
+						"createdate":       "2023-03-15T09:31:40.678Z",
+						"lastmodifieddate": "2023-03-15T10:45:12.412Z",
+					},
+					"createdAt": "2023-03-15T09:31:40.678Z",
+					"updatedAt": "2023-03-15T10:45:12.412Z",
+				},
+			},
+		},
 	}
 }
 
-func (t *ContactUpdatedTrigger) Icon() *string {
-	icon := "mdi:account-check"
-	return &icon
-}
-
-func (t *ContactUpdatedTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"properties": autoform.NewLongTextField().
-			SetDisplayName("Contact Properties").
-			SetDescription("Comma-separated list of contact properties to include in the response (e.g., firstname,lastname,email)").
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (t *ContactUpdatedTrigger) Start(ctx sdk.LifecycleContext) error {
+// Auth returns the authentication requirements for the trigger
+func (t *ContactUpdatedTrigger) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (t *ContactUpdatedTrigger) Stop(ctx sdk.LifecycleContext) error {
+// GetType returns the type of the trigger
+func (t *ContactUpdatedTrigger) GetType() core.TriggerType {
+	return core.TriggerTypePolling
+}
+
+// Props returns the schema for the trigger's input configuration
+func (t *ContactUpdatedTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("contact_updated", "Contact Updated")
+
+	form.TextareaField("properties", "Contact Properties").
+		Required(false).
+		HelpText("Comma-separated list of contact properties to include in the response (e.g., firstname,lastname,email)")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Start initializes the trigger, required for event and webhook triggers in a lifecycle context
+func (t *ContactUpdatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (t *ContactUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[contactUpdatedTriggerProps](ctx.BaseContext)
+// Stop shuts down the trigger, cleaning up resources and performing necessary teardown operations
+func (t *ContactUpdatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
+	return nil
+}
+
+// Execute performs the trigger logic
+func (t *ContactUpdatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[contactUpdatedTriggerProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	lastRunTime := ctx.Metadata().LastRun
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the last run time
+	var lastRunTime *time.Time
+	lr, err := ctx.GetMetadata("lastRun")
+	if err == nil && lr != nil {
+		lastRunTime = lr.(*time.Time)
+	}
 
 	url := "/crm/v3/objects/contacts/search"
 	const limit = 100
@@ -101,18 +135,11 @@ func (t *ContactUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, e
 		)
 	}
 
-	if input.Properties != "" {
-		requestBody["properties"] = append(
-			[]string{"firstname", "lastname", "email", "lastmodifieddate"},
-			input.Properties,
-		)
-	}
-
 	jsonBody, err := json.Marshal(requestBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request body: %v", err)
 	}
-	resp, err := shared.HubspotClient(url, ctx.Auth.AccessToken, http.MethodPost, jsonBody)
+	resp, err := shared.HubspotClient(url, authCtx.Token.AccessToken, http.MethodPost, jsonBody)
 	if err != nil {
 		return nil, err
 	}
@@ -120,15 +147,13 @@ func (t *ContactUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, e
 	return resp, nil
 }
 
-func (t *ContactUpdatedTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
-	return sdkcore.TriggerCriteria{}
+// Criteria returns the criteria for triggering this trigger
+func (t *ContactUpdatedTrigger) Criteria(ctx context.Context) core.TriggerCriteria {
+	return core.TriggerCriteria{}
 }
 
-func (t *ContactUpdatedTrigger) Auth() *sdk.Auth {
-	return nil
-}
-
-func (t *ContactUpdatedTrigger) SampleData() sdkcore.JSON {
+// SampleData returns sample data for this trigger
+func (t *ContactUpdatedTrigger) SampleData() core.JSON {
 	return map[string]any{
 		"results": []map[string]any{
 			{

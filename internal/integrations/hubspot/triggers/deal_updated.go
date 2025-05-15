@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/hubspot/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type dealUpdatedTriggerProps struct {
@@ -18,56 +20,85 @@ type dealUpdatedTriggerProps struct {
 
 type DealUpdatedTrigger struct{}
 
-func (t *DealUpdatedTrigger) Name() string {
-	return "Deal Updated"
-}
-
-func (t *DealUpdatedTrigger) Description() string {
-	return "Trigger a workflow when deals are updated in your HubSpot CRM"
-}
-
-func (t *DealUpdatedTrigger) GetType() sdkcore.TriggerType {
-	return sdkcore.TriggerTypePolling
-}
-
-func (t *DealUpdatedTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &dealUpdatedDoc,
+// Metadata returns metadata about the trigger
+func (t *DealUpdatedTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "deal_updated",
+		DisplayName:   "Deal Updated",
+		Description:   "Trigger a workflow when deals are updated in your HubSpot CRM",
+		Type:          core.TriggerTypePolling,
+		Documentation: dealUpdatedDoc,
+		Icon:          "mdi:cash-multiple",
+		SampleOutput: map[string]any{
+			"results": []map[string]any{
+				{
+					"id": "12345",
+					"properties": map[string]any{
+						"dealname":            "Enterprise Software Sale",
+						"amount":              "50000",
+						"dealstage":           "presentationscheduled",
+						"pipeline":            "default",
+						"closedate":           "2023-12-31",
+						"hs_lastmodifieddate": "2023-04-15T14:30:00Z",
+					},
+					"createdAt": "2023-01-15T09:30:00Z",
+					"updatedAt": "2023-04-15T14:30:00Z",
+				},
+			},
+		},
 	}
 }
 
-func (t *DealUpdatedTrigger) Icon() *string {
-	icon := "mdi:cash-multiple"
-	return &icon
-}
-
-func (t *DealUpdatedTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"properties": autoform.NewShortTextField().
-			SetDisplayName("Deal Properties").
-			SetDescription("Comma-separated list of properties to retrieve (e.g., dealname,amount,dealstage)").
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (t *DealUpdatedTrigger) Start(ctx sdk.LifecycleContext) error {
+func (t *DealUpdatedTrigger) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (t *DealUpdatedTrigger) Stop(ctx sdk.LifecycleContext) error {
+func (t *DealUpdatedTrigger) GetType() core.TriggerType {
+	return core.TriggerTypePolling
+}
+
+func (t *DealUpdatedTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("deal_updated", "Deal Updated")
+
+	form.TextareaField("properties", "Deal Properties").
+		Required(false).
+		HelpText("Comma-separated list of properties to retrieve (e.g., dealname,amount,dealstage)")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Start initializes the trigger, required for event and webhook triggers in a lifecycle context
+func (t *DealUpdatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (t *DealUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	props, err := sdk.InputToTypeSafely[dealUpdatedTriggerProps](ctx.BaseContext)
+// Stop shuts down the trigger, cleaning up resources and performing necessary teardown operations
+func (t *DealUpdatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
+	return nil
+}
+
+// Execute performs the trigger logic
+func (t *DealUpdatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (core.JSON, error) {
+	props, err := sdk.InputToTypeSafely[dealUpdatedTriggerProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	lastRunTime := ctx.Metadata().LastRun
-	url := "/crm/v3/objects/deals/search"
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
 
+	// Get the last run time
+	var lastRunTime *time.Time
+	lr, err := ctx.GetMetadata("lastRun")
+	if err == nil && lr != nil {
+		lastRunTime = lr.(*time.Time)
+	}
+
+	url := "/crm/v3/objects/deals/search"
 	const limit = 100
 
 	requestBody := map[string]interface{}{
@@ -106,7 +137,7 @@ func (t *DealUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, erro
 		return nil, fmt.Errorf("failed to marshal request body: %v", err)
 	}
 
-	resp, err := shared.HubspotClient(url, ctx.Auth.AccessToken, http.MethodPost, jsonBody)
+	resp, err := shared.HubspotClient(url, authCtx.Token.AccessToken, http.MethodPost, jsonBody)
 	if err != nil {
 		return nil, err
 	}
@@ -114,17 +145,29 @@ func (t *DealUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, erro
 	return resp, nil
 }
 
-func (t *DealUpdatedTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
-	return sdkcore.TriggerCriteria{}
+// Criteria returns the criteria for triggering this trigger
+func (t *DealUpdatedTrigger) Criteria(ctx context.Context) core.TriggerCriteria {
+	return core.TriggerCriteria{}
 }
 
-func (t *DealUpdatedTrigger) Auth() *sdk.Auth {
-	return nil
-}
-
-func (t *DealUpdatedTrigger) SampleData() sdkcore.JSON {
+// SampleData returns sample data for this trigger
+func (t *DealUpdatedTrigger) SampleData() core.JSON {
 	return map[string]any{
-		"results": []map[string]any{},
+		"results": []map[string]any{
+			{
+				"id": "12345",
+				"properties": map[string]any{
+					"dealname":            "Enterprise Software Sale",
+					"amount":              "50000",
+					"dealstage":           "presentationscheduled",
+					"pipeline":            "default",
+					"closedate":           "2023-12-31",
+					"hs_lastmodifieddate": "2023-04-15T14:30:00Z",
+				},
+				"createdAt": "2023-01-15T09:30:00Z",
+				"updatedAt": "2023-04-15T14:30:00Z",
+			},
+		},
 	}
 }
 
