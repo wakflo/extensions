@@ -6,7 +6,8 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/notion/actions"
 	"github.com/wakflo/extensions/internal/integrations/notion/shared"
 	"github.com/wakflo/extensions/internal/integrations/notion/triggers"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -15,14 +16,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
-var Integration = sdk.Register(NewNotion(), Flow, ReadME)
+var Integration = sdk.Register(NewNotion())
 
 type Notion struct{}
 
-func (n *Notion) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *Notion) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *Notion) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.SharedAuth,
+		Schema:   shared.SharedNotionAuth,
 	}
 }
 

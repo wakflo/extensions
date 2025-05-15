@@ -10,21 +10,35 @@ import (
 	"time"
 
 	"github.com/gookit/goutil/arrutil"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 const BaseURL = "https://api.notion.com/v1"
 
 var (
 	// #nosec
-	tokenURL   = BaseURL + "oauth/token"
-	SharedAuth = autoform.NewOAuthField(BaseURL+"/oauth/authorize", &tokenURL, []string{}).Build()
+	tokenURL = BaseURL + "oauth/token"
+	// SharedAuth = autoform.NewOAuthField(BaseURL+"/oauth/authorize", &tokenURL, []string{}).Build()
 )
 
-func GetNotionPagesInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getPages := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+var form = smartform.NewAuthForm("notion-auth", "Notion Oauth", smartform.AuthStrategyOAuth2)
+
+var _ = form.
+	OAuthField("oauth", "Notion Oauth").
+	AuthorizationURL("https://api.notion.com/v1/oauth/authorize").
+	TokenURL("https://api.notion.com/v1/oauth/token").
+	Scopes([]string{}).
+	Build()
+
+var (
+	SharedNotionAuth = form.Build()
+)
+
+func GetNotionPagesProp(title string, desc string, required bool, form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getPages := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			DatabaseID string `json:"database"`
 		}](ctx)
@@ -38,8 +52,14 @@ func GetNotionPagesInput(title string, desc string, required bool) *sdkcore.Auto
 			return nil, err
 		}
 
+		tokenSource := ctx.Auth().Token
+		if tokenSource == nil {
+			return nil, errors.New("missing authentication token")
+		}
+		token := tokenSource.AccessToken
+
 		// Set the required headers for the Notion API
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ctx.Auth.AccessToken))
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 		req.Header.Set("Notion-Version", "2022-06-28")
 		req.Header.Set("Content-Type", "application/json")
 
@@ -88,16 +108,23 @@ func GetNotionPagesInput(title string, desc string, required bool) *sdkcore.Auto
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getPages).
-		SetRequired(required).
-		Build()
+	return form.SelectField("page_id", title).
+		Placeholder(desc).
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getPages)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select a page")
 }
 
-func GetNotionDatabasesInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getDatabases := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetNotionDatabasesProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getDatabases := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		// Define the Notion API URL
 		url := BaseURL + "/v1/search"
 
@@ -118,8 +145,14 @@ func GetNotionDatabasesInput(title string, desc string, required bool) *sdkcore.
 			return nil, err
 		}
 
+		tokenSource := ctx.Auth().Token
+		if tokenSource == nil {
+			return nil, errors.New("missing authentication token")
+		}
+		token := tokenSource.AccessToken
+
 		// Set the required headers
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ctx.Auth.AccessToken))
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 		req.Header.Set("Notion-Version", "2022-06-28")     // Notion API version
 		req.Header.Set("Content-Type", "application/json") // Content-Type for JSON
 
@@ -167,12 +200,19 @@ func GetNotionDatabasesInput(title string, desc string, required bool) *sdkcore.
 	}
 
 	// Return the AutoFormSchema using the dynamic database data
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getDatabases).
-		SetRequired(required).
-		Build()
+	return form.SelectField("database", "Database ID").
+		Placeholder("Select a page").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getDatabases)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select a page")
 }
 
 func CreateNotionPage(accessToken, parentPageID, title string, content string) (map[string]interface{}, error) {
@@ -408,7 +448,7 @@ func QueryNewPages(accessToken, databaseID string, lastChecked time.Time) ([]map
 	return newPages, nil
 }
 
-func GetNotionPage(accessToken, pageID string) (sdk.JSON, error) {
+func GetNotionPage(accessToken, pageID string) (sdkcore.JSON, error) {
 	url := BaseURL + "/pages/" + pageID
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -429,7 +469,7 @@ func GetNotionPage(accessToken, pageID string) (sdk.JSON, error) {
 		return nil, errors.New("failed to retrieve page from Notion")
 	}
 
-	var pageData sdk.JSON
+	var pageData sdkcore.JSON
 	if err := json.NewDecoder(resp.Body).Decode(&pageData); err != nil {
 		return nil, err
 	}
