@@ -19,10 +19,6 @@ type getRecordActionProps struct {
 
 type GetRecordAction struct{}
 
-// func (a *GetRecordAction) Name() string {
-// 	return "Get Record"
-// }
-
 func (a *GetRecordAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
 		ID:            "get_record",
@@ -51,40 +47,6 @@ func (a *GetRecordAction) Metadata() sdk.ActionMetadata {
 		Settings: sdkcore.ActionSettings{},
 	}
 }
-
-// func (a *GetRecordAction) Description() string {
-// 	return "Retrieves a specific record from a Zoho CRM module using its ID"
-// }
-
-// func (a *GetRecordAction) GetType() sdkcore.ActionType {
-// 	return sdkcore.ActionTypeNormal
-// }
-
-// func (a *GetRecordAction) Documentation() *sdk.OperationDocumentation {
-// 	return &sdk.OperationDocumentation{
-// 		Documentation: &getRecordDocs,
-// 	}
-// }
-
-// func (a *GetRecordAction) Icon() *string {
-// 	return nil
-// }
-
-// func (a *GetRecordAction) Properties() map[string]*sdkcore.AutoFormSchema {
-// 	return map[string]*sdkcore.AutoFormSchema{
-// 		"module": autoform.NewDynamicField(sdkcore.String).
-// 			SetDisplayName("Module").
-// 			SetDescription("The Zoho CRM module to retrieve the record from (e.g., Leads, Contacts, Accounts)").
-// 			SetDynamicOptions(shared.GetModulesFunction()).
-// 			SetRequired(true).
-// 			Build(),
-// 		"recordId": autoform.NewShortTextField().
-// 			SetDisplayName("Record ID").
-// 			SetDescription("The ID of the record to retrieve").
-// 			SetRequired(true).
-// 			Build(),
-// 	}
-// }
 
 func (a *GetRecordAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("get_record", "Get Record")
@@ -116,8 +78,14 @@ func (a *GetRecordAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, 
 		return nil, err
 	}
 
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
+
 	endpoint := fmt.Sprintf("%s/%s", input.Module, input.RecordID)
-	result, err := shared.GetZohoCRMClient(ctx.Auth().AccessToken, http.MethodGet, endpoint, nil)
+	result, err := shared.GetZohoCRMClient(token, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error calling Zoho CRM API: %v", err)
 	}

@@ -19,7 +19,8 @@ import (
 
 	"github.com/wakflo/extensions/internal/integrations/zohosalesiq/actions"
 	"github.com/wakflo/extensions/internal/integrations/zohosalesiq/shared"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -28,12 +29,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
+var Integration = sdk.Register(NewZohoSalesIq())
+
 type ZohoSalesIq struct{}
 
-func (n *ZohoSalesIq) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *ZohoSalesIq) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *ZohoSalesIq) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.ZohoSalesSharedAuth,
+		Schema:   shared.ZohoSalesSharedAuth,
 	}
 }
 
@@ -51,5 +58,3 @@ func (n *ZohoSalesIq) Actions() []sdk.Action {
 func NewZohoSalesIq() sdk.Integration {
 	return &ZohoSalesIq{}
 }
-
-var Integration = sdk.Register(NewZohoSalesIq(), Flow, ReadME)

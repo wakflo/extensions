@@ -3,6 +3,7 @@ package triggers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -32,7 +33,6 @@ func (t *NewPaymentTrigger) Metadata() sdk.TriggerMetadata {
 		SampleOutput: map[string]any{
 			"message": "hello world",
 		},
-		// Settings: sdkcore.TriggerSettings{},
 	}
 }
 
@@ -70,6 +70,12 @@ func (t *NewPaymentTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON
 		return nil, err
 	}
 
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
+
 	var fromDate string
 	// lastRunTime := ctx.Metadata().LastRun
 	lastRunTime, err := ctx.GetMetadata("lastrun")
@@ -96,7 +102,7 @@ func (t *NewPaymentTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 
-	req.Header.Set("Authorization", "Zoho-oauthtoken "+ctx.Auth().AccessToken)
+	req.Header.Set("Authorization", "Zoho-oauthtoken "+token)
 	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 
 	client := &http.Client{}

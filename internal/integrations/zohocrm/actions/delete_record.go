@@ -19,9 +19,6 @@ type deleteRecordActionProps struct {
 
 type DeleteRecordAction struct{}
 
-//	func (a *DeleteRecordAction) Name() string {
-//		return "Delete Record"
-//	}
 func (a *DeleteRecordAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
 		ID:            "delete_record",
@@ -44,40 +41,6 @@ func (a *DeleteRecordAction) Metadata() sdk.ActionMetadata {
 		Settings: sdkcore.ActionSettings{},
 	}
 }
-
-// func (a *DeleteRecordAction) Description() string {
-// 	return "Deletes a specific record from a Zoho CRM module"
-// }
-
-// func (a *DeleteRecordAction) GetType() sdkcore.ActionType {
-// 	return sdkcore.ActionTypeNormal
-// }
-
-// func (a *DeleteRecordAction) Documentation() *sdk.OperationDocumentation {
-// 	return &sdk.OperationDocumentation{
-// 		Documentation: &deleteRecordDocs,
-// 	}
-// }
-
-// func (a *DeleteRecordAction) Icon() *string {
-// 	return nil
-// }
-
-// func (a *DeleteRecordAction) Properties() map[string]*sdkcore.AutoFormSchema {
-// 	return map[string]*sdkcore.AutoFormSchema{
-// 		"module": autoform.NewDynamicField(sdkcore.String).
-// 			SetDisplayName("Module").
-// 			SetDescription("The Zoho CRM module from which to delete the record (e.g., Leads, Contacts, Accounts)").
-// 			SetDynamicOptions(shared.GetModulesFunction()).
-// 			SetRequired(true).
-// 			Build(),
-// 		"recordId": autoform.NewShortTextField().
-// 			SetDisplayName("Record ID").
-// 			SetDescription("The ID of the record to delete").
-// 			SetRequired(true).
-// 			Build(),
-// 	}
-// }
 
 func (a *DeleteRecordAction) Properties() *smartform.FormSchema {
 
@@ -110,8 +73,14 @@ func (a *DeleteRecordAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSO
 		return nil, err
 	}
 
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
+
 	endpoint := fmt.Sprintf("%s/%s", input.Module, input.RecordID)
-	result, err := shared.GetZohoCRMClient(ctx.Auth().AccessToken, http.MethodDelete, endpoint, nil)
+	result, err := shared.GetZohoCRMClient(token, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error calling Zoho CRM API: %v", err)
 	}
@@ -131,25 +100,6 @@ func (a *DeleteRecordAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSO
 func (a *DeleteRecordAction) Auth() *sdkcore.AuthMetadata {
 	return nil
 }
-
-// func (a *DeleteRecordAction) SampleData() sdkcore.JSON {
-// 	return map[string]interface{}{
-// 		"success": true,
-// 		"id":      "3477061000000419001",
-// 		"detail": map[string]interface{}{
-// 			"code":    "SUCCESS",
-// 			"status":  "success",
-// 			"message": "record deleted",
-// 			"details": map[string]interface{}{
-// 				"id": "3477061000000419001",
-// 			},
-// 		},
-// 	}
-// }
-
-// func (a *DeleteRecordAction) Settings() sdkcore.ActionSettings {
-// 	return sdkcore.ActionSettings{}
-// }
 
 func NewDeleteRecordAction() sdk.Action {
 	return &DeleteRecordAction{}

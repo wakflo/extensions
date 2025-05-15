@@ -1,6 +1,8 @@
 package actions
 
 import (
+	"errors"
+
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/zohoinventory/shared"
 	"github.com/wakflo/go-sdk/v2"
@@ -13,10 +15,6 @@ type listItemsActionProps struct {
 }
 
 type ListItemsAction struct{}
-
-// func (a *ListItemsAction) Name() string {
-// 	return "List Items"
-// }
 
 func (a *ListItemsAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
@@ -31,30 +29,6 @@ func (a *ListItemsAction) Metadata() sdk.ActionMetadata {
 		Settings: sdkcore.ActionSettings{},
 	}
 }
-
-// func (a *ListItemsAction) Description() string {
-// 	return "Retrieves a list of items from a specified data source or application, allowing you to collect and process data in your workflow."
-// }
-
-// func (a *ListItemsAction) GetType() sdkcore.ActionType {
-// 	return sdkcore.ActionTypeNormal
-// }
-
-// func (a *ListItemsAction) Documentation() *sdk.OperationDocumentation {
-// 	return &sdk.OperationDocumentation{
-// 		Documentation: &listItemsDocs,
-// 	}
-// }
-
-// func (a *ListItemsAction) Icon() *string {
-// 	return nil
-// }
-
-// func (a *ListItemsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-// 	return map[string]*sdkcore.AutoFormSchema{
-// 		"organization_id": shared.GetOrganizationsInput(),
-// 	}
-// }
 
 func (a *ListItemsAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("list_items", "List Items")
@@ -73,14 +47,15 @@ func (a *ListItemsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, 
 	}
 
 	// Get the token source from the auth context
-	authCtx, err := ctx.AuthContext()
-	if err != nil {
-		return nil, err
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
 	}
+	token := tokenSource.AccessToken
 
 	url := "/v1/items?organization_id=" + input.OrganizationID
 
-	items, err := shared.GetZohoClient(authCtx.AccessToken, url)
+	items, err := shared.GetZohoClient(token, url)
 	if err != nil {
 		return nil, err
 	}
@@ -90,16 +65,6 @@ func (a *ListItemsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, 
 func (a *ListItemsAction) Auth() *sdkcore.AuthMetadata {
 	return nil
 }
-
-// func (a *ListItemsAction) SampleData() sdkcore.JSON {
-// 	return map[string]any{
-// 		"message": "Hello World!",
-// 	}
-// }
-
-// func (a *ListItemsAction) Settings() sdkcore.ActionSettings {
-// 	return sdkcore.ActionSettings{}
-// }
 
 func NewListItemsAction() sdk.Action {
 	return &ListItemsAction{}

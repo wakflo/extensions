@@ -119,6 +119,12 @@ func (a *SearchRecordsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JS
 		return nil, err
 	}
 
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
+
 	queryParams := url.Values{}
 
 	if input.Criteria != "" {
@@ -169,7 +175,7 @@ func (a *SearchRecordsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JS
 		endpoint = endpoint + "?" + queryParams.Encode()
 	}
 
-	result, err := shared.GetZohoCRMClient(ctx.Auth().AccessToken, http.MethodGet, endpoint, nil)
+	result, err := shared.GetZohoCRMClient(token, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error calling Zoho CRM API: %v", err)
 	}

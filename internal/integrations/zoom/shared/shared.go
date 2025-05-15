@@ -21,13 +21,23 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wakflo/go-sdk/autoform"
+	"github.com/juicycleff/smartform/v1"
 )
 
 var (
 	// #nosec
-	tokenURL       = ZoomBaseURL + "/oauth/token"
-	ZoomSharedAuth = autoform.NewOAuthField(ZoomBaseURL+"/oauth/authorize", &tokenURL, []string{}).SetRequired(true).Build()
+	tokenURL = ZoomBaseURL + "/oauth/token"
+)
+
+var form = smartform.NewAuthForm("zoom-auth", "Zoom Oauth", smartform.AuthStrategyOAuth2)
+var _ = form.OAuthField("oauth", "Zoom Oauth").
+	AuthorizationURL(ZoomBaseURL + "/oauth/authorize").
+	TokenURL(tokenURL).
+	Scopes([]string{}).
+	Build()
+
+var (
+	ZoomSharedAuth = form.Build()
 )
 
 const ZoomBaseURL = "https://api.zoom.us"

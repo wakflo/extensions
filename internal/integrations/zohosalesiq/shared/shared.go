@@ -20,17 +20,26 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wakflo/go-sdk/autoform"
+	"github.com/juicycleff/smartform/v1"
 )
 
 var (
 	// #nosec
-	tokenURL            = "https://accounts.zoho.com/oauth/v2/token"
-	authURL             = "https://accounts.zoho.com/oauth/v2/auth"
-	ZohoSalesSharedAuth = autoform.NewOAuthField(authURL, &tokenURL, []string{
+	tokenURL = "https://accounts.zoho.com/oauth/v2/token"
+	authURL  = "https://accounts.zoho.com/oauth/v2/auth"
+)
+
+var form = smartform.NewAuthForm("zoho-auth", "Zoho Oauth", smartform.AuthStrategyOAuth2)
+var _ = form.OAuthField("oauth", "Zoho Oauth").
+	AuthorizationURL(authURL).
+	TokenURL(tokenURL).
+	Scopes([]string{
 		"SalesIQ.chatdetails.UPDATE SalesIQ.chatdetails.READ SalesIQ.visitordetails.UPDATE SalesIQ.visitordetails.READ",
 	}).
-		Build()
+	Build()
+
+var (
+	ZohoSalesSharedAuth = form.Build()
 )
 
 const baseURL = "https://salesiq.zoho.com/api/v1"

@@ -2,6 +2,7 @@ package actions
 
 import (
 	// "errors"
+	"errors"
 	"fmt"
 
 	"github.com/juicycleff/smartform/v1"
@@ -19,13 +20,8 @@ type getInvoiceActionProps struct {
 
 type GetInvoiceAction struct{}
 
-// func (a *GetInvoiceAction) Name() string {
-// 	return "Get Invoice"
-// }
-
 func (a *GetInvoiceAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
-		ID:            "get_invoice",
 		DisplayName:   "Get Invoice",
 		Description:   "Retrieves an invoice from the accounting system, allowing you to automate tasks that require access to invoice data.",
 		Type:          sdkcore.ActionTypeAction,
@@ -36,35 +32,6 @@ func (a *GetInvoiceAction) Metadata() sdk.ActionMetadata {
 		Settings: sdkcore.ActionSettings{},
 	}
 }
-
-// func (a *GetInvoiceAction) Description() string {
-// 	return "Retrieves an invoice from the accounting system, allowing you to automate tasks that require access to invoice data."
-// }
-
-// func (a *GetInvoiceAction) GetType() sdkcore.ActionType {
-// 	return sdkcore.ActionTypeNormal
-// }
-
-// func (a *GetInvoiceAction) Documentation() *sdk.OperationDocumentation {
-// 	return &sdk.OperationDocumentation{
-// 		Documentation: &getInvoiceDocs,
-// 	}
-// }
-
-// func (a *GetInvoiceAction) Icon() *string {
-// 	return nil
-// }
-
-// func (a *GetInvoiceAction) Properties() map[string]*sdkcore.AutoFormSchema {
-// 	return map[string]*sdkcore.AutoFormSchema{
-// 		"organization_id": shared.GetOrganizationsInput(),
-// 		"invoice_id": autoform.NewShortTextField().
-// 			SetDisplayName("Invoice ID").
-// 			SetDescription("The ID of the invoice to retrieve to retrieve").
-// 			SetRequired(true).
-// 			Build(),
-// 	}
-// }
 
 func (a *GetInvoiceAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("get_invoice", "Get Invoice")
@@ -88,19 +55,16 @@ func (a *GetInvoiceAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON,
 	}
 
 	// Get the token source from the auth context
-	authCtx, err := ctx.AuthContext()
-	if err != nil {
-		return nil, err
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
 	}
-
-	// if ctx.Auth.AccessToken == "" {
-	// 	return nil, errors.New("missing Zoho auth token")
-	// }
+	token := tokenSource.AccessToken
 
 	url := fmt.Sprintf("/v1/invoices/%s?organization_id=%s",
 		input.InvoiceID, input.OrganizationID)
 
-	invoice, err := shared.GetZohoClient(authCtx.AccessToken, url)
+	invoice, err := shared.GetZohoClient(token, url)
 	if err != nil {
 		return nil, err
 	}
@@ -111,16 +75,6 @@ func (a *GetInvoiceAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON,
 func (a *GetInvoiceAction) Auth() *sdkcore.AuthMetadata {
 	return nil
 }
-
-// func (a *GetInvoiceAction) SampleData() sdkcore.JSON {
-// 	return map[string]any{
-// 		"message": "Hello World!",
-// 	}
-// }
-
-// func (a *GetInvoiceAction) Settings() sdkcore.ActionSettings {
-// 	return sdkcore.ActionSettings{}
-// }
 
 func NewGetInvoiceAction() sdk.Action {
 	return &GetInvoiceAction{}

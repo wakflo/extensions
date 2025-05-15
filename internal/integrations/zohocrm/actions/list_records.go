@@ -107,6 +107,12 @@ func (a *ListRecordsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON
 		return nil, err
 	}
 
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
+
 	// Build query parameters
 	queryParams := url.Values{}
 
@@ -133,7 +139,7 @@ func (a *ListRecordsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON
 		endpoint = fmt.Sprintf("%s?%s", endpoint, queryParams.Encode())
 	}
 
-	result, err := shared.GetZohoCRMClient(ctx.Auth().AccessToken, http.MethodGet, endpoint, nil)
+	result, err := shared.GetZohoCRMClient(token, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error calling Zoho CRM API: %v", err)
 	}

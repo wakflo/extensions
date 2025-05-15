@@ -1,6 +1,8 @@
 package actions
 
 import (
+	"errors"
+
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/zohoinventory/shared"
 	"github.com/wakflo/go-sdk/v2"
@@ -13,10 +15,6 @@ type listPaymentsActionProps struct {
 }
 
 type ListPaymentsAction struct{}
-
-// func (a *ListPaymentsAction) Name() string {
-// 	return "List Payments"
-// }
 
 func (a *ListPaymentsAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
@@ -31,30 +29,6 @@ func (a *ListPaymentsAction) Metadata() sdk.ActionMetadata {
 		Settings: sdkcore.ActionSettings{},
 	}
 }
-
-// func (a *ListPaymentsAction) Description() string {
-// 	return "Retrieve a list of payments made to or from an account, including payment dates, amounts, and statuses."
-// }
-
-// func (a *ListPaymentsAction) GetType() sdkcore.ActionType {
-// 	return sdkcore.ActionTypeNormal
-// }
-
-// func (a *ListPaymentsAction) Documentation() *sdk.OperationDocumentation {
-// 	return &sdk.OperationDocumentation{
-// 		Documentation: &listPaymentsDocs,
-// 	}
-// }
-
-// func (a *ListPaymentsAction) Icon() *string {
-// 	return nil
-// }
-
-// func (a *ListPaymentsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-// 	return map[string]*sdkcore.AutoFormSchema{
-// 		"organization_id": shared.GetOrganizationsInput(),
-// 	}
-// }
 
 func (a *ListPaymentsAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("list_payments", "List Payments")
@@ -73,14 +47,15 @@ func (a *ListPaymentsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSO
 	}
 
 	// Get the token source from the auth context
-	authCtx, err := ctx.AuthContext()
-	if err != nil {
-		return nil, err
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
 	}
+	token := tokenSource.AccessToken
 
 	url := "/v1/customerpayments/?organization_id=" + input.OrganizationID
 
-	paymentList, err := shared.GetZohoClient(authCtx.AccessToken, url)
+	paymentList, err := shared.GetZohoClient(token, url)
 	if err != nil {
 		return nil, err
 	}
@@ -91,16 +66,6 @@ func (a *ListPaymentsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSO
 func (a *ListPaymentsAction) Auth() *sdkcore.AuthMetadata {
 	return nil
 }
-
-// func (a *ListPaymentsAction) SampleData() sdkcore.JSON {
-// 	return map[string]any{
-// 		"message": "Hello World!",
-// 	}
-// }
-
-// func (a *ListPaymentsAction) Settings() sdkcore.ActionSettings {
-// 	return sdkcore.ActionSettings{}
-// }
 
 func NewListPaymentsAction() sdk.Action {
 	return &ListPaymentsAction{}

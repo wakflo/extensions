@@ -79,6 +79,12 @@ func (a *UpdateRecordAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSO
 		return nil, err
 	}
 
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
+
 	trimmedData := strings.TrimSpace(input.Data)
 
 	if !strings.HasPrefix(trimmedData, "{") || !strings.HasSuffix(trimmedData, "}") {
@@ -100,7 +106,7 @@ func (a *UpdateRecordAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSO
 	}
 
 	endpoint := fmt.Sprintf("%s/%s", input.Module, input.RecordID)
-	result, err := shared.GetZohoCRMClient(ctx.Auth().AccessToken, http.MethodPut, endpoint, requestData)
+	result, err := shared.GetZohoCRMClient(token, http.MethodPut, endpoint, requestData)
 	if err != nil {
 		return nil, fmt.Errorf("error calling Zoho CRM API: %v", err)
 	}
