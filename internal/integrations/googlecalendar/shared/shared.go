@@ -8,20 +8,27 @@ import (
 	"time"
 
 	"github.com/gookit/goutil/arrutil"
+	"github.com/juicycleff/smartform/v1"
 	fastshot "github.com/opus-domini/fast-shot"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 var (
-	// #nosec
-	tokenURL   = "https://oauth2.googleapis.com/token"
-	SharedAuth = autoform.NewOAuthField("https://accounts.google.com/o/oauth2/auth", &tokenURL, []string{
-		"https://www.googleapis.com/auth/calendar",
-	}).Build()
+	calendarForm = smartform.NewAuthForm("google-calendar-auth", "Google Calendar OAuth", smartform.AuthStrategyOAuth2)
+	_            = calendarForm.
+			OAuthField("oauth", "Google Calendar OAuth").
+			AuthorizationURL("https://accounts.google.com/o/oauth2/auth").
+			TokenURL("https://oauth2.googleapis.com/token").
+			Scopes([]string{
+			"https://www.googleapis.com/auth/calendar",
+		}).
+		Build()
 )
+
+var SharedGoogleCalendarAuth = calendarForm.Build()
 
 // Function to clean the time string and return RFC3339 formatted time
 func FormatTimeString(input string) string {
@@ -40,10 +47,15 @@ func FormatTimeString(input string) string {
 	return parsedTime.Format(time.RFC3339)
 }
 
-func GetCalendarInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getCalendarID := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterCalendarProps(form *smartform.FormBuilder) {
+	getCalendarID := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		client := fastshot.NewClient("https://www.googleapis.com/calendar/v3").
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(authCtx.AccessToken).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -78,21 +90,33 @@ func GetCalendarInput(title string, desc string, required bool) *sdkcore.AutoFor
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getCalendarID).
-		SetRequired(required).Build()
+	form.SelectField("calendar_id", "Calendar").
+		Placeholder("Select a calendar").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getCalendarID)).
+				WithSearchSupport().
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select a Google Calendar")
 }
 
-func GetCalendarEventIDInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getEventIDs := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterCalendarEventProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getEventIDs := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		input := sdk.DynamicInputToType[struct {
 			CalendarID string `json:"calendar_id"`
 		}](ctx)
 
 		client := fastshot.NewClient("https://www.googleapis.com/calendar/v3/calendars").
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(authCtx.AccessToken).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -129,9 +153,18 @@ func GetCalendarEventIDInput(title string, desc string, required bool) *sdkcore.
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getEventIDs).
-		SetRequired(required).Build()
+	return form.SelectField("event_id", "Calendar Event").
+		Placeholder("Select an event").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getEventIDs)).
+				WithFieldReference("calendar_id", "calendar_id").
+				WithSearchSupport().
+				End().
+				RefreshOn("calendar_id").
+				GetDynamicSource(),
+		).
+		HelpText("Select a calendar event")
 }

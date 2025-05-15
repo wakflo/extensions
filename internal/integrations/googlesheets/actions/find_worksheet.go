@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googlesheets/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
@@ -18,42 +20,53 @@ type findWorksheetActionProps struct {
 
 type FindWorksheetAction struct{}
 
-func (a *FindWorksheetAction) Name() string {
-	return "Find Worksheet"
-}
-
-func (a *FindWorksheetAction) Description() string {
-	return "Locates and retrieves a specific worksheet from a spreadsheet application, allowing you to automate tasks that rely on this worksheet's data."
-}
-
-func (a *FindWorksheetAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *FindWorksheetAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &findWorksheetDocs,
+// Metadata returns metadata about the action
+func (a *FindWorksheetAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "find_worksheet",
+		DisplayName:   "Find Worksheet",
+		Description:   "Locates and retrieves a specific worksheet from a spreadsheet application, allowing you to automate tasks that rely on this worksheet's data.",
+		Type:          core.ActionTypeAction,
+		Documentation: findWorksheetDocs,
+		Icon:          "",
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *FindWorksheetAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *FindWorksheetAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("find_worksheet", "Find Worksheet")
+
+	shared.RegisterSpreadsheetsProps(form, "spreadsheetId", "Spreadsheet", "spreadsheet ID", true)
+
+	shared.RegisterSheetTitleProps(form, true)
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *FindWorksheetAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *FindWorksheetAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"spreadsheetId": shared.GetSpreadsheetsInput("Spreadsheet", "spreadsheet ID", true),
-		"sheetTitle":    shared.GetSheetTitleInput("Sheet", "select sheet", true),
-	}
-}
-
-func (a *FindWorksheetAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[findWorksheetActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *FindWorksheetAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[findWorksheetActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	sheetService, err := sheets.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	sheetService, err := sheets.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -83,20 +96,6 @@ func (a *FindWorksheetAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 		}
 	}
 	return spreadsheet, err
-}
-
-func (a *FindWorksheetAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *FindWorksheetAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *FindWorksheetAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewFindWorksheetAction() sdk.Action {

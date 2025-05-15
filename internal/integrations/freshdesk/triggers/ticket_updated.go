@@ -4,50 +4,75 @@ import (
 	"context"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/freshdesk/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type TicketUpdatedTrigger struct{}
 
-func (t *TicketUpdatedTrigger) Name() string {
-	return "Ticket Updated"
+func (t *TicketUpdatedTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "ticket_updated",
+		DisplayName:   "Ticket Updated",
+		Description:   "Trigger a workflow when a ticket is updated in Freshdesk.",
+		Type:          sdkcore.TriggerTypePolling,
+		Documentation: ticketUpdatedDocs,
+		Icon:          "mdi:ticket-edit",
+		SampleOutput: map[string]any{
+			"id":           "123",
+			"subject":      "Updated Support Request",
+			"description":  "Updated help request details",
+			"status":       "3",
+			"priority":     "2",
+			"requester_id": "456",
+			"updated_at":   "2023-12-02T14:45:30Z",
+		},
+	}
 }
 
-func (t *TicketUpdatedTrigger) Description() string {
-	return "Trigger a workflow when a ticket is updated in Freshdesk."
+func (t *TicketUpdatedTrigger) Auth() *sdkcore.AuthMetadata {
+	return nil
 }
 
 func (t *TicketUpdatedTrigger) GetType() sdkcore.TriggerType {
 	return sdkcore.TriggerTypePolling
 }
 
-func (t *TicketUpdatedTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &ticketUpdatedDocs,
+func (t *TicketUpdatedTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("freshdesk-ticket-updated", "Ticket Updated")
+
+	// No properties needed for this trigger
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Start initializes the TicketUpdatedTrigger
+func (t *TicketUpdatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {
+	return nil
+}
+
+// Stop shuts down the TicketUpdatedTrigger
+func (t *TicketUpdatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
+	return nil
+}
+
+// Execute performs the polling for updated tickets
+func (t *TicketUpdatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (t *TicketUpdatedTrigger) Icon() *string {
-	icon := "mdi:ticket-edit"
-	return &icon
-}
-
-func (t *TicketUpdatedTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{}
-}
-
-func (t *TicketUpdatedTrigger) Start(ctx sdk.LifecycleContext) error {
-	return nil
-}
-
-func (t *TicketUpdatedTrigger) Stop(ctx sdk.LifecycleContext) error {
-	return nil
-}
-
-func (t *TicketUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	lastRunTime := ctx.Metadata().LastRun
+	var lastRunTime *time.Time
+	lastRun, err := ctx.GetMetadata("lastRun")
+	if err == nil && lastRun != nil {
+		lastRunTime = lastRun.(*time.Time)
+	}
 
 	var updatedSince string
 	if lastRunTime != nil {
@@ -58,10 +83,10 @@ func (t *TicketUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, er
 
 	endpoint := "/tickets?order_by=updated_at&order_type=desc&updated_since=" + updatedSince
 
-	domain := ctx.Auth.Extra["domain"]
+	domain := authCtx.Extra["domain"]
 	freshdeskDomain := "https://" + domain + ".freshdesk.com"
 
-	response, err := shared.GetTickets(endpoint, freshdeskDomain, ctx.Auth.Extra["api-key"])
+	response, err := shared.GetTickets(endpoint, freshdeskDomain, authCtx.Extra["api-key"])
 	if err != nil {
 		return nil, err
 	}
@@ -71,22 +96,6 @@ func (t *TicketUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, er
 
 func (t *TicketUpdatedTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
 	return sdkcore.TriggerCriteria{}
-}
-
-func (t *TicketUpdatedTrigger) Auth() *sdk.Auth {
-	return nil
-}
-
-func (t *TicketUpdatedTrigger) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"id":           "123",
-		"subject":      "Updated Support Request",
-		"description":  "Updated help request details",
-		"status":       "3",
-		"priority":     "2",
-		"requester_id": "456",
-		"updated_at":   "2023-12-02T14:45:30Z",
-	}
 }
 
 func NewTicketUpdatedTrigger() sdk.Trigger {

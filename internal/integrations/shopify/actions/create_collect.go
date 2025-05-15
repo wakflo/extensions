@@ -5,10 +5,11 @@ import (
 	"fmt"
 
 	shopify "github.com/bold-commerce/go-shopify/v4"
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createCollectActionProps struct {
@@ -18,50 +19,44 @@ type createCollectActionProps struct {
 
 type CreateCollectAction struct{}
 
-func (a *CreateCollectAction) Name() string {
-	return "Create Collect"
-}
-
-func (a *CreateCollectAction) Description() string {
-	return "Create Collect: Automatically generates and sends customizable collection requests to stakeholders, streamlining data gathering and improving collaboration across teams."
-}
-
-func (a *CreateCollectAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateCollectAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createCollectDocs,
+func (a *CreateCollectAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_collect",
+		DisplayName:   "Create Collect",
+		Description:   "Create Collect: Automatically generates and sends customizable collection requests to stakeholders, streamlining data gathering and improving collaboration across teams.",
+		Type:          core.ActionTypeAction,
+		Documentation: createCollectDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateCollectAction) Icon() *string {
-	return nil
+func (a *CreateCollectAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_collect", "Create Collect")
+
+	form.NumberField("productId", "Product ID").
+		Placeholder("The ID of the product.").
+		Required(true).
+		HelpText("The ID of the product.")
+
+	form.NumberField("collectionId", "Collection ID").
+		Placeholder("The ID of the collection.").
+		Required(true).
+		HelpText("The ID of the collection.")
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *CreateCollectAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"productId": autoform.NewNumberField().
-			SetDisplayName("Product ID").
-			SetDescription("The ID of the product.").
-			SetRequired(true).
-			Build(),
-		"collectionID": autoform.NewNumberField().
-			SetDisplayName("Collection ID").
-			SetDescription("The ID of the product.").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *CreateCollectAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createCollectActionProps](ctx.BaseContext)
+func (a *CreateCollectAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createCollectActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.CreateClient(ctx.BaseContext)
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -78,23 +73,13 @@ func (a *CreateCollectAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	if newCollect == nil {
 		return nil, fmt.Errorf("no collection found with ID '%d'", input.CollectionID)
 	}
-	return sdk.JSON(map[string]interface{}{
+	return core.JSON(map[string]interface{}{
 		"collection details": newCollect,
 	}), nil
 }
 
-func (a *CreateCollectAction) Auth() *sdk.Auth {
+func (a *CreateCollectAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *CreateCollectAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateCollectAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateCollectAction() sdk.Action {

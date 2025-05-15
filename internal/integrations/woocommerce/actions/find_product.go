@@ -1,10 +1,11 @@
 package actions
 
 import (
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/woocommerce/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type findProductActionProps struct {
@@ -13,45 +14,40 @@ type findProductActionProps struct {
 
 type FindProductAction struct{}
 
-func (a *FindProductAction) Name() string {
-	return "Find Product"
-}
-
-func (a *FindProductAction) Description() string {
-	return "Searches for a product by its name or ID in an external system, returning the matching product details."
-}
-
-func (a *FindProductAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *FindProductAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &findProductDocs,
+func (a *FindProductAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "find_product",
+		DisplayName:   "Find Product",
+		Description:   "Searches for a product by its ID",
+		Type:          core.ActionTypeAction,
+		Documentation: findProductDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *FindProductAction) Icon() *string {
-	return nil
+func (a *FindProductAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("find_product", "Find Product")
+
+	form.NumberField("productId", "Product ID").
+		Placeholder("Enter product ID").
+		Required(true).
+		HelpText("Enter product ID")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *FindProductAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"productId": autoform.NewNumberField().
-			SetDisplayName("Product ID").
-			SetDescription("Enter product ID").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *FindProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[findProductActionProps](ctx.BaseContext)
+func (a *FindProductAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[findProductActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	wooClient, err := shared.InitClient(ctx.BaseContext)
+	wooClient, err := shared.InitClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -64,18 +60,8 @@ func (a *FindProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 	return product, nil
 }
 
-func (a *FindProductAction) Auth() *sdk.Auth {
+func (a *FindProductAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *FindProductAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *FindProductAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewFindProductAction() sdk.Action {

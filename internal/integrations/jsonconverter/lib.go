@@ -18,7 +18,8 @@ import (
 	_ "embed"
 
 	"github.com/wakflo/extensions/internal/integrations/jsonconverter/actions"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -27,10 +28,16 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
+var Integration = sdk.Register(NewTextToJSON())
+
 type TextToJSON struct{}
 
-func (n *TextToJSON) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *TextToJSON) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *TextToJSON) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: false,
 	}
 }
@@ -49,5 +56,3 @@ func (n *TextToJSON) Actions() []sdk.Action {
 func NewTextToJSON() sdk.Integration {
 	return &TextToJSON{}
 }
-
-var Integration = sdk.Register(NewTextToJSON(), Flow, ReadME)

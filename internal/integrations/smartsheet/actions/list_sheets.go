@@ -15,70 +15,60 @@
 package actions
 
 import (
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/smartsheet/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
-type listSheetProps struct {
-	Name string `json:"name"`
-}
+type listSheetProps struct{}
 
 type ListSheetsAction struct{}
 
-func (c *ListSheetsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (c ListSheetsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (c ListSheetsAction) Name() string {
-	return "List Sheets"
-}
-
-func (c ListSheetsAction) Description() string {
-	return "list all sheets"
-}
-
-func (c ListSheetsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listSheetDocs,
+func (c *ListSheetsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_sheets",
+		DisplayName:   "List Sheets",
+		Description:   "list all sheets",
+		Type:          core.ActionTypeAction,
+		Documentation: listSheetDocs,
+		SampleOutput:  nil,
+		Settings:      core.ActionSettings{},
 	}
 }
 
-func (c ListSheetsAction) Icon() *string {
-	return nil
+func (c *ListSheetsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_sheets", "List Sheets")
+
+	schema := form.Build()
+	return schema
 }
 
-func (c ListSheetsAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c ListSheetsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{}
-}
-
-func (c ListSheetsAction) Auth() *sdk.Auth {
-	return &sdk.Auth{
-		Inherit: true,
+func (c *ListSheetsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	_, err := sdk.InputToTypeSafely[listSheetProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (c ListSheetsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	_, err := sdk.InputToTypeSafely[listSheetProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
 
 	url := "/2.0/sheets"
 
-	sheets, err := shared.GetSmartSheetClient(ctx.Auth.AccessToken, url)
+	sheets, err := shared.GetSmartSheetClient(authCtx.Token.AccessToken, url)
 	if err != nil {
 		return nil, err
 	}
 	return sheets, nil
+}
+
+func (c *ListSheetsAction) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
+		Inherit: true,
+	}
 }
 
 func NewListSheetAction() sdk.Action {

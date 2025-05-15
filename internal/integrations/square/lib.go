@@ -20,7 +20,8 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/square/actions"
 	"github.com/wakflo/extensions/internal/integrations/square/shared"
 	"github.com/wakflo/extensions/internal/integrations/square/triggers"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -29,12 +30,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
+var Integration = sdk.Register(NewSquare())
+
 type Square struct{}
 
-func (n *Square) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *Square) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *Square) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.SquareSharedAuth,
+		Schema:   shared.SquareSharedAuth,
 	}
 }
 
@@ -53,5 +60,3 @@ func (n *Square) Actions() []sdk.Action {
 func NewSquare() sdk.Integration {
 	return &Square{}
 }
-
-var Integration = sdk.Register(NewSquare(), Flow, ReadME)

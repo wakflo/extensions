@@ -5,10 +5,11 @@ import (
 	"fmt"
 
 	shopify "github.com/bold-commerce/go-shopify/v4"
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type adjustInventoryLevelActionProps struct {
@@ -19,55 +20,49 @@ type adjustInventoryLevelActionProps struct {
 
 type AdjustInventoryLevelAction struct{}
 
-func (a *AdjustInventoryLevelAction) Name() string {
-	return "Adjust Inventory Level"
-}
-
-func (a *AdjustInventoryLevelAction) Description() string {
-	return "Automatically updates the inventory level of a product in your system by adjusting the quantity available based on sales, returns, or other relevant factors."
-}
-
-func (a *AdjustInventoryLevelAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *AdjustInventoryLevelAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &adjustInventoryLevelDocs,
+func (a *AdjustInventoryLevelAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "adjust_inventory_level",
+		DisplayName:   "Adjust Inventory Level",
+		Description:   "Automatically updates the inventory level of a product in your system by adjusting the quantity available based on sales, returns, or other relevant factors.",
+		Type:          core.ActionTypeAction,
+		Documentation: adjustInventoryLevelDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *AdjustInventoryLevelAction) Icon() *string {
-	return nil
+func (a *AdjustInventoryLevelAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("adjust_inventory_level", "Adjust Inventory Level")
+
+	form.NumberField("inventoryItemId", "Inventory Item").
+		Placeholder("The ID of the inventory item.").
+		Required(true).
+		HelpText("The ID of the inventory item.")
+
+	form.NumberField("locationId", "Location").
+		Placeholder("The ID of the location.").
+		Required(true).
+		HelpText("The ID of the location.")
+
+	form.NumberField("available_adjustment", "Adjustment Quantity").
+		Placeholder("Positive values increase inventory, negative values decrease it.").
+		Required(true).
+		HelpText("Positive values increase inventory, negative values decrease it.")
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *AdjustInventoryLevelAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"inventoryItemId": autoform.NewNumberField().
-			SetDisplayName("Inventory Item").
-			SetDescription("The ID of the inventory item.").
-			SetRequired(true).
-			Build(),
-		"locationId": autoform.NewNumberField().
-			SetDisplayName("Location").
-			SetDescription("The ID of the location.").
-			SetRequired(true).
-			Build(),
-		"available_adjustment": autoform.NewNumberField().
-			SetDisplayName("Adjustment Quantity").
-			SetDescription("Positive values increase inventory, negative values decrease it.").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *AdjustInventoryLevelAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[adjustInventoryLevelActionProps](ctx.BaseContext)
+func (a *AdjustInventoryLevelAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[adjustInventoryLevelActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.CreateClient(ctx.BaseContext)
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -83,23 +78,13 @@ func (a *AdjustInventoryLevelAction) Perform(ctx sdk.PerformContext) (sdkcore.JS
 		return nil, fmt.Errorf("failed to adjust inventory: %v", err)
 	}
 
-	return sdk.JSON(map[string]interface{}{
+	return core.JSON(map[string]interface{}{
 		"adjustedInventoryLevel": inventoryLevel,
 	}), nil
 }
 
-func (a *AdjustInventoryLevelAction) Auth() *sdk.Auth {
+func (a *AdjustInventoryLevelAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *AdjustInventoryLevelAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *AdjustInventoryLevelAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewAdjustInventoryLevelAction() sdk.Action {

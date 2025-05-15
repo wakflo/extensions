@@ -3,9 +3,11 @@ package actions
 import (
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/typeform/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type retrieveFormResponseActionProps struct {
@@ -14,51 +16,43 @@ type retrieveFormResponseActionProps struct {
 
 type RetrieveFormResponseAction struct{}
 
-func (a *RetrieveFormResponseAction) Name() string {
-	return "Retrieve a form response"
-}
-
-func (a *RetrieveFormResponseAction) Description() string {
-	return "Retrieve a from response from Typeform using the form ID"
-}
-
-func (a *RetrieveFormResponseAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *RetrieveFormResponseAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &retrieveFormResponseDocs,
+func (a *RetrieveFormResponseAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		DisplayName:   "Retrieve a form response",
+		Description:   "Retrieve a from response from Typeform using the form ID",
+		Type:          core.ActionTypeAction,
+		Documentation: retrieveFormResponseDocs,
+		SampleOutput:  nil,
+		Settings:      core.ActionSettings{},
+		Icon:          "mingcute:report-forms-fill",
 	}
 }
 
-func (a *RetrieveFormResponseAction) Icon() *string {
-	icon := "mingcute:report-forms-fill"
-	return &icon
+func (a *RetrieveFormResponseAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("retrieve_form_response", "Retrieve a form response")
+	shared.RegisterTypeformFormsProps(form, "Form ID", "Select a form", true)
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *RetrieveFormResponseAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"form_id": shared.GetTypeformFormsInput("Form ID", "Select a form", true),
-	}
-}
-
-func (a *RetrieveFormResponseAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[retrieveFormResponseActionProps](ctx.BaseContext)
+func (a *RetrieveFormResponseAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[retrieveFormResponseActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.AccessToken == "" {
-		return nil, errors.New("missing calendly auth token")
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
 	}
-	accessToken := ctx.Auth.AccessToken
 
 	if input.FormID == "" {
 		return nil, errors.New("form ID is required")
 	}
+	token := *&authCtx.Token.AccessToken
 
-	resData, err := shared.GetFormResponses(accessToken, input.FormID)
+	resData, err := shared.GetFormResponses(token, input.FormID)
 	if err != nil {
 		return nil, err
 	}
@@ -66,16 +60,8 @@ func (a *RetrieveFormResponseAction) Perform(ctx sdk.PerformContext) (sdkcore.JS
 	return resData, nil
 }
 
-func (a *RetrieveFormResponseAction) Auth() *sdk.Auth {
+func (a *RetrieveFormResponseAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *RetrieveFormResponseAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (a *RetrieveFormResponseAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewRetrieveFormResponseAction() sdk.Action {

@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getCustomerActionProps struct {
@@ -16,45 +17,39 @@ type getCustomerActionProps struct {
 
 type GetCustomerAction struct{}
 
-func (a *GetCustomerAction) Name() string {
-	return "Get Customer"
-}
-
-func (a *GetCustomerAction) Description() string {
-	return "Retrieves customer information from a specified data source or system, allowing you to access and utilize existing customer data within your workflow."
-}
-
-func (a *GetCustomerAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetCustomerAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getCustomerDocs,
+func (a *GetCustomerAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_customer",
+		DisplayName:   "Get Customer",
+		Description:   "Retrieves customer information from a specified data source or system, allowing you to access and utilize existing customer data within your workflow.",
+		Type:          core.ActionTypeAction,
+		Documentation: getCustomerDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetCustomerAction) Icon() *string {
-	return nil
+func (a *GetCustomerAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_customer", "Get Customer")
+
+	form.NumberField("customerId", "Customer ID").
+		Placeholder("The ID of the customer.").
+		Required(true).
+		HelpText("The ID of the customer.")
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *GetCustomerAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"customerId": autoform.NewNumberField().
-			SetDisplayName("Customer ID").
-			SetDescription("The ID of the customer.").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *GetCustomerAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getCustomerActionProps](ctx.BaseContext)
+func (a *GetCustomerAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getCustomerActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.CreateClient(ctx.BaseContext)
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -67,23 +62,13 @@ func (a *GetCustomerAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 		return nil, fmt.Errorf("no customer found with ID '%d'", input.CustomerID)
 	}
 
-	return sdk.JSON(map[string]interface{}{
+	return core.JSON(map[string]interface{}{
 		"raw_customer": customer,
 	}), nil
 }
 
-func (a *GetCustomerAction) Auth() *sdk.Auth {
+func (a *GetCustomerAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *GetCustomerAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *GetCustomerAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetCustomerAction() sdk.Action {

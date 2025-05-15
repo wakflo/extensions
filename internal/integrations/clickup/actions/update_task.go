@@ -8,10 +8,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/clickup/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type updateTaskProps struct {
@@ -28,60 +29,88 @@ type updateTaskProps struct {
 
 type UpdateTaskOperation struct{}
 
-func (o *UpdateTaskOperation) Name() string {
-	return "Update Task"
-}
-
-func (o *UpdateTaskOperation) Description() string {
-	return "Updates an existing task in ClickUp with modified details."
-}
-
-func (o *UpdateTaskOperation) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (o *UpdateTaskOperation) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &updateTaskDocs,
+// Metadata returns metadata about the action
+func (o *UpdateTaskOperation) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "update_task",
+		DisplayName:   "Update Task",
+		Description:   "Updates an existing task in ClickUp with modified details.",
+		Type:          core.ActionTypeAction,
+		Documentation: updateTaskDocs,
+		Icon:          "material-symbols:edit-document",
+		SampleOutput: map[string]any{
+			"id":          "abc123",
+			"name":        "Updated Task",
+			"description": "This task has been updated",
+			"status": map[string]string{
+				"status": "In Progress",
+				"color":  "#4286f4",
+			},
+			"priority": map[string]any{
+				"priority": "Medium",
+				"color":    "#f59f00",
+			},
+			"date_updated": "1647354999999",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (o *UpdateTaskOperation) Icon() *string {
-	icon := "material-symbols:edit-document"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (o *UpdateTaskOperation) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("update_task", "Update Task")
+
+	shared.RegisterWorkSpaceInput(form, "Workspaces", "select a workspace", true)
+
+	shared.RegisterSpacesInput(form, "Spaces", "select a space", true)
+
+	shared.RegisterFoldersInput(form, "Folders", "select a folder", true)
+
+	shared.RegisterListsInput(form, "Lists", "select a list to create task in", true)
+
+	shared.RegisterTasksInput(form, "Tasks", "select a task to update", true)
+
+	shared.GetAssigneeInput(form, "Assignees", "select a assignee", true)
+
+	form.TextField("name", "name").
+		Placeholder("Task Name").
+		HelpText("The name of task to update").
+		Required(false)
+
+	form.TextareaField("description", "description").
+		Placeholder("Task Description").
+		HelpText("The description of task to update").
+		Required(false)
+
+	form.SelectField("priority", "priority").
+		Placeholder("Priority").
+		HelpText("The priority level of the task").
+		AddOptions(shared.ClickupPriorityType...).
+		Required(false)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (o *UpdateTaskOperation) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"workspace-id": shared.RegisterWorkSpaceInput("Workspaces", "select a workspace", true),
-		"space-id":     shared.RegisterSpacesInput("Spaces", "select a space", true),
-		"folder-id":    shared.RegisterFoldersInput("Folders", "select a folder", true),
-		"list-id":      shared.RegisterListsInput("Lists", "select a list to create task in", true),
-		"task-id":      shared.RegisterTasksInput("Tasks", "select a task to update", true),
-		"assignee-id":  shared.GetAssigneeInput("Assignees", "select a assignee", true),
-		"name": autoform.NewShortTextField().
-			SetDisplayName("Task Name").
-			SetDescription("The name of task to update").
-			Build(),
-		"description": autoform.NewLongTextField().
-			SetDisplayName("Task Description").
-			SetDescription("The description of task to update").
-			Build(),
-		"priority": autoform.NewSelectField().
-			SetDisplayName("Priority").
-			SetDescription("The priority level of the task").
-			SetOptions(shared.ClickupPriorityType).
-			Build(),
-	}
+// Auth returns the authentication requirements for the action
+func (o *UpdateTaskOperation) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (o *UpdateTaskOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	accessToken := ctx.Auth.AccessToken
-	input, err := sdk.InputToTypeSafely[updateTaskProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (o *UpdateTaskOperation) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[updateTaskProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken := authCtx.AccessToken
 	updatedTaskData := map[string]interface{}{}
 
 	if input.Name != "" {
@@ -139,36 +168,11 @@ func (o *UpdateTaskOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	}
 	defer res.Body.Close()
 
-	var response sdk.JSON
+	var response core.JSON
 	fmt.Println(response)
 	return map[string]interface{}{
 		"Report": "Task updated successfully",
 	}, nil
-}
-
-func (o *UpdateTaskOperation) Auth() *sdk.Auth {
-	return nil
-}
-
-func (o *UpdateTaskOperation) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"id":          "abc123",
-		"name":        "Updated Task",
-		"description": "This task has been updated",
-		"status": map[string]string{
-			"status": "In Progress",
-			"color":  "#4286f4",
-		},
-		"priority": map[string]any{
-			"priority": "Medium",
-			"color":    "#f59f00",
-		},
-		"date_updated": "1647354999999",
-	}
-}
-
-func (o *UpdateTaskOperation) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewUpdateTaskOperation() sdk.Action {

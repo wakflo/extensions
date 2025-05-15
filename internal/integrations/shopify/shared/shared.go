@@ -4,38 +4,24 @@ import (
 	"errors"
 
 	goshopify "github.com/bold-commerce/go-shopify/v4"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	// 	"os"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 )
 
-/*var viewStyleOptions = []*sdkcore.AutoFormSchema{
-	{Const: "shopify", Title: "Shopify"},
-	{Const: "custom", Title: "Shopify (Custom/Private)"},
-}*/
+var (
+	form = smartform.NewAuthForm("shopify-auth", "Shopify API Authentication", smartform.AuthStrategyCustom)
 
-var SharedAuth = autoform.NewCustomAuthField().
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"domain": autoform.NewShortTextField().
-			SetDisplayName("Domain Name").
-			SetDescription("The domain name of the shopify app. eg. xyz.myshopify.com, type in only 'xyz'").
-			SetRequired(true).
-			Build(),
-		"token": autoform.NewShortTextField().SetDisplayName("Authentication Token").
-			SetDescription("The token used to authenticate the shopify app.").
-			SetRequired(true).
-			Build(),
-		/*// will be enabled when dropdown cab show in dialog
-		// "appMode": autoform.NewSelectField().
-		//	SetDisplayName("Application Mode").
-		//	SetOptions(viewStyleOptions).
-		//	SetRequired(true).
-		//	SetDescription("The application mode of the shopify app.").
-		//	Build(),*/
-	}).
-	Build()
+	_ = form.TextField("domain", "Domain Name(Required)").
+		Required(true).
+		HelpText("The domain name of the shopify app. eg. xyz.myshopify.com, type in only 'xyz'")
+
+	_ = form.TextField("token", "Consumer Key (Required)").
+		Required(true).
+		HelpText("The consumer key generated from your app.")
+
+	ShopifySharedAuth = form.Build()
+)
 
 var app = goshopify.App{
 	ApiKey:      "",
@@ -52,26 +38,18 @@ var GetShopifyClient = func(shopName string, accessToken string) *goshopify.Clie
 	return client
 }
 
-var StatusFormat = []*sdkcore.AutoFormSchema{
-	{Const: "active", Title: "Active"},
-	{Const: "draft", Title: "Draft"},
-}
+func CreateClient(ctx sdkcontext.BaseContext) (*goshopify.Client, error) {
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
 
-var ShopifyTransactionKinds = []*sdkcore.AutoFormSchema{
-	{Const: "authorization", Title: "Authorization"},
-	{Const: "sale", Title: "Sale"},
-	{Const: "capture", Title: "Capture"},
-	{Const: "void", Title: "Void"},
-	{Const: "refund", Title: "Refund"},
-}
-
-func CreateClient(ctx sdk.BaseContext) (*goshopify.Client, error) {
-	if ctx.Auth.Extra["token"] == "" {
+	if authCtx.Extra["token"] == "" {
 		return nil, errors.New("missing shopify auth token")
 	}
 
-	domain := ctx.Auth.Extra["domain"]
+	domain := authCtx.Extra["domain"]
 	shopName := domain + ".myshopify.com"
 
-	return GetShopifyClient(shopName, ctx.Auth.Extra["token"]), nil
+	return GetShopifyClient(shopName, authCtx.Extra["token"]), nil
 }

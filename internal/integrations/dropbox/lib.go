@@ -3,6 +3,8 @@ package dropbox
 import (
 	_ "embed"
 
+	"github.com/wakflo/extensions/internal/integrations/dropbox/actions"
+	"github.com/wakflo/extensions/internal/integrations/dropbox/shared"
 	"github.com/wakflo/go-sdk/v2"
 	"github.com/wakflo/go-sdk/v2/core"
 )
@@ -23,7 +25,8 @@ func (n *Dropbox) Metadata() sdk.IntegrationMetadata {
 
 func (n *Dropbox) Auth() *core.AuthMetadata {
 	return &core.AuthMetadata{
-		Required: false,
+		Required: true,
+		Schema:   shared.SharedDropboxAuth,
 	}
 }
 
@@ -32,7 +35,17 @@ func (n *Dropbox) Triggers() []sdk.Trigger {
 }
 
 func (n *Dropbox) Actions() []sdk.Action {
-	return []sdk.Action{}
+	return []sdk.Action{
+		actions.NewCreateFolderAction(),
+		actions.NewCopyFileAction(),
+		actions.NewMoveFolderAction(),
+		actions.NewCopyFolderAction(),
+		actions.NewDeleteFileAction(),
+		actions.NewDeleteFolderAction(),
+		actions.NewListFolderAction(),
+		actions.NewMoveFileAction(),
+		actions.NewGetFileLinkAction(),
+	}
 }
 
 func NewDropbox() sdk.Integration {

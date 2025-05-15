@@ -5,7 +5,8 @@ import (
 
 	"github.com/wakflo/extensions/internal/integrations/prisync/actions"
 	"github.com/wakflo/extensions/internal/integrations/prisync/shared"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -14,14 +15,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
-var Integration = sdk.Register(NewPrisync(), Flow, ReadME)
+var Integration = sdk.Register(NewPrisync())
 
 type Prisync struct{}
 
-func (n *Prisync) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *Prisync) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *Prisync) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.SharedAuth,
+		Schema:   shared.PrisyncSharedAuth,
 	}
 }
 

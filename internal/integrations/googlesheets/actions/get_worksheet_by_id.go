@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googlesheets/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
@@ -19,43 +21,57 @@ type getWorksheetByIdActionProps struct {
 
 type GetWorksheetByIdAction struct{}
 
-func (a *GetWorksheetByIdAction) Name() string {
-	return "Get Worksheet By ID"
-}
-
-func (a *GetWorksheetByIdAction) Description() string {
-	return "Retrieves a specific worksheet by its unique identifier (ID), allowing you to access and manipulate its contents within your workflow."
-}
-
-func (a *GetWorksheetByIdAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetWorksheetByIdAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getWorksheetByIdDocs,
+// Metadata returns metadata about the action
+func (a *GetWorksheetByIdAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_worksheet_by_id",
+		DisplayName:   "Get Worksheet By ID",
+		Description:   "Retrieves a specific worksheet by its unique identifier (ID), allowing you to access and manipulate its contents within your workflow.",
+		Type:          core.ActionTypeAction,
+		Documentation: getWorksheetByIdDocs,
+		Icon:          "",
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetWorksheetByIdAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *GetWorksheetByIdAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_worksheet_by_id", "Get Worksheet By ID")
+
+	shared.RegisterSpreadsheetsProps(form, "spreadsheetId", "Spreadsheet", "spreadsheet ID", true)
+
+	shared.RegisterSheetIDProps(form, true)
+
+	form.CheckboxField("includeTeamDrives", "includeTeamDrives").
+		Placeholder("Include Team Drives").
+		HelpText("Include files from Team Drives in results")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *GetWorksheetByIdAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *GetWorksheetByIdAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"spreadsheetId":     shared.GetSpreadsheetsInput("Spreadsheet", "spreadsheet ID", true),
-		"sheetId":           shared.GetSheetIDInput("Sheet", "select sheet", true),
-		"includeTeamDrives": shared.IncludeTeamFieldInput,
-	}
-}
-
-func (a *GetWorksheetByIdAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getWorksheetByIdActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *GetWorksheetByIdAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getWorksheetByIdActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	sheetService, err := sheets.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	sheetService, err := sheets.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -80,20 +96,6 @@ func (a *GetWorksheetByIdAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, 
 		}
 	}
 	return spreadsheet, err
-}
-
-func (a *GetWorksheetByIdAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *GetWorksheetByIdAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *GetWorksheetByIdAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetWorksheetByIdAction() sdk.Action {

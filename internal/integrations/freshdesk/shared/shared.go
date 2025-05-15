@@ -24,26 +24,16 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/gookit/goutil/arrutil"
 	fastshot "github.com/opus-domini/fast-shot"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-)
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
 
-var SharedAuth = autoform.NewCustomAuthField().
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"domain": autoform.NewShortTextField().
-			SetDisplayName("Freshdesk Domain").
-			SetDescription("The domain name of the freshdesk account. eg. xyz.freshdesk.com, type in only 'xyz'").
-			SetRequired(true).
-			Build(),
-		"api-key": autoform.NewShortTextField().SetDisplayName("Api Key").
-			SetDescription("The api key used to authenticate freshdesk.").
-			SetRequired(true).
-			Build(),
-	}).
-	Build()
+	"github.com/gookit/goutil/arrutil"
+
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
+)
 
 func NewFreshdeskAPIClient(baseURL, apiKey string) (*http.Client, string) {
 	client := &http.Client{}
@@ -256,11 +246,16 @@ func GetTicket(baseURL, apiKey, ticketID string) (interface{}, error) {
 	return result, nil
 }
 
-func GetTicketInput() *sdkcore.AutoFormSchema {
-	getTickets := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		baseAPI := "https://" + ctx.Auth.Extra["domain"] + ".freshdesk.com"
+func RegisterTicketProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getTickets := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
+		baseAPI := "https://" + authCtx.Extra["domain"] + ".freshdesk.com"
 		qu := fastshot.NewClient(baseAPI).
-			Auth().BasicAuth(ctx.Auth.Extra["api-key"], "X").
+			Auth().BasicAuth(authCtx.Extra["api-key"], "X").
 			Header().
 			AddAccept("application/json").
 			Build().GET("/api/v2/tickets")
@@ -296,23 +291,30 @@ func GetTicketInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Ticket").
-		SetDescription("Select ticket to update").
-		SetDynamicOptions(&getTickets).
-		SetRequired(true).Build()
+	return form.SelectField("ticketId", "Ticket").
+		Placeholder("Select a ticket").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getTickets)).
+				WithSearchSupport().
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select ticket to update")
 }
 
-var FreshdeskPriorityType = []*sdkcore.AutoFormSchema{
-	{Const: "4", Title: "Urgent"},
-	{Const: "3", Title: "High"},
-	{Const: "2", Title: "Normal"},
-	{Const: "1", Title: "Low"},
+var FreshdeskPriorityType = []*smartform.Option{
+	{Value: "4", Label: "Urgent"},
+	{Value: "3", Label: "High"},
+	{Value: "2", Label: "Normal"},
+	{Value: "1", Label: "Low"},
 }
 
-var FreshdeskStatusType = []*sdkcore.AutoFormSchema{
-	{Const: "2", Title: "Open"},
-	{Const: "3", Title: "Pending"},
-	{Const: "4", Title: "Resolved"},
-	{Const: "5", Title: "Closed"},
+var FreshdeskStatusType = []*smartform.Option{
+	{Value: "2", Label: "Open"},
+	{Value: "3", Label: "Pending"},
+	{Value: "4", Label: "Resolved"},
+	{Value: "5", Label: "Closed"},
 }

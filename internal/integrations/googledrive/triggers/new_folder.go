@@ -19,8 +19,7 @@ type newFolderTriggerProps struct {
 	newFileTriggerProps
 }
 
-type NewFolderTrigger struct {
-}
+type NewFolderTrigger struct{}
 
 func (t *NewFolderTrigger) Metadata() sdk.TriggerMetadata {
 	return sdk.TriggerMetadata{

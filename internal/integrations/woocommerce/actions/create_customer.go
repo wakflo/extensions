@@ -3,10 +3,11 @@ package actions
 import (
 	"github.com/hiscaler/woocommerce-go"
 	"github.com/hiscaler/woocommerce-go/entity"
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/woocommerce/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createCustomerActionProps struct {
@@ -25,92 +26,97 @@ type createCustomerActionProps struct {
 
 type CreateCustomerAction struct{}
 
-func (a *CreateCustomerAction) Name() string {
-	return "Create Customer"
-}
-
-func (a *CreateCustomerAction) Description() string {
-	return "Create a new customer in your CRM system by providing required details such as name, email, phone number, and other relevant information. This integration action allows you to automate the process of creating new customers, reducing manual errors and increasing efficiency."
-}
-
-func (a *CreateCustomerAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateCustomerAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createCustomerDocs,
+func (a *CreateCustomerAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_customer",
+		DisplayName:   "Create Customer",
+		Description:   "Create a new customer on Woocommerce by providing required details such as name, email, phone number, and other relevant information.",
+		Type:          core.ActionTypeAction,
+		Documentation: createCustomerDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateCustomerAction) Icon() *string {
-	return nil
+func (a *CreateCustomerAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_custpmer", "Create Customer")
+
+	form.TextField("first_name", "First Name").
+		Placeholder("Enter first name").
+		Required(true).
+		HelpText("Enter first name")
+
+	form.TextField("last_name", "Last Name").
+		Placeholder("Enter last name").
+		Required(true).
+		HelpText("Enter last name")
+
+	form.TextField("email", "Email").
+		Placeholder("Enter email").
+		Required(true).
+		HelpText("Enter email")
+
+	form.TextField("username", "Username").
+		Placeholder("Enter username").
+		Required(true).
+		HelpText("Enter username")
+
+	form.TextField("password", "Password").
+		Placeholder("Enter password").
+		Required(true).
+		HelpText("Enter password")
+
+	form.TextField("phone", "Phone").
+		Placeholder("Enter phone").
+		Required(true).
+		HelpText("Enter phone")
+
+	form.TextField("country", "Country").
+		Placeholder("Enter country").
+		Required(true).
+		HelpText("Enter country")
+
+	form.TextField("city", "City").
+		Placeholder("Enter city").
+		Required(true).
+		HelpText("Enter city")
+
+	form.TextField("state", "State").
+		Placeholder("Enter state").
+		Required(true).
+		HelpText("Enter state")
+
+	form.TextField("street_address", "Street Address").
+		Placeholder("Enter street address").
+		Required(true).
+		HelpText("Enter street address")
+
+	form.TextField("post_code", "Post Code").
+		Placeholder("Enter post code").
+		Required(true).
+		HelpText("Enter post code")
+
+	labelsArray := form.ArrayField("labels", "Labels")
+	labelGroup := labelsArray.ObjectTemplate("label", "")
+	labelGroup.TextField("value", "Label").
+		Placeholder("Label").
+		Required(true).
+		HelpText("The task's labels (a list of names that may represent either personal or shared labels)")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *CreateCustomerAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"first_name": autoform.NewShortTextField().
-			SetDisplayName("First Name").
-			SetDescription("Enter first name").
-			SetRequired(true).
-			Build(),
-		"last_name": autoform.NewShortTextField().
-			SetDisplayName("Last Name").
-			SetRequired(true).
-			Build(),
-		"email": autoform.NewShortTextField().
-			SetDisplayName(" Email").
-			SetDescription("Enter email address").
-			SetRequired(true).
-			Build(),
-		"username": autoform.NewShortTextField().
-			SetDisplayName("Username").
-			SetDescription("Enter username").
-			SetRequired(true).
-			Build(),
-		"password": autoform.NewShortTextField().
-			SetDisplayName("Password").
-			SetDescription("Enter Password").
-			SetRequired(true).
-			Build(),
-		"phone": autoform.NewShortTextField().
-			SetDisplayName("Phone").
-			SetDescription("Enter Phone number").
-			Build(),
-		"country": autoform.NewShortTextField().
-			SetDisplayName("Country").
-			SetDescription("Enter Country").
-			SetRequired(true).
-			Build(),
-		"city": autoform.NewShortTextField().
-			SetDisplayName("City").
-			SetRequired(true).
-			SetDescription("Enter City").
-			Build(),
-		"state": autoform.NewShortTextField().
-			SetDisplayName("State").
-			SetRequired(true).
-			SetDescription("Enter State").
-			Build(),
-		"street_address": autoform.NewLongTextField().
-			SetDisplayName("Address").
-			SetDescription("Enter the street address").
-			SetRequired(true).
-			Build(),
-		"post_code": autoform.NewShortTextField().
-			SetDisplayName("Postal Code").
-			SetDescription("Enter State").
-			Build(),
-	}
-}
-
-func (a *CreateCustomerAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createCustomerActionProps](ctx.BaseContext)
+func (a *CreateCustomerAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createCustomerActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	wooClient, err := shared.InitClient(ctx.BaseContext)
+	wooClient, err := shared.InitClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -145,18 +151,8 @@ func (a *CreateCustomerAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, er
 	return newCustomer, nil
 }
 
-func (a *CreateCustomerAction) Auth() *sdk.Auth {
+func (a *CreateCustomerAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *CreateCustomerAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateCustomerAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateCustomerAction() sdk.Action {

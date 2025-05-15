@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/hubspot/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type ticketCreatedTriggerProps struct {
@@ -18,56 +20,88 @@ type ticketCreatedTriggerProps struct {
 
 type TicketCreatedTrigger struct{}
 
-func (t *TicketCreatedTrigger) Name() string {
-	return "Ticket Created"
-}
-
-func (t *TicketCreatedTrigger) Description() string {
-	return "Trigger a workflow when new tickets are created in your HubSpot CRM"
-}
-
-func (t *TicketCreatedTrigger) GetType() sdkcore.TriggerType {
-	return sdkcore.TriggerTypePolling
-}
-
-func (t *TicketCreatedTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &ticketCreatedDoc,
+// Metadata returns metadata about the trigger
+func (t *TicketCreatedTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "ticket_created",
+		DisplayName:   "Ticket Created",
+		Description:   "Trigger a workflow when new tickets are created in your HubSpot CRM",
+		Type:          core.TriggerTypePolling,
+		Documentation: ticketCreatedDoc,
+		Icon:          "mdi:ticket-confirmation",
+		SampleOutput: map[string]any{
+			"results": []map[string]any{
+				{
+					"id": "12345",
+					"properties": map[string]any{
+						"subject":            "Technical issue with product",
+						"content":            "User is experiencing login problems with the application.",
+						"hs_ticket_priority": "HIGH",
+						"hs_pipeline":        "0",
+						"hs_pipeline_stage":  "1",
+						"createdate":         "2023-04-15T09:30:00Z",
+					},
+					"createdAt": "2023-04-15T09:30:00Z",
+					"updatedAt": "2023-04-15T09:30:00Z",
+				},
+			},
+		},
 	}
 }
 
-func (t *TicketCreatedTrigger) Icon() *string {
-	icon := "mdi:ticket-confirmation"
-	return &icon
-}
-
-func (t *TicketCreatedTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"properties": autoform.NewShortTextField().
-			SetDisplayName("Ticket Properties").
-			SetDescription("Comma-separated list of properties to retrieve (e.g., subject,hs_ticket_priority,hs_pipeline_stage)").
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (t *TicketCreatedTrigger) Start(ctx sdk.LifecycleContext) error {
+// Auth returns the authentication requirements for the trigger
+func (t *TicketCreatedTrigger) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (t *TicketCreatedTrigger) Stop(ctx sdk.LifecycleContext) error {
+// GetType returns the type of the trigger
+func (t *TicketCreatedTrigger) GetType() core.TriggerType {
+	return core.TriggerTypePolling
+}
+
+// Props returns the schema for the trigger's input configuration
+func (t *TicketCreatedTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("ticket_created", "Ticket Created")
+
+	form.TextareaField("properties", "Ticket Properties").
+		Required(false).
+		HelpText("Comma-separated list of properties to retrieve (e.g., subject,hs_ticket_priority,hs_pipeline_stage)")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Start initializes the trigger, required for event and webhook triggers in a lifecycle context
+func (t *TicketCreatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (t *TicketCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	props, err := sdk.InputToTypeSafely[ticketCreatedTriggerProps](ctx.BaseContext)
+// Stop shuts down the trigger, cleaning up resources and performing necessary teardown operations
+func (t *TicketCreatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
+	return nil
+}
+
+// Execute performs the trigger logic
+func (t *TicketCreatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (core.JSON, error) {
+	props, err := sdk.InputToTypeSafely[ticketCreatedTriggerProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	lastRunTime := ctx.Metadata().LastRun
-	url := "/crm/v3/objects/tickets/search"
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
 
+	// Get the last run time
+	var lastRunTime *time.Time
+	lr, err := ctx.GetMetadata("lastRun")
+	if err == nil && lr != nil {
+		lastRunTime = lr.(*time.Time)
+	}
+
+	url := "/crm/v3/objects/tickets/search"
 	const limit = 100
 
 	requestBody := map[string]interface{}{
@@ -106,7 +140,7 @@ func (t *TicketCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, er
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request body: %v", err)
 	}
-	resp, err := shared.HubspotClient(url, ctx.Auth.AccessToken, http.MethodPost, jsonBody)
+	resp, err := shared.HubspotClient(url, authCtx.Token.AccessToken, http.MethodPost, jsonBody)
 	if err != nil {
 		return nil, err
 	}
@@ -114,17 +148,29 @@ func (t *TicketCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, er
 	return resp, nil
 }
 
-func (t *TicketCreatedTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
-	return sdkcore.TriggerCriteria{}
+// Criteria returns the criteria for triggering this trigger
+func (t *TicketCreatedTrigger) Criteria(ctx context.Context) core.TriggerCriteria {
+	return core.TriggerCriteria{}
 }
 
-func (t *TicketCreatedTrigger) Auth() *sdk.Auth {
-	return nil
-}
-
-func (t *TicketCreatedTrigger) SampleData() sdkcore.JSON {
+// SampleData returns sample data for this trigger
+func (t *TicketCreatedTrigger) SampleData() core.JSON {
 	return map[string]any{
-		"results": []map[string]any{},
+		"results": []map[string]any{
+			{
+				"id": "12345",
+				"properties": map[string]any{
+					"subject":            "Technical issue with product",
+					"content":            "User is experiencing login problems with the application.",
+					"hs_ticket_priority": "HIGH",
+					"hs_pipeline":        "0",
+					"hs_pipeline_stage":  "1",
+					"createdate":         "2023-04-15T09:30:00Z",
+				},
+				"createdAt": "2023-04-15T09:30:00Z",
+				"updatedAt": "2023-04-15T09:30:00Z",
+			},
+		},
 	}
 }
 

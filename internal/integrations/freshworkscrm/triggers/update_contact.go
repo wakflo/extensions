@@ -6,57 +6,81 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/freshworkscrm/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type ContactUpdatedTrigger struct{}
 
-func (t *ContactUpdatedTrigger) Name() string {
-	return "Contact Updated"
+func (t *ContactUpdatedTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "contact_updated",
+		DisplayName:   "Contact Updated",
+		Description:   "Triggers when a contact is updated in Freshworks CRM.",
+		Type:          sdkcore.TriggerTypePolling,
+		Documentation: updateContactDocs,
+		Icon:          "mdi:account-edit-outline",
+		SampleOutput: map[string]any{
+			"id":            "12345",
+			"first_name":    "John",
+			"last_name":     "Doe",
+			"email":         "john.doe@example.com",
+			"mobile_number": "+1234567890",
+			"job_title":     "Software Engineer",
+			"company":       "Example Inc.",
+			"created_at":    "2023-01-01T12:00:00Z",
+			"updated_at":    "2023-01-02T14:30:00Z",
+		},
+	}
 }
 
-func (t *ContactUpdatedTrigger) Description() string {
-	return "Triggers when a contact is updated in Freshworks CRM."
+func (t *ContactUpdatedTrigger) Auth() *sdkcore.AuthMetadata {
+	return nil
 }
 
 func (t *ContactUpdatedTrigger) GetType() sdkcore.TriggerType {
 	return sdkcore.TriggerTypePolling
 }
 
-func (t *ContactUpdatedTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &updateContactDocs,
-	}
-}
+func (t *ContactUpdatedTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("freshworks-contact-updated", "Contact Updated")
 
-func (t *ContactUpdatedTrigger) Icon() *string {
-	icon := "mdi:account-edit-outline"
-	return &icon
-}
+	// No properties needed for this trigger
 
-func (t *ContactUpdatedTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{}
+	schema := form.Build()
+
+	return schema
 }
 
 // Start initializes the trigger, required for event and webhook triggers in a lifecycle context.
-func (t *ContactUpdatedTrigger) Start(ctx sdk.LifecycleContext) error {
+func (t *ContactUpdatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
 // Stop shuts down the trigger, cleaning up resources and performing necessary teardown operations.
-func (t *ContactUpdatedTrigger) Stop(ctx sdk.LifecycleContext) error {
+func (t *ContactUpdatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
 // Execute performs the main action logic by checking for updated contacts.
-func (t *ContactUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	if ctx.Auth.Extra["api-key"] == "" || ctx.Auth.Extra["domain"] == "" {
+func (t *ContactUpdatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	if authCtx.Extra["api-key"] == "" || authCtx.Extra["domain"] == "" {
 		return nil, errors.New("missing freshworks auth parameters")
 	}
 
-	lastRunTime := ctx.Metadata().LastRun
+	var lastRunTime *time.Time
+	lastRun, err := ctx.GetMetadata("lastRun")
+	if err == nil && lastRun != nil {
+		lastRunTime = lastRun.(*time.Time)
+	}
 
 	queryParams := map[string]string{
 		"page":      "1",
@@ -72,10 +96,10 @@ func (t *ContactUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, e
 		queryParams["filter"] = filterJSON
 	}
 
-	domain := ctx.Auth.Extra["domain"]
+	domain := authCtx.Extra["domain"]
 	freshworksDomain := "https://" + domain + ".myfreshworks.com"
 
-	response, err := shared.ListContacts(freshworksDomain, ctx.Auth.Extra["api-key"], queryParams)
+	response, err := shared.ListContacts(freshworksDomain, authCtx.Extra["api-key"], queryParams)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching contacts: %v", err)
 	}
@@ -119,28 +143,6 @@ func (t *ContactUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, e
 
 func (t *ContactUpdatedTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
 	return sdkcore.TriggerCriteria{}
-}
-
-func (t *ContactUpdatedTrigger) Auth() *sdk.Auth {
-	return nil
-}
-
-func (t *ContactUpdatedTrigger) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"id":            "12345",
-		"first_name":    "John",
-		"last_name":     "Doe",
-		"email":         "john.doe@example.com",
-		"mobile_number": "+1234567890",
-		"job_title":     "Software Engineer",
-		"company":       "Example Inc.",
-		"created_at":    "2023-01-01T12:00:00Z",
-		"updated_at":    "2023-01-02T14:30:00Z",
-	}
-}
-
-func (t *ContactUpdatedTrigger) Settings() sdkcore.TriggerSettings {
-	return sdkcore.TriggerSettings{}
 }
 
 func NewContactUpdatedTrigger() sdk.Trigger {

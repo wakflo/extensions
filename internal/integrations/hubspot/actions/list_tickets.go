@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/hubspot/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type listTicketsActionProps struct {
@@ -16,39 +17,72 @@ type listTicketsActionProps struct {
 
 type ListTicketsAction struct{}
 
-func (a *ListTicketsAction) Name() string {
-	return "List Tickets"
-}
-
-func (a *ListTicketsAction) Description() string {
-	return "List available tickets"
-}
-
-func (a *ListTicketsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListTicketsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listTicketsDocs,
+// Metadata returns metadata about the action
+func (a *ListTicketsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_tickets",
+		DisplayName:   "List Tickets",
+		Description:   "List available tickets",
+		Type:          core.ActionTypeAction,
+		Documentation: listTicketsDocs,
+		SampleOutput: map[string]any{
+			"results": []map[string]any{
+				{
+					"id": "101",
+					"properties": map[string]any{
+						"subject":            "Technical issue with login",
+						"content":            "User unable to access the system.",
+						"hs_ticket_priority": "HIGH",
+						"createdate":         "2023-04-15T09:30:00Z",
+					},
+				},
+				{
+					"id": "102",
+					"properties": map[string]any{
+						"subject":            "Feature request",
+						"content":            "Customer would like to request a new reporting feature.",
+						"hs_ticket_priority": "MEDIUM",
+						"createdate":         "2023-04-16T14:45:00Z",
+					},
+				},
+			},
+			"paging": map[string]any{
+				"next": map[string]any{
+					"after": "MTAy",
+					"link":  "https://api.hubapi.com/crm/v3/objects/tickets?after=MTAy",
+				},
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ListTicketsAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *ListTicketsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_tickets", "List Tickets")
+
+	form.NumberField("limit", "Limit").
+		Required(false).
+		HelpText("Limit")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *ListTicketsAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *ListTicketsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"limit": autoform.NewNumberField().
-			SetDisplayName("Limit").
-			SetDescription("Limit").
-			SetRequired(false).Build(),
+// Perform executes the action with the given context and input
+func (a *ListTicketsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[listTicketsActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *ListTicketsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[listTicketsActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
@@ -59,48 +93,11 @@ func (a *ListTicketsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 
 	url := fmt.Sprintf("/crm/v3/objects/tickets?limit=%d", input.Limit)
 
-	resp, err := shared.HubspotClient(url, ctx.Auth.AccessToken, http.MethodGet, nil)
+	resp, err := shared.HubspotClient(url, authCtx.Token.AccessToken, http.MethodGet, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
-}
-
-func (a *ListTicketsAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *ListTicketsAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"results": []map[string]any{
-			{
-				"id": "51",
-				"properties": map[string]any{
-					"firstname": "John",
-					"lastname":  "Doe",
-					"email":     "john.doe@example.com",
-				},
-			},
-			{
-				"id": "52",
-				"properties": map[string]any{
-					"firstname": "Jane",
-					"lastname":  "Smith",
-					"email":     "jane.smith@example.com",
-				},
-			},
-		},
-		"paging": map[string]any{
-			"next": map[string]any{
-				"after": "NTI=",
-				"link":  "https://api.hubapi.com/crm/v3/objects/contacts?after=NTI=",
-			},
-		},
-	}
-}
-
-func (a *ListTicketsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewListTicketsAction() sdk.Action {

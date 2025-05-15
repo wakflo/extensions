@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/juicycleff/smartform/v1"
 	fastshot "github.com/opus-domini/fast-shot"
 	"github.com/wakflo/extensions/internal/integrations/todoist/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type updateTaskActionProps struct {
@@ -20,79 +21,69 @@ type updateTaskActionProps struct {
 
 type UpdateTaskAction struct{}
 
-func (a *UpdateTaskAction) Name() string {
-	return "Update Task"
-}
-
-func (a *UpdateTaskAction) Description() string {
-	return "Updates the status and details of an existing task in your workflow, allowing you to reflect changes or new information without having to recreate the task."
-}
-
-func (a *UpdateTaskAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *UpdateTaskAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &updateTaskDocs,
+func (a *UpdateTaskAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "update_task",
+		DisplayName:   "Update Task",
+		Description:   "Updates the status and details of an existing task in your workflow, allowing you to reflect changes or new information without having to recreate the task.",
+		Type:          core.ActionTypeAction,
+		Documentation: updateTaskDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *UpdateTaskAction) Icon() *string {
-	return nil
+func (a *UpdateTaskAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("update_task", "Update Task")
+
+	shared.RegisterTasksProps(form, "taskId", "Task ID", "ID of the task to update", true)
+
+	form.TextareaField("content", "Content").
+		Placeholder("The task's content. It may contain some markdown-formatted text and hyperlinks").
+		HelpText("The task's content. It may contain some markdown-formatted text and hyperlinks")
+
+	form.TextareaField("description", "Description").
+		Placeholder("A description for the task. This value may contain some markdown-formatted text and hyperlinks.").
+		HelpText("A description for the task. This value may contain some markdown-formatted text and hyperlinks.")
+
+	labelsArray := form.ArrayField("labels", "Labels")
+	labelGroup := labelsArray.ObjectTemplate("label", "")
+	labelGroup.TextField("value", "Label").
+		Placeholder("Label").
+		Required(true).
+		HelpText("Label")
+
+	form.NumberField("priority", "Priority").
+		Placeholder("Task priority from 1 (normal) to 4 (urgent).").
+		HelpText("Task priority from 1 (normal) to 4 (urgent).")
+
+	form.DateTimeField("dueDate", "Due date").
+		Placeholder("Specific date in YYYY-MM-DD format relative to user's timezone").
+		HelpText("Specific date in YYYY-MM-DD format relative to user's timezone")
+
+	form.NumberField("duration", "Duration").
+		Placeholder("A positive (greater than zero) integer for the amount of duration_unit the task will take, or null to unset. If specified, you must define a duration_unit.").
+		HelpText("A positive (greater than zero) integer for the amount of duration_unit the task will take, or null to unset. If specified, you must define a duration_unit.")
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *UpdateTaskAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"taskId": shared.GetTasksInput("Task ID", "ID of the task to update", true),
-
-		"content": autoform.NewMarkdownField().
-			SetDisplayName("Content").
-			SetDescription("The task's content. It may contain some markdown-formatted text and hyperlinks").
-			SetRequired(false).Build(),
-
-		"description": autoform.NewMarkdownField().
-			SetDisplayName("Description").
-			SetDescription("A description for the task. This value may contain some markdown-formatted text and hyperlinks.").
-			SetRequired(false).Build(),
-
-		"labels": autoform.NewArrayField().
-			SetDisplayName("Labels").
-			SetDescription("The task's labels (a list of names that may represent either personal or shared labels)").
-			SetItems(
-				autoform.NewShortTextField().
-					SetDisplayName("Label").
-					SetDescription("Label").
-					SetRequired(true).
-					Build(),
-			).
-			SetRequired(false).Build(),
-
-		"priority": autoform.NewNumberField().
-			SetDisplayName("Priority").
-			SetDescription("Task priority from 1 (normal) to 4 (urgent).").
-			SetRequired(false).Build(),
-
-		"dueDate": autoform.NewDateTimeField().
-			SetDisplayName("Due date").
-			SetDescription("Specific date in YYYY-MM-DD format relative to user's timezone").
-			SetRequired(false).Build(),
-
-		"duration": autoform.NewNumberField().
-			SetDisplayName("Duration").
-			SetDescription("A positive (greater than zero) integer for the amount of duration_unit the task will take, or null to unset. If specified, you must define a duration_unit.").
-			SetRequired(false).Build(),
+func (a *UpdateTaskAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[updateTaskActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *UpdateTaskAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[updateTaskActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
 
 	qu := fastshot.NewClient(shared.BaseAPI).
-		Auth().BearerToken(ctx.Auth.AccessToken).
+		Auth().BearerToken(authCtx.AccessToken).
 		Header().
 		AddAccept("application/json").
 		Build().POST(fmt.Sprintf("/tasks/%v", input.TaskID)).Body().AsJSON(input.UpdateTask)
@@ -120,18 +111,8 @@ func (a *UpdateTaskAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	return task, nil
 }
 
-func (a *UpdateTaskAction) Auth() *sdk.Auth {
+func (a *UpdateTaskAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *UpdateTaskAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *UpdateTaskAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewUpdateTaskAction() sdk.Action {

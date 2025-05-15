@@ -17,27 +17,27 @@ package shared
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 
-	fastshot "github.com/opus-domini/fast-shot"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
-var TogglSharedAuth = autoform.NewCustomAuthField().
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"api-key": autoform.NewShortTextField().
-			SetDisplayName("API Key").
-			SetDescription("API Key").
-			SetRequired(true).
-			Build(),
-	}).
-	Build()
+var (
+	form = smartform.NewAuthForm("toggl-auth", "Toggl API Authentication", smartform.AuthStrategyCustom)
+
+	_ = form.TextField("api-key", "Api Key(Required)").
+		Required(true).
+		HelpText("Your toggl api key ")
+
+	TogglSharedAuth = form.Build()
+)
 
 const baseURL = "https://api.track.toggl.com/api"
 
@@ -125,41 +125,64 @@ func GetProject(apiKey, workspaceID string, sinceDate int64) (interface{}, error
 	return response, nil
 }
 
-func GetWorkSpaceInput() *sdkcore.AutoFormSchema {
-	getWorkspaces := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		qu := fastshot.NewClient(baseURL).
-			Auth().BasicAuth(ctx.Auth.Extra["api-key"], "api_token").
-			Header().
-			AddAccept("application/json").
-			Build().GET("/v9/workspaces")
-
-		rsp, err := qu.Send()
+func RegisterWorkspacesProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getWorkspaces := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		// Create a new HTTP request
+		req, err := http.NewRequest(http.MethodGet, baseURL+"/v9/workspaces", nil)
 		if err != nil {
 			return nil, err
 		}
 
-		if rsp.Status().IsError() {
-			return nil, errors.New(rsp.Status().Text())
-		}
-		defer rsp.Raw().Body.Close()
-
-		bytes, err := io.ReadAll(rsp.Raw().Body) //nolint:bodyclose
+		// Set headers
+		req.Header.Set("Content-Type", "application/json; charset=utf-8")
+		req.Header.Set("Accept", "application/json")
+		authCtx, err := ctx.AuthContext()
 		if err != nil {
 			return nil, err
+		}
+		// Set auth
+		apiKeyFromContext := authCtx.Extra["api-key"]
+		req.SetBasicAuth(apiKeyFromContext, "api_token")
+
+		// Create HTTP client and send request
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		// Read response body
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("API returned non-200 status code: %d", resp.StatusCode)
 		}
 
 		var workspaces []WorkspaceUser
-		err = json.Unmarshal(bytes, &workspaces)
+		err = json.Unmarshal(body, &workspaces)
 		if err != nil {
 			return nil, err
 		}
 
+		// Return the response in the format expected by the dynamic field context
 		return ctx.Respond(workspaces, len(workspaces))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Workspaces").
-		SetDescription("Select a workspace").
-		SetDynamicOptions(&getWorkspaces).
-		SetRequired(true).Build()
+	return form.SelectField("workspaces", "Workspaces").
+		Placeholder("Enter a value for Parent Folder.").
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getWorkspaces)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select a workspace")
 }

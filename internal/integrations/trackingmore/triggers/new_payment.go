@@ -18,87 +18,91 @@ import (
 	"context"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/square/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
-type NewPaymentTrigger struct {
-	getParentFolders func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error)
-}
+type NewPaymentTrigger struct{}
 
-func (e *NewPaymentTrigger) Name() string {
-	return "New Payment"
-}
-
-func (e *NewPaymentTrigger) Description() string {
-	return "triggers workflow when a new payment is created"
-}
-
-func (e *NewPaymentTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &newPaymentDocs,
+func (e *NewPaymentTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "new_payment",
+		DisplayName:   "New Payment",
+		Description:   "triggers workflow when a new payment is created",
+		Type:          core.TriggerTypeScheduled,
+		Documentation: newPaymentDocs,
+		SampleOutput: map[string]interface{}{
+			"kind":     "drive#file",
+			"mimeType": "image/jpeg",
+			"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
+			"name":     "example.jpg",
+		},
 	}
 }
 
-func (e *NewPaymentTrigger) Icon() *string {
-	return nil
-}
-
-func (e *NewPaymentTrigger) SampleData() sdkcore.JSON {
-	return map[string]interface{}{
-		"kind":     "drive#file",
-		"mimeType": "image/jpeg",
-		"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
-		"name":     "example.jpg",
-	}
-}
-
-func (e *NewPaymentTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{}
-}
-
-func (e *NewPaymentTrigger) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (e *NewPaymentTrigger) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Inherit: true,
 	}
 }
 
-func (e *NewPaymentTrigger) Start(ctx sdk.LifecycleContext) error {
+func (e *NewPaymentTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("new-payment", "New Payment")
+
+	schema := form.Build()
+	return schema
+}
+
+func (e *NewPaymentTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (e *NewPaymentTrigger) Stop(ctx sdk.LifecycleContext) error {
+func (e *NewPaymentTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (e *NewPaymentTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
+func (e *NewPaymentTrigger) Execute(ctx sdkcontext.ExecuteContext) (core.JSON, error) {
 	var fromDate string
-	lastRunTime := ctx.Metadata().LastRun
 
-	if lastRunTime != nil {
-		fromDate = lastRunTime.UTC().Format(time.RFC3339)
+	// Get the last run time
+	lastRun, err := ctx.GetMetadata("lastRun")
+	if err != nil {
+		return nil, err
+	}
+
+	if lastRun != nil {
+		lastRunTime, ok := lastRun.(*time.Time)
+		if ok && lastRunTime != nil {
+			fromDate = lastRunTime.UTC().Format(time.RFC3339)
+		} else {
+			defaultStartDate := time.Date(2006, 1, 1, 0, 0, 0, 0, time.UTC)
+			fromDate = defaultStartDate.UTC().Format(time.RFC3339)
+		}
 	} else {
 		defaultStartDate := time.Date(2006, 1, 1, 0, 0, 0, 0, time.UTC)
 		fromDate = defaultStartDate.UTC().Format(time.RFC3339)
 	}
 
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
 	request := "/v2/payments?begin_time=" + fromDate
 
-	payments, err := shared.GetSquareClient(ctx.Auth.AccessToken, request)
+	payments, err := shared.GetSquareClient(authCtx.AccessToken, request)
 	if err != nil {
 		return nil, err
 	}
 	return payments, nil
 }
 
-func (e *NewPaymentTrigger) GetType() sdkcore.TriggerType {
-	return sdkcore.TriggerTypeScheduled
-}
-
-func (e *NewPaymentTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
-	return sdkcore.TriggerCriteria{
-		Schedule: &sdkcore.ScheduleTriggerCriteria{
+func (e *NewPaymentTrigger) Criteria(ctx context.Context) core.TriggerCriteria {
+	return core.TriggerCriteria{
+		Schedule: &core.ScheduleTriggerCriteria{
 			CronExpression: "",
 			StartTime:      nil,
 			EndTime:        nil,

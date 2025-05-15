@@ -6,71 +6,72 @@ import (
 	"time"
 
 	"github.com/hiscaler/woocommerce-go"
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/woocommerce/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type newProductTriggerProps struct{}
 
 type NewProductTrigger struct{}
 
-func (t *NewProductTrigger) Name() string {
-	return "New Product"
-}
-
-func (t *NewProductTrigger) Description() string {
-	return "Triggered when a new product is created in your product information management system or e-commerce platform, allowing you to automate workflows and processes related to product launches, inventory management, and order fulfillment."
-}
-
-func (t *NewProductTrigger) GetType() sdkcore.TriggerType {
-	return sdkcore.TriggerTypePolling
-}
-
-func (t *NewProductTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &newProductDocs,
+func (t *NewProductTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "new_product",
+		DisplayName:   "New Product",
+		Description:   "Triggered when a new product is created in your WooCommerce store.",
+		Type:          core.TriggerTypePolling,
+		Documentation: newProductDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
 	}
 }
 
-func (t *NewProductTrigger) Icon() *string {
+func (t *NewProductTrigger) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (t *NewProductTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{}
+func (t *NewProductTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("new-product", "New Product")
+
+	schema := form.Build()
+	return schema
 }
 
-// Start initializes the newProductTrigger, required for event and webhook triggers in a lifecycle context.
-func (t *NewProductTrigger) Start(ctx sdk.LifecycleContext) error {
-	// Required for event and webhook triggers
+func (t *NewProductTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-// Stop shuts down the newProductTrigger, cleaning up resources and performing necessary teardown operations.
-func (t *NewProductTrigger) Stop(ctx sdk.LifecycleContext) error {
+func (t *NewProductTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-// Execute performs the main action logic of newProductTrigger by processing the input context and returning a JSON response.
-// It converts the base context input into a strongly-typed structure, executes the desired logic, and generates output.
-// Returns a JSON output map with the resulting data or an error if operation fails. required for Pooling triggers
-func (t *NewProductTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	_, err := sdk.InputToTypeSafely[newProductTriggerProps](ctx.BaseContext)
+func (t *NewProductTrigger) Execute(ctx sdkcontext.ExecuteContext) (core.JSON, error) {
+	_, err := sdk.InputToTypeSafely[newProductTriggerProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	wooClient, err := shared.InitClient(ctx.BaseContext)
+	wooClient, err := shared.InitClient(ctx)
 	if err != nil {
 		return nil, err
 	}
-	lastRunTime := ctx.Metadata().LastRun
+
+	lastRun, err := ctx.GetMetadata("lastRun")
+	if err != nil {
+		return nil, err
+	}
 
 	var formattedTime string
-	if lastRunTime != nil {
-		utcTime := lastRunTime.UTC()
-		formattedTime = utcTime.Format(time.RFC3339)
+	if lastRun != nil {
+		lastRunTime, ok := lastRun.(*time.Time)
+		if ok && lastRunTime != nil {
+			utcTime := lastRunTime.UTC()
+			formattedTime = utcTime.Format(time.RFC3339)
+		}
 	}
 
 	params := woocommerce.ProductsQueryParams{
@@ -86,18 +87,8 @@ func (t *NewProductTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error
 	return newProduct, nil
 }
 
-func (t *NewProductTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
-	return sdkcore.TriggerCriteria{}
-}
-
-func (t *NewProductTrigger) Auth() *sdk.Auth {
-	return nil
-}
-
-func (t *NewProductTrigger) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
+func (t *NewProductTrigger) Criteria(ctx context.Context) core.TriggerCriteria {
+	return core.TriggerCriteria{}
 }
 
 func NewNewProductTrigger() sdk.Trigger {

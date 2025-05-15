@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/trello/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type deleteCardActionProps struct {
@@ -17,49 +18,50 @@ type deleteCardActionProps struct {
 
 type DeleteCardAction struct{}
 
-func (a *DeleteCardAction) Name() string {
-	return "Delete Card"
-}
-
-func (a *DeleteCardAction) Description() string {
-	return "Deletes a card from a specified board or list in Trello, allowing you to automate the removal of cards that meet specific criteria."
-}
-
-func (a *DeleteCardAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *DeleteCardAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &deleteCardDocs,
+func (a *DeleteCardAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "delete_card",
+		DisplayName:   "Delete Card",
+		Description:   "Deletes a card from a specified board or list in Trello, allowing you to automate the removal of cards that meet specific criteria.",
+		Type:          core.ActionTypeAction,
+		Documentation: deleteCardDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *DeleteCardAction) Icon() *string {
-	return nil
+func (a *DeleteCardAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("delete_card", "Delete Card")
+
+	form.TextField("cardId", "Card ID").
+		Placeholder("The id of the card to delete").
+		Required(true).
+		HelpText("The id of the card to delete")
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *DeleteCardAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"cardId": autoform.NewShortTextField().
-			SetDisplayName("Card ID").
-			SetDescription("The id of the card to delete").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *DeleteCardAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[deleteCardActionProps](ctx.BaseContext)
+func (a *DeleteCardAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[deleteCardActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.Extra["api-key"] == "" {
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	authExtra := authCtx.Extra
+	if authExtra["api-key"] == "" {
 		return nil, errors.New("missing trello api credentials")
 	}
-	apiKey := ctx.Auth.Extra["api-key"]
-	apiToken := ctx.Auth.Extra["api-token"]
+	apiKey := authExtra["api-key"]
+	apiToken := authExtra["api-token"]
+
 	fullURL := fmt.Sprintf("%s/cards/%s?key=%s&token=%s", shared.BaseURL, input.CardID, apiKey, apiToken)
 
 	_, err = shared.TrelloRequest(http.MethodDelete, fullURL, nil)
@@ -72,18 +74,8 @@ func (a *DeleteCardAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	}, nil
 }
 
-func (a *DeleteCardAction) Auth() *sdk.Auth {
+func (a *DeleteCardAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *DeleteCardAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *DeleteCardAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewDeleteCardAction() sdk.Action {

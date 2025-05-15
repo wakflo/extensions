@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/convertkit/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type subscriberCreatedTriggerProps struct {
@@ -17,49 +19,79 @@ type subscriberCreatedTriggerProps struct {
 
 type SubscriberCreatedTrigger struct{}
 
-func (t *SubscriberCreatedTrigger) Name() string {
-	return "Subscriber Created"
+func (t *SubscriberCreatedTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "subscriber_created",
+		DisplayName:   "Subscriber Created",
+		Description:   "Triggers a workflow when a new subscriber is added to your ConvertKit account, allowing you to automate follow-up actions or sync the data with other systems.",
+		Type:          sdkcore.TriggerTypePolling,
+		Documentation: subscriberCreatedDocs,
+		Icon:          "mdi:account-alert",
+		SampleOutput: map[string]any{
+			"subscribers": []map[string]any{
+				{
+					"id":            "123456",
+					"first_name":    "Jane",
+					"email_address": "jane@example.com",
+					"state":         "active",
+					"created_at":    "2023-01-15T10:30:00Z",
+					"fields": map[string]string{
+						"company": "Acme Inc",
+					},
+				},
+				{
+					"id":            "789012",
+					"first_name":    "John",
+					"email_address": "john@example.com",
+					"state":         "active",
+					"created_at":    "2023-01-16T14:20:00Z",
+					"fields": map[string]string{
+						"company": "XYZ Corp",
+					},
+				},
+			},
+			"total_subscribers": "2",
+		},
+	}
 }
 
-func (t *SubscriberCreatedTrigger) Description() string {
-	return "Triggers a workflow when a new subscriber is added to your ConvertKit account, allowing you to automate follow-up actions or sync the data with other systems."
+func (t *SubscriberCreatedTrigger) Auth() *sdkcore.AuthMetadata {
+	return nil
 }
 
 func (t *SubscriberCreatedTrigger) GetType() sdkcore.TriggerType {
 	return sdkcore.TriggerTypePolling
 }
 
-func (t *SubscriberCreatedTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &subscriberCreatedDocs,
-	}
+func (t *SubscriberCreatedTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("convertkit-subscriber-created", "Subscriber Created")
+
+	form.NumberField("limit", "limit").
+		Placeholder("Limit").
+		HelpText("Maximum number of subscribers to retrieve (default: 50)").
+		DefaultValue(50).
+		Required(false)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (t *SubscriberCreatedTrigger) Icon() *string {
-	icon := "mdi:account-alert"
-	return &icon
-}
-
-func (t *SubscriberCreatedTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"limit": autoform.NewNumberField().
-			SetDisplayName("Limit").
-			SetDescription("Maximum number of subscribers to retrieve (default: 50)").
-			SetDefaultValue(50).
-			Build(),
-	}
-}
-
-func (t *SubscriberCreatedTrigger) Start(ctx sdk.LifecycleContext) error {
+func (t *SubscriberCreatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (t *SubscriberCreatedTrigger) Stop(ctx sdk.LifecycleContext) error {
+func (t *SubscriberCreatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (t *SubscriberCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[subscriberCreatedTriggerProps](ctx.BaseContext)
+func (t *SubscriberCreatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[subscriberCreatedTriggerProps](ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +101,12 @@ func (t *SubscriberCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON
 		limit = input.Limit
 	}
 
-	lastRunTime := ctx.Metadata().LastRun
+	var lastRunTime *time.Time
+	lastRun, err := ctx.GetMetadata("lastRun")
+	if err == nil && lastRun != nil {
+		lastRunTime = lastRun.(*time.Time)
+	}
+
 	var fromDate string
 	if lastRunTime != nil {
 		fromDate = lastRunTime.Format("2006-01-02")
@@ -78,7 +115,7 @@ func (t *SubscriberCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON
 	}
 
 	path := fmt.Sprintf("/subscribers?api_secret=%s&from=%s&page=1&limit=%d",
-		ctx.Auth.Extra["api-secret"], fromDate, limit)
+		authCtx.Extra["api-secret"], fromDate, limit)
 
 	response, err := shared.GetConvertKitClient(path, "GET", nil)
 	if err != nil {
@@ -112,38 +149,6 @@ func (t *SubscriberCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON
 
 func (t *SubscriberCreatedTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
 	return sdkcore.TriggerCriteria{}
-}
-
-func (t *SubscriberCreatedTrigger) Auth() *sdk.Auth {
-	return nil
-}
-
-func (t *SubscriberCreatedTrigger) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"subscribers": []map[string]any{
-			{
-				"id":            "123456",
-				"first_name":    "Jane",
-				"email_address": "jane@example.com",
-				"state":         "active",
-				"created_at":    "2023-01-15T10:30:00Z",
-				"fields": map[string]string{
-					"company": "Acme Inc",
-				},
-			},
-			{
-				"id":            "789012",
-				"first_name":    "John",
-				"email_address": "john@example.com",
-				"state":         "active",
-				"created_at":    "2023-01-16T14:20:00Z",
-				"fields": map[string]string{
-					"company": "XYZ Corp",
-				},
-			},
-		},
-		"total_subscribers": "2",
-	}
 }
 
 func NewSubscriberCreatedTrigger() sdk.Trigger {

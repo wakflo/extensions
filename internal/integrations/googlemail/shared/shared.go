@@ -5,24 +5,22 @@ import (
 
 	"google.golang.org/api/gmail/v1"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	"github.com/juicycleff/smartform/v1"
 )
 
 var (
-	// #nosec
-	tokenURL   = "https://oauth2.googleapis.com/token"
-	SharedAuth = autoform.NewOAuthField("https://accounts.google.com/o/oauth2/auth", &tokenURL, []string{
-		"https://mail.google.com/",
-	}).Build()
+	gmailForm = smartform.NewAuthForm("gmail-auth", "Gmail OAuth", smartform.AuthStrategyOAuth2)
+	_         = gmailForm.
+			OAuthField("oauth", "Gmail OAuth").
+			AuthorizationURL("https://accounts.google.com/o/oauth2/auth").
+			TokenURL("https://oauth2.googleapis.com/token").
+			Scopes([]string{
+			"https://mail.google.com/",
+		}).
+		Build()
 )
 
-var ViewMailFormat = []*sdkcore.AutoFormSchema{
-	{Const: "full", Title: "Full"},
-	{Const: "minimal", Title: "Minimal"},
-	{Const: "raw", Title: "Raw"},
-	{Const: "metadata", Title: "Metadata"},
-}
+var SharedGmailAuth = gmailForm.Build()
 
 func IsValidEmail(email string) bool {
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)

@@ -6,7 +6,8 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/todoist/actions"
 	"github.com/wakflo/extensions/internal/integrations/todoist/shared"
 	"github.com/wakflo/extensions/internal/integrations/todoist/triggers"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -15,14 +16,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
-var Integration = sdk.Register(NewTodoist(), Flow, ReadME)
+var Integration = sdk.Register(NewTodoist())
 
 type Todoist struct{}
 
-func (n *Todoist) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *Todoist) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *Todoist) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.SharedAuth,
+		Schema:   shared.SharedTodoistAuth,
 	}
 }
 

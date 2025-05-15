@@ -5,11 +5,12 @@ import (
 	"fmt"
 
 	goshopify "github.com/bold-commerce/go-shopify/v4"
+	"github.com/juicycleff/smartform/v1"
 	"github.com/shopspring/decimal"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createTransactionActionProps struct {
@@ -24,72 +25,68 @@ type createTransactionActionProps struct {
 
 type CreateTransactionAction struct{}
 
-func (a *CreateTransactionAction) Name() string {
-	return "Create Transaction"
-}
-
-func (a *CreateTransactionAction) Description() string {
-	return "Create Transaction: Initiates a new transaction in your accounting or payment system, allowing you to automate the creation of financial records and streamline your business processes."
-}
-
-func (a *CreateTransactionAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateTransactionAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createTransactionDocs,
+func (a *CreateTransactionAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_transaction",
+		DisplayName:   "Create Transaction",
+		Description:   "Create Transaction: Initiates a new transaction in your accounting or payment system, allowing you to automate the creation of financial records and streamline your business processes.",
+		Type:          core.ActionTypeAction,
+		Documentation: createTransactionDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateTransactionAction) Icon() *string {
-	return nil
+func (a *CreateTransactionAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_transaction", "Create Transaction")
+
+	form.NumberField("orderId", "Order ID").
+		Placeholder("The ID of the order to create a transaction for.").
+		Required(true).
+		HelpText("The ID of the order to create a transaction for.")
+
+	form.SelectField("kind", "Type").
+		AddOption("sale", "Sale").
+		AddOption("refund", "Refund").
+		AddOption("void", "Void").
+		AddOption("capture", "Capture").
+		AddOption("authorization", "Authorization").
+		Required(true).
+		HelpText("Transaction type")
+
+	form.NumberField("parentId", "Parent ID").
+		Placeholder("The ID of an associated transaction.").
+		HelpText("The ID of an associated transaction.")
+
+	form.TextField("currency", "Currency").
+		Placeholder("Currency").
+		HelpText("Currency")
+
+	form.NumberField("amount", "Amount").
+		Placeholder("Amount").
+		HelpText("Amount")
+
+	form.TextField("authorization", "Authorization Key").
+		Placeholder("Authorization Key.").
+		HelpText("Authorization Key.")
+
+	form.TextField("source", "Source").
+		Placeholder("An optional origin of the transaction. Set to external to import a cash transaction for the associated order.").
+		HelpText("An optional origin of the transaction. Set to external to import a cash transaction for the associated order.")
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *CreateTransactionAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"orderId": autoform.NewNumberField().
-			SetDisplayName("Order ID").
-			SetDescription("The ID of the order to create a transaction for.").
-			SetRequired(true).
-			Build(),
-		"kind": autoform.NewSelectField().
-			SetDisplayName("Type").
-			SetOptions(shared.ShopifyTransactionKinds).
-			SetRequired(true).
-			Build(),
-		"parentId": autoform.NewNumberField().
-			SetDisplayName("Parent ID").
-			SetDescription("The ID of an associated transaction.").
-			SetRequired(false).
-			Build(),
-		"currency": autoform.NewShortTextField().
-			SetDisplayName("Currency").
-			SetRequired(false).
-			Build(),
-		"amount": autoform.NewNumberField().
-			SetDisplayName("Amount").
-			SetRequired(false).
-			Build(),
-		"authorization": autoform.NewShortTextField().
-			SetDisplayName("Authorization Key.").
-			SetRequired(false).
-			Build(),
-		"source": autoform.NewShortTextField().
-			SetDisplayName("Source").
-			SetDescription("An optional origin of the transaction. Set to external to import a cash transaction for the associated order.").
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (a *CreateTransactionAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createTransactionActionProps](ctx.BaseContext)
+func (a *CreateTransactionAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createTransactionActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.CreateClient(ctx.BaseContext)
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -116,18 +113,8 @@ func (a *CreateTransactionAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON,
 	}, nil
 }
 
-func (a *CreateTransactionAction) Auth() *sdk.Auth {
+func (a *CreateTransactionAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *CreateTransactionAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateTransactionAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateTransactionAction() sdk.Action {

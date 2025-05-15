@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type jsonToStringActionProps struct {
@@ -20,68 +21,63 @@ type jsonToStringActionProps struct {
 
 type JsonToStringAction struct{}
 
-func (a *JsonToStringAction) Name() string {
-	return "JSON to Text"
-}
-
-func (a *JsonToStringAction) Description() string {
-	return "Converts JSON data to text format. Options for outputting as a JSON string, key-value pairs, or other formats."
-}
-
-func (a *JsonToStringAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *JsonToStringAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &jsonToTextDocs,
+// Metadata returns metadata about the action
+func (a *JsonToStringAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "json_to_string",
+		DisplayName:   "JSON to Text",
+		Description:   "Converts JSON data to text format. Options for outputting as a JSON string, key-value pairs, or other formats.",
+		Type:          core.ActionTypeAction,
+		Documentation: jsonToTextDocs,
+		Icon:          "json",
+		SampleOutput: map[string]any{
+			"result": "name:John Doe,age:30,email:john@example.com",
+			"format": "keyvalue",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *JsonToStringAction) Icon() *string {
-	icon := "json"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *JsonToStringAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("json_to_string", "JSON to Text")
+
+	form.TextareaField("inputJSON", "Input JSON").
+		Required(true).
+		HelpText("The JSON data to convert to a string.")
+
+	form.CheckboxField("format", "Pretty Print").
+		Required(false).
+		HelpText("Format the JSON output with indentation for better readability. Only applies to JSON output format.")
+
+	form.SelectField("outputFormat", "Output Format").
+		Required(true).
+		DefaultValue("json").
+		AddOption("json", "JSON").
+		AddOption("keyvalue", "Key-Value Pairs").
+		HelpText("The format of the output string.")
+
+	form.TextField("keyValueSeparator", "Key-Value Separator").
+		Required(false).
+		DefaultValue(":").
+		HelpText("Character(s) to use between keys and values. Only applies to key-value output format.")
+
+	form.TextField("pairSeparator", "Pair Separator").
+		Required(false).
+		DefaultValue(",").
+		HelpText("Character(s) to use between key-value pairs. Only applies to key-value output format.")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *JsonToStringAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"inputJSON": autoform.NewCodeEditorField().
-			SetDisplayName("Input JSON").
-			SetDescription("The JSON data to convert to a string.").
-			SetRequired(true).
-			Build(),
-		"format": autoform.NewBooleanField().
-			SetDisplayName("Pretty Print").
-			SetDescription("Format the JSON output with indentation for better readability. Only applies to JSON output format.").
-			SetRequired(false).
-			Build(),
-		"outputFormat": autoform.NewSelectField().
-			SetDisplayName("Output Format").
-			SetDescription("The format of the output string.").
-			SetOptions([]*sdkcore.AutoFormSchema{
-				{Title: "JSON", Const: "json"},
-				{Title: "Key-Value Pairs", Const: "keyvalue"},
-			}).
-			SetDefaultValue("json").
-			SetRequired(true).
-			Build(),
-		"keyValueSeparator": autoform.NewShortTextField().
-			SetDisplayName("Key-Value Separator").
-			SetDescription("Character(s) to use between keys and values. Only applies to key-value output format.").
-			SetDefaultValue(":").
-			SetRequired(false).
-			Build(),
-		"pairSeparator": autoform.NewShortTextField().
-			SetDisplayName("Pair Separator").
-			SetDescription("Character(s) to use between key-value pairs. Only applies to key-value output format.").
-			SetDefaultValue(",").
-			SetRequired(false).
-			Build(),
-	}
+func (a *JsonToStringAction) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (a *JsonToStringAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[jsonToStringActionProps](ctx.BaseContext)
+func (a *JsonToStringAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[jsonToStringActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -188,21 +184,6 @@ func mapToKeyValueString(m map[string]interface{}, kvSeparator, pairSeparator st
 	}
 
 	return strings.Join(pairs, pairSeparator)
-}
-
-func (a *JsonToStringAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *JsonToStringAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"result": "name:John Doe,age:30,email:john@example.com",
-		"format": "keyvalue",
-	}
-}
-
-func (a *JsonToStringAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewJSONToStringAction() sdk.Action {

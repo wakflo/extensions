@@ -3,10 +3,11 @@ package actions
 import (
 	"context"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type updateOrderActionProps struct {
@@ -19,62 +20,60 @@ type updateOrderActionProps struct {
 
 type UpdateOrderAction struct{}
 
-func (a *UpdateOrderAction) Name() string {
-	return "Update Order"
-}
-
-func (a *UpdateOrderAction) Description() string {
-	return "Updates an existing order with new information, such as customer details, shipping address, or payment method."
-}
-
-func (a *UpdateOrderAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *UpdateOrderAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &updateOrderDocs,
+// Metadata returns metadata about the action
+func (a *UpdateOrderAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "update_order",
+		DisplayName:   "Update Order",
+		Description:   "Updates an existing order with new information, such as customer details, shipping address, or payment method.",
+		Type:          core.ActionTypeAction,
+		Documentation: updateOrderDocs,
+		SampleOutput: map[string]any{
+			"updated_order": map[string]any{},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *UpdateOrderAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *UpdateOrderAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("update_order", "Update Order")
+
+	form.NumberField("orderId", "Order ID").
+		Required(true).
+		HelpText("The ID of the order to update")
+
+	form.TextField("note", "Note about the order.").
+		Required(false)
+
+	form.TextField("tags", "Tags").
+		Required(false).
+		HelpText("A string of comma-separated tags for filtering and search.")
+
+	form.TextField("phone", "Phone number.").
+		Required(false)
+
+	form.TextField("email", "Email address.").
+		Required(false)
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *UpdateOrderAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *UpdateOrderAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"orderId": autoform.NewNumberField().
-			SetDisplayName("Order ID").
-			SetDescription("The ID of the order to update").
-			SetRequired(true).
-			Build(),
-		"note": autoform.NewLongTextField().
-			SetDisplayName("Note about the order.").
-			SetRequired(false).
-			Build(),
-		"tags": autoform.NewLongTextField().
-			SetDisplayName("Tags").
-			SetDescription("A string of comma-separated tags for filtering and search.").
-			SetRequired(false).
-			Build(),
-		"phone": autoform.NewShortTextField().
-			SetDisplayName("Phone number.").
-			SetRequired(false).
-			Build(),
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Email address.").
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (a *UpdateOrderAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[updateOrderActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *UpdateOrderAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[updateOrderActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.CreateClient(ctx.BaseContext)
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -101,20 +100,6 @@ func (a *UpdateOrderAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 	return map[string]interface{}{
 		"updated_order": updatedOrder,
 	}, nil
-}
-
-func (a *UpdateOrderAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *UpdateOrderAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *UpdateOrderAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewUpdateOrderAction() sdk.Action {

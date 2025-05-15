@@ -1,9 +1,11 @@
 package actions
 
 import (
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/clickup/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getFoldersProps struct {
@@ -13,43 +15,70 @@ type getFoldersProps struct {
 
 type GetFoldersOperation struct{}
 
-func (o *GetFoldersOperation) Name() string {
-	return "Get Folders"
-}
-
-func (o *GetFoldersOperation) Description() string {
-	return "Retrieves all folders within a specified ClickUp space."
-}
-
-func (o *GetFoldersOperation) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (o *GetFoldersOperation) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getFoldersDocs,
+// Metadata returns metadata about the action
+func (o *GetFoldersOperation) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_folders",
+		DisplayName:   "Get Folders",
+		Description:   "Retrieves all folders within a specified ClickUp space.",
+		Type:          core.ActionTypeAction,
+		Documentation: getFoldersDocs,
+		Icon:          "material-symbols:folder-copy",
+		SampleOutput: map[string]any{
+			"folders": []map[string]any{
+				{
+					"id":                "folder123",
+					"name":              "Folder 1",
+					"orderindex":        "1",
+					"override_statuses": false,
+					"hidden":            false,
+					"task_count":        "8",
+				},
+				{
+					"id":                "folder456",
+					"name":              "Folder 2",
+					"orderindex":        "2",
+					"override_statuses": false,
+					"hidden":            false,
+					"task_count":        "12",
+				},
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (o *GetFoldersOperation) Icon() *string {
-	icon := "material-symbols:folder-copy"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (o *GetFoldersOperation) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_folders", "Get Folders")
+
+	shared.RegisterWorkSpaceInput(form, "Workspaces", "select a workspace", true)
+
+	shared.RegisterSpacesInput(form, "Spaces", "select a space", true)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (o *GetFoldersOperation) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"workspace-id": shared.RegisterWorkSpaceInput("Workspaces", "select a workspace", true),
-		"space-id":     shared.RegisterSpacesInput("Spaces", "select a space", true),
-	}
+// Auth returns the authentication requirements for the action
+func (o *GetFoldersOperation) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (o *GetFoldersOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	accessToken := ctx.Auth.AccessToken
-
-	input, err := sdk.InputToTypeSafely[getFoldersProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (o *GetFoldersOperation) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getFoldersProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken := authCtx.Token.AccessToken
 	url := "/v2/space/" + input.SpaceID + "/folder"
 
 	folders, err := shared.GetData(accessToken, url)
@@ -58,37 +87,6 @@ func (o *GetFoldersOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	}
 
 	return folders, nil
-}
-
-func (o *GetFoldersOperation) Auth() *sdk.Auth {
-	return nil
-}
-
-func (o *GetFoldersOperation) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"folders": []map[string]any{
-			{
-				"id":                "folder123",
-				"name":              "Folder 1",
-				"orderindex":        "1",
-				"override_statuses": false,
-				"hidden":            false,
-				"task_count":        "8",
-			},
-			{
-				"id":                "folder456",
-				"name":              "Folder 2",
-				"orderindex":        "2",
-				"override_statuses": false,
-				"hidden":            false,
-				"task_count":        "12",
-			},
-		},
-	}
-}
-
-func (o *GetFoldersOperation) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetFoldersOperation() sdk.Action {

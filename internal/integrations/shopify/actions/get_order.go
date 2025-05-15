@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getOrderActionProps struct {
@@ -16,45 +17,39 @@ type getOrderActionProps struct {
 
 type GetOrderAction struct{}
 
-func (a *GetOrderAction) Name() string {
-	return "Get Order"
-}
-
-func (a *GetOrderAction) Description() string {
-	return "Retrieves an order from the system, allowing you to access and manipulate order details within your workflow."
-}
-
-func (a *GetOrderAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetOrderAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getOrderDocs,
+func (a *GetOrderAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_order",
+		DisplayName:   "Get Order",
+		Description:   "Retrieves an order from the system, allowing you to access and manipulate order details within your workflow.",
+		Type:          core.ActionTypeAction,
+		Documentation: getOrderDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetOrderAction) Icon() *string {
-	return nil
+func (a *GetOrderAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_order", "Get Order")
+
+	form.NumberField("orderId", "Order ID").
+		Placeholder("The ID of the order.").
+		Required(true).
+		HelpText("The ID of the order.")
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *GetOrderAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"orderId": autoform.NewNumberField().
-			SetDisplayName("Order ID").
-			SetDescription("The ID of the order.").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *GetOrderAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getOrderActionProps](ctx.BaseContext)
+func (a *GetOrderAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getOrderActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.CreateClient(ctx.BaseContext)
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -66,23 +61,13 @@ func (a *GetOrderAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 	if order == nil {
 		return nil, fmt.Errorf("no order found with ID '%d'", input.OrderID)
 	}
-	return sdk.JSON(map[string]interface{}{
+	return core.JSON(map[string]interface{}{
 		"order details": order,
 	}), nil
 }
 
-func (a *GetOrderAction) Auth() *sdk.Auth {
+func (a *GetOrderAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *GetOrderAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *GetOrderAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetOrderAction() sdk.Action {

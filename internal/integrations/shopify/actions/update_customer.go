@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type updateCustomerActionProps struct {
@@ -21,70 +22,67 @@ type updateCustomerActionProps struct {
 
 type UpdateCustomerAction struct{}
 
-func (a *UpdateCustomerAction) Name() string {
-	return "Update Customer"
-}
-
-func (a *UpdateCustomerAction) Description() string {
-	return "Updates customer information in your CRM or database by mapping and synchronizing data from various sources, ensuring accurate and up-to-date records."
-}
-
-func (a *UpdateCustomerAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *UpdateCustomerAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &updateCustomerDocs,
+// Metadata returns metadata about the action
+func (a *UpdateCustomerAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "update_customer",
+		DisplayName:   "Update Customer",
+		Description:   "Updates customer information in your CRM or database by mapping and synchronizing data from various sources, ensuring accurate and up-to-date records.",
+		Type:          core.ActionTypeAction,
+		Documentation: updateCustomerDocs,
+		SampleOutput: map[string]any{
+			"updated_customer": map[string]any{},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *UpdateCustomerAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *UpdateCustomerAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("update_customer", "Update Customer")
+
+	form.NumberField("customerId", "Customer ID").
+		Required(true).
+		HelpText("The id of the customer to update.")
+
+	form.TextField("firstName", "First name").
+		Required(false).
+		HelpText("Customer first name.")
+
+	form.TextField("lastName", "Last name").
+		Required(false).
+		HelpText("Customer last name.")
+
+	form.TextField("phone", "Phone").
+		Required(false).
+		HelpText("Customer phone number.")
+
+	form.TextField("email", "Email").
+		Required(false).
+		HelpText("Customer email address.")
+
+	form.TextField("tags", "Tags").
+		Required(false).
+		HelpText("A string of comma-separated tags for filtering and search")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *UpdateCustomerAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *UpdateCustomerAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"customerId": autoform.NewNumberField().
-			SetDisplayName("Customer ID").
-			SetDescription("The id of the customer to update.").
-			SetRequired(true).
-			Build(),
-		"firstName": autoform.NewShortTextField().
-			SetDisplayName("First name").
-			SetDescription("Customer first name.").
-			SetRequired(false).
-			Build(),
-		"lastName": autoform.NewShortTextField().
-			SetDisplayName("Last name").
-			SetDescription("Customer last name.").
-			SetRequired(false).
-			Build(),
-		"phone": autoform.NewShortTextField().
-			SetDisplayName("Phone").
-			SetDescription("Customer phone number.").
-			SetRequired(false).
-			Build(),
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Email").
-			SetDescription("Customer email address.").
-			SetRequired(false).
-			Build(),
-		"tags": autoform.NewLongTextField().
-			SetDisplayName("Tags").
-			SetDescription("A string of comma-separated tags for filtering and search").
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (a *UpdateCustomerAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[updateCustomerActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *UpdateCustomerAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[updateCustomerActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.CreateClient(ctx.BaseContext)
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -115,20 +113,6 @@ func (a *UpdateCustomerAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, er
 	return map[string]interface{}{
 		"updated_customer": updatedCustomer,
 	}, nil
-}
-
-func (a *UpdateCustomerAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *UpdateCustomerAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *UpdateCustomerAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewUpdateCustomerAction() sdk.Action {

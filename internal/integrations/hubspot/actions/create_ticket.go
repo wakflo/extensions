@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/hubspot/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createTicketActionProps struct {
@@ -18,49 +19,68 @@ type createTicketActionProps struct {
 
 type CreateTicketAction struct{}
 
-func (a *CreateTicketAction) Name() string {
-	return "Create Ticket"
-}
-
-func (a *CreateTicketAction) Description() string {
-	return "Create a new ticket in HubSpot."
-}
-
-func (a *CreateTicketAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateTicketAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createTicketDocs,
+// Metadata returns metadata about the action
+func (a *CreateTicketAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_ticket",
+		DisplayName:   "Create Ticket",
+		Description:   "Create a new ticket in HubSpot.",
+		Type:          core.ActionTypeAction,
+		Documentation: createTicketDocs,
+		SampleOutput: map[string]any{
+			"id": "12345",
+			"properties": map[string]any{
+				"subject":            "Technical issue with product",
+				"content":            "Customer reported an issue with logging in to the application.",
+				"hs_ticket_priority": "HIGH",
+				"hs_pipeline":        "0",
+				"hs_pipeline_stage":  "1",
+				"createdate":         "2023-05-01T12:00:00.000Z",
+			},
+			"createdAt": "2023-05-01T12:00:00.000Z",
+			"updatedAt": "2023-05-01T12:00:00.000Z",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateTicketAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *CreateTicketAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_ticket", "Create Ticket")
+
+	form.TextField("subject", "Ticket Subject").
+		Required(true).
+		HelpText("subject of the ticket to create")
+
+	form.TextareaField("content", "Ticket Description").
+		Required(false).
+		HelpText("ticket description")
+
+	form.SelectField("hs_ticket_priority", "Priority").
+		Required(false).
+		AddOption("LOW", "Low").
+		AddOption("MEDIUM", "Medium").
+		AddOption("HIGH", "High").
+		HelpText("The priority of the ticket")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *CreateTicketAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *CreateTicketAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"subject": autoform.NewShortTextField().
-			SetDisplayName("Ticket Subject").
-			SetDescription("subject of the ticket to create").
-			SetRequired(true).Build(),
-		"content": autoform.NewShortTextField().
-			SetDisplayName("Ticket Description").
-			SetDescription("ticket description").
-			SetRequired(false).Build(),
-		"hs_ticket_priority": autoform.NewSelectField().
-			SetDisplayName("Priority").
-			SetDescription("The priority of the ticket").
-			SetOptions(shared.HubspotPriority).
-			SetRequired(false).
-			Build(),
+// Perform executes the action with the given context and input
+func (a *CreateTicketAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createTicketActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *CreateTicketAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createTicketActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
@@ -82,25 +102,11 @@ func (a *CreateTicketAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 
 	reqURL := "/crm/v3/objects/tickets"
 
-	resp, err := shared.HubspotClient(reqURL, ctx.Auth.AccessToken, http.MethodPost, newTicket)
+	resp, err := shared.HubspotClient(reqURL, authCtx.Token.AccessToken, http.MethodPost, newTicket)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
-}
-
-func (a *CreateTicketAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *CreateTicketAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateTicketAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateTicketAction() sdk.Action {

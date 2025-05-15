@@ -3,27 +3,43 @@ package gemini
 import (
 	_ "embed"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/gemini/actions"
-	"github.com/wakflo/go-sdk/autoform"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+
+	"github.com/wakflo/go-sdk/v2/core"
 )
+
+//go:embed README.md
+var ReadME string
+
+//go:embed flo.toml
+var Flow string
+
+// var sharedAuth = smartform.NewAuthForm().SetDisplayName("Gemini API key").SetDescription("Your Gemini api key").Build()
 
 var (
-	//go:embed README.md
-	ReadME string
-	//go:embed flo.toml
+	form = smartform.NewAuthForm("gemini-auth", "Gemini API Authentication", smartform.AuthStrategyAPIKey)
 
-	Flow        string
-	Integration = sdk.Register(NewGemini(), Flow, ReadME)
-	sharedAuth  = autoform.NewAuthSecretField().SetDisplayName("Gemini API key").SetDescription("Your Gemini api key").Build()
+	_ = form.TextField("key", "Gemini API Key").
+		Required(true).
+		HelpText("Your Gemini api key")
+
+	GeminiSharedAuth = form.Build()
 )
+
+var Integration = sdk.Register(NewGemini())
 
 type Gemini struct{}
 
-func (n *Gemini) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *Gemini) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *Gemini) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *sharedAuth,
+		Schema:   GeminiSharedAuth,
 	}
 }
 

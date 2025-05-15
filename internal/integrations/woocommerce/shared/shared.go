@@ -5,25 +5,28 @@ import (
 
 	"github.com/hiscaler/woocommerce-go"
 	"github.com/hiscaler/woocommerce-go/config"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 )
 
-var SharedAuth = autoform.NewCustomAuthField().
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"shop-url": autoform.NewShortTextField().SetDisplayName("ShopUrl (Required)").
-			SetDescription("The base URL of your app (e.g https://mystore.com) and it should start with HTTPS only").
-			Build(),
-		"consumer-key": autoform.NewShortTextField().SetDisplayName("Consumer Key (Required)").
-			SetDescription("The consumer key generated from your app.").
-			Build(),
-		"consumer-secret": autoform.NewShortTextField().SetDisplayName("Consumer Secret (Required)").
-			SetDescription("The consumer secret generated from your app.").
-			Build(),
-	}).
-	Build()
+var (
+	form = smartform.NewAuthForm("woocommerce-auth", "WooCommerce API Authentication", smartform.AuthStrategyCustom)
+
+	_ = form.TextField("shop-url", "ShopUrl (Required)").
+		Required(true).
+		HelpText("The base URL of your app (e.g https://mystore.com) and it should start with HTTPS only")
+
+	_ = form.TextField("consumer-key", "Consumer Key (Required)").
+		Required(true).
+		HelpText("The consumer key generated from your app.")
+
+	_ = form.TextField("consumer-secret", "Consumer Secret (Required)").
+		Required(true).
+		HelpText("The consumer secret generated from your app.")
+
+	WooSharedAuth = form.Build()
+)
 
 func InitializeWooCommerceClient(baseURL, consumerKey, consumerSecret string) *woocommerce.WooCommerce {
 	const defaultTimeout = 10
@@ -43,17 +46,20 @@ func InitializeWooCommerceClient(baseURL, consumerKey, consumerSecret string) *w
 	return client
 }
 
-var ProductType = []*sdkcore.AutoFormSchema{
-	{Const: "simple", Title: "Simple"},
-	{Const: "grouped", Title: "Grouped"},
-	{Const: "external", Title: "External"},
-	{Const: "variable", Title: "Variable"},
-}
+func InitClient(ctx sdkcontext.BaseContext) (*woocommerce.WooCommerce, error) {
+	// Get the token source from the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
 
-func InitClient(ctx sdk.BaseContext) (*woocommerce.WooCommerce, error) {
-	baseURL := ctx.Auth.Extra["shop-url"]
-	consumerKey := ctx.Auth.Extra["consumer-key"]
-	consumerSecret := ctx.Auth.Extra["consumer-secret"]
+	if authCtx.Extra == nil {
+		return nil, errors.New("missing WooCommerce authentication credentials")
+	}
+
+	baseURL := authCtx.Extra["shop-url"]
+	consumerKey := authCtx.Extra["consumer-key"]
+	consumerSecret := authCtx.Extra["consumer-secret"]
 	if baseURL == "" || consumerKey == "" || consumerSecret == "" {
 		return nil, errors.New("missing WooCommerce authentication credentials")
 	}

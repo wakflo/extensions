@@ -3,7 +3,7 @@ module github.com/wakflo/extensions
 go 1.24.1
 
 replace (
-	github.com/juicycleff/smartform => ../../xraph/smart-form
+	github.com/juicycleff/smartform => ../smartform
 	github.com/wakflo/go-sdk => ../go-sdk
 )
 

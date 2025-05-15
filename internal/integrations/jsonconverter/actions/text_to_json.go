@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type convertToJSONActionProps struct {
@@ -16,46 +17,48 @@ type convertToJSONActionProps struct {
 
 type ConvertToJSONAction struct{}
 
-func (a *ConvertToJSONAction) Name() string {
-	return "Convert To JSON"
-}
-
-func (a *ConvertToJSONAction) Description() string {
-	return "Converts input data to properly formatted JSON. Useful for data integrations and transformations."
-}
-
-func (a *ConvertToJSONAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ConvertToJSONAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &textToJSONDocs,
+func (a *ConvertToJSONAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "convert_to_json",
+		DisplayName:   "Convert To JSON",
+		Description:   "Converts input data to properly formatted JSON. Useful for data integrations and transformations.",
+		Type:          core.ActionTypeAction,
+		Documentation: textToJSONDocs,
+		Icon:          "json",
+		SampleOutput: map[string]any{
+			"json": map[string]interface{}{
+				"name":  "John Doe",
+				"age":   30,
+				"email": "john@example.com",
+			},
+			"type": "key-value",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ConvertToJSONAction) Icon() *string {
-	icon := "json"
-	return &icon
+func (a *ConvertToJSONAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("convert_to_json", "Convert To JSON")
+
+	form.TextareaField("inputData", "Input Data").
+		Required(true).
+		HelpText("The data to convert to JSON. Can be a JSON string, CSV data, or key-value pairs.")
+
+	form.CheckboxField("format", "Pretty Print").
+		Required(false).
+		HelpText("Format the JSON output with indentation for better readability.")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *ConvertToJSONAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"inputData": autoform.NewLongTextField().
-			SetDisplayName("Input Data").
-			SetDescription("The data to convert to JSON. Can be a JSON string, CSV data, or key-value pairs.").
-			SetRequired(true).
-			Build(),
-		"format": autoform.NewBooleanField().
-			SetDisplayName("Pretty Print").
-			SetDescription("Format the JSON output with indentation for better readability.").
-			SetRequired(false).
-			Build(),
-	}
+func (a *ConvertToJSONAction) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (a *ConvertToJSONAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[convertToJSONActionProps](ctx.BaseContext)
+func (a *ConvertToJSONAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[convertToJSONActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +71,6 @@ func (a *ConvertToJSONAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	var parsedData interface{}
 	err = json.Unmarshal([]byte(input.InputData), &parsedData)
 
-	// If it's already valid JSON, we can just return it (potentially formatted)
 	if err == nil {
 		if input.Format {
 			formattedJSON, err := json.MarshalIndent(parsedData, "", "  ")
@@ -81,20 +83,17 @@ func (a *ConvertToJSONAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 			}, nil
 		}
 
-		// Return the original parsed data
 		return map[string]interface{}{
 			"json": parsedData,
 			"type": "json",
 		}, nil
 	}
 
-	// If not JSON, try to parse as key-value pairs
 	result, err := parseKeyValuePairs(input.InputData)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse input data: %v", err)
 	}
 
-	// Format if requested
 	if input.Format {
 		formattedJSON, err := json.MarshalIndent(result, "", "  ")
 		if err != nil {
@@ -196,25 +195,6 @@ func parseNumber(s string) (interface{}, error) {
 	}
 
 	return nil, fmt.Errorf("not a number")
-}
-
-func (a *ConvertToJSONAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *ConvertToJSONAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"json": map[string]interface{}{
-			"name":  "John Doe",
-			"age":   30,
-			"email": "john@example.com",
-		},
-		"type": "key-value",
-	}
-}
-
-func (a *ConvertToJSONAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewConvertToJSONAction() sdk.Action {

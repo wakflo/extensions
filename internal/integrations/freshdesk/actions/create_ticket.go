@@ -61,13 +61,13 @@ func (a *CreateTicketAction) Properties() *smartform.FormSchema {
 		HelpText("Your email address")
 
 	// Add description field
-	form.TextField("description", "Description").
+	form.TextareaField("description", "Description").
 		Placeholder("Enter a description").
 		Required(true).
 		HelpText("Content of the ticket")
 
 	// Add cc_emails field
-	form.TextField("cc_emails", "CC Emails").
+	form.TextareaField("cc_emails", "CC Emails").
 		Placeholder("Enter CC emails").
 		Required(false).
 		HelpText("Email address added in the 'cc' field of the incoming ticket email")

@@ -5,10 +5,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googlesheets/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
@@ -22,59 +23,65 @@ type addRowInWorksheetActionProps struct {
 
 type AddRowInWorksheetAction struct{}
 
-func (a *AddRowInWorksheetAction) Name() string {
-	return "Add Row in Worksheet"
-}
-
-func (a *AddRowInWorksheetAction) Description() string {
-	return "Adds a new row to an existing worksheet, allowing you to dynamically update your data and workflows with fresh information. This integration action enables seamless data manipulation, making it easy to append new records, track changes, or perform calculations based on updated data."
-}
-
-func (a *AddRowInWorksheetAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *AddRowInWorksheetAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &addRowInWorksheetDocs,
+// Metadata returns metadata about the action
+func (a *AddRowInWorksheetAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "add_row_in_worksheet",
+		DisplayName:   "Add Row in Worksheet",
+		Description:   "Adds a new row to an existing worksheet, allowing you to dynamically update your data and workflows with fresh information. This integration action enables seamless data manipulation, making it easy to append new records, track changes, or perform calculations based on updated data.",
+		Type:          core.ActionTypeAction,
+		Documentation: addRowInWorksheetDocs,
+		Icon:          "",
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *AddRowInWorksheetAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *AddRowInWorksheetAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("add_row_in_worksheet", "Add Row in Worksheet")
+
+	shared.RegisterSpreadsheetsProps(form, "spreadsheetId", "SpreadSheet", "Select Spreadsheet", true)
+
+	shared.RegisterSheetTitleProps(form, true)
+
+	form.TextField("sheetRow", "sheetRow").
+		Placeholder("Sheet Row").
+		HelpText("The row range of the sheet in the format of A1 notation where you want to append the new row.").
+		Required(true)
+
+	labelsArray := form.ArrayField("values", "Values")
+	labelGroup := labelsArray.ObjectTemplate("values", "")
+	labelGroup.TextField("value", "Value").
+		Placeholder("Value").
+		Required(false).
+		HelpText("The Value of the row.")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *AddRowInWorksheetAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *AddRowInWorksheetAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"spreadsheetId": shared.GetSpreadsheetsInput("Spreadsheet", "spreadsheet ID", true),
-		"sheetTitle":    shared.GetSheetTitleInput("Sheet", "select sheet", true),
-		"sheetRow": autoform.NewShortTextField().
-			SetDisplayName("Sheet Row").
-			SetDescription("The row range of the sheet in the format of A1 notation where you want to append the new row.").
-			SetRequired(true).
-			Build(),
-		"values": autoform.NewArrayField().
-			SetDisplayName("Values").
-			SetItems(
-				autoform.NewShortTextField().
-					SetDisplayName("Label").
-					SetDescription("Label").
-					SetRequired(true).
-					Build(),
-			).
-			SetDescription("The values to be added in the row you're about to create.").
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (a *AddRowInWorksheetAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[addRowInWorksheetActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *AddRowInWorksheetAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[addRowInWorksheetActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	sheetService, err := sheets.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	sheetService, err := sheets.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -91,12 +98,7 @@ func (a *AddRowInWorksheetAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON,
 		return nil, errors.New("sheet row range is required")
 	}
 
-	// if len(input.Values) <= 0 {
-	// 	return nil, errors.New("values are required")
-	// }
-
 	// this variable concatenates the sheet ID and the sheet row range since we want to append a row in a particular range of the worksheet
-	// range_ := input.SheetID + input.SheetRow
 	range_ := fmt.Sprintf("%s!%s", input.SheetTitle, input.SheetRow)
 
 	// sample array data to add as new row
@@ -111,20 +113,6 @@ func (a *AddRowInWorksheetAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON,
 		InsertDataOption("INSERT_ROWS").
 		Do()
 	return spreadsheet, err
-}
-
-func (a *AddRowInWorksheetAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *AddRowInWorksheetAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *AddRowInWorksheetAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewAddRowInWorksheetAction() sdk.Action {

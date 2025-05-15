@@ -3,10 +3,11 @@ package actions
 import (
 	"github.com/hiscaler/woocommerce-go"
 	"github.com/hiscaler/woocommerce-go/entity"
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/woocommerce/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type updateProductActionProps struct {
@@ -25,87 +26,82 @@ type updateProductActionProps struct {
 
 type UpdateProductAction struct{}
 
-func (a *UpdateProductAction) Name() string {
-	return "Update Product"
-}
-
-func (a *UpdateProductAction) Description() string {
-	return "Updates product information in your e-commerce platform or CRM system by mapping to specific fields such as product name, description, price, and inventory levels."
-}
-
-func (a *UpdateProductAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *UpdateProductAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &updateProductDocs,
+func (a *UpdateProductAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "update_product",
+		DisplayName:   "Update Product",
+		Description:   "Updates product information in your WooCommerce store.",
+		Type:          core.ActionTypeAction,
+		Documentation: updateProductDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *UpdateProductAction) Icon() *string {
-	return nil
+func (a *UpdateProductAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("update_product", "Update Product")
+
+	form.NumberField("productId", "Product ID").
+		Placeholder("Enter the product ID").
+		Required(true).
+		HelpText("Enter the product ID")
+
+	form.TextField("name", "Product Name").
+		Placeholder("Enter product Name").
+		HelpText("Enter product Name")
+
+	form.TextareaField("description", "Description").
+		Placeholder("Enter product description").
+		HelpText("Enter product description")
+
+	form.TextareaField("short_description", "Short Description").
+		Placeholder("Enter the short description").
+		HelpText("Enter the short description")
+
+	form.NumberField("length", "Length").
+		Placeholder("Enter Product Length").
+		HelpText("Enter Product Length")
+
+	form.NumberField("regular_price", "Regular Price").
+		Placeholder("Enter Regular Price").
+		Required(true).
+		HelpText("Enter Regular Price")
+
+	form.NumberField("sale_price", "Discounted Price").
+		Placeholder("Enter Discounted Price").
+		Required(true).
+		HelpText("Enter Discounted Price")
+
+	form.NumberField("height", "Height").
+		Placeholder("Enter Product Height").
+		HelpText("Enter Product Height")
+
+	form.NumberField("width", "Width").
+		Placeholder("Enter Product Width").
+		HelpText("Enter Product Width")
+
+	form.TextField("weight", "Weight").
+		Placeholder("Enter weight").
+		HelpText("weight")
+
+	form.TextField("image_url", "Image URL").
+		Placeholder("Enter image URL. Must end with a valid image extension (.jpg, .jpeg, .png, .gif)").
+		HelpText("Enter image URL. Must end with a valid image extension (.jpg, .jpeg, .png, .gif)")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *UpdateProductAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"productId": autoform.NewNumberField().
-			SetDisplayName("Product ID").
-			SetDescription("Enter the product ID").
-			SetRequired(true).
-			Build(),
-		"name": autoform.NewShortTextField().
-			SetDisplayName("Product Name").
-			SetDescription("Enter product Name").
-			Build(),
-		"description": autoform.NewLongTextField().
-			SetDisplayName(" Description").
-			SetDescription("Enter product description").
-			Build(),
-		"short_description": autoform.NewLongTextField().
-			SetDisplayName("Short Description").
-			SetDescription("Enter the short description").
-			Build(),
-		"length": autoform.NewNumberField().
-			SetDisplayName("Length").
-			SetDescription("Enter Product Length").
-			Build(),
-		"regular_price": autoform.NewNumberField().
-			SetDisplayName("Regular Price").
-			SetDescription("Enter Regular Price").
-			SetRequired(true).
-			Build(),
-		"sale_price": autoform.NewNumberField().
-			SetDisplayName("Discounted Price").
-			SetDescription("Enter Discounted Price").
-			SetRequired(true).
-			Build(),
-		"height": autoform.NewNumberField().
-			SetDisplayName("Height").
-			SetDescription("Enter Product Height").
-			Build(),
-		"width": autoform.NewNumberField().
-			SetDisplayName("Width").
-			SetDescription("Enter Product Width").
-			Build(),
-		"weight": autoform.NewShortTextField().
-			SetDisplayName("Weight").
-			SetDescription("weight").
-			Build(),
-		"image_url": autoform.NewShortTextField().
-			SetDisplayName("Image URL").
-			SetDescription("Enter image URL. Must end with a valid image extension (.jpg, .jpeg, .png, .gif)").
-			Build(),
-	}
-}
-
-func (a *UpdateProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[updateProductActionProps](ctx.BaseContext)
+func (a *UpdateProductAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[updateProductActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	wooClient, err := shared.InitClient(ctx.BaseContext)
+	wooClient, err := shared.InitClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -163,18 +159,8 @@ func (a *UpdateProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	return updatedProduct, nil
 }
 
-func (a *UpdateProductAction) Auth() *sdk.Auth {
+func (a *UpdateProductAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *UpdateProductAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *UpdateProductAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewUpdateProductAction() sdk.Action {

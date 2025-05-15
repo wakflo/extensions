@@ -5,10 +5,12 @@ import (
 	"errors"
 	"io"
 
+	"github.com/juicycleff/smartform/v1"
 	fastshot "github.com/opus-domini/fast-shot"
 	"github.com/wakflo/extensions/internal/integrations/todoist/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type listProjectsActionProps struct {
@@ -17,37 +19,37 @@ type listProjectsActionProps struct {
 
 type ListProjectsAction struct{}
 
-func (a *ListProjectsAction) Name() string {
-	return "List Projects"
-}
-
-func (a *ListProjectsAction) Description() string {
-	return "Retrieves a list of all projects within your organization, allowing you to easily manage and track multiple projects from a single location."
-}
-
-func (a *ListProjectsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListProjectsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listProjectsDocs,
+func (a *ListProjectsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_projects",
+		DisplayName:   "List Projects",
+		Description:   "Retrieves a list of all projects within your organization, allowing you to easily manage and track multiple projects from a single location.",
+		Type:          core.ActionTypeAction,
+		Documentation: listProjectsDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ListProjectsAction) Icon() *string {
-	return nil
+func (a *ListProjectsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_projects", "List Projects")
+
+	shared.RegisterProjectsProps(form)
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *ListProjectsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"project_id": shared.GetProjectsInput(),
+func (a *ListProjectsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *ListProjectsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
 	client := fastshot.NewClient(shared.BaseAPI).
-		Auth().BearerToken(ctx.Auth.AccessToken).
+		Auth().BearerToken(authCtx.AccessToken).
 		Header().
 		AddAccept("application/json").
 		Build()
@@ -75,18 +77,8 @@ func (a *ListProjectsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 	return projects, nil
 }
 
-func (a *ListProjectsAction) Auth() *sdk.Auth {
+func (a *ListProjectsAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *ListProjectsAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *ListProjectsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewListProjectsAction() sdk.Action {

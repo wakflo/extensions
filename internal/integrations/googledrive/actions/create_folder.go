@@ -97,7 +97,6 @@ func (a *CreateFolderAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, 
 		Fields("id, name, mimeType, webViewLink, kind, createdTime").
 		SupportsAllDrives(input.IncludeTeamDrives).
 		Do()
-
 	if err != nil {
 		return nil, err
 	}

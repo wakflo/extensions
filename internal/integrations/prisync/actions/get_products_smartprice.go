@@ -3,75 +3,64 @@ package actions
 import (
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/prisync/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
-type getProductsSmartpriceActionProps struct {
-	Startfrom string `json:"start-from"`
-}
+type getProductsSmartpriceActionProps struct{}
 
 type GetProductsSmartpriceAction struct{}
 
-func (a *GetProductsSmartpriceAction) Name() string {
-	return "Get Products Smartprice"
-}
-
-func (a *GetProductsSmartpriceAction) Description() string {
-	return "Retrieves product prices from various e-commerce platforms and marketplaces, providing real-time smart pricing data to inform business decisions."
-}
-
-func (a *GetProductsSmartpriceAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetProductsSmartpriceAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getProductsSmartpriceDocs,
+// Metadata returns metadata about the action
+func (a *GetProductsSmartpriceAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_products_smartprice",
+		DisplayName:   "Get Products Smartprice",
+		Description:   "Retrieves product prices from various e-commerce platforms and marketplaces, providing real-time smart pricing data to inform business decisions.",
+		Type:          core.ActionTypeAction,
+		Documentation: getProductsSmartpriceDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetProductsSmartpriceAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *GetProductsSmartpriceAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_products_smartprice", "Get Products Smartprice")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *GetProductsSmartpriceAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *GetProductsSmartpriceAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"start-from": autoform.NewShortTextField().
-			SetDisplayName("Start From (Optional)").
-			SetDescription("Offset for pagination. It can take 0 and exact multiples of 100 as a value.").
-			SetRequired(false).Build(),
+// Perform executes the action with the given context and input
+func (a *GetProductsSmartpriceAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	_, err := sdk.InputToTypeSafely[getProductsSmartpriceActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *GetProductsSmartpriceAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	_, err := sdk.InputToTypeSafely[getProductsSmartpriceActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
 
 	endpoint := "/api/v2/list/smartprice/startFrom/0"
-	resp, err := shared.PrisyncRequest(ctx.Auth.Extra["api-key"], ctx.Auth.Extra["api-token"], endpoint, http.MethodGet, nil)
+	resp, err := shared.PrisyncRequest(authCtx.Extra["api-key"], authCtx.Extra["api-token"], endpoint, http.MethodGet, nil)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
-}
-
-func (a *GetProductsSmartpriceAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *GetProductsSmartpriceAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *GetProductsSmartpriceAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetProductsSmartpriceAction() sdk.Action {

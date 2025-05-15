@@ -3,10 +3,11 @@ package actions
 import (
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/prisync/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type editProductActionProps struct {
@@ -22,67 +23,75 @@ type editProductActionProps struct {
 
 type EditProductAction struct{}
 
-func (a *EditProductAction) Name() string {
-	return "Edit Product"
-}
-
-func (a *EditProductAction) Description() string {
-	return "Edit Product: Update product information by modifying existing product details, such as name, description, price, and inventory levels."
-}
-
-func (a *EditProductAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *EditProductAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &editProductDocs,
+// Metadata returns metadata about the action
+func (a *EditProductAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "edit_product",
+		DisplayName:   "Edit Product",
+		Description:   "Edit Product: Update product information by modifying existing product details, such as name, description, price, and inventory levels.",
+		Type:          core.ActionTypeAction,
+		Documentation: editProductDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *EditProductAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *EditProductAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("edit_product", "Edit Product")
+
+	form.TextField("id", "Product ID").
+		Required(true).
+		HelpText("ID of product")
+
+	form.TextField("name", "Product Name").
+		Required(false).
+		HelpText("name of product")
+
+	form.TextField("brand", "Brand").
+		Required(false).
+		HelpText("Brand name")
+
+	form.TextField("category", "Category").
+		Required(false).
+		HelpText("Category name")
+
+	form.TextField("product_code", "Product Code").
+		Required(false).
+		HelpText("Product code")
+
+	form.TextField("barcode", "Bar Code").
+		Required(false).
+		HelpText("Bar code")
+
+	form.TextField("cost", "Product Cost").
+		Required(false).
+		HelpText("Product cost")
+
+	form.TextField("tags", "Product Tags").
+		Required(false).
+		HelpText("Product tags")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *EditProductAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *EditProductAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"id": autoform.NewShortTextField().
-			SetDisplayName("Product ID").
-			SetDescription("ID of product").
-			SetRequired(true).Build(),
-		"name": autoform.NewShortTextField().
-			SetDisplayName("Product Name").
-			SetDescription("name of product").
-			SetRequired(false).Build(),
-		"brand": autoform.NewShortTextField().
-			SetDisplayName("Brand").
-			SetDescription("Brand name").
-			SetRequired(false).Build(),
-		"category": autoform.NewShortTextField().
-			SetDisplayName("Category").
-			SetDescription("Category name").
-			SetRequired(false).Build(),
-		"product_code": autoform.NewShortTextField().
-			SetDisplayName("Product Code").
-			SetDescription("Product code").
-			SetRequired(false).Build(),
-		"barcode": autoform.NewShortTextField().
-			SetDisplayName("Bar Code").
-			SetDescription("Bar code").
-			SetRequired(false).Build(),
-		"cost": autoform.NewShortTextField().
-			SetDisplayName("Product Cost").
-			SetDescription("Product cost").
-			SetRequired(false).Build(),
-		"tags": autoform.NewLongTextField().
-			SetDisplayName("Product Tags").
-			SetDescription("Product tags").
-			SetRequired(false).Build(),
+// Perform executes the action with the given context and input
+func (a *EditProductAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[editProductActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *EditProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[editProductActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
@@ -118,25 +127,11 @@ func (a *EditProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 	}
 
 	endpoint := "/api/v2/edit/product/id/" + input.ID
-	resp, err := shared.PrisyncRequest(ctx.Auth.Extra["api-key"], ctx.Auth.Extra["api-token"], endpoint, http.MethodPost, formData)
+	resp, err := shared.PrisyncRequest(authCtx.Extra["api-key"], authCtx.Extra["api-token"], endpoint, http.MethodPost, formData)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
-}
-
-func (a *EditProductAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *EditProductAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *EditProductAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewEditProductAction() sdk.Action {

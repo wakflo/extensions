@@ -15,10 +15,11 @@
 package actions
 
 import (
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/trackingmore/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createTrackingsActionProps struct {
@@ -29,65 +30,48 @@ type createTrackingsActionProps struct {
 
 type CreateTrackingsAction struct{}
 
-func (c *CreateTrackingsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (c CreateTrackingsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (c CreateTrackingsAction) Name() string {
-	return "Create batch tracking"
-}
-
-func (c CreateTrackingsAction) Description() string {
-	return "Create batch tracking"
-}
-
-func (c CreateTrackingsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createTrackingDocs,
+func (c *CreateTrackingsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_batch_tracking",
+		DisplayName:   "Create batch tracking",
+		Description:   "Create batch tracking",
+		Type:          core.ActionTypeAction,
+		Documentation: createTrackingDocs,
+		SampleOutput:  nil,
+		Settings:      core.ActionSettings{},
 	}
 }
 
-func (c CreateTrackingsAction) Icon() *string {
-	return nil
+func (c *CreateTrackingsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_batch_tracking", "Create batch tracking")
+
+	form.SelectField("courier_code", "Courier Code").
+		Required(true).
+		AddOptions(shared.CourierCodes...).
+		Placeholder("Courier code").
+		HelpText("Courier code")
+
+	form.TextField("tracking_number", "Tracking Number").
+		Placeholder("Tracking number of a package.").
+		Required(true).
+		HelpText("Tracking number of a package.")
+
+	schema := form.Build()
+	return schema
 }
 
-func (c CreateTrackingsAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c CreateTrackingsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"courier_code": autoform.NewSelectField().
-			SetDisplayName("Courier Code").
-			SetDescription("Courier code").
-			SetOptions(shared.CourierCodes).
-			SetRequired(true).
-			Build(),
-		"tracking_number": autoform.NewShortTextField().
-			SetDisplayName("Tracking Number").
-			SetDescription("Tracking number of a package.").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (c CreateTrackingsAction) Auth() *sdk.Auth {
-	return &sdk.Auth{
-		Inherit: true,
-	}
-}
-
-func (c CreateTrackingsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createTrackingsActionProps](ctx.BaseContext)
+func (c *CreateTrackingsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createTrackingsActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	applicationKey := ctx.Auth.Extra["key"]
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	applicationKey := authCtx.Extra["key"]
 
 	//  payload := []map[string]interface{}{
 	//	{
@@ -105,6 +89,12 @@ func (c CreateTrackingsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, er
 		return nil, err
 	}
 	return response, nil
+}
+
+func (c *CreateTrackingsAction) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
+		Inherit: true,
+	}
 }
 
 func NewCreateTrackingsAction() sdk.Action {

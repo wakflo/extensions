@@ -1,10 +1,11 @@
 package actions
 
 import (
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/clickup/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createFolderlessListProps struct {
@@ -15,47 +16,65 @@ type createFolderlessListProps struct {
 
 type CreateFolderlessListOperation struct{}
 
-func (o *CreateFolderlessListOperation) Name() string {
-	return "Create Folderless List"
-}
-
-func (o *CreateFolderlessListOperation) Description() string {
-	return "Creates a new list directly in a space without a parent folder."
-}
-
-func (o *CreateFolderlessListOperation) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (o *CreateFolderlessListOperation) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createFolderlessListDocs,
+// Metadata returns metadata about the action
+func (o *CreateFolderlessListOperation) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_folderless_list",
+		DisplayName:   "Create Folderless List",
+		Description:   "Creates a new list directly in a space without a parent folder.",
+		Type:          core.ActionTypeAction,
+		Documentation: createFolderlessListDocs,
+		Icon:          "material-symbols:add-box-outline",
+		SampleOutput: map[string]any{
+			"id":         "list123",
+			"name":       "New Folderless List",
+			"content":    "List description",
+			"orderindex": 1,
+			"status": map[string]any{
+				"status": "Open",
+				"color":  "#d3d3d3",
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (o *CreateFolderlessListOperation) Icon() *string {
-	icon := "material-symbols:add-box-outline"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (o *CreateFolderlessListOperation) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_folderless_list", "Create Folderless List")
+
+	shared.RegisterWorkSpaceInput(form, "Workspaces", "select a workspace", true)
+
+	shared.RegisterSpacesInput(form, "Spaces", "select a space", true)
+
+	form.TextField("name", "name").
+		Placeholder("List Name").
+		HelpText("The name of the list").
+		Required(true)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (o *CreateFolderlessListOperation) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"workspace-id": shared.RegisterWorkSpaceInput("Workspaces", "select a workspace", true),
-		"space-id":     shared.RegisterSpacesInput("Spaces", "select a space", true),
-		"name": autoform.NewShortTextField().
-			SetDisplayName("List Name").
-			SetDescription("The name of the list").
-			SetRequired(true).
-			Build(),
-	}
+// Auth returns the authentication requirements for the action
+func (o *CreateFolderlessListOperation) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (o *CreateFolderlessListOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	accessToken := ctx.Auth.AccessToken
-	input, err := sdk.InputToTypeSafely[createFolderlessListProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (o *CreateFolderlessListOperation) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createFolderlessListProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken := authCtx.Token.AccessToken
 	reqURL := "/v2/space/" + input.SpaceID + "/list"
 
 	response, err := shared.CreateItem(accessToken, input.Name, reqURL)
@@ -64,27 +83,6 @@ func (o *CreateFolderlessListOperation) Perform(ctx sdk.PerformContext) (sdkcore
 	}
 
 	return response, nil
-}
-
-func (o *CreateFolderlessListOperation) Auth() *sdk.Auth {
-	return nil
-}
-
-func (o *CreateFolderlessListOperation) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"id":         "list123",
-		"name":       "New Folderless List",
-		"content":    "List description",
-		"orderindex": 1,
-		"status": map[string]any{
-			"status": "Open",
-			"color":  "#d3d3d3",
-		},
-	}
-}
-
-func (o *CreateFolderlessListOperation) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateFolderlessListOperation() sdk.Action {

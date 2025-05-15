@@ -4,10 +4,11 @@ import (
 	"errors"
 	"strconv"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/freshdesk/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type searchTicketsActionProps struct {
@@ -19,64 +20,86 @@ type searchTicketsActionProps struct {
 
 type SearchTicketsAction struct{}
 
-func (a *SearchTicketsAction) Name() string {
-	return "Search Tickets"
-}
-
-func (a *SearchTicketsAction) Description() string {
-	return "Search for tickets using various search criteria in Freshdesk."
-}
-
-func (a *SearchTicketsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *SearchTicketsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &searchTicketDocs,
+// Metadata returns metadata about the action
+func (a *SearchTicketsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "search_tickets",
+		DisplayName:   "Search Tickets",
+		Description:   "Search for tickets using various search criteria in Freshdesk.",
+		Type:          core.ActionTypeAction,
+		Documentation: searchTicketDocs,
+		Icon:          "mdi:ticket-search",
+		SampleOutput: map[string]any{
+			"data": []map[string]any{
+				{
+					"id":         "123",
+					"subject":    "Search Result Ticket 1",
+					"status":     "2",
+					"priority":   "1",
+					"created_at": "2023-12-01T12:30:45Z",
+				},
+				{
+					"id":         "124",
+					"subject":    "Search Result Ticket 2",
+					"status":     "3",
+					"priority":   "2",
+					"created_at": "2023-12-02T10:15:30Z",
+				},
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *SearchTicketsAction) Icon() *string {
-	icon := "mdi:ticket-search"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *SearchTicketsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("search_tickets", "Search Tickets")
+
+	form.TextareaField("query", "query").
+		Placeholder("Search Query").
+		HelpText("Search query string (e.g., 'status:open priority:high')").
+		Required(true)
+
+	form.SelectField("filter_by", "filter_by").
+		Placeholder("Filter By").
+		HelpText("Optional filter to narrow down search results").
+		AddOptions([]*smartform.Option{
+			{Label: "All Tickets", Value: "all_tickets"},
+			{Label: "Open Tickets", Value: "open"},
+			{Label: "Pending Tickets", Value: "pending"},
+			{Label: "Resolved Tickets", Value: "resolved"},
+			{Label: "Closed Tickets", Value: "closed"},
+		}...).
+		Required(false)
+
+	form.NumberField("page", "page").
+		Placeholder("Page").
+		HelpText("Page number for pagination").
+		Required(false)
+
+	form.NumberField("per_page", "per_page").
+		Placeholder("Results Per Page").
+		HelpText("Number of results per page (max 100)").
+		Required(false)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *SearchTicketsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"query": autoform.NewLongTextField().
-			SetDisplayName("Search Query").
-			SetDescription("Search query string (e.g., 'status:open priority:high')").
-			SetRequired(true).Build(),
+// Auth returns the authentication requirements for the action
+func (a *SearchTicketsAction) Auth() *core.AuthMetadata {
+	return nil
+}
 
-		"filter_by": autoform.NewSelectField().
-			SetDisplayName("Filter By").
-			SetDescription("Optional filter to narrow down search results").
-			SetRequired(false).
-			SetOptions([]*sdkcore.AutoFormSchema{
-				{Title: "All Tickets", Const: "all_tickets"},
-				{Title: "Open Tickets", Const: "open"},
-				{Title: "Pending Tickets", Const: "pending"},
-				{Title: "Resolved Tickets", Const: "resolved"},
-				{Title: "Closed Tickets", Const: "closed"},
-			}).Build(),
-
-		"page": autoform.NewNumberField().
-			SetDisplayName("Page").
-			SetDescription("Page number for pagination").
-			SetRequired(false).
-			Build(),
-
-		"per_page": autoform.NewNumberField().
-			SetDisplayName("Results Per Page").
-			SetDescription("Number of results per page (max 100)").
-			SetRequired(false).
-			Build(),
+// Perform executes the action with the given context and input
+func (a *SearchTicketsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[searchTicketsActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *SearchTicketsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[searchTicketsActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +109,7 @@ func (a *SearchTicketsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 		return nil, errors.New("search query is required")
 	}
 
-	if ctx.Auth.Extra["api-key"] == "" {
+	if authCtx.Extra["api-key"] == "" {
 		return nil, errors.New("missing Freshdesk API key")
 	}
 
@@ -113,44 +136,15 @@ func (a *SearchTicketsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	}
 
 	// Construct full endpoint
-	domain := ctx.Auth.Extra["domain"]
+	domain := authCtx.Extra["domain"]
 	freshdeskDomain := "https://" + domain + ".freshdesk.com"
 
-	response, err := shared.GetTickets(endpoint+queryParams, freshdeskDomain, ctx.Auth.Extra["api-key"])
+	response, err := shared.GetTickets(endpoint+queryParams, freshdeskDomain, authCtx.Extra["api-key"])
 	if err != nil {
 		return nil, err
 	}
 
 	return response, nil
-}
-
-func (a *SearchTicketsAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *SearchTicketsAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"data": []map[string]any{
-			{
-				"id":         "123",
-				"subject":    "Search Result Ticket 1",
-				"status":     "2",
-				"priority":   "1",
-				"created_at": "2023-12-01T12:30:45Z",
-			},
-			{
-				"id":         "124",
-				"subject":    "Search Result Ticket 2",
-				"status":     "3",
-				"priority":   "2",
-				"created_at": "2023-12-02T10:15:30Z",
-			},
-		},
-	}
-}
-
-func (a *SearchTicketsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewSearchTicketsAction() sdk.Action {

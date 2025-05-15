@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"github.com/hiscaler/woocommerce-go"
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/woocommerce/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type newOrderTriggerProps struct {
@@ -17,62 +19,61 @@ type newOrderTriggerProps struct {
 
 type NewOrderTrigger struct{}
 
-func (t *NewOrderTrigger) Name() string {
-	return "New Order"
-}
-
-func (t *NewOrderTrigger) Description() string {
-	return "Triggered when a new order is created in your e-commerce platform or inventory management system, allowing you to automate tasks and workflows immediately after an order is placed."
-}
-
-func (t *NewOrderTrigger) GetType() sdkcore.TriggerType {
-	return sdkcore.TriggerTypePolling
-}
-
-func (t *NewOrderTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &newOrderDocs,
+func (t *NewOrderTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "new_order",
+		DisplayName:   "New Order",
+		Description:   "Triggered when a new order is created in your WooCommerce store.",
+		Type:          core.TriggerTypePolling,
+		Documentation: newOrderDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
 	}
 }
 
-func (t *NewOrderTrigger) Icon() *string {
+func (t *NewOrderTrigger) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (t *NewOrderTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{}
+func (t *NewOrderTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("new-order", "New Order")
+
+	schema := form.Build()
+	return schema
 }
 
-// Start initializes the newOrderTrigger, required for event and webhook triggers in a lifecycle context.
-func (t *NewOrderTrigger) Start(ctx sdk.LifecycleContext) error {
-	// Required for event and webhook triggers
+func (t *NewOrderTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-// Stop shuts down the newOrderTrigger, cleaning up resources and performing necessary teardown operations.
-func (t *NewOrderTrigger) Stop(ctx sdk.LifecycleContext) error {
+func (t *NewOrderTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-// Execute performs the main action logic of newOrderTrigger by processing the input context and returning a JSON response.
-// It converts the base context input into a strongly-typed structure, executes the desired logic, and generates output.
-// Returns a JSON output map with the resulting data or an error if operation fails. required for Pooling triggers
-func (t *NewOrderTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	_, err := sdk.InputToTypeSafely[newOrderTriggerProps](ctx.BaseContext)
+func (t *NewOrderTrigger) Execute(ctx sdkcontext.ExecuteContext) (core.JSON, error) {
+	_, err := sdk.InputToTypeSafely[newOrderTriggerProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	wooClient, err := shared.InitClient(ctx.BaseContext)
+	wooClient, err := shared.InitClient(ctx)
 	if err != nil {
 		return nil, err
 	}
-	lastRunTime := ctx.Metadata().LastRun
+
+	lastRun, err := ctx.GetMetadata("lastRun")
+	if err != nil {
+		return nil, err
+	}
 
 	var formattedTime string
-	if lastRunTime != nil {
-		utcTime := lastRunTime.UTC()
-		formattedTime = utcTime.Format(time.RFC3339)
+	if lastRun != nil {
+		lastRunTime, ok := lastRun.(*time.Time)
+		if ok && lastRunTime != nil {
+			utcTime := lastRunTime.UTC()
+			formattedTime = utcTime.Format(time.RFC3339)
+		}
 	}
 
 	params := woocommerce.OrdersQueryParams{
@@ -88,18 +89,8 @@ func (t *NewOrderTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) 
 	return newOrder, nil
 }
 
-func (t *NewOrderTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
-	return sdkcore.TriggerCriteria{}
-}
-
-func (t *NewOrderTrigger) Auth() *sdk.Auth {
-	return nil
-}
-
-func (t *NewOrderTrigger) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
+func (t *NewOrderTrigger) Criteria(ctx context.Context) core.TriggerCriteria {
+	return core.TriggerCriteria{}
 }
 
 func NewNewOrderTrigger() sdk.Trigger {

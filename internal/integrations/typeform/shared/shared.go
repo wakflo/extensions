@@ -20,22 +20,29 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 const baseURL = "https://api.typeform.com/"
 
 var (
-	// #nosec
-	tokenURL   = baseURL + "oauth/token"
-	SharedAuth = autoform.NewOAuthField(baseURL+"oauth/authorize", &tokenURL, []string{
-		"accounts:read forms:write forms:read responses:read responses:write",
-	}).Build()
+	typeformForm = smartform.NewAuthForm("typeform-auth", "Typeform OAuth", smartform.AuthStrategyOAuth2)
+	_            = typeformForm.
+			OAuthField("oauth", "Typeform OAuth").
+			AuthorizationURL(baseURL + "oauth/authorize").
+			TokenURL(baseURL + "oauth/token").
+			Scopes([]string{"accounts:read forms:write forms:read responses:read responses:write"}).
+			Build()
 )
 
-func GetTypeformFormsInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getTypeformForms := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+var SharedTypeformAuth = typeformForm.Build()
+
+func RegisterTypeformFormsProps(form *smartform.FormBuilder, label string, hint string, required bool) {
+	getTypeformForms := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		// Define the Typeform API URL for listing forms
 		url := baseURL + "forms"
 
@@ -46,7 +53,7 @@ func GetTypeformFormsInput(title string, desc string, required bool) *sdkcore.Au
 		}
 
 		// Set the required headers
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ctx.Auth.AccessToken))
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", *&ctx.Auth().Token.AccessToken))
 		req.Header.Set("Content-Type", "application/json")
 
 		// Create a new HTTP client and send the request
@@ -86,16 +93,23 @@ func GetTypeformFormsInput(title string, desc string, required bool) *sdkcore.Au
 		}
 
 		return ctx.Respond(options, len(options))
-
 	}
 
-	// Return the AutoFormSchema using the dynamic form data
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getTypeformForms).
-		SetRequired(required).
-		Build()
+	form.SelectField(label, label).
+		Placeholder("Enter a value.").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getTypeformForms)).
+				// WithFieldReference("state", "state").
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				// RefreshOn("state").
+				GetDynamicSource(),
+		).
+		HelpText(hint)
 }
 
 func GetFormResponses(accessToken, formID string) (map[string]interface{}, error) {

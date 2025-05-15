@@ -23,19 +23,28 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-)
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 
-var (
-	// #nosec
-	tokenURL   = "https://api.gumroad.com/oauth/token"
-	SharedAuth = autoform.NewOAuthField("https://gumroad.com/oauth/authorize", &tokenURL, []string{
-		"view_profile view_sales edit_products mark_sales_as_shipped refund_sales",
-	}).Build()
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 const baseURL = "https://api.gumroad.com/v2"
+
+var (
+	gumroadForm = smartform.NewAuthForm("gumroad-auth", "Gumroad OAuth", smartform.AuthStrategyOAuth2)
+	_           = gumroadForm.
+			OAuthField("oauth", "Gumroad OAuth").
+			AuthorizationURL("https://gumroad.com/oauth/authorize").
+			TokenURL("https://api.gumroad.com/oauth/token").
+			Scopes([]string{
+			"view_profile view_sales edit_products mark_sales_as_shipped refund_sales",
+		}).
+		Build()
+)
+
+var SharedGumroadAuth = gumroadForm.Build()
 
 func ListProducts(accessToken string, params url.Values) (map[string]interface{}, error) {
 	// Define the API URL for fetching sales
@@ -395,8 +404,13 @@ func MarkAsShipped(accessToken string, salesID string) (map[string]interface{}, 
 	return response, nil
 }
 
-func ListProductsInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	listProducts := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterProductsProps(form *smartform.FormBuilder) {
+	listProducts := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		// Gumroad API endpoint for fetching products
 		endpoint := "https://api.gumroad.com/v2/products"
 
@@ -408,7 +422,7 @@ func ListProductsInput(title string, desc string, required bool) *sdkcore.AutoFo
 
 		// Set required headers according to Gumroad API documentation
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+ctx.Auth.AccessToken)
+		req.Header.Set("Authorization", "Bearer "+authCtx.Token.AccessToken)
 		req.Header.Set("Accept", "application/json")
 
 		// Create HTTP client and send request
@@ -455,17 +469,28 @@ func ListProductsInput(title string, desc string, required bool) *sdkcore.AutoFo
 		return ctx.Respond(options, len(options))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&listProducts).
-		SetRequired(required).
-		Build()
+	form.SelectField("product_id", "Products").
+		Placeholder("Select a product").
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&listProducts)).
+				WithSearchSupport().
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select a Gumroad product")
 }
 
-func ListSalesInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	listProducts := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		// Gumroad API endpoint for fetching products
+func RegisterSalesProps(form *smartform.FormBuilder) {
+	listSales := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
+		// Gumroad API endpoint for fetching sales
 		url := baseURL + "/sales"
 
 		// Create a new HTTP GET request
@@ -476,7 +501,7 @@ func ListSalesInput(title string, desc string, required bool) *sdkcore.AutoFormS
 
 		// Set required headers according to Gumroad API documentation
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+ctx.Auth.AccessToken)
+		req.Header.Set("Authorization", "Bearer "+authCtx.Token.AccessToken)
 		req.Header.Set("Accept", "application/json")
 
 		// Create HTTP client and send request
@@ -523,12 +548,18 @@ func ListSalesInput(title string, desc string, required bool) *sdkcore.AutoFormS
 		return ctx.Respond(options, len(options))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&listProducts).
-		SetRequired(required).
-		Build()
+	form.SelectField("sales_id", "Sales").
+		Placeholder("Select a sale").
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&listSales)).
+				WithSearchSupport().
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select a Gumroad sale")
 }
 
 func FormatDateInput(dateStr string) (string, error) {

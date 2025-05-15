@@ -4,9 +4,10 @@ import (
 	"context"
 
 	"github.com/google/generative-ai-go/genai"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type chatGeminiActionProps struct {
@@ -16,52 +17,62 @@ type chatGeminiActionProps struct {
 
 type ChatGeminiAction struct{}
 
-func (a *ChatGeminiAction) Name() string {
-	return "Chat Gemini"
-}
-
-func (a *ChatGeminiAction) Description() string {
-	return "ChatGPT: Seamlessly integrates with your workflow to enable AI-powered chatbots that can understand and respond to user queries, automating routine conversations and freeing up human agents to focus on complex tasks."
-}
-
-func (a *ChatGeminiAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ChatGeminiAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &chatGeminiDocs,
+// Metadata returns metadata about the action
+func (a *ChatGeminiAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "chat_gemini",
+		DisplayName:   "Chat Gemini",
+		Description:   "ChatGPT: Seamlessly integrates with your workflow to enable AI-powered chatbots that can understand and respond to user queries, automating routine conversations and freeing up human agents to focus on complex tasks.",
+		Type:          core.ActionTypeAction,
+		Documentation: chatGeminiDocs,
+		Icon:          "",
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ChatGeminiAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *ChatGeminiAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("chat_gemini", "Chat Gemini")
+
+	form.TextareaField("chat", "chat").
+		Placeholder("Enter your prompt here.").
+		HelpText("Chat Prompt").
+		Required(true)
+
+	RegisterModelProps(form)
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *ChatGeminiAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *ChatGeminiAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"chat": autoform.NewLongTextField().
-			SetLabel("Chat Prompt").
-			SetRequired(true).
-			SetPlaceholder("Enter your prompt here.").
-			Build(),
-		"model": GetModelInput(),
+// Perform executes the action with the given context and input
+func (a *ChatGeminiAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[chatGeminiActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *ChatGeminiAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[chatGeminiActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
 
 	gctx := context.Background()
-	client, err := CreateGeminiClient(gctx, ctx.Auth)
+	client, err := CreateGeminiClient(gctx, authCtx)
 	if err != nil {
 		return nil, err
 	}
 
-	sdkcore.PrettyPrint(input)
+	// core.PrettyPrint(input)
 
 	content, err := client.GenerativeModel(input.Model).GenerateContent(gctx, genai.Text(input.Chat), nil)
 	if err != nil {
@@ -69,20 +80,6 @@ func (a *ChatGeminiAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	}
 
 	return content, err
-}
-
-func (a *ChatGeminiAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *ChatGeminiAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *ChatGeminiAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewChatGeminiAction() sdk.Action {

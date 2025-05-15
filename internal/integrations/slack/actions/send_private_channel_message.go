@@ -1,10 +1,11 @@
 package actions
 
 import (
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/slack/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type sendPrivateChannelMessageActionProps struct {
@@ -14,59 +15,81 @@ type sendPrivateChannelMessageActionProps struct {
 
 type SendPrivateChannelMessageAction struct{}
 
-func (a *SendPrivateChannelMessageAction) Name() string {
-	return "Send Private Channel Message"
-}
-
-func (a *SendPrivateChannelMessageAction) Description() string {
-	return "Send Private Channel Message: Sends a private message to a specified user in a designated channel within your workflow automation platform, allowing you to discreetly communicate with team members or stakeholders without broadcasting to the entire channel."
-}
-
-func (a *SendPrivateChannelMessageAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *SendPrivateChannelMessageAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &sendPrivateChannelMessageDocs,
+func (a *SendPrivateChannelMessageAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "send_private_channel_message",
+		DisplayName:   "Send Private Channel Message",
+		Description:   "Send Private Channel Message: Sends a private message to a specified user in a designated channel within your workflow automation platform, allowing you to discreetly communicate with team members or stakeholders without broadcasting to the entire channel.",
+		Type:          core.ActionTypeAction,
+		Documentation: sendPrivateChannelMessageDocs,
+		SampleOutput: map[string]interface{}{
+			"name":       "slack-send-private-channel-message",
+			"usage_mode": "operation",
+			"message":    "Hello people in the private channel!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *SendPrivateChannelMessageAction) Icon() *string {
-	return nil
-}
+func (a *SendPrivateChannelMessageAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("send_private_channel_message", "Send Private Channel Message")
 
-func (a *SendPrivateChannelMessageAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	getPrivateChannels := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		client := shared.GetSlackClient(ctx.Auth.AccessToken)
-
-		publicChannels, err := shared.GetChannels(client, "private_channel")
+	// Define the function to get private channels
+	getPrivateChannels := func(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
 		if err != nil {
 			return nil, err
 		}
 
-		return ctx.Respond(publicChannels, len(publicChannels))
+		client := shared.GetSlackClient(authCtx.Token.AccessToken)
+
+		privateChannels, err := shared.GetChannels(client, "private_channel")
+		if err != nil {
+			return nil, err
+		}
+
+		// Convert SlackChannel array to proper options format
+		options := make([]map[string]interface{}, 0, len(privateChannels))
+		for _, channel := range privateChannels {
+			options = append(options, map[string]interface{}{
+				"value": channel.ID,
+				"label": channel.Name,
+			})
+		}
+
+		return ctx.Respond(options, len(options))
 	}
 
-	return map[string]*sdkcore.AutoFormSchema{
-		"channel": autoform.NewDynamicField(sdkcore.String).
-			SetDisplayName("Private Channel").
-			SetDescription("Select private channel where message will be sent").
-			SetDynamicOptions(&getPrivateChannels).
-			SetDependsOn([]string{"connection"}).
-			SetRequired(true).
-			Build(),
-		"message": shared.SharedLongMessageAutoform,
-	}
+	form.SelectField("channel", "Private Channel").
+		Placeholder("Select private channel where message will be sent").
+		Required(true).
+		HelpText("Select private channel where message will be sent").
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getPrivateChannels)).
+				RefreshOn("connection").
+				GetDynamicSource(),
+		)
+
+	shared.RegisterSharedLongMessageField(form)
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *SendPrivateChannelMessageAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[sendPrivateChannelMessageActionProps](ctx.BaseContext)
+func (a *SendPrivateChannelMessageAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[sendPrivateChannelMessageActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client := shared.GetSlackClient(ctx.Auth.AccessToken)
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	client := shared.GetSlackClient(authCtx.Token.AccessToken)
 
 	message := input.Message
 	channelID := input.Channel
@@ -79,23 +102,12 @@ func (a *SendPrivateChannelMessageAction) Perform(ctx sdk.PerformContext) (sdkco
 	return map[string]interface{}{
 		"name":       "slack-send-private-channel-message",
 		"usage_mode": "operation",
+		"message":    message,
 	}, nil
 }
 
-func (a *SendPrivateChannelMessageAction) Auth() *sdk.Auth {
+func (a *SendPrivateChannelMessageAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *SendPrivateChannelMessageAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"name":       "slack-send-private-channel-message",
-		"usage_mode": "operation",
-		"message":    "Hello people in the private channel!",
-	}
-}
-
-func (a *SendPrivateChannelMessageAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewSendPrivateChannelMessageAction() sdk.Action {

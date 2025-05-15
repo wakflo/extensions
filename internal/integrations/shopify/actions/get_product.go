@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getProductActionProps struct {
@@ -16,45 +17,39 @@ type getProductActionProps struct {
 
 type GetProductAction struct{}
 
-func (a *GetProductAction) Name() string {
-	return "Get Product"
-}
-
-func (a *GetProductAction) Description() string {
-	return "Retrieves product information from the specified source, such as an e-commerce platform or inventory management system."
-}
-
-func (a *GetProductAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetProductAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getProductDocs,
+func (a *GetProductAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_product",
+		DisplayName:   "Get Product",
+		Description:   "Retrieves product information from the specified source, such as an e-commerce platform or inventory management system.",
+		Type:          core.ActionTypeAction,
+		Documentation: getProductDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetProductAction) Icon() *string {
-	return nil
+func (a *GetProductAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_product", "Get Product")
+
+	form.NumberField("productId", "Product").
+		Placeholder("The ID of the product.").
+		Required(true).
+		HelpText("The ID of the product.")
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *GetProductAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"productId": autoform.NewNumberField().
-			SetDisplayName("Product").
-			SetDescription("The ID of the product.").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *GetProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getProductActionProps](ctx.BaseContext)
+func (a *GetProductAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getProductActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.CreateClient(ctx.BaseContext)
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -73,23 +68,13 @@ func (a *GetProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 		"Price":       product.Variants[0].Price,
 		"Variants":    product.Variants,
 	}
-	return sdk.JSON(map[string]interface{}{
+	return core.JSON(map[string]interface{}{
 		"product details": productMap,
 	}), err
 }
 
-func (a *GetProductAction) Auth() *sdk.Auth {
+func (a *GetProductAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *GetProductAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *GetProductAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetProductAction() sdk.Action {

@@ -21,24 +21,26 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
-var SharedAuth = autoform.NewCustomAuthField().
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"api-key": autoform.NewShortTextField().SetDisplayName("Api Key (Required)").
-			SetDescription("Your trello api key").
-			SetRequired(true).
-			Build(),
-		"api-token": autoform.NewShortTextField().SetDisplayName("Api Token (Required)").
-			SetDescription("Your Trello API Token. Click **manually generate a Token** next to the API key field").
-			SetRequired(true).
-			Build(),
-	}).
-	Build()
+var (
+	form = smartform.NewAuthForm("trello-auth", "Trello API Authentication", smartform.AuthStrategyCustom)
+
+	_ = form.TextField("api-key", "Api Key(Required)").
+		Required(true).
+		HelpText("Your trello api key ")
+
+	_ = form.TextField("api-token", "Api Token (Required)").
+		Required(true).
+		HelpText("Your Trello API Token. Click **manually generate a Token** next to the API key field.")
+
+	TrelloSharedAuth = form.Build()
+)
 
 const BaseURL = "https://api.trello.com/1"
 
@@ -76,10 +78,14 @@ func TrelloRequest(method, fullURL string, request []byte) (interface{}, error) 
 	return result, nil
 }
 
-func GetBoardsInput() *sdkcore.AutoFormSchema {
-	getBoards := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterBoardsProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getBoards := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
 		endpoint := "/members/me/boards"
-		fullURL := fmt.Sprintf("%s%s?key=%s&token=%s", BaseURL, endpoint, ctx.Auth.Extra["api-key"], ctx.Auth.Extra["api-token"])
+		fullURL := fmt.Sprintf("%s%s?key=%s&token=%s", BaseURL, endpoint, authCtx.Extra["api-key"], authCtx.Extra["api-token"])
 
 		req, err := http.NewRequest(http.MethodGet, fullURL, nil)
 		if err != nil {
@@ -109,22 +115,35 @@ func GetBoardsInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(boards, len(boards))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Boards").
-		SetDescription("Select a board").
-		SetDynamicOptions(&getBoards).
-		SetRequired(true).Build()
+	return form.SelectField("boards", "Boards").
+		Placeholder("Select a board.").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getBoards)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select a board")
 }
 
-func GetBoardListsInput() *sdkcore.AutoFormSchema {
-	getBoardLists := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterBoardListsProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getBoardLists := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		input := sdk.DynamicInputToType[struct {
 			BoardID string `json:"board_id"`
 			ListID  string `json:"idList"`
 		}](ctx)
 
 		endpoint := fmt.Sprintf("/boards/%s/lists", input.BoardID)
-		fullURL := fmt.Sprintf("%s%s?key=%s&token=%s", BaseURL, endpoint, ctx.Auth.Extra["api-key"], ctx.Auth.Extra["api-token"])
+		fullURL := fmt.Sprintf("%s%s?key=%s&token=%s", BaseURL, endpoint, authCtx.Extra["api-key"], authCtx.Extra["api-token"])
 
 		req, err := http.NewRequest(http.MethodGet, fullURL, nil)
 		if err != nil {
@@ -154,11 +173,19 @@ func GetBoardListsInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(lists, len(lists))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Lists").
-		SetDescription("Select a list").
-		SetDynamicOptions(&getBoardLists).
-		SetRequired(true).Build()
+	return form.SelectField("lists", "Lists").
+		Placeholder("Select a list.").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getBoardLists)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select a list")
 }
 
 // func getCardsInput() *sdkcore.AutoFormSchema {
@@ -204,8 +231,3 @@ func GetBoardListsInput() *sdkcore.AutoFormSchema {
 //		SetDynamicOptions(&getCards).
 //		SetRequired(true).Build()
 // }
-
-var TrelloCardPosition = []*sdkcore.AutoFormSchema{
-	{Const: "top", Title: "Top"},
-	{Const: "bottom", Title: "Bottom"},
-}

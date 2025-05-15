@@ -6,11 +6,12 @@ import (
 	"io"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	fastshot "github.com/opus-domini/fast-shot"
 	"github.com/wakflo/extensions/internal/integrations/todoist/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createTaskActionProps struct {
@@ -27,80 +28,70 @@ type createTaskActionProps struct {
 
 type CreateTaskAction struct{}
 
-func (a *CreateTaskAction) Name() string {
-	return "Create Task"
-}
-
-func (a *CreateTaskAction) Description() string {
-	return "Create Task: Automatically generates and assigns a new task to a team member or group, allowing you to streamline workflows and ensure timely completion of tasks."
-}
-
-func (a *CreateTaskAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateTaskAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createTaskDocs,
+func (a *CreateTaskAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_task",
+		DisplayName:   "Create Task",
+		Description:   "Create Task: Automatically generates and assigns a new task to a team member or group, allowing you to streamline workflows and ensure timely completion of tasks.",
+		Type:          core.ActionTypeAction,
+		Documentation: createTaskDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateTaskAction) Icon() *string {
-	return nil
+func (a *CreateTaskAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_task", "Create Task")
+	shared.RegisterProjectsProps(form)
+	shared.RegisterSectionsProps(form)
+	shared.RegisterTasksProps(form, "parent_id", "Parent Task ID", "Parent task ID.", false)
+	form.TextareaField("content", "Content").
+		Placeholder("The task's content. It may contain some markdown-formatted text and hyperlinks").
+		Required(true).
+		HelpText("The task's content. It may contain some markdown-formatted text and hyperlinks")
+
+	form.TextareaField("description", "Description").
+		Placeholder("A description for the task. This value may contain some markdown-formatted text and hyperlinks.").
+		HelpText("A description for the task. This value may contain some markdown-formatted text and hyperlinks.")
+
+	form.NumberField("order", "Order").
+		Placeholder("Non-zero integer value used by clients to sort tasks under the same parent.").
+		HelpText("Non-zero integer value used by clients to sort tasks under the same parent.")
+
+	labelsArray := form.ArrayField("labels", "Labels")
+	labelGroup := labelsArray.ObjectTemplate("label", "")
+	labelGroup.TextField("value", "Label").
+		Placeholder("Label").
+		Required(true).
+		HelpText("The task's labels (a list of names that may represent either personal or shared labels)")
+
+	form.NumberField("priority", "Priority").
+		Placeholder("Task priority from 1 (normal) to 4 (urgent).").
+		HelpText("Task priority from 1 (normal) to 4 (urgent).")
+
+	form.DateTimeField("dueDate", "Due date").
+		Placeholder("Specific date in YYYY-MM-DD format relative to user's timezone").
+		HelpText("Specific date in YYYY-MM-DD format relative to user's timezone")
+
+	schema := form.Build()
+	return schema
 }
 
-func (a *CreateTaskAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"content": autoform.NewMarkdownField().
-			SetDisplayName("Content").
-			SetDescription("The task's content. It may contain some markdown-formatted text and hyperlinks").
-			SetRequired(true).Build(),
-
-		"description": autoform.NewMarkdownField().
-			SetDisplayName("Description").
-			SetDescription("A description for the task. This value may contain some markdown-formatted text and hyperlinks.").
-			SetRequired(false).Build(),
-
-		"project_id": shared.GetProjectsInput(),
-		"section_id": shared.GetSectionsInput(),
-		"parent_id":  shared.GetTasksInput("Parent Task ID", "Parent task ID.", false),
-		"order": autoform.NewNumberField().
-			SetDisplayName("Order").
-			SetDescription("Non-zero integer value used by clients to sort tasks under the same parent.").
-			SetRequired(false).Build(),
-
-		"labels": autoform.NewArrayField().
-			SetDisplayName("Labels").
-			SetDescription("The task's labels (a list of names that may represent either personal or shared labels)").
-			SetItems(
-				autoform.NewShortTextField().
-					SetDisplayName("Label").
-					SetDescription("Label").
-					SetRequired(true).
-					Build(),
-			).
-			SetRequired(false).Build(),
-
-		"priority": autoform.NewNumberField().
-			SetDisplayName("Priority").
-			SetDescription("Task priority from 1 (normal) to 4 (urgent).").
-			SetRequired(false).Build(),
-
-		"dueDate": autoform.NewDateTimeField().
-			SetDisplayName("Due date").
-			SetDescription("Specific date in YYYY-MM-DD format relative to user's timezone").
-			SetRequired(false).Build(),
+func (a *CreateTaskAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createTaskActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *CreateTaskAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createTaskActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
 
 	qu := fastshot.NewClient(shared.BaseAPI).
-		Auth().BearerToken(ctx.Auth.AccessToken).
+		Auth().BearerToken(authCtx.Token.AccessToken).
 		Header().
 		AddAccept("application/json").
 		Build().POST("/tasks").Body().AsJSON(input)
@@ -128,18 +119,8 @@ func (a *CreateTaskAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	return task, nil
 }
 
-func (a *CreateTaskAction) Auth() *sdk.Auth {
+func (a *CreateTaskAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *CreateTaskAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateTaskAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateTaskAction() sdk.Action {

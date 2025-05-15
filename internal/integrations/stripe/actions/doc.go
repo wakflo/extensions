@@ -10,3 +10,6 @@ var createInvoiceDocs string
 
 //go:embed search_customer.md
 var searchCustomerDocs string
+
+//go:embed retrieve_customer.md
+var retrieveCustomerDocs string

@@ -1,77 +1,111 @@
 package actions
 
 import (
-	"fmt"
+	"errors"
+	"net/http"
+	"net/url"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/extensions/internal/integrations/stripe/shared"
+
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type searchCustomerActionProps struct {
-	Name string `json:"name"`
+	Email string `json:"email"`
 }
 
 type SearchCustomerAction struct{}
 
-func (a *SearchCustomerAction) Name() string {
-	return "Search Customer"
-}
-
-func (a *SearchCustomerAction) Description() string {
-	return "Searches for a customer by their name, email, or phone number in your CRM system and retrieves relevant information such as contact details, order history, and account status."
-}
-
-func (a *SearchCustomerAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *SearchCustomerAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &searchCustomerDocs,
+// Metadata returns metadata about the action
+func (a *SearchCustomerAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "search_customer",
+		DisplayName:   "Search Customer",
+		Description:   "Search for a Stripe customer by email address",
+		Type:          core.ActionTypeAction,
+		Documentation: searchCustomerDocs,
+		SampleOutput: []map[string]any{
+			{
+				"id":          "cus_1234567890",
+				"object":      "customer",
+				"name":        "John Doe",
+				"email":       "john.doe@example.com",
+				"phone":       "+1234567890",
+				"description": "Customer description",
+				"created":     1620000000,
+				"address": map[string]string{
+					"city":        "San Francisco",
+					"country":     "US",
+					"line1":       "123 Market St",
+					"state":       "CA",
+					"postal_code": "94102",
+				},
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *SearchCustomerAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *SearchCustomerAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("search_customer", "Search Customer")
+
+	form.TextField("email", "Email").
+		Placeholder("customer@example.com").
+		Required(true).
+		HelpText("The customer's email address to search for.")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *SearchCustomerAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *SearchCustomerAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"name": autoform.NewShortTextField().
-			SetLabel("Name").
-			SetRequired(true).
-			SetPlaceholder("Your name").
-			Build(),
-	}
-}
-
-func (a *SearchCustomerAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[searchCustomerActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *SearchCustomerAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Use the InputToTypeSafely helper function to convert the input to our struct
+	input, err := sdk.InputToTypeSafely[searchCustomerActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// implement action logic
-	out := map[string]any{
-		"message": fmt.Sprintf("Hello %s!", input.Name),
+	// Get the auth context and API key
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
 	}
 
-	return out, nil
-}
-
-func (a *SearchCustomerAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *SearchCustomerAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
+	apiKey := authCtx.Extra["api-key"]
+	if apiKey == "" {
+		return nil, errors.New("missing stripe secret api-key")
 	}
-}
 
-func (a *SearchCustomerAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
+	// Build query parameters
+	params := url.Values{}
+	params.Add("query", "email:'"+input.Email+"'")
+
+	reqURL := "/v1/customers/search"
+
+	// Call the Stripe API
+	resp, err := shared.StripeClient(apiKey, reqURL, http.MethodGet, nil, params)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract the data from the response
+	nodes, ok := resp["data"].([]interface{})
+	if !ok {
+		return nil, errors.New("failed to extract data from response")
+	}
+
+	return nodes, nil
 }
 
 func NewSearchCustomerAction() sdk.Action {

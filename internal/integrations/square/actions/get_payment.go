@@ -15,9 +15,11 @@
 package actions
 
 import (
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/square/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getPaymentsActionProps struct {
@@ -26,59 +28,49 @@ type getPaymentsActionProps struct {
 
 type GetPaymentsAction struct{}
 
-func (c *GetPaymentsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (c GetPaymentsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (c GetPaymentsAction) Name() string {
-	return "Get Payments"
-}
-
-func (c GetPaymentsAction) Description() string {
-	return "Retrieve a list of Payments"
-}
-
-func (c GetPaymentsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getPaymentDocs,
+func (c *GetPaymentsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_payments",
+		DisplayName:   "Get Payments",
+		Description:   "Retrieve a list of Payments",
+		Type:          core.ActionTypeAction,
+		Documentation: getPaymentDocs,
+		SampleOutput:  nil,
+		Settings:      core.ActionSettings{},
 	}
 }
 
-func (c GetPaymentsAction) Icon() *string {
-	return nil
+func (c *GetPaymentsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_payments", "Get Payments")
+
+	schema := form.Build()
+	return schema
 }
 
-func (c GetPaymentsAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c GetPaymentsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{}
-}
-
-func (c GetPaymentsAction) Auth() *sdk.Auth {
-	return &sdk.Auth{
-		Inherit: true,
+func (c *GetPaymentsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	_, err := sdk.InputToTypeSafely[getPaymentsActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (c GetPaymentsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	_, err := sdk.InputToTypeSafely[getPaymentsActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
 
 	url := "/v2/payments"
 
-	payments, err := shared.GetSquareClient(ctx.Auth.AccessToken, url)
+	payments, err := shared.GetSquareClient(authCtx.Token.AccessToken, url)
 	if err != nil {
 		return nil, err
 	}
 	return payments, nil
+}
+
+func (c *GetPaymentsAction) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
+		Inherit: true,
+	}
 }
 
 func NewGetPaymentsAction() sdk.Action {

@@ -4,10 +4,11 @@ import (
 	"fmt"
 
 	"github.com/hiscaler/woocommerce-go"
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/woocommerce/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type findCustomerActionProps struct {
@@ -16,45 +17,40 @@ type findCustomerActionProps struct {
 
 type FindCustomerAction struct{}
 
-func (a *FindCustomerAction) Name() string {
-	return "Find Customer"
-}
-
-func (a *FindCustomerAction) Description() string {
-	return "Searches for a customer by their unique identifier (e.g., email address or customer ID) and retrieves relevant information, such as name, contact details, and account history."
-}
-
-func (a *FindCustomerAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *FindCustomerAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &findCustomerDocs,
+func (a *FindCustomerAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "find_customer",
+		DisplayName:   "Find Customer By Email",
+		Description:   "Searches for a customer by their email address .",
+		Type:          core.ActionTypeAction,
+		Documentation: findCustomerDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *FindCustomerAction) Icon() *string {
-	return nil
+func (a *FindCustomerAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("find_customer", "Find Customer")
+
+	form.TextField("email", "Email").
+		Placeholder("Enter the email address of the customer").
+		Required(true).
+		HelpText("Enter the email address of the customer")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *FindCustomerAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Email").
-			SetDescription("Enter the email address of the customer").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *FindCustomerAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[findCustomerActionProps](ctx.BaseContext)
+func (a *FindCustomerAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[findCustomerActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	wooClient, err := shared.InitClient(ctx.BaseContext)
+	wooClient, err := shared.InitClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -78,18 +74,8 @@ func (a *FindCustomerAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 	return nil, fmt.Errorf("no customer found with email: %s", input.Email)
 }
 
-func (a *FindCustomerAction) Auth() *sdk.Auth {
+func (a *FindCustomerAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *FindCustomerAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *FindCustomerAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewFindCustomerAction() sdk.Action {

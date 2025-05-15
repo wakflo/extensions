@@ -43,31 +43,8 @@ func (a *GetIssueAction) Metadata() sdk.ActionMetadata {
 func (a *GetIssueAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("get_issue", "Get Issue")
 
-	// Define the getRepositories function
-	getRepositories := func(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
-		return shared.GetRepositories(ctx)
-	}
-
-	// Add repository field
-	form.SelectField("repository", "Repository").
-		Placeholder("Select a repository").
-		Required(true).
-		WithDynamicOptions(
-			smartform.NewOptionsBuilder().
-				Dynamic().
-				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getRepositories)).
-				WithSearchSupport().
-				WithPagination(10).
-				End().
-				GetDynamicSource(),
-		).
-		HelpText("The repository to get the issue from.")
-
-	// Add issue number field
-	form.NumberField("issue_number", "Issue Number").
-		Placeholder("Enter an issue number").
-		Required(true).
-		HelpText("The issue number to retrieve.")
+	shared.RegisterRepositoryProps(form)
+	shared.RegisterIssuesProps(form)
 
 	schema := form.Build()
 

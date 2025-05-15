@@ -10,31 +10,31 @@ import (
 	"net/http"
 
 	"github.com/gookit/goutil/arrutil"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
-var SharedAuth = autoform.NewAuth().NewCustomAuth().
-	SetDescription("Jira Cloud Software Authentication").
-	SetLabel("Jira Authentication").
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"instance-url": autoform.NewShortTextField().
-			SetDisplayName("Instance URL (Required)").
-			SetDescription("The link of your Jira instance (e.g https://example.atlassian.net)").
-			SetRequired(true).
-			Build(),
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Email (Required)").
-			SetDescription("The email you use to login to Jira").
-			SetRequired(true).
-			Build(),
-		"api-token": autoform.NewShortTextField().SetDisplayName("Api Token (Required)").
-			SetDescription("Your Jira API Token").
-			SetRequired(true).
-			Build(),
-	}).
-	Build()
+var (
+	form = smartform.NewAuthForm("jiracloud-auth", "Jira Cloud Software Authentication", smartform.AuthStrategyCustom)
+
+	_ = form.TextField("instance-url", "Instance URL (Required)").
+		Required(true).
+		HelpText("The link of your Jira instance (e.g https://example.atlassian.net)")
+
+	_ = form.TextField("email", "Email (Required)").
+		Required(true).
+		HelpText("The email you use to login to Jira")
+
+	_ = form.TextField("api-token", "Your Jira API Token").
+		Required(true).
+		HelpText("Your Jira API Token")
+
+	JiraSharedAuth = form.Build()
+)
 
 func JiraRequest(email, apiToken, reqURL, method, message string, request []byte) (interface{}, error) {
 	auth := email + ":" + apiToken
@@ -81,15 +81,20 @@ func JiraRequest(email, apiToken, reqURL, method, message string, request []byte
 	return response, nil
 }
 
-func GetUsersInput() *sdkcore.AutoFormSchema {
-	getUsers := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		auth := ctx.Auth.Extra["email"] + ":" + ctx.Auth.Extra["api-token"]
+func RegisterUsersProps(form *smartform.FormBuilder) {
+	getUsers := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
+		auth := authCtx.Extra["email"] + ":" + authCtx.Extra["api-token"]
 
 		encodedAuth := base64.StdEncoding.EncodeToString([]byte(auth))
 
 		authHeader := "Basic " + encodedAuth
 
-		baseAPI := ctx.Auth.Extra["instance-url"] + "/rest/api/2/users/search"
+		baseAPI := authCtx.Extra["instance-url"] + "/rest/api/2/users/search"
 
 		req, err := http.NewRequest(http.MethodGet, baseAPI, nil)
 		if err != nil {
@@ -131,22 +136,35 @@ func GetUsersInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Assignees").
-		SetDescription("Select an assignee").
-		SetDynamicOptions(&getUsers).
-		SetRequired(false).Build()
+	form.SelectField("assignee", "Assignees").
+		Placeholder("Select an assignee").
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getUsers)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select an assignee")
 }
 
-func GetProjectsInput() *sdkcore.AutoFormSchema {
-	getProjects := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		auth := ctx.Auth.Extra["email"] + ":" + ctx.Auth.Extra["api-token"]
+func RegisterProjectsProps(form *smartform.FormBuilder) {
+	getProjects := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
+		auth := authCtx.Extra["email"] + ":" + authCtx.Extra["api-token"]
 
 		encodedAuth := base64.StdEncoding.EncodeToString([]byte(auth))
 
 		authHeader := "Basic " + encodedAuth
 
-		baseAPI := ctx.Auth.Extra["instance-url"] + "/rest/api/2/project/search"
+		baseAPI := authCtx.Extra["instance-url"] + "/rest/api/2/project/search"
 
 		req, err := http.NewRequest(http.MethodGet, baseAPI, nil)
 		if err != nil {
@@ -177,16 +195,30 @@ func GetProjectsInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(projects.Values, len(projects.Values))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Projects").
-		SetDescription("Select a project").
-		SetDynamicOptions(&getProjects).
-		SetRequired(true).Build()
+	form.SelectField("projectId", "Projects").
+		Placeholder("Select a project").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getProjects)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				RefreshOn("connection").
+				GetDynamicSource(),
+		).
+		HelpText("Select a project")
 }
 
-func GetIssueTypesInput() *sdkcore.AutoFormSchema {
-	getIssues := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		auth := ctx.Auth.Extra["email"] + ":" + ctx.Auth.Extra["api-token"]
+func RegisterIssueTypeProps(form *smartform.FormBuilder, required bool) *smartform.FieldBuilder {
+	getIssues := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
+		auth := authCtx.Extra["email"] + ":" + authCtx.Extra["api-token"]
 
 		encodedAuth := base64.StdEncoding.EncodeToString([]byte(auth))
 
@@ -196,7 +228,7 @@ func GetIssueTypesInput() *sdkcore.AutoFormSchema {
 			ProjectID string `json:"projectId"`
 		}](ctx)
 
-		baseAPI := ctx.Auth.Extra["instance-url"] + "/rest/api/3/issuetype/project?projectId=" + input.ProjectID
+		baseAPI := authCtx.Extra["instance-url"] + "/rest/api/3/issuetype/project?projectId=" + input.ProjectID
 
 		req, err := http.NewRequest(http.MethodGet, baseAPI, nil)
 		if err != nil {
@@ -228,25 +260,124 @@ func GetIssueTypesInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(issueTypes, len(issueTypes))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Issue Type").
-		SetDescription("Select an issue type").
-		SetDynamicOptions(&getIssues).
-		SetRequired(false).Build()
+	return form.SelectField("IssueTypeId", "Issue Type").
+		Placeholder("Select an issue type").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getIssues)).
+				WithFieldReference("projectId", "projectId").
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				RefreshOn("state").
+				GetDynamicSource(),
+		).
+		HelpText("Select an issue type")
 }
 
-func GetIssuesInput() *sdkcore.AutoFormSchema {
-	getIssues := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		auth := ctx.Auth.Extra["email"] + ":" + ctx.Auth.Extra["api-token"]
+func RegisterTransitionsProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getTransitions := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
+		auth := authCtx.Extra["email"] + ":" + authCtx.Extra["api-token"]
 		encodedAuth := base64.StdEncoding.EncodeToString([]byte(auth))
 		authHeader := "Basic " + encodedAuth
 
-		baseAPI := ctx.Auth.Extra["instance-url"] + "/rest/api/3/search"
+		input := sdk.DynamicInputToType[struct {
+			ProjectID string `json:"projectId"`
+			IssueID   string `json:"issueId"`
+		}](ctx)
+
+		if input.IssueID == "" {
+			return ctx.Respond([]map[string]any{}, 0)
+		}
+
+		baseAPI := authCtx.Extra["instance-url"] + "/rest/api/3/issue/" + input.IssueID + "/transitions"
+
+		req, err := http.NewRequest(http.MethodGet, baseAPI, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Authorization", authHeader)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Accept", "application/json")
+
+		client := &http.Client{}
+		rsp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer rsp.Body.Close()
+
+		responseBytes, err := io.ReadAll(rsp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		var transitionResponse struct {
+			Transitions []struct {
+				ID   string `json:"id"`
+				Name string `json:"name"`
+				To   struct {
+					Name string `json:"name"`
+				} `json:"to"`
+			} `json:"transitions"`
+		}
+
+		err = json.Unmarshal(responseBytes, &transitionResponse)
+		if err != nil {
+			return nil, err
+		}
+
+		items := make([]map[string]any, 0)
+		for _, transition := range transitionResponse.Transitions {
+			items = append(items, map[string]any{
+				"id":   transition.ID,
+				"name": transition.Name + " → " + transition.To.Name,
+			})
+		}
+
+		return ctx.Respond(items, len(items))
+	}
+
+	return form.SelectField("transitionId", "Transition").
+		Placeholder("Select a status transition").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getTransitions)).
+				WithFieldReference("issueId", "issueId").
+				WithFieldReference("projectId", "projectId").
+				WithSearchSupport().
+				End().
+				RefreshOn("issueId").
+				GetDynamicSource(),
+		).
+		HelpText("Select a status transition")
+}
+
+func RegisterIssuesProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getIssues := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
+		auth := authCtx.Extra["email"] + ":" + authCtx.Extra["api-token"]
+		encodedAuth := base64.StdEncoding.EncodeToString([]byte(auth))
+		authHeader := "Basic " + encodedAuth
+
+		baseAPI := authCtx.Extra["instance-url"] + "/rest/api/3/search"
 
 		input := sdk.DynamicInputToType[struct {
-			ProjectID   string `json:"projectId"`
-			CommentBody string `json:"commentText"`
-			IssueID     string `json:"issueId"`
+			ProjectID string `json:"projectId"`
 		}](ctx)
 
 		body := map[string]interface{}{
@@ -297,22 +428,32 @@ func GetIssuesInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Issues").
-		SetDescription("Select an issue").
-		SetDynamicOptions(&getIssues).
-		SetRequired(false).Build()
+	return form.SelectField("issues", "Issues").
+		Placeholder("Select an issue").
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getIssues)).
+				WithFieldReference("projectId", "projectId").
+				WithSearchSupport().
+				WithPagination(50).
+				End().
+				RefreshOn("projectId").
+				GetDynamicSource(),
+		).
+		HelpText("Select an issue")
 }
 
-var PriorityLevels = []*sdkcore.AutoFormSchema{
-	{Const: "1", Title: "Highest"},
-	{Const: "2", Title: "High"},
-	{Const: "3", Title: "Medium"},
-	{Const: "4", Title: "Low"},
-	{Const: "5", Title: "Lowest"},
-}
+// var PriorityLevels = []*sdkcore.AutoFormSchema{
+// 	{Const: "1", Title: "Highest"},
+// 	{Const: "2", Title: "High"},
+// 	{Const: "3", Title: "Medium"},
+// 	{Const: "4", Title: "Low"},
+// 	{Const: "5", Title: "Lowest"},
+// }
 
-var OrderBy = []*sdkcore.AutoFormSchema{
-	{Const: "-created", Title: "Created (Descending)"},
-	{Const: "+created", Title: "Created (Ascending)"},
-}
+// var OrderBy = []*sdkcore.AutoFormSchema{
+// 	{Const: "-created", Title: "Created (Descending)"},
+// 	{Const: "+created", Title: "Created (Ascending)"},
+// }

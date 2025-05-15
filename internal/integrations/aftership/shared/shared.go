@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	form = smartform.NewAuthForm("aftership-auth", "Aftership Auth Screen", smartform.AuthStrategyOAuth2)
+	form = smartform.NewAuthForm("aftership-auth", "Aftership Auth Screen", smartform.AuthStrategyCustom)
 	_    = form.
 		APIField("api-key", "API Key").
 		Placeholder("Enter API Key").

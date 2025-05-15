@@ -17,10 +17,11 @@ package actions
 import (
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/trackingmore/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type trackAPackageActionProps struct {
@@ -32,76 +33,58 @@ type trackAPackageActionProps struct {
 
 type TrackAPackageAction struct{}
 
-func (c *TrackAPackageAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (c TrackAPackageAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (c TrackAPackageAction) Name() string {
-	return "Create A tracking"
-}
-
-func (c TrackAPackageAction) Description() string {
-	return "create a tracking for a package"
-}
-
-func (c TrackAPackageAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createTrackingDocs,
+func (c *TrackAPackageAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_a_tracking",
+		DisplayName:   "Create A tracking",
+		Description:   "create a tracking for a package",
+		Type:          core.ActionTypeAction,
+		Documentation: createTrackingDocs,
+		SampleOutput:  nil,
+		Settings:      core.ActionSettings{},
 	}
 }
 
-func (c TrackAPackageAction) Icon() *string {
-	return nil
+func (c *TrackAPackageAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_a_tracking", "Create A tracking")
+
+	form.TextField("tracking_number", "Tracking Number").
+		Placeholder("Tracking number of a package.").
+		Required(true).
+		HelpText("Tracking number of a package.")
+
+	form.SelectField("courier_code", "Courier Code").
+		Required(true).
+		AddOptions(shared.CourierCodes...).
+		Placeholder("Courier code").
+		HelpText("Courier code")
+
+	form.TextField("title", "Title").
+		Placeholder("Title of the package.").
+		Required(true).
+		HelpText("Title of the package.")
+
+	form.TextareaField("note", "Note").
+		Placeholder("Note about the package").
+		HelpText("Note about the package")
+
+	schema := form.Build()
+	return schema
 }
 
-func (c TrackAPackageAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c TrackAPackageAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"tracking_number": autoform.NewShortTextField().
-			SetDisplayName("Tracking Number").
-			SetDescription("Tracking number of a package.").
-			SetRequired(true).
-			Build(),
-		"courier_code": autoform.NewSelectField().
-			SetDisplayName("Courier Code").
-			SetDescription("Courier code").
-			SetOptions(shared.CourierCodes).
-			SetRequired(true).
-			Build(),
-		"title": autoform.NewShortTextField().
-			SetDisplayName("Title").
-			SetDescription("Title of the package.").
-			SetRequired(true).
-			Build(),
-		"note": autoform.NewLongTextField().
-			SetDisplayName("Note").
-			SetDescription("Note about the package").
-			SetRequired(false).
-			Build(),
+func (c *TrackAPackageAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[trackAPackageActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (c TrackAPackageAction) Auth() *sdk.Auth {
-	return &sdk.Auth{
-		Inherit: true,
-	}
-}
-
-func (c TrackAPackageAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[trackAPackageActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
 
 	endpoint := "/v4/trackings/create"
-	applicationKey := ctx.Auth.Extra["key"]
+	applicationKey := authCtx.Extra["key"]
 
 	payload := map[string]interface{}{
 		"courier_code":    input.CourierCode,
@@ -125,7 +108,13 @@ func (c TrackAPackageAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 		return nil, errors.New("invalid response format: data field is not an array")
 	}
 
-	return sdk.JSON(data), nil
+	return core.JSON(data), nil
+}
+
+func (c *TrackAPackageAction) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
+		Inherit: true,
+	}
 }
 
 func NewTrackAPackageAction() sdk.Action {

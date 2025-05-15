@@ -18,78 +18,63 @@ import (
 	"errors"
 	"log"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/toggl/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createProjectActionProps struct {
-	WorkspaceID string `json:"workspace_id"`
+	WorkspaceID string `json:"workspaces"`
 	Name        string `json:"name"`
 	Active      bool   `json:"active"`
 }
 
 type CreateProjectAction struct{}
 
-func (c *CreateProjectAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (c CreateProjectAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (c CreateProjectAction) Name() string {
-	return "Create Project"
-}
-
-func (c CreateProjectAction) Description() string {
-	return "Create a new project"
-}
-
-func (c CreateProjectAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createProjectDocs,
+func (c *CreateProjectAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_project",
+		DisplayName:   "Create Project",
+		Description:   "Create a new project",
+		Type:          core.ActionTypeAction,
+		Documentation: createProjectDocs,
+		SampleOutput:  nil,
+		Settings:      core.ActionSettings{},
 	}
 }
 
-func (c CreateProjectAction) Icon() *string {
-	return nil
+func (c *CreateProjectAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_project", "Create Project")
+
+	shared.RegisterWorkspacesProp(form)
+
+	form.TextField("name", "Project Name").
+		Placeholder("Project Name").
+		Required(true).
+		HelpText("Project Name")
+
+	form.CheckboxField("active", "Active").
+		DefaultValue(true).
+		HelpText("make project active")
+
+	schema := form.Build()
+	return schema
 }
 
-func (c CreateProjectAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c CreateProjectAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"workspace_id": shared.GetWorkSpaceInput(),
-		"name": autoform.NewShortTextField().
-			SetDisplayName("Project Name").
-			SetDescription("Project Name").
-			SetRequired(true).
-			Build(),
-		"active": autoform.NewBooleanField().
-			SetDisplayName("Active").
-			SetDescription("make project active").
-			SetDefaultValue(true).
-			Build(),
+func (c *CreateProjectAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (c CreateProjectAction) Auth() *sdk.Auth {
-	return &sdk.Auth{
-		Inherit: true,
-	}
-}
-
-func (c CreateProjectAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	if ctx.Auth.Extra["api-key"] == "" {
+	if authCtx.Extra["api-key"] == "" {
 		return nil, errors.New("missing toggl api key")
 	}
-	apiKey := ctx.Auth.Extra["api-key"]
-	input, err := sdk.InputToTypeSafely[createProjectActionProps](ctx.BaseContext)
+	apiKey := authCtx.Extra["api-key"]
+
+	input, err := sdk.InputToTypeSafely[createProjectActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -100,6 +85,12 @@ func (c CreateProjectAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 	}
 
 	return response, nil
+}
+
+func (c *CreateProjectAction) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
+		Inherit: true,
+	}
 }
 
 func NewCreateProjectAction() sdk.Action {

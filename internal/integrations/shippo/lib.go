@@ -19,7 +19,8 @@ import (
 
 	"github.com/wakflo/extensions/internal/integrations/shippo/actions"
 	"github.com/wakflo/extensions/internal/integrations/shippo/shared"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -28,12 +29,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
+var Integration = sdk.Register(NewShippo())
+
 type Shippo struct{}
 
-func (n *Shippo) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *Shippo) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *Shippo) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.ShippoSharedAuth,
+		Schema:   shared.ShippoSharedAuth,
 	}
 }
 
@@ -51,5 +58,3 @@ func (n *Shippo) Actions() []sdk.Action {
 func NewShippo() sdk.Integration {
 	return &Shippo{}
 }
-
-var Integration = sdk.Register(NewShippo(), Flow, ReadME)

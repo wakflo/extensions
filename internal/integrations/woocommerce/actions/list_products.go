@@ -2,47 +2,43 @@ package actions
 
 import (
 	"github.com/hiscaler/woocommerce-go"
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/woocommerce/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type ListProductsAction struct{}
 
-func (a *ListProductsAction) Name() string {
-	return "List Products"
-}
-
-func (a *ListProductsAction) Description() string {
-	return "Retrieves a list of products from a specified data source or API, allowing you to automate tasks that require product information, such as updating inventory levels or sending notifications."
-}
-
-func (a *ListProductsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListProductsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listProductsDocs,
+func (a *ListProductsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_products",
+		DisplayName:   "List Products",
+		Description:   "Retrieves a list of products from your WooCommerce store.",
+		Type:          core.ActionTypeAction,
+		Documentation: listProductsDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *ListProductsAction) Icon() *string {
-	return nil
+func (a *ListProductsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_products", "List Products")
+
+	form.TextareaField("projectId", "Limit").
+		Placeholder("").
+		HelpText("")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *ListProductsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"projectId": autoform.NewLongTextField().
-			SetDisplayName("Limit").
-			SetDescription("").
-			Build(),
-	}
-}
-
-func (a *ListProductsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	wooClient, err := shared.InitClient(ctx.BaseContext)
+func (a *ListProductsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	wooClient, err := shared.InitClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -55,18 +51,8 @@ func (a *ListProductsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 	return products, nil
 }
 
-func (a *ListProductsAction) Auth() *sdk.Auth {
+func (a *ListProductsAction) Auth() *core.AuthMetadata {
 	return nil
-}
-
-func (a *ListProductsAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *ListProductsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewListProductsAction() sdk.Action {

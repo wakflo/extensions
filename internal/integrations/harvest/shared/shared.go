@@ -21,18 +21,24 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wakflo/go-sdk/autoform"
-)
-
-var (
-	// #nosec
-	tokenURL   = "https://id.getharvest.com/api/v2/oauth2/token"
-	SharedAuth = autoform.NewOAuthField("https://id.getharvest.com/oauth2/authorize", &tokenURL, []string{
-		"all",
-	}).Build()
+	"github.com/juicycleff/smartform/v1"
 )
 
 const baseURL = "https://api.harvestapp.com"
+
+var (
+	harvestForm = smartform.NewAuthForm("harvest-auth", "Harvest OAuth", smartform.AuthStrategyOAuth2)
+	_           = harvestForm.
+			OAuthField("oauth", "Harvest OAuth").
+			AuthorizationURL("https://id.getharvest.com/oauth2/authorize").
+			TokenURL("https://id.getharvest.com/api/v2/oauth2/token").
+			Scopes([]string{
+			"all",
+		}).
+		Build()
+)
+
+var SharedHarvestAuth = harvestForm.Build()
 
 func GetHarvestClient(accessToken, url string) (map[string]interface{}, error) {
 	fullURL := baseURL + url

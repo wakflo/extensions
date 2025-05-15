@@ -3,10 +3,11 @@ package actions
 import (
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/clickup/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type deleteTaskProps struct {
@@ -15,45 +16,54 @@ type deleteTaskProps struct {
 
 type DeleteTaskOperation struct{}
 
-func (o *DeleteTaskOperation) Name() string {
-	return "Delete Task"
-}
-
-func (o *DeleteTaskOperation) Description() string {
-	return "Deletes a task from ClickUp."
-}
-
-func (o *DeleteTaskOperation) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (o *DeleteTaskOperation) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &deleteTaskDocs,
+// Metadata returns metadata about the action
+func (o *DeleteTaskOperation) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "delete_task",
+		DisplayName:   "Delete Task",
+		Description:   "Deletes a task from ClickUp.",
+		Type:          core.ActionTypeAction,
+		Documentation: deleteTaskDocs,
+		Icon:          "material-symbols:delete",
+		SampleOutput: map[string]any{
+			"success": true,
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (o *DeleteTaskOperation) Icon() *string {
-	icon := "material-symbols:delete"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (o *DeleteTaskOperation) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("delete_task", "Delete Task")
+
+	form.TextField("task-id", "task-id").
+		Placeholder("Task ID").
+		HelpText("The ID of the task to delete").
+		Required(true)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (o *DeleteTaskOperation) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"task-id": autoform.NewShortTextField().
-			SetDisplayName("Task ID").
-			SetDescription("The ID of the task to delete").
-			SetRequired(true).
-			Build(),
-	}
+// Auth returns the authentication requirements for the action
+func (o *DeleteTaskOperation) Auth() *core.AuthMetadata {
+	return nil
 }
 
-func (o *DeleteTaskOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	accessToken := ctx.Auth.AccessToken
-	input, err := sdk.InputToTypeSafely[deleteTaskProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (o *DeleteTaskOperation) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[deleteTaskProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken := authCtx.Token.AccessToken
 	reqURL := shared.BaseURL + "/v2/task/" + input.TaskID
 	req, err := http.NewRequest(http.MethodDelete, reqURL, nil)
 	if err != nil {
@@ -71,20 +81,6 @@ func (o *DeleteTaskOperation) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	return map[string]interface{}{
 		"task": "Task Deleted",
 	}, nil
-}
-
-func (o *DeleteTaskOperation) Auth() *sdk.Auth {
-	return nil
-}
-
-func (o *DeleteTaskOperation) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"success": true,
-	}
-}
-
-func (o *DeleteTaskOperation) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewDeleteTaskOperation() sdk.Action {

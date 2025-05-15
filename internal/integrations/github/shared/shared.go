@@ -23,8 +23,6 @@ import (
 
 	"github.com/gookit/goutil/arrutil"
 	"github.com/juicycleff/smartform/v1"
-	"github.com/wakflo/go-sdk/autoform"
-	"github.com/wakflo/go-sdk/core"
 
 	"github.com/wakflo/go-sdk/v2"
 	sdkcontext "github.com/wakflo/go-sdk/v2/context"
@@ -82,8 +80,13 @@ func GithubGQL(accessToken, query string) (map[string]interface{}, error) {
 	return result, nil
 }
 
-func GetRepositoryInput() *sdkcore.AutoFormSchema {
-	getRepository := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterRepositoryProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getRepository := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		query := `{
 		  viewer {
 		    repositories(first: 100) {
@@ -109,7 +112,7 @@ func GetRepositoryInput() *sdkcore.AutoFormSchema {
 		}
 
 		req.Header.Add("Accept", "application/vnd.github+json")
-		req.Header.Add("Authorization", "Bearer "+ctx.Auth.AccessToken)
+		req.Header.Add("Authorization", "Bearer "+authCtx.AccessToken)
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -146,18 +149,31 @@ func GetRepositoryInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(repositories, len(repositories))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Repository").
-		SetDescription("Select a repository").
-		SetDynamicOptions(&getRepository).
-		SetRequired(true).Build()
+	return form.SelectField("repository", "Repository").
+		Placeholder("Select a repository").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getRepository)).
+				WithSearchSupport().
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select a repository")
 }
 
-func GetLabelInput() *sdkcore.AutoFormSchema {
-	getLabels := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterLabelProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getLabels := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		input := sdk.DynamicInputToType[struct {
 			Repository string `json:"repository"`
 		}](ctx)
+
 		query := fmt.Sprintf(` {
 		  node(id: "%s") {
 		    ... on Repository {
@@ -184,7 +200,7 @@ func GetLabelInput() *sdkcore.AutoFormSchema {
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 
-		req.Header.Set("Authorization", "Bearer "+ctx.Auth.AccessToken)
+		req.Header.Set("Authorization", "Bearer "+authCtx.AccessToken)
 		req.Header.Add("Accept", "application/vnd.github+json")
 
 		client := &http.Client{}
@@ -221,19 +237,33 @@ func GetLabelInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(labels, len(labels))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Labels").
-		SetDescription("Select labels for the issue").
-		SetDynamicOptions(&getLabels).
-		SetRequired(false).
-		Build()
+	return form.SelectField("labels", "Labels").
+		Placeholder("Select labels for the issue").
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getLabels)).
+				WithFieldReference("repository", "repository").
+				WithSearchSupport().
+				End().
+				RefreshOn("repository").
+				GetDynamicSource(),
+		).
+		HelpText("Select labels for the issue")
 }
 
-func GetIssuesInput() *sdkcore.AutoFormSchema {
-	getIssues := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterIssuesProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getIssues := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		input := sdk.DynamicInputToType[struct {
 			Repository string `json:"repository"`
 		}](ctx)
+
 		query := fmt.Sprintf(` {
 		  node(id: "%s") {
 		    ... on Repository {
@@ -260,7 +290,7 @@ func GetIssuesInput() *sdkcore.AutoFormSchema {
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 
-		req.Header.Set("Authorization", "Bearer "+ctx.Auth.AccessToken)
+		req.Header.Set("Authorization", "Bearer "+authCtx.AccessToken)
 		req.Header.Add("Accept", "application/vnd.github+json")
 
 		client := &http.Client{}
@@ -307,12 +337,20 @@ func GetIssuesInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(issues, len(issues))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Issues").
-		SetDescription("Select issue").
-		SetDynamicOptions(&getIssues).
-		SetRequired(true).
-		Build()
+	return form.SelectField("issue_number", "Issues").
+		Placeholder("Select an issue").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getIssues)).
+				WithFieldReference("repository", "repository").
+				WithSearchSupport().
+				End().
+				RefreshOn("repository").
+				GetDynamicSource(),
+		).
+		HelpText("Select an issue")
 }
 
 // func getAssigneeInput() *sdkcore.AutoFormSchema {
@@ -401,153 +439,155 @@ func GetIssuesInput() *sdkcore.AutoFormSchema {
 //		Build()
 //  }
 
-var LockIssueReason = []*sdkcore.AutoFormSchema{
-	{Const: " OFF_TOPIC", Title: "Off topic"},
-	{Const: "TOO_HEATED", Title: "Too heated"},
-	{Const: "RESOLVED", Title: "resolved"},
-	{Const: "SPAM", Title: "Spam"},
-}
+// var LockIssueReason = []*sdkcore.AutoFormSchema{
+// 	{Const: " OFF_TOPIC", Title: "Off topic"},
+// 	{Const: "TOO_HEATED", Title: "Too heated"},
+// 	{Const: "RESOLVED", Title: "resolved"},
+// 	{Const: "SPAM", Title: "Spam"},
+// }
 
 // GetRepositories is a dynamic field function that retrieves a list of repositories
-func GetRepositories(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
-	query := `{
-	  viewer {
-	    repositories(first: 100) {
-	      nodes {
-	        name
-	        id
-	      }
-	    }
-	  }
-	}`
+// func GetRepositories(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
+// 	query := `{
+// 	  viewer {
+// 	    repositories(first: 100) {
+// 	      nodes {
+// 	        name
+// 	        id
+// 	      }
+// 	    }
+// 	  }
+// 	}`
 
-	queryBody := map[string]string{
-		"query": query,
-	}
-	jsonQuery, err := json.Marshal(queryBody)
-	if err != nil {
-		return nil, err
-	}
+// 	queryBody := map[string]string{
+// 		"query": query,
+// 	}
+// 	jsonQuery, err := json.Marshal(queryBody)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	authCtx, err := ctx.AuthContext()
-	if err != nil {
-		return nil, err
-	}
+// 	authCtx, err := ctx.AuthContext()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	req, err := http.NewRequest(http.MethodPost, baseURL, bytes.NewBuffer(jsonQuery))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
+// 	req, err := http.NewRequest(http.MethodPost, baseURL, bytes.NewBuffer(jsonQuery))
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to create request: %w", err)
+// 	}
 
-	req.Header.Add("Accept", "application/vnd.github+json")
-	req.Header.Add("Authorization", "Bearer "+authCtx.AccessToken)
+// 	req.Header.Add("Accept", "application/vnd.github+json")
+// 	req.Header.Add("Authorization", "Bearer "+authCtx.AccessToken)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to make request: %w", err)
-	}
-	defer resp.Body.Close()
+// 	client := &http.Client{}
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to make request: %w", err)
+// 	}
+// 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
-	}
+// 	body, err := io.ReadAll(resp.Body)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to read response body: %w", err)
+// 	}
 
-	var response struct {
-		Data struct {
-			Viewer struct {
-				Repositories struct {
-					Nodes []struct {
-						Name string `json:"name"`
-						ID   string `json:"id"`
-					} `json:"nodes"`
-				} `json:"repositories"`
-			} `json:"viewer"`
-		} `json:"data"`
-	}
+// 	var response struct {
+// 		Data struct {
+// 			Viewer struct {
+// 				Repositories struct {
+// 					Nodes []struct {
+// 						Name string `json:"name"`
+// 						ID   string `json:"id"`
+// 					} `json:"nodes"`
+// 				} `json:"repositories"`
+// 			} `json:"viewer"`
+// 		} `json:"data"`
+// 	}
 
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		return nil, err
-	}
+// 	err = json.Unmarshal(body, &response)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	repositories := response.Data.Viewer.Repositories.Nodes
+// 	repositories := response.Data.Viewer.Repositories.Nodes
 
-	return ctx.Respond(repositories, len(repositories))
-}
+// 	return ctx.Respond(repositories, len(repositories))
+// }
 
-// GetIssues is a dynamic field function that retrieves a list of issues for a repository
-func GetIssues(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
-	input := sdk.DynamicInputToType[struct {
-		Repository string `json:"repository"`
-	}](ctx)
+// // GetIssues is a dynamic field function that retrieves a list of issues for a repository
+// func GetIssues(ctx sdkcontext.DynamicFieldContext) (*core.DynamicOptionsResponse, error) {
+// 	input := sdk.DynamicInputToType[struct {
+// 		Repository string `json:"repository"`
+// 	}](ctx)
 
-	query := fmt.Sprintf(` {
-	  node(id: "%s") {
-	    ... on Repository {
-	      issues(first: 100) {
-	        nodes {
-	          title
-	          id
-	        }
-	      }
-	    }
-	  }
-	}`, input.Repository)
+// 	query := fmt.Sprintf(` {
+// 	  node(id: "%s") {
+// 	    ... on Repository {
+// 	      issues(first: 100) {
+// 	        nodes {
+// 	          title
+// 	          id
+// 	        }
+// 	      }
+// 	    }
+// 	  }
+// 	}`, input.Repository)
 
-	queryBody := map[string]interface{}{
-		"query": query,
-	}
-	jsonQuery, err := json.Marshal(queryBody)
-	if err != nil {
-		return nil, err
-	}
+// 	queryBody := map[string]interface{}{
+// 		"query": query,
+// 	}
+// 	jsonQuery, err := json.Marshal(queryBody)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	authCtx, err := ctx.AuthContext()
-	if err != nil {
-		return nil, err
-	}
+// 	authCtx, err := ctx.AuthContext()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	req, err := http.NewRequest(http.MethodPost, baseURL, bytes.NewBuffer(jsonQuery))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
+// 	req, err := http.NewRequest(http.MethodPost, baseURL, bytes.NewBuffer(jsonQuery))
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to create request: %w", err)
+// 	}
 
-	req.Header.Set("Authorization", "Bearer "+authCtx.AccessToken)
-	req.Header.Add("Accept", "application/vnd.github+json")
+// 	req.Header.Set("Authorization", "Bearer "+authCtx.AccessToken)
+// 	req.Header.Add("Accept", "application/vnd.github+json")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to make request: %w", err)
-	}
-	defer resp.Body.Close()
+// 	client := &http.Client{}
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to make request: %w", err)
+// 	}
+// 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
-	}
+// 	body, err := io.ReadAll(resp.Body)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to read response body: %w", err)
+// 	}
 
-	var response struct {
-		Data struct {
-			Node struct {
-				Issues struct {
-					Nodes []struct {
-						Title string `json:"title"`
-						ID    string `json:"id"`
-					} `json:"nodes"`
-				} `json:"issues"`
-			} `json:"node"`
-		} `json:"data"`
-	}
+// 	var response struct {
+// 		Data struct {
+// 			Node struct {
+// 				Issues struct {
+// 					Nodes []struct {
+// 						Title string `json:"title"`
+// 						ID    string `json:"id"`
+// 					} `json:"nodes"`
+// 				} `json:"issues"`
+// 			} `json:"node"`
+// 		} `json:"data"`
+// 	}
 
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		return nil, err
-	}
+// 	err = json.Unmarshal(body, &response)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	issues := response.Data.Node.Issues.Nodes
+// 	issues := response.Data.Node.Issues.Nodes
 
-	return ctx.Respond(issues, len(issues))
-}
+// 	return ctx.Respond(issues, len(issues))
+
+// 	return
+// }

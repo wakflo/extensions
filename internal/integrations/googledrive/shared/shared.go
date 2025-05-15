@@ -33,17 +33,17 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
-var form = smartform.NewAuthForm("google-auth", "Google Drive Oauth", smartform.AuthStrategyOAuth2)
-var _ = form.
-	OAuthField("oauth", "Google Drive Oauth").
-	AuthorizationURL("https://accounts.google.com/o/oauth2/auth").
-	TokenURL("https://oauth2.googleapis.com/token").
-	Scopes([]string{"https://www.googleapis.com/auth/drive"}).
-	Build()
-
 var (
-	SharedGoogleDriveAuth = form.Build()
+	form = smartform.NewAuthForm("google-auth", "Google Drive Oauth", smartform.AuthStrategyOAuth2)
+	_    = form.
+		OAuthField("oauth", "Google Drive Oauth").
+		AuthorizationURL("https://accounts.google.com/o/oauth2/auth").
+		TokenURL("https://oauth2.googleapis.com/token").
+		Scopes([]string{"https://www.googleapis.com/auth/drive"}).
+		Build()
 )
+
+var SharedGoogleDriveAuth = form.Build()
 
 // File The metadata for a file. Some resource methods (such as
 // `files.update`) require a `fileId`. Use the `files.list` method to

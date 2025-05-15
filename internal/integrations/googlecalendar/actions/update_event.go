@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googlecalendar/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/option"
 )
@@ -24,66 +25,78 @@ type updateEventActionProps struct {
 
 type UpdateEventAction struct{}
 
-func (a *UpdateEventAction) Name() string {
-	return "Update Event"
-}
-
-func (a *UpdateEventAction) Description() string {
-	return "Updates an existing event in your workflow, allowing you to modify or refresh information as needed. This action enables real-time updates and ensures that all connected workflows and integrations reflect the latest changes."
-}
-
-func (a *UpdateEventAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *UpdateEventAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &updateEventDocs,
+// Metadata returns metadata about the action
+func (a *UpdateEventAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "update_event",
+		DisplayName:   "Update Event",
+		Description:   "Updates an existing event in your workflow, allowing you to modify or refresh information as needed. This action enables real-time updates and ensures that all connected workflows and integrations reflect the latest changes.",
+		Type:          core.ActionTypeAction,
+		Documentation: updateEventDocs,
+		Icon:          "",
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *UpdateEventAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *UpdateEventAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("update_event", "Update Event")
+
+	shared.RegisterCalendarProps(form)
+
+	shared.RegisterCalendarEventProps(form)
+
+	form.TextField("title", "title").
+		Placeholder("Event Title").
+		HelpText("The title of the event.").
+		Required(true)
+
+	form.TextareaField("description", "description").
+		Placeholder("Event Description").
+		HelpText("The description of the event").
+		Required(true)
+
+	form.TextField("location", "location").
+		Placeholder("Event Location").
+		HelpText("The location of the event").
+		Required(true)
+
+	form.DateTimeField("start", "start").
+		Placeholder("Event Start Time").
+		HelpText("The start time of the event").
+		Required(false)
+
+	form.DateTimeField("end", "end").
+		Placeholder("Event end time").
+		HelpText("The end time of the event").
+		Required(false)
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *UpdateEventAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *UpdateEventAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"calendar_id": shared.GetCalendarInput("Calendar", "select calendar", true),
-		"event_id":    shared.GetCalendarEventIDInput("Event Id", "select event", true),
-		"title": autoform.NewShortTextField().
-			SetDisplayName("Event Title").
-			SetDescription("The title of the event.").
-			SetRequired(true).
-			Build(),
-		"description": autoform.NewLongTextField().
-			SetDisplayName("Event Description").
-			SetDescription("The description of the event").
-			SetRequired(true).
-			Build(),
-		"location": autoform.NewShortTextField().
-			SetDisplayName("Event Location").
-			SetDescription("The location of the event").
-			SetRequired(true).
-			Build(),
-		"start": autoform.NewDateTimeField().
-			SetDisplayName("Event Start Time").
-			SetDescription("The start time of the event").
-			SetRequired(false).
-			Build(),
-		"end": autoform.NewDateTimeField().
-			SetDisplayName("Event end time").
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (a *UpdateEventAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[updateEventActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *UpdateEventAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[updateEventActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	eventService, err := calendar.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	eventService, err := calendar.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -128,20 +141,6 @@ func (a *UpdateEventAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 		},
 	}).Do()
 	return event, err
-}
-
-func (a *UpdateEventAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *UpdateEventAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *UpdateEventAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewUpdateEventAction() sdk.Action {

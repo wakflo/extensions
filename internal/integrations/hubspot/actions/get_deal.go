@@ -3,10 +3,11 @@ package actions
 import (
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/hubspot/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getDealActionProps struct {
@@ -15,77 +16,71 @@ type getDealActionProps struct {
 
 type GetDealAction struct{}
 
-func (a *GetDealAction) Name() string {
-	return "Get Deal"
-}
-
-func (a *GetDealAction) Description() string {
-	return "Retrieve a specific HubSpot deal by ID"
-}
-
-func (a *GetDealAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetDealAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getDealDocs,
+// Metadata returns metadata about the action
+func (a *GetDealAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_deal",
+		DisplayName:   "Get Deal",
+		Description:   "Retrieve a specific HubSpot deal by ID",
+		Type:          core.ActionTypeAction,
+		Documentation: getDealDocs,
+		SampleOutput: map[string]interface{}{
+			"id": "12345",
+			"properties": map[string]interface{}{
+				"dealname":            "Sample Deal",
+				"amount":              "10000",
+				"dealstage":           "presentationscheduled",
+				"pipeline":            "default",
+				"closedate":           "2023-12-31",
+				"createdate":          "2023-01-15T09:30:00Z",
+				"hs_lastmodifieddate": "2023-01-20T14:45:00Z",
+			},
+			"createdAt": "2023-01-15T09:30:00Z",
+			"updatedAt": "2023-01-20T14:45:00Z",
+			"archived":  false,
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetDealAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *GetDealAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_deal", "Get Deal")
+
+	form.TextField("dealId", "Deal ID").
+		Required(true).
+		HelpText("ID of the HubSpot deal to retrieve")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *GetDealAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *GetDealAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"dealId": autoform.NewShortTextField().
-			SetDisplayName("Deal ID").
-			SetDescription("ID of the HubSpot deal to retrieve").
-			SetRequired(true).Build(),
+// Perform executes the action with the given context and input
+func (a *GetDealAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getDealActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *GetDealAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getDealActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
 
 	reqURL := "/crm/v3/objects/deals/" + input.DealID
 
-	resp, err := shared.HubspotClient(reqURL, ctx.Auth.AccessToken, http.MethodGet, nil)
+	resp, err := shared.HubspotClient(reqURL, authCtx.Token.AccessToken, http.MethodGet, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	return resp, nil
-}
-
-func (a *GetDealAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *GetDealAction) SampleData() sdkcore.JSON {
-	return map[string]interface{}{
-		"id": "12345",
-		"properties": map[string]interface{}{
-			"dealname":            "Sample Deal",
-			"amount":              "10000",
-			"dealstage":           "presentationscheduled",
-			"pipeline":            "default",
-			"closedate":           "2023-12-31",
-			"createdate":          "2023-01-15T09:30:00Z",
-			"hs_lastmodifieddate": "2023-01-20T14:45:00Z",
-		},
-		"createdAt": "2023-01-15T09:30:00Z",
-		"updatedAt": "2023-01-20T14:45:00Z",
-		"archived":  false,
-	}
-}
-
-func (a *GetDealAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetDealAction() sdk.Action {

@@ -5,9 +5,10 @@ import (
 	"errors"
 	"time"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/option"
 )
@@ -19,65 +20,78 @@ type eventCreatedTriggerProps struct {
 
 type EventCreatedTrigger struct{}
 
-func (t *EventCreatedTrigger) Name() string {
-	return "Event Created"
+func (t *EventCreatedTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "event_created",
+		DisplayName:   "Event Created",
+		Description:   "Triggered when a new event is created in your workflow automation platform, allowing you to automate actions and workflows based on the creation of a new event.",
+		Type:          sdkcore.TriggerTypePolling,
+		Documentation: eventCreatedDocs,
+		SampleOutput: map[string]any{
+			"new_events": []map[string]any{
+				{
+					"id":          "abc123xyz",
+					"summary":     "Team Meeting",
+					"description": "Weekly team sync",
+					"start": map[string]string{
+						"dateTime": "2025-01-15T14:00:00Z",
+					},
+					"end": map[string]string{
+						"dateTime": "2025-01-15T15:00:00Z",
+					},
+				},
+			},
+		},
+	}
 }
 
-func (t *EventCreatedTrigger) Description() string {
-	return "Triggered when a new event is created in your workflow automation platform, allowing you to automate actions and workflows based on the creation of a new event."
+func (t *EventCreatedTrigger) Auth() *sdkcore.AuthMetadata {
+	return nil
 }
 
 func (t *EventCreatedTrigger) GetType() sdkcore.TriggerType {
 	return sdkcore.TriggerTypePolling
 }
 
-func (t *EventCreatedTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &eventCreatedDocs,
-	}
+func (t *EventCreatedTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("google-calendar-event-created", "Event Created")
+
+	form.TextField("calendar_id", "calendar_id").
+		Placeholder("Calendar ID").
+		HelpText("The ID of the calendar to trigger on.").
+		Required(true)
+
+	form.NumberField("check_interval", "check_interval").
+		Placeholder("Check Interval (minutes)").
+		HelpText("How often to check for new events (in minutes).").
+		DefaultValue(5).
+		Required(true)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (t *EventCreatedTrigger) Icon() *string {
+func (t *EventCreatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (t *EventCreatedTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"calendar_id": autoform.NewShortTextField().
-			SetDisplayName("Calendar ID").
-			SetDescription("The ID of the calendar to trigger on.").
-			SetRequired(true).
-			Build(),
-		"check_interval": autoform.NewNumberField().
-			SetDisplayName("Check Interval (minutes)").
-			SetDescription("How often to check for new events (in minutes).").
-			SetRequired(true).
-			SetDefaultValue(5).
-			Build(),
-	}
-}
-
-// Start initializes the eventCreatedTrigger, required for event and webhook triggers in a lifecycle context.
-func (t *EventCreatedTrigger) Start(ctx sdk.LifecycleContext) error {
-	// Required for event and webhook triggers
+func (t *EventCreatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-// Stop shuts down the eventCreatedTrigger, cleaning up resources and performing necessary teardown operations.
-func (t *EventCreatedTrigger) Stop(ctx sdk.LifecycleContext) error {
-	return nil
-}
-
-// Execute performs the main action logic of eventCreatedTrigger by processing the input context and returning a JSON response.
-// It converts the base context input into a strongly-typed structure, executes the desired logic, and generates output.
-// Returns a JSON output map with the resulting data or an error if operation fails. required for Pooling triggers
-func (t *EventCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[eventCreatedTriggerProps](ctx.BaseContext)
+func (t *EventCreatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[eventCreatedTriggerProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	srv, err := calendar.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	srv, err := calendar.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -93,8 +107,9 @@ func (t *EventCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, err
 	now := time.Now().UTC()
 	var timeMin time.Time
 
-	if ctx.Metadata().LastRun != nil {
-		timeMin = *ctx.Metadata().LastRun
+	lastRun, err := ctx.GetMetadata("lastRun")
+	if err == nil && lastRun != nil {
+		timeMin = *lastRun.(*time.Time)
 	} else {
 		timeMin = now.Add(-time.Duration(input.CheckInterval) * time.Minute)
 	}
@@ -128,16 +143,6 @@ func (t *EventCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, err
 
 func (t *EventCreatedTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria {
 	return sdkcore.TriggerCriteria{}
-}
-
-func (t *EventCreatedTrigger) Auth() *sdk.Auth {
-	return nil
-}
-
-func (t *EventCreatedTrigger) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
 }
 
 func NewEventCreatedTrigger() sdk.Trigger {

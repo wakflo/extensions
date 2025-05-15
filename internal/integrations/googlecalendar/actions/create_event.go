@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googlecalendar/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/option"
 )
@@ -23,65 +24,72 @@ type createEventActionProps struct {
 
 type CreateEventAction struct{}
 
-func (a *CreateEventAction) Name() string {
-	return "Create Event"
-}
-
-func (a *CreateEventAction) Description() string {
-	return "Create Event: Triggers the creation of a new event in your chosen calendar or scheduling system, allowing you to automate the process of setting up meetings, appointments, and other events from within your workflow."
-}
-
-func (a *CreateEventAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateEventAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createEventDocs,
+func (a *CreateEventAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_event",
+		DisplayName:   "Create Event",
+		Description:   "Create Event: Triggers the creation of a new event in your chosen calendar or scheduling system, allowing you to automate the process of setting up meetings, appointments, and other events from within your workflow.",
+		Type:          core.ActionTypeAction,
+		Documentation: createEventDocs,
+		Icon:          "",
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateEventAction) Icon() *string {
+func (a *CreateEventAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_event", "Create Event")
+
+	shared.RegisterCalendarProps(form)
+
+	form.TextField("title", "title").
+		Placeholder("Event Title").
+		HelpText("The title of the event.").
+		Required(true)
+
+	form.TextareaField("description", "description").
+		Placeholder("Event Description").
+		HelpText("The description of the event").
+		Required(true)
+
+	form.TextField("location", "location").
+		Placeholder("Event Location").
+		HelpText("The location of the event").
+		Required(true)
+
+	form.DateTimeField("start", "start").
+		Placeholder("Event Start Time").
+		HelpText("The start time of the event").
+		Required(true)
+
+	form.DateTimeField("end", "end").
+		Placeholder("Event end time").
+		HelpText("The end time of the event").
+		Required(true)
+
+	schema := form.Build()
+
+	return schema
+}
+
+func (a *CreateEventAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *CreateEventAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"calendar_id": shared.GetCalendarInput("Calendar", "select calendar", true),
-		"title": autoform.NewShortTextField().
-			SetDisplayName("Event Title").
-			SetDescription("The title of the event.").
-			SetRequired(true).
-			Build(),
-		"description": autoform.NewLongTextField().
-			SetDisplayName("Event Description").
-			SetDescription("The description of the event").
-			SetRequired(true).
-			Build(),
-		"location": autoform.NewShortTextField().
-			SetDisplayName("Event Location").
-			SetDescription("The location of the event").
-			SetRequired(true).
-			Build(),
-		"start": autoform.NewDateTimeField().
-			SetDisplayName("Event Start Time").
-			SetDescription("The start time of the event").
-			SetRequired(true).
-			Build(),
-		"end": autoform.NewDateTimeField().
-			SetDisplayName("Event end time").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *CreateEventAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createEventActionProps](ctx.BaseContext)
+func (a *CreateEventAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createEventActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	eventService, err := calendar.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	eventService, err := calendar.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -122,20 +130,6 @@ func (a *CreateEventAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 		},
 	}).Do()
 	return event, err
-}
-
-func (a *CreateEventAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *CreateEventAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateEventAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateEventAction() sdk.Action {

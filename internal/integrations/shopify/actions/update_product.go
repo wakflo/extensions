@@ -5,10 +5,11 @@ import (
 	"fmt"
 
 	goshopify "github.com/bold-commerce/go-shopify/v4"
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/shopify/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type updateProductActionProps struct {
@@ -23,76 +24,73 @@ type updateProductActionProps struct {
 
 type UpdateProductAction struct{}
 
-func (a *UpdateProductAction) Name() string {
-	return "Update Product"
-}
-
-func (a *UpdateProductAction) Description() string {
-	return "Updates product information in your e-commerce platform or CRM system by mapping to specific fields such as product name, description, price, and inventory levels."
-}
-
-func (a *UpdateProductAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *UpdateProductAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &updateProductDocs,
+// Metadata returns metadata about the action
+func (a *UpdateProductAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "update_product",
+		DisplayName:   "Update Product",
+		Description:   "Updates product information in your e-commerce platform or CRM system by mapping to specific fields such as product name, description, price, and inventory levels.",
+		Type:          core.ActionTypeAction,
+		Documentation: updateProductDocs,
+		SampleOutput: map[string]any{
+			"updated_product": map[string]any{},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *UpdateProductAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *UpdateProductAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("update_product", "Update Product")
+
+	form.NumberField("productID", "Product ID").
+		Required(true).
+		HelpText("The id of the product.")
+
+	form.TextField("title", "Product title").
+		Required(false).
+		HelpText("The title of the product.")
+
+	form.TextField("bodyHTML", "Product description").
+		Required(false).
+		HelpText("The description of the product.")
+
+	form.TextField("vendor", "Vendor").
+		Required(false).
+		HelpText("Vendor.")
+
+	form.TextField("productType", "Product type").
+		Required(false).
+		HelpText("A categorization for the product used for filtering and searching products.")
+
+	form.TextField("tags", "Tags").
+		Required(false).
+		HelpText("A string of comma-separated tags for filtering and search.")
+
+	form.SelectField("status", "Status").
+		Required(true).
+		AddOption("active", "Active").
+		AddOption("draft", "Draft").
+		HelpText("The status of the product: active or draft")
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *UpdateProductAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *UpdateProductAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"productID": autoform.NewNumberField().
-			SetDisplayName("Product ID").
-			SetDescription("The id of the product.").
-			SetRequired(true).
-			Build(),
-		"title": autoform.NewShortTextField().
-			SetDisplayName("Product title").
-			SetDescription("The title of the product.").
-			SetRequired(false).
-			Build(),
-		"bodyHTML": autoform.NewLongTextField().
-			SetDisplayName("Product description").
-			SetDescription("The description of the product.").
-			SetRequired(false).
-			Build(),
-		"vendor": autoform.NewShortTextField().
-			SetDisplayName("Vendor").
-			SetDescription("Vendor.").
-			SetRequired(false).
-			Build(),
-		"productType": autoform.NewShortTextField().
-			SetDisplayName("Product type").
-			SetDescription("A categorization for the product used for filtering and searching products.").
-			SetRequired(false).
-			Build(),
-		"tags": autoform.NewLongTextField().
-			SetDisplayName("Tags").
-			SetDescription("A string of comma-separated tags for filtering and search.").
-			SetRequired(false).
-			Build(),
-		"status": autoform.NewSelectField().
-			SetDisplayName("Status").
-			SetDescription("The status of the product: active or draft").
-			SetOptions(shared.StatusFormat).
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *UpdateProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[updateProductActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *UpdateProductAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[updateProductActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.CreateClient(ctx.BaseContext)
+	client, err := shared.CreateClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -127,20 +125,6 @@ func (a *UpdateProductAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	return map[string]interface{}{
 		"updated_product": updatedProduct,
 	}, nil
-}
-
-func (a *UpdateProductAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *UpdateProductAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *UpdateProductAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewUpdateProductAction() sdk.Action {

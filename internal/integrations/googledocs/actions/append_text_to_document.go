@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/docs/v1"
 	"google.golang.org/api/option"
 )
@@ -18,50 +19,58 @@ type appendTextToDocumentActionProps struct {
 
 type AppendTextToDocumentAction struct{}
 
-func (a *AppendTextToDocumentAction) Name() string {
-	return "Append Text to Document"
-}
-
-func (a *AppendTextToDocumentAction) Description() string {
-	return "Appends text to an existing document or file, allowing you to add notes, comments, or additional information to the end of the file. This integration action is useful when you need to update a document with new information, such as adding a signature or timestamp, without modifying the original content."
-}
-
-func (a *AppendTextToDocumentAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *AppendTextToDocumentAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &appendTextToDocumentDocs,
+// Metadata returns metadata about the action
+func (a *AppendTextToDocumentAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "append_text_to_document",
+		DisplayName:   "Append Text to Document",
+		Description:   "Appends text to an existing document or file, allowing you to add notes, comments, or additional information to the end of the file. This integration action is useful when you need to update a document with new information, such as adding a signature or timestamp, without modifying the original content.",
+		Type:          core.ActionTypeAction,
+		Documentation: appendTextToDocumentDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *AppendTextToDocumentAction) Icon() *string {
+// Properties returns the schema for the action's input configuration
+func (a *AppendTextToDocumentAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("append_text_to_document", "Append Text to Document")
+
+	form.TextField("id", "Document ID").
+		Placeholder("Document ID").
+		HelpText("The id of the document.").
+		Required(true)
+
+	form.TextareaField("text", "Text").
+		Placeholder("Text to append").
+		HelpText("The text to append to the document").
+		Required(true)
+
+	schema := form.Build()
+
+	return schema
+}
+
+// Auth returns the authentication requirements for the action
+func (a *AppendTextToDocumentAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-func (a *AppendTextToDocumentAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"id": autoform.NewShortTextField().
-			SetDisplayName("Document ID").
-			SetDescription("The id of the document.").
-			SetRequired(true).
-			Build(),
-		"text": autoform.NewLongTextField().
-			SetDisplayName("Text to append").
-			SetDescription("The text to append to the document").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *AppendTextToDocumentAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[appendTextToDocumentActionProps](ctx.BaseContext)
+// Perform executes the action with the given context and input
+func (a *AppendTextToDocumentAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[appendTextToDocumentActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	docService, err := docs.NewService(context.Background(), option.WithTokenSource(*ctx.Auth.TokenSource))
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	docService, err := docs.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
 	}
@@ -83,24 +92,9 @@ func (a *AppendTextToDocumentAction) Perform(ctx sdk.PerformContext) (sdkcore.JS
 				},
 			},
 		},
-	}).
-		// Fields("id, name, mimeType, webViewLink, kind, createdTime").
-		Do()
+	}).Do()
+
 	return document, err
-}
-
-func (a *AppendTextToDocumentAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *AppendTextToDocumentAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *AppendTextToDocumentAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewAppendTextToDocumentAction() sdk.Action {

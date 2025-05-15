@@ -22,23 +22,22 @@ import (
 	"net/http"
 	"net/url"
 
-	sdkcore "github.com/wakflo/go-sdk/core"
-
-	"github.com/wakflo/go-sdk/autoform"
+	"github.com/juicycleff/smartform/v1"
 )
 
-var SharedAuth = autoform.NewCustomAuthField().
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"api-key": autoform.NewLongTextField().SetDisplayName("Secret Api Key").
-			SetDescription("Secret key acquired from your Stripe dashboard").
-			SetRequired(true).
-			Build(),
-	}).
-	Build()
+var (
+	form = smartform.NewAuthForm("stripe-auth", "Stripe API Authentication", smartform.AuthStrategyCustom)
+
+	_ = form.TextField("api-key", "Secret API Key (Required)").
+		Required(true).
+		HelpText("Secret key acquired from your Stripe dashboard")
+
+	StripeSharedAuth = form.Build()
+)
 
 const baseURL = "https://api.stripe.com"
 
-func StripClient(apiKey, url, httpType string, payload []byte, params url.Values) (map[string]interface{}, error) {
+func StripeClient(apiKey, url, httpType string, payload []byte, params url.Values) (map[string]interface{}, error) {
 	fullURL := baseURL + url
 
 	req, err := http.NewRequest(httpType, fullURL, bytes.NewBuffer(payload))

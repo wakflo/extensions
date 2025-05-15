@@ -17,17 +17,17 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
-var form = smartform.NewAuthForm("clickup-auth", "ClickUp OAuth", smartform.AuthStrategyOAuth2)
-var _ = form.
-	OAuthField("oauth", "ClickUp OAuth").
-	AuthorizationURL("https://app.clickup.com/api").
-	TokenURL("https://api.clickup.com/api/v2/oauth/token").
-	Scopes([]string{}).
-	Build()
-
 var (
-	ClickupSharedAuth = form.Build()
+	form = smartform.NewAuthForm("clickup-auth", "ClickUp OAuth", smartform.AuthStrategyOAuth2)
+	_    = form.
+		OAuthField("oauth", "ClickUp OAuth").
+		AuthorizationURL("https://app.clickup.com/api").
+		TokenURL("https://api.clickup.com/api/v2/oauth/token").
+		Scopes([]string{}).
+		Build()
 )
+
+var ClickupSharedAuth = form.Build()
 
 const BaseURL = "https://api.clickup.com/api"
 
@@ -229,7 +229,7 @@ func RegisterWorkSpaceInput(form *smartform.FormBuilder, title string, desc stri
 		return ctx.Respond(body.Teams, len(body.Teams))
 	}
 
-	form.SelectField("workspace_id", title).
+	form.SelectField("workspace-id", title).
 		Placeholder("Select a workspace").
 		Required(required).
 		WithDynamicOptions(
@@ -285,18 +285,18 @@ func RegisterSpacesInput(form *smartform.FormBuilder, title string, desc string,
 		return ctx.Respond(body.Spaces, len(body.Spaces))
 	}
 
-	form.SelectField("space_id", title).
+	form.SelectField("space-id", title).
 		Placeholder("Select a space").
 		Required(required).
 		WithDynamicOptions(
 			smartform.NewOptionsBuilder().
 				Dynamic().
 				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getSpaces)).
-				// WithFieldReference("state", "state").
+				WithFieldReference("workspace-id", "workspace-id").
 				WithSearchSupport().
 				WithPagination(10).
 				End().
-				// RefreshOn("state").
+				RefreshOn("workspace-id").
 				GetDynamicSource(),
 		).
 		HelpText(desc)
@@ -341,18 +341,18 @@ func RegisterFoldersInput(form *smartform.FormBuilder, title string, desc string
 		return ctx.Respond(body.Folders, len(body.Folders))
 	}
 
-	form.SelectField("folder_id", title).
+	form.SelectField("folder-id", title).
 		Placeholder("Select a folder").
 		Required(required).
 		WithDynamicOptions(
 			smartform.NewOptionsBuilder().
 				Dynamic().
 				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getFolders)).
-				// WithFieldReference("state", "state").
+				WithFieldReference("space-id", "space-id").
 				WithSearchSupport().
 				WithPagination(10).
 				End().
-				// RefreshOn("state").
+				RefreshOn("space-id").
 				GetDynamicSource(),
 		).
 		HelpText(desc)
@@ -404,11 +404,11 @@ func RegisterListsInput(form *smartform.FormBuilder, title string, desc string, 
 			smartform.NewOptionsBuilder().
 				Dynamic().
 				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getLists)).
-				// WithFieldReference("state", "state").
+				WithFieldReference("folder-id", "folder-id").
 				WithSearchSupport().
 				WithPagination(10).
 				End().
-				// RefreshOn("state").
+				RefreshOn("folder-id").
 				GetDynamicSource(),
 		).
 		HelpText(desc)
@@ -452,18 +452,18 @@ func RegisterTasksInput(form *smartform.FormBuilder, title string, desc string, 
 		return ctx.Respond(body.Tasks, len(body.Tasks))
 	}
 
-	form.SelectField("task_id", title).
+	form.SelectField("task-id", title).
 		Placeholder("Choose a task").
 		Required(required).
 		WithDynamicOptions(
 			smartform.NewOptionsBuilder().
 				Dynamic().
 				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getTasks)).
-				// WithFieldReference("state", "state").
+				WithFieldReference("list-id", "list-id").
 				WithSearchSupport().
 				WithPagination(10).
 				End().
-				// RefreshOn("state").
+				RefreshOn("list-id").
 				GetDynamicSource(),
 		).
 		HelpText(desc)
@@ -517,18 +517,18 @@ func GetAssigneeInput(form *smartform.FormBuilder, title string, desc string, re
 		return ctx.Respond(items, len(items))
 	}
 
-	form.SelectField("assignees_id", title).
+	form.SelectField("assignee-id", title).
 		Placeholder("Choose a task").
 		Required(required).
 		WithDynamicOptions(
 			smartform.NewOptionsBuilder().
 				Dynamic().
 				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getAssignees)).
-				// WithFieldReference("state", "state").
+				WithFieldReference("list-id", "list-id").
 				WithSearchSupport().
 				WithPagination(10).
 				End().
-				// RefreshOn("state").
+				RefreshOn("list-id").
 				GetDynamicSource(),
 		).
 		HelpText(desc)
@@ -607,19 +607,19 @@ func GetSpace(accessToken string, spaceID string) (map[string]interface{}, error
 	return respData, nil
 }
 
-var ClickupPriorityType = []*smartform.AutoFormSchema{
-	{Const: "1", Title: "Urgent"},
-	{Const: "2", Title: "High"},
-	{Const: "3", Title: "Normal"},
-	{Const: "4", Title: "Low"},
+var ClickupPriorityType = []*smartform.Option{
+	{Value: "1", Label: "Urgent"},
+	{Value: "2", Label: "High"},
+	{Value: "3", Label: "Normal"},
+	{Value: "4", Label: "Low"},
 }
 
-var ClickupOrderbyType = []*sdkcore.AutoFormSchema{
-	{Const: "id", Title: "Id"},
-	{Const: "created", Title: "Created"},
-	{Const: "updated", Title: "Updated"},
-	{Const: "due_date", Title: "Due Date"},
-	{Const: "start_date", Title: "Start Date"},
+var ClickupOrderbyType = []*smartform.Option{
+	{Value: "id", Label: "Id"},
+	{Value: "created", Label: "Created"},
+	{Value: "updated", Label: "Updated"},
+	{Value: "due_date", Label: "Due Date"},
+	{Value: "start_date", Label: "Start Date"},
 }
 
 func GetClickUpClient(accessToken string, endpoint string, method string, body interface{}) (map[string]interface{}, error) {
