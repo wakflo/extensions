@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/mailchimp/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type unsubscriberTriggerProps struct {
@@ -18,78 +20,81 @@ type unsubscriberTriggerProps struct {
 
 type UnsubscriberTrigger struct{}
 
-func (t *UnsubscriberTrigger) Name() string {
-	return "Unsubscriber"
-}
-
-func (t *UnsubscriberTrigger) Description() string {
-	return "The Unsubscriber integration trigger is designed to automatically remove subscribers from your workflow when they unsubscribe from a specific email list or service. This trigger can be used in conjunction with other automation workflows to ensure that unsubscribed contacts are no longer targeted for marketing campaigns, surveys, or other automated tasks. By integrating the Unsubscriber trigger with your existing workflows, you can maintain data accuracy and compliance with anti-spam laws by promptly removing unsubscribed contacts from your workflow."
+func (t *UnsubscriberTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "unsubscriber",
+		DisplayName:   "Unsubscriber",
+		Description:   "Triggers when a subscriber unsubscribes from your application or service, allowing you to automate tasks and workflows immediately after unsubscription.",
+		Type:          sdkcore.TriggerTypePolling,
+		Documentation: unsubscriberDocs,
+		SampleOutput: map[string]any{
+			"email": "john.doe@example.com",
+		},
+	}
 }
 
 func (t *UnsubscriberTrigger) GetType() sdkcore.TriggerType {
 	return sdkcore.TriggerTypePolling
 }
 
-func (t *UnsubscriberTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &unsubscriberDocs,
-	}
-}
+func (t *UnsubscriberTrigger) Props() *smartform.FormSchema {
 
-func (t *UnsubscriberTrigger) Icon() *string {
-	return nil
-}
+	form := smartform.NewForm("unsubscriber", "Unsubscriber")
 
-func (t *UnsubscriberTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"list_id": autoform.NewShortTextField().
-			SetDisplayName(" List ID").
-			SetDescription("").
-			SetRequired(true).
-			Build(),
-	}
+	form.TextField("list_id", "List ID").
+		Placeholder("Enter a value for List ID.").
+		Required(true).
+		HelpText("The ID of the list to check for unsubscribers.")
+
+	schema := form.Build()
+
+	return schema
 }
 
 // Start initializes the unsubscriberTrigger, required for event and webhook triggers in a lifecycle context.
-func (t *UnsubscriberTrigger) Start(ctx sdk.LifecycleContext) error {
+func (t *UnsubscriberTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	// Required for event and webhook triggers
 	return nil
 }
 
 // Stop shuts down the unsubscriberTrigger, cleaning up resources and performing necessary teardown operations.
-func (t *UnsubscriberTrigger) Stop(ctx sdk.LifecycleContext) error {
+func (t *UnsubscriberTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
 // Execute performs the main action logic of unsubscriberTrigger by processing the input context and returning a JSON response.
 // It converts the base context input into a strongly-typed structure, executes the desired logic, and generates output.
 // Returns a JSON output map with the resulting data or an error if operation fails. required for Pooling triggers
-func (t *UnsubscriberTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[unsubscriberTriggerProps](ctx.BaseContext)
+func (t *UnsubscriberTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[unsubscriberTriggerProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.AccessToken == "" {
-		return nil, errors.New("missing mailchimp auth token")
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
 	}
-	accessToken := ctx.Auth.AccessToken
+	token := tokenSource.AccessToken
 
-	dc, err := shared.GetMailChimpServerPrefix(accessToken)
+	dc, err := shared.GetMailChimpServerPrefix(token)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get mailchimp server prefix: %w", err)
 	}
 
 	var fromDate string
-	lastRunTime := ctx.Metadata().LastRun
+	lastRunTime, err := ctx.GetMetadata("lastRun")
+	if err != nil {
+		return nil, err
+	}
 
 	if lastRunTime != nil {
-		fromDate = lastRunTime.UTC().Format(time.RFC3339)
+		fromDate = lastRunTime.(*time.Time).UTC().Format(time.RFC3339)
 	}
 
 	var unsubscribes interface{}
 
-	unsubscribes, err = shared.ListRecentUnSubscribers(accessToken, dc, input.ListID, fromDate)
+	unsubscribes, err = shared.ListRecentUnSubscribers(token, dc, input.ListID, fromDate)
 	if err != nil {
 		return nil, err
 	}
@@ -101,14 +106,8 @@ func (t *UnsubscriberTrigger) Criteria(ctx context.Context) sdkcore.TriggerCrite
 	return sdkcore.TriggerCriteria{}
 }
 
-func (t *UnsubscriberTrigger) Auth() *sdk.Auth {
+func (t *UnsubscriberTrigger) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (t *UnsubscriberTrigger) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
 }
 
 func NewUnsubscriberTrigger() sdk.Trigger {

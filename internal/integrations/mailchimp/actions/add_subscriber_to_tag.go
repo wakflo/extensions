@@ -4,10 +4,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/mailchimp/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type addSubscriberToTagActionProps struct {
@@ -18,67 +19,63 @@ type addSubscriberToTagActionProps struct {
 
 type AddSubscriberToTagAction struct{}
 
-func (a *AddSubscriberToTagAction) Name() string {
-	return "Add Subscriber To Tag"
-}
-
-func (a *AddSubscriberToTagAction) Description() string {
-	return "Add Subscriber to Tag: Automatically adds one or more subscribers to a specific tag in your email marketing platform, allowing you to easily manage and segment your audience."
-}
-
-func (a *AddSubscriberToTagAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *AddSubscriberToTagAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &addSubscriberToTagDocs,
+func (a *AddSubscriberToTagAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		DisplayName:   "Add Subscriber To Tag",
+		Description:   "Adds a subscriber to a specific tag in your email marketing platform, allowing you to easily manage and segment your audience.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: addSubscriberToTagDocs,
+		SampleOutput: map[string]any{
+			"success": "Subscriber added to tag!",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *AddSubscriberToTagAction) Icon() *string {
-	return nil
+func (a *AddSubscriberToTagAction) Properties() *smartform.FormSchema {
+
+	form := smartform.NewForm("add_subscriber_to_tag", "Add Subscriber To Tag")
+
+	form.TextField("list-id", "List ID").
+		Placeholder("Enter a value for List ID.").
+		Required(true).
+		HelpText("The ID of the list to add the contact to.")
+
+	form.TextField("tag-names", "Tag Names").
+		Placeholder("Enter a value for Tag Names.").
+		Required(true).
+		HelpText("The tag names to add to the subscriber.")
+
+	form.TextField("email", "Email").
+		Placeholder("Enter a value for Email.").
+		Required(true).
+		HelpText("The email of the subscriber.")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *AddSubscriberToTagAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"list-id": autoform.NewShortTextField().
-			SetDisplayName(" List ID").
-			SetDescription("").
-			SetRequired(true).
-			Build(),
-		"tag-names": autoform.NewLongTextField().
-			SetDisplayName(" Tag Name").
-			SetDescription("Tag name to add to the subscriber").
-			SetRequired(true).
-			Build(),
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Email").
-			SetDescription("Email of the subscriber").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *AddSubscriberToTagAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[addSubscriberToTagActionProps](ctx.BaseContext)
+func (a *AddSubscriberToTagAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[addSubscriberToTagActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.AccessToken == "" {
-		return nil, errors.New("missing mailchimp auth token")
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
 	}
-	accessToken := ctx.Auth.AccessToken
+	token := tokenSource.AccessToken
 
-	dc, err := shared.GetMailChimpServerPrefix(accessToken)
+	dc, err := shared.GetMailChimpServerPrefix(token)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get mailchimp server prefix: %w", err)
 	}
 
 	tags := shared.ProcessTagNamesInput(input.Tags)
 
-	err = shared.ModifySubscriberTags(accessToken, dc, input.ListID, input.Email, tags, "active")
+	err = shared.ModifySubscriberTags(token, dc, input.ListID, input.Email, tags, "active")
 	if err != nil {
 		return nil, err
 	}
@@ -88,18 +85,8 @@ func (a *AddSubscriberToTagAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON
 	}, nil
 }
 
-func (a *AddSubscriberToTagAction) Auth() *sdk.Auth {
+func (a *AddSubscriberToTagAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *AddSubscriberToTagAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"status": "Tag added!",
-	}
-}
-
-func (a *AddSubscriberToTagAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewAddSubscriberToTagAction() sdk.Action {
