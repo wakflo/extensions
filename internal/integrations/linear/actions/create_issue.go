@@ -6,10 +6,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/linear/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type createIssueActionProps struct {
@@ -24,53 +25,63 @@ type createIssueActionProps struct {
 
 type CreateIssueAction struct{}
 
-func (a *CreateIssueAction) Name() string {
-	return "Create Issue"
-}
+// func (a *CreateIssueAction) Name() string {
+// 	return "Create Issue"
+// }
 
-func (a *CreateIssueAction) Description() string {
-	return "Create Issue: Automatically generates a new issue in your project management tool (e.g., Jira, Trello) based on specific conditions or triggers, ensuring timely and organized tracking of tasks and projects."
-}
-
-func (a *CreateIssueAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateIssueAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createIssueDocs,
+func (a *CreateIssueAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_issue",
+		DisplayName:   "Create Issue",
+		Description:   "Create Issue: Automatically generates a new issue in your project management tool (e.g., Jira, Trello) based on specific conditions or triggers, ensuring timely and organized tracking of tasks and projects.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: createIssueDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *CreateIssueAction) Icon() *string {
-	return nil
+func (a *CreateIssueAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_issue", "Create Issue")
+
+	form.TextField("title", "Issue Name").
+		Placeholder("Issue Name").
+		Required(true).
+		HelpText("The name of the issue.")
+
+	form.TextField("description", "Description").
+		Placeholder("Description").
+		Required(true).
+		HelpText("Issue description.")
+
+	shared.GetTeamsProp(form)
+
+	shared.GetPriorityProp("priority", "Priority", "select issue priority", form)
+
+	shared.GetAssigneesProp("assignee-id", "Assignee", "select an assignee for the issue", form)
+
+	shared.GetTeamLabelsProp("label-id", "Labels", "select an issue label", form)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *CreateIssueAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"title": autoform.NewShortTextField().
-			SetDisplayName("Issue Name").
-			SetDescription("The issue name").
-			SetRequired(true).
-			Build(),
-		"description": autoform.NewLongTextField().
-			SetDisplayName("Description").
-			SetDescription("Issue description").
-			Build(),
-		"team-id":     shared.GetTeamsInput(),
-		"priority":    shared.GetPriorityInput("Priority", "select issue priority"),
-		"assignee-id": shared.GetAssigneesInput("Assignee", "select an assignee for the issue"),
-		"label-id":    shared.GetTeamLabelsInput("Labels", "select an issue label"),
-	}
-}
-
-func (a *CreateIssueAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createIssueActionProps](ctx.BaseContext)
+func (a *CreateIssueAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createIssueActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	apiKEY := ctx.Auth.Extra["api-key"]
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	apiKEY := authCtx.Extra["api-key"]
 
 	if !strings.HasPrefix(apiKEY, "lin_api_") {
 		return nil, errors.New("invalid Linear API key: must start with 'lin_api_'")
@@ -136,18 +147,8 @@ func (a *CreateIssueAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 	return issue, nil
 }
 
-func (a *CreateIssueAction) Auth() *sdk.Auth {
+func (a *CreateIssueAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *CreateIssueAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateIssueAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateIssueAction() sdk.Action {

@@ -30,7 +30,7 @@ import (
 	// "github.com/wakflo/extensions/internal/integrations/jiracloudsoftware"
 	// "github.com/wakflo/extensions/internal/integrations/jsonconverter"
 	// "github.com/wakflo/extensions/internal/integrations/keapcrm"
-	// "github.com/wakflo/extensions/internal/integrations/linear"
+	"github.com/wakflo/extensions/internal/integrations/linear"
 	// "github.com/wakflo/extensions/internal/integrations/mailchimp"
 	// "github.com/wakflo/extensions/internal/integrations/mailjet"
 	// "github.com/wakflo/extensions/internal/integrations/monday"
@@ -92,7 +92,7 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		// googlecalendar.Integration,    // Google Calendar
 		// googledocs.Integration,        // Google Docs
 		// todoist.Integration,           // Todoist
-		// linear.Integration,            // Linear
+		linear.Integration, // Linear
 		// github.Integration,            // Github
 		// instagram.Integration,         // Instagram
 		// hubspot.Integration,           // Hubspot

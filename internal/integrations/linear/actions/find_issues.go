@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/linear/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type findIssuesActionProps struct {
@@ -21,54 +23,62 @@ type findIssuesActionProps struct {
 
 type FindIssuesAction struct{}
 
-func (a *FindIssuesAction) Name() string {
-	return "Find Issues"
-}
+// func (a *FindIssuesAction) Name() string {
+// 	return "Find Issues"
+// }
 
-func (a *FindIssuesAction) Description() string {
-	return "Automatically identifies and extracts issues from various data sources, such as logs, tickets, or databases, to provide a centralized view of problems and errors in your workflow."
-}
-
-func (a *FindIssuesAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *FindIssuesAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &findIssuesDocs,
+func (a *FindIssuesAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "find_issues",
+		DisplayName:   "Find Issues",
+		Description:   "Find Issues: Automatically identifies and extracts issues from various data sources, such as logs, tickets, or databases, to provide a centralized view of problems and errors in your workflow.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: findIssuesDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *FindIssuesAction) Icon() *string {
-	return nil
+func (a *FindIssuesAction) Properties() *smartform.FormSchema {
+
+	form := smartform.NewForm("find_issues", "Find Issues")
+
+	form.TextField("title", "Filter by Issue Name").
+		Placeholder("Issue Name").
+		HelpText("Filter issue by name").
+		Required(false)
+
+	form.TextareaField("description", "Filter by Description").
+		Placeholder("Filter by Description").
+		HelpText("Return issues wth certain keywords in the issue description").
+		Required(false)
+
+	shared.GetLabelsProp("label-id", "Filter by label", "Filter issue by label", form)
+
+	shared.GetAssigneesProp("assignee-id", "Filter by assignees", "Filter issue by assignees", form)
+
+	shared.GetIssueStatesProp("state-id", "Filter by state", "filter issue by state", false, form)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *FindIssuesAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"title": autoform.NewShortTextField().
-			SetDisplayName("Filter by Issue Name").
-			SetDescription("Returns issues specified by the name").
-			Build(),
-		"description": autoform.NewLongTextField().
-			SetDisplayName("Filter by Description").
-			SetDescription("Return issues wth certain keywords in the issue description").
-			Build(),
-		"label-id":    shared.GetLabelsInput("Filter by label", "Filter issue by label"),
-		"assignee-id": shared.GetAssigneesInput("Filter by assignees", "Filter issue by assignees"),
-		"state-id":    shared.GetIssueStatesInput("Filter by state", "filter issue by state", false),
-	}
-}
-
-func (a *FindIssuesAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[findIssuesActionProps](ctx.BaseContext)
+func (a *FindIssuesAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[findIssuesActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.Extra["api-key"] == "" {
-		return nil, errors.New("missing linear api key")
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
 	}
-	apiKEY := ctx.Auth.Extra["api-key"]
+
+	apiKEY := authCtx.Extra["api-key"]
 
 	if !strings.HasPrefix(apiKEY, "lin_api_") {
 		return nil, errors.New("invalid Linear API key: must start with 'lin_api_'")
@@ -140,18 +150,8 @@ func (a *FindIssuesAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	return nodes, nil
 }
 
-func (a *FindIssuesAction) Auth() *sdk.Auth {
+func (a *FindIssuesAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *FindIssuesAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *FindIssuesAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewFindIssuesAction() sdk.Action {
