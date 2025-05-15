@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/monday/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type createUpdateActionProps struct {
@@ -18,44 +20,36 @@ type createUpdateActionProps struct {
 
 type CreateUpdateAction struct{}
 
-func (a *CreateUpdateAction) Name() string {
-	return "Create Update"
-}
-
-func (a *CreateUpdateAction) Description() string {
-	return "Create Update: This integration action allows you to create or update records in your target system based on the data provided in the trigger event. It enables you to maintain accurate and up-to-date information by automatically updating existing records or creating new ones when necessary."
-}
-
-func (a *CreateUpdateAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateUpdateAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createUpdateDocs,
+func (a *CreateUpdateAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_update",
+		DisplayName:   "Create Update",
+		Description:   "Create Update: This integration action allows you to create or update records in your target system based on the data provided in the trigger event. It enables you to maintain accurate and up-to-date information by automatically updating existing records or creating new ones when necessary.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: createUpdateDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *CreateUpdateAction) Icon() *string {
-	return nil
+func (a *CreateUpdateAction) Properties() *smartform.FormSchema {
+
+	form := smartform.NewForm("create_update", "Create Update")
+
+	form.TextField("item_id", "Item ID").
+		Placeholder("Item ID").
+		Required(true).
+		HelpText("Item ID.")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *CreateUpdateAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"item_id": autoform.NewShortTextField().
-			SetDisplayName("Item ID").
-			SetDescription("Item ID").
-			SetRequired(true).
-			Build(),
-		"body": autoform.NewLongTextField().
-			SetDisplayName("Body").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *CreateUpdateAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createUpdateActionProps](ctx.BaseContext)
+func (a *CreateUpdateAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createUpdateActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +71,7 @@ func (a *CreateUpdateAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
   }
 }`, strings.Join(fieldStrings, "\n"))
 
-	response, err := shared.MondayClient(ctx.BaseContext, query)
+	response, err := shared.MondayClient(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -90,18 +84,8 @@ func (a *CreateUpdateAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 	return update, nil
 }
 
-func (a *CreateUpdateAction) Auth() *sdk.Auth {
+func (a *CreateUpdateAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *CreateUpdateAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateUpdateAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateUpdateAction() sdk.Action {
