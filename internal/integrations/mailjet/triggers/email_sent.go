@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/mailjet/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type emailSentTriggerProps struct {
@@ -18,56 +19,97 @@ type emailSentTriggerProps struct {
 
 type EmailSentTrigger struct{}
 
-func (t *EmailSentTrigger) Name() string {
-	return "Email Sent"
-}
-
-func (t *EmailSentTrigger) Description() string {
-	return "Triggers a workflow when an email is successfully sent through Mailjet."
-}
-
-func (t *EmailSentTrigger) GetType() sdkcore.TriggerType {
-	return sdkcore.TriggerTypePolling
-}
-
-func (t *EmailSentTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &emailSentDocs,
+func (t *EmailSentTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "email_sent",
+		DisplayName:   "Email Sent",
+		Description:   "Triggers a workflow when an email is successfully sent through Mailjet.",
+		Type:          sdkcore.TriggerTypePolling,
+		Documentation: emailSentDocs,
+		SampleOutput: map[string]any{
+			"Count": "2",
+			"Data": []map[string]any{
+				{
+					"ID":                "12345678901234500",
+					"MessageUUID":       "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
+					"ArrivedAt":         "2023-03-20T14:25:36Z",
+					"Campaign":          "Newsletter March 2023",
+					"ContactID":         "987654321",
+					"Delay":             "0.5",
+					"Destination":       "recipient@example.com",
+					"FilterTime":        "0.01",
+					"From":              "sender@company.com",
+					"MessageSize":       "5432",
+					"SpamassassinScore": "0.1",
+					"Status":            "sent",
+					"Subject":           "Your Monthly Newsletter",
+					"CustomID":          "newsletter-2023-03",
+				},
+				{
+					"ID":                "12345678901234501",
+					"MessageUUID":       "2b3c4d5e-6f7g-8h9i-0j1k-2l3m4n5o6p7",
+					"ArrivedAt":         "2023-03-20T14:26:42Z",
+					"Campaign":          "Welcome Series",
+					"ContactID":         "987654322",
+					"Delay":             "0.3",
+					"Destination":       "newuser@example.com",
+					"FilterTime":        "0.01",
+					"From":              "support@company.com",
+					"MessageSize":       "3254",
+					"SpamassassinScore": " 0.05",
+					"Status":            "sent",
+					"Subject":           "Welcome to Our Service",
+					"CustomID":          "welcome-flow-1",
+				},
+			},
+			"Total": "2",
+		},
 	}
 }
 
-func (t *EmailSentTrigger) Icon() *string {
-	icon := "mdi:email-check"
-	return &icon
+func (t *EmailSentTrigger) Props() *smartform.FormSchema {
+
+	form := smartform.NewForm("email_sent", "Email Sent")
+
+	form.NumberField("limit", "Limit").
+		Placeholder("10").
+		Required(false).
+		HelpText("Maximum number of emails to process per poll (default: 50, max: 1000)")
+
+	schema := form.Build()
+
+	return schema
+
 }
 
-func (t *EmailSentTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"limit": autoform.NewNumberField().
-			SetDisplayName("Limit").
-			SetDescription("Maximum number of emails to process per poll (default: 50, max: 1000)").
-			SetRequired(false).
-			SetDefaultValue(50).Build(),
-	}
-}
-
-func (t *EmailSentTrigger) Start(ctx sdk.LifecycleContext) error {
+func (t *EmailSentTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (t *EmailSentTrigger) Stop(ctx sdk.LifecycleContext) error {
+func (t *EmailSentTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (t *EmailSentTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	lastRunTime := ctx.Metadata().LastRun
-
-	input, err := sdk.InputToTypeSafely[emailSentTriggerProps](ctx.BaseContext)
+func (t *EmailSentTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
+	lr, err := ctx.GetMetadata("lastRun")
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.GetMailJetClient(ctx.Auth.Extra["api_key"], ctx.Auth.Extra["secret_key"])
+	lastRunTime := lr.(*time.Time)
+
+	input, err := sdk.InputToTypeSafely[emailSentTriggerProps](ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := shared.GetMailJetClient(authCtx.Extra["api_key"], authCtx.Extra["secret_key"])
 	if err != nil {
 		return nil, err
 	}
@@ -105,49 +147,8 @@ func (t *EmailSentTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteria
 	return sdkcore.TriggerCriteria{}
 }
 
-func (t *EmailSentTrigger) Auth() *sdk.Auth {
+func (t *EmailSentTrigger) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (t *EmailSentTrigger) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"Count": "2",
-		"Data": []map[string]any{
-			{
-				"ID":                "12345678901234500",
-				"MessageUUID":       "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
-				"ArrivedAt":         "2023-03-20T14:25:36Z",
-				"Campaign":          "Newsletter March 2023",
-				"ContactID":         "987654321",
-				"Delay":             "0.5",
-				"Destination":       "recipient@example.com",
-				"FilterTime":        "0.01",
-				"From":              "sender@company.com",
-				"MessageSize":       "5432",
-				"SpamassassinScore": "0.1",
-				"Status":            "sent",
-				"Subject":           "Your Monthly Newsletter",
-				"CustomID":          "newsletter-2023-03",
-			},
-			{
-				"ID":                "12345678901234501",
-				"MessageUUID":       "2b3c4d5e-6f7g-8h9i-0j1k-2l3m4n5o6p7",
-				"ArrivedAt":         "2023-03-20T14:26:42Z",
-				"Campaign":          "Welcome Series",
-				"ContactID":         "987654322",
-				"Delay":             "0.3",
-				"Destination":       "newuser@example.com",
-				"FilterTime":        "0.01",
-				"From":              "support@company.com",
-				"MessageSize":       "3254",
-				"SpamassassinScore": " 0.05",
-				"Status":            "sent",
-				"Subject":           "Welcome to Our Service",
-				"CustomID":          "welcome-flow-1",
-			},
-		},
-		"Total": "2",
-	}
 }
 
 func NewEmailSentTrigger() sdk.Trigger {

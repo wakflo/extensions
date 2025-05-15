@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/mailjet/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type listContactsActionProps struct {
@@ -18,51 +19,82 @@ type listContactsActionProps struct {
 
 type ListContactsAction struct{}
 
-func (a *ListContactsAction) Name() string {
-	return "List Contacts"
-}
-
-func (a *ListContactsAction) Description() string {
-	return "Retrieve contacts from your Mailjet account with optional filtering."
-}
-
-func (a *ListContactsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListContactsAction) Icon() *string {
-	icon := "mdi:account-group"
-	return &icon
-}
-
-func (a *ListContactsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"limit": autoform.NewNumberField().
-			SetDisplayName("Limit").
-			SetDescription("Maximum number of contacts to return (default: 10, max: 1000)").
-			SetRequired(false).
-			Build(),
-
-		"offset": autoform.NewNumberField().
-			SetDisplayName("Offset").
-			SetDescription("Number of contacts to skip (for pagination)").
-			SetRequired(false).
-			Build(),
-
-		// "filter": autoform.NewShortTextField().
-		// 	SetDisplayName("Filter").
-		// 	SetDescription("Filter contacts (e.g., IsExcludedFromCampaigns=true)").
-		// 	SetRequired(false).Build(),
+func (a *ListContactsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_contacts",
+		DisplayName:   "List Contacts",
+		Description:   "Retrieve a list of contacts from your Mailjet account.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: contactListDocs,
+		SampleOutput: map[string]any{
+			"Count": "2",
+			"Data": []map[string]any{
+				{
+					"ContactID":               "123456",
+					"Email":                   "contact1@example.com",
+					"Name":                    "Contact One",
+					"IsExcludedFromCampaigns": false,
+					"CreatedAt":               "2023-01-01T00:00:00Z",
+					"DeliveredCount":          "10",
+					"IsOptInPending":          false,
+					"IsSpamComplaining":       false,
+					"LastActivityAt":          "2023-02-01T00:00:00Z",
+				},
+				{
+					"ContactID":               "123457",
+					"Email":                   "contact2@example.com",
+					"Name":                    "Contact Two",
+					"IsExcludedFromCampaigns": true,
+					"CreatedAt":               "2023-01-02T00:00:00Z",
+					"DeliveredCount":          "5",
+					"IsOptInPending":          false,
+					"IsSpamComplaining":       false,
+					"LastActivityAt":          "2023-02-02T00:00:00Z",
+				},
+			},
+			"Total": "100",
+		},
 	}
 }
 
-func (a *ListContactsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[listContactsActionProps](ctx.BaseContext)
+func (a *ListContactsAction) Properties() *smartform.FormSchema {
+
+	form := smartform.NewForm("list_contacts", "List Contacts")
+
+	form.NumberField("limit", "Limit").
+		Placeholder("10").
+		Required(false).
+		HelpText("Maximum number of contacts to return (default: 10, max: 1000)")
+
+	form.NumberField("offset", "Offset").
+		Placeholder("0").
+		Required(false).
+		HelpText("Number of contacts to skip (for pagination)")
+
+	// "filter": autoform.NewShortTextField().
+	// 	SetDisplayName("Filter").
+	// 	SetDescription("Filter contacts (e.g., IsExcludedFromCampaigns=true)").
+	// 	SetRequired(false).Build(),
+
+	schema := form.Build()
+
+	return schema
+
+}
+
+func (a *ListContactsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[listContactsActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := shared.GetMailJetClient(ctx.Auth.Extra["api_key"], ctx.Auth.Extra["secret_key"])
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := shared.GetMailJetClient(authCtx.Extra["api_key"], authCtx.Extra["secret_key"])
 	if err != nil {
 		return nil, err
 	}
@@ -98,49 +130,8 @@ func (a *ListContactsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 	return result, nil
 }
 
-func (a *ListContactsAction) Auth() *sdk.Auth {
+func (a *ListContactsAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *ListContactsAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"Count": "2",
-		"Data": []map[string]any{
-			{
-				"ContactID":               "123456",
-				"Email":                   "contact1@example.com",
-				"Name":                    "Contact One",
-				"IsExcludedFromCampaigns": false,
-				"CreatedAt":               "2023-01-01T00:00:00Z",
-				"DeliveredCount":          "10",
-				"IsOptInPending":          false,
-				"IsSpamComplaining":       false,
-				"LastActivityAt":          "2023-02-01T00:00:00Z",
-			},
-			{
-				"ContactID":               "123457",
-				"Email":                   "contact2@example.com",
-				"Name":                    "Contact Two",
-				"IsExcludedFromCampaigns": true,
-				"CreatedAt":               "2023-01-02T00:00:00Z",
-				"DeliveredCount":          "5",
-				"IsOptInPending":          false,
-				"IsSpamComplaining":       false,
-				"LastActivityAt":          "2023-02-02T00:00:00Z",
-			},
-		},
-		"Total": "100",
-	}
-}
-
-func (a *ListContactsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (a *ListContactsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &contactListDocs,
-	}
 }
 
 func NewListContactsAction() sdk.Action {
