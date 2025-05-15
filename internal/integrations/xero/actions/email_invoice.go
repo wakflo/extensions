@@ -3,9 +3,10 @@ package actions
 import (
 	"fmt"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type emailInvoiceActionProps struct {
@@ -14,40 +15,35 @@ type emailInvoiceActionProps struct {
 
 type EmailInvoiceAction struct{}
 
-func (a *EmailInvoiceAction) Name() string {
-	return "Email Invoice"
-}
-
-func (a *EmailInvoiceAction) Description() string {
-	return "Sends an email to the customer with a detailed invoice summary, including payment instructions and any relevant notes or attachments."
-}
-
-func (a *EmailInvoiceAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *EmailInvoiceAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &emailInvoiceDocs,
+func (a *EmailInvoiceAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "email_invoice",
+		DisplayName:   "Email Invoice",
+		Description:   "Sends an email to the customer with a detailed invoice summary, including payment instructions and any relevant notes or attachments.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: emailInvoiceDocs,
+		SampleOutput: map[string]any{
+			"message": "hello world",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *EmailInvoiceAction) Icon() *string {
-	return nil
+func (a *EmailInvoiceAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("email_invoice", "Email Invoice")
+
+	form.TextField("name", "Name").
+		Placeholder("Name").
+		Required(true).
+		HelpText("Your name")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *EmailInvoiceAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"name": autoform.NewShortTextField().
-			SetLabel("Name").
-			SetRequired(true).
-			SetPlaceholder("Your name").
-			Build(),
-	}
-}
-
-func (a *EmailInvoiceAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[emailInvoiceActionProps](ctx.BaseContext)
+func (a *EmailInvoiceAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[emailInvoiceActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -60,18 +56,8 @@ func (a *EmailInvoiceAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, erro
 	return out, nil
 }
 
-func (a *EmailInvoiceAction) Auth() *sdk.Auth {
+func (a *EmailInvoiceAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *EmailInvoiceAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *EmailInvoiceAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewEmailInvoiceAction() sdk.Action {

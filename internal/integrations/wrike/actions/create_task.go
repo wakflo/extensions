@@ -3,10 +3,11 @@ package actions
 import (
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/wrike/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type createTaskActionProps struct {
@@ -22,94 +23,68 @@ type createTaskActionProps struct {
 
 type CreateTaskAction struct{}
 
-func (a *CreateTaskAction) Name() string {
-	return "Create Task"
-}
-
-func (a *CreateTaskAction) Description() string {
-	return "Create a new task in Wrike with specified title, description, and status."
-}
-
-func (a *CreateTaskAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateTaskAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createTaskDocs,
+func (a *CreateTaskAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_task",
+		DisplayName:   "Create Task",
+		Description:   "Create a new task in Wrike with specified title, description, and status.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: createTaskDocs,
+		SampleOutput: map[string]any{
+			"message": "hello world",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *CreateTaskAction) Icon() *string {
-	icon := "mdi:clipboard-plus-outline"
-	return &icon
+func (a *CreateTaskAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_task", "Create Task")
+
+	shared.GetFoldersProp(form)
+
+	form.TextField("title", "Title").
+		Placeholder("Enter title").
+		Required(true).
+		HelpText("Enter title")
+
+	form.TextField("description", "Description").
+		Placeholder("Enter description").
+		Required(false).
+		HelpText("Enter description")
+
+	form.SelectField("status", "Status").
+		Placeholder("Select status").
+		Required(false).
+		AddOption("Active", "Active").
+		AddOption("Completed", "Completed").
+		AddOption("Deferred", "Deferred").
+		AddOption("Cancelled", "Cancelled").
+		HelpText("Select status")
+
+	form.SelectField("importance", "Importance").
+		Placeholder("Select importance").
+		Required(false).
+		AddOption("High", "High").
+		AddOption("Normal", "Normal").
+		AddOption("Low", "Low").
+		HelpText("Select importance")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *CreateTaskAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"folderId": shared.GetFoldersInput(),
-		"title": autoform.NewShortTextField().
-			SetDisplayName("Title").
-			SetDescription("The title of the task.").
-			SetRequired(true).
-			Build(),
-		"description": autoform.NewLongTextField().
-			SetDisplayName("Description").
-			SetDescription("The detailed description of the task.").
-			SetRequired(false).
-			Build(),
-		"status": autoform.NewSelectField().
-			SetDisplayName("Status").
-			SetDescription("The status of the task.").
-			SetRequired(false).
-			SetOptions([]*sdkcore.AutoFormSchema{
-				{
-					Title: "Active",
-					Const: "Active",
-				},
-				{
-					Title: "Completed",
-					Const: "Completed",
-				},
-				{
-					Title: "Deferred",
-					Const: "Deferred",
-				},
-				{
-					Title: "Cancelled",
-					Const: "Cancelled",
-				},
-			}).
-			SetDefaultValue("Active").
-			Build(),
-		"importance": autoform.NewSelectField().
-			SetDisplayName("Importance").
-			SetDescription("The importance level of the task.").
-			SetRequired(false).
-			SetOptions([]*sdkcore.AutoFormSchema{
-				{
-					Title: "High",
-					Const: "High",
-				},
-				{
-					Title: "Normal",
-					Const: "Normal",
-				},
-				{
-					Title: "Low",
-					Const: "Low",
-				},
-			}).
-			SetDefaultValue("Normal").
-			Build(),
-	}
-}
-
-func (a *CreateTaskAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createTaskActionProps](ctx.BaseContext)
+func (a *CreateTaskAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createTaskActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
 
 	data := map[string]interface{}{
 		"title": input.Title,
@@ -128,7 +103,7 @@ func (a *CreateTaskAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	}
 
 	endpoint := "/folders/" + input.FolderID + "/tasks"
-	response, err := shared.PostWrikeClient(ctx.Auth.AccessToken, endpoint, data)
+	response, err := shared.PostWrikeClient(token, endpoint, data)
 	if err != nil {
 		return nil, err
 	}
@@ -146,36 +121,8 @@ func (a *CreateTaskAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	return responseData[0].(map[string]interface{}), nil
 }
 
-func (a *CreateTaskAction) Auth() *sdk.Auth {
+func (a *CreateTaskAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *CreateTaskAction) SampleData() sdkcore.JSON {
-	return map[string]interface{}{
-		"id":               "IEADTSKYA5CKABNW",
-		"accountId":        "IEADTSKY",
-		"title":            "New Task",
-		"description":      "This is a new task created via the API",
-		"briefDescription": "New task",
-		"parentIds":        []string{"IEADTSKYA5CKAARW"},
-		"superParentIds":   []string{"IEADTSKYA5CKAARW"},
-		"scope":            "WsFolder",
-		"status":           "Active",
-		"importance":       "Normal",
-		"createdDate":      "2023-03-20T14:30:45.000Z",
-		"updatedDate":      "2023-03-20T14:30:45.000Z",
-		"dates": map[string]interface{}{
-			"type":  "Planned",
-			"start": "2023-03-21T09:00:00.000Z",
-			"due":   "2023-03-25T18:00:00.000Z",
-		},
-		"responsibleIds": []string{"KUAIJTSKJA"},
-		"authorIds":      []string{"KUAIJTSKJA"},
-	}
-}
-
-func (a *CreateTaskAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateTaskAction() sdk.Action {

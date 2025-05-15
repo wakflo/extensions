@@ -1,11 +1,14 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/xero/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type getInvoiceActionProps struct {
@@ -15,43 +18,48 @@ type getInvoiceActionProps struct {
 
 type GetInvoiceAction struct{}
 
-func (a *GetInvoiceAction) Name() string {
-	return "Get Invoice"
-}
-
-func (a *GetInvoiceAction) Description() string {
-	return "Retrieves an invoice from the accounting system, allowing you to automate tasks that require access to invoice data."
-}
-
-func (a *GetInvoiceAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetInvoiceAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getInvoiceDocs,
+func (a *GetInvoiceAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_invoice",
+		DisplayName:   "Get Invoice",
+		Description:   "Retrieves an invoice from the accounting system, allowing you to automate tasks that require access to invoice data.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: getInvoiceDocs,
+		SampleOutput: map[string]any{
+			"message": "hello world",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *GetInvoiceAction) Icon() *string {
-	return nil
+func (a *GetInvoiceAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_invoice", "Get Invoice")
+
+	shared.GetTenantProps("tenant_id", "Organization", "select organization", true, form)
+
+	shared.GetInvoiceProp("invoice_id", "Invoices", "select invoice", false, form)
+
+	schema := form.Build()
+
+	return schema
+
 }
 
-func (a *GetInvoiceAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"tenant_id":  shared.GetTenantInput("Organization", "select organization", true),
-		"invoice_id": shared.GetInvoiceInput("invoices", "invoices", false),
-	}
-}
-
-func (a *GetInvoiceAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getInvoiceActionProps](ctx.BaseContext)
+func (a *GetInvoiceAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getInvoiceActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
+
 	endpoint := "/Invoices/" + input.InvoiceID
 
-	invoice, err := shared.GetXeroNewClient(ctx.Auth.AccessToken, endpoint, input.TenantID)
+	invoice, err := shared.GetXeroNewClient(token, endpoint, input.TenantID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch invoice: %v", err)
 	}
@@ -59,18 +67,8 @@ func (a *GetInvoiceAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	return invoice, nil
 }
 
-func (a *GetInvoiceAction) Auth() *sdk.Auth {
+func (a *GetInvoiceAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *GetInvoiceAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *GetInvoiceAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetInvoiceAction() sdk.Action {

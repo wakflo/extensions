@@ -9,9 +9,11 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/zohoinventory/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type newPaymentTriggerProps struct {
@@ -20,59 +22,61 @@ type newPaymentTriggerProps struct {
 
 type NewPaymentTrigger struct{}
 
-func (t *NewPaymentTrigger) Name() string {
-	return "New Payment"
-}
-
-func (t *NewPaymentTrigger) Description() string {
-	return "Triggered when a new payment is made, this integration allows you to automate workflows and processes in response to incoming payments, enabling seamless financial management and streamlined operations."
+func (t *NewPaymentTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "new_payment",
+		DisplayName:   "New Payment",
+		Description:   "Triggered when a new payment is made, this integration allows you to automate workflows and processes in response to incoming payments, enabling seamless financial management and streamlined operations.",
+		Type:          sdkcore.TriggerTypePolling,
+		Documentation: newPaymentDocs,
+		SampleOutput: map[string]any{
+			"message": "hello world",
+		},
+		// Settings: sdkcore.TriggerSettings{},
+	}
 }
 
 func (t *NewPaymentTrigger) GetType() sdkcore.TriggerType {
 	return sdkcore.TriggerTypePolling
 }
 
-func (t *NewPaymentTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &newPaymentDocs,
-	}
-}
+func (t *NewPaymentTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("new_payment", "New Payment")
 
-func (t *NewPaymentTrigger) Icon() *string {
-	return nil
-}
+	shared.GetOrganizationsProp(form)
 
-func (t *NewPaymentTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"organization_id": shared.GetOrganizationsInput(),
-	}
+	schema := form.Build()
+
+	return schema
 }
 
 // Start initializes the newPaymentTrigger, required for event and webhook triggers in a lifecycle context.
-func (t *NewPaymentTrigger) Start(ctx sdk.LifecycleContext) error {
+func (t *NewPaymentTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	// Required for event and webhook triggers
 	return nil
 }
 
 // Stop shuts down the newPaymentTrigger, cleaning up resources and performing necessary teardown operations.
-func (t *NewPaymentTrigger) Stop(ctx sdk.LifecycleContext) error {
+func (t *NewPaymentTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
 // Execute performs the main action logic of newPaymentTrigger by processing the input context and returning a JSON response.
 // It converts the base context input into a strongly-typed structure, executes the desired logic, and generates output.
 // Returns a JSON output map with the resulting data or an error if operation fails. required for Pooling triggers
-func (t *NewPaymentTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[newPaymentTriggerProps](ctx.BaseContext)
+func (t *NewPaymentTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[newPaymentTriggerProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	var fromDate string
-	lastRunTime := ctx.Metadata().LastRun
+	// lastRunTime := ctx.Metadata().LastRun
+	lastRunTime, err := ctx.GetMetadata("lastrun")
 
 	if lastRunTime != nil {
-		fromDate = lastRunTime.UTC().Format(time.RFC3339)
+		// fromDate = lastRunTime.UTC().Format(time.RFC3339)
+		fromDate = lastRunTime.(*time.Time).UTC().Format(time.RFC3339)
 	}
 
 	endpoint := shared.BaseURL + "/v1/customerpayments"
@@ -92,7 +96,7 @@ func (t *NewPaymentTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error
 		return nil, fmt.Errorf("error creating request: %v", err)
 	}
 
-	req.Header.Set("Authorization", "Zoho-oauthtoken "+ctx.Auth.Token.AccessToken)
+	req.Header.Set("Authorization", "Zoho-oauthtoken "+ctx.Auth().AccessToken)
 	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 
 	client := &http.Client{}
@@ -125,7 +129,7 @@ func (t *NewPaymentTrigger) Criteria(ctx context.Context) sdkcore.TriggerCriteri
 	return sdkcore.TriggerCriteria{}
 }
 
-func (t *NewPaymentTrigger) Auth() *sdk.Auth {
+func (t *NewPaymentTrigger) Auth() *sdkcore.AuthMetadata {
 	return nil
 }
 

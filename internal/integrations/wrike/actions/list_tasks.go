@@ -1,14 +1,16 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/wrike/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type listTasksActionProps struct {
@@ -19,73 +21,76 @@ type listTasksActionProps struct {
 
 type ListTasksAction struct{}
 
-func (a *ListTasksAction) Name() string {
-	return "List Tasks"
-}
-
-func (a *ListTasksAction) Description() string {
-	return "Retrieve a list of tasks from Wrike with optional filtering parameters."
-}
-
-func (a *ListTasksAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListTasksAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listTasksDocs,
+func (a *ListTasksAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "list_tasks",
+		DisplayName:   "List Tasks",
+		Description:   "Retrieve a list of tasks from Wrike with optional filtering parameters.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: listTasksDocs,
+		SampleOutput: []interface{}{
+			map[string]interface{}{
+				"id":          "IEADTSKYA5CKABJN",
+				"accountId":   "IEADTSKY",
+				"title":       "Example Task 1",
+				"description": "This is an example task",
+				"status":      "Active",
+				"importance":  "Normal",
+				"createdDate": "2023-03-15T10:30:45.000Z",
+				"updatedDate": "2023-03-15T15:20:15.000Z",
+			},
+			map[string]interface{}{
+				"id":          "IEADTSKYA5CKABJ2",
+				"accountId":   "IEADTSKY",
+				"title":       "Example Task 2",
+				"description": "This is another example task",
+				"status":      "Active",
+				"importance":  "High",
+				"createdDate": "2023-03-16T09:15:30.000Z",
+				"updatedDate": "2023-03-16T14:45:22.000Z",
+			},
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *ListTasksAction) Icon() *string {
-	icon := "mdi:clipboard-list-outline"
-	return &icon
+func (a *ListTasksAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_tasks", "List Tasks")
+
+	shared.GetFoldersProp(form)
+
+	form.SelectField("status", "Status").
+		Placeholder("Select status").
+		Required(false).
+		AddOption("Active", "Active").
+		AddOption("Completed", "Completed").
+		AddOption("Deferred", "Deferred").
+		AddOption("Cancelled", "Cancelled").
+		AddOption("All", "All").
+		HelpText("Filter tasks by their status.")
+
+	form.NumberField("limit", "Limit").
+		Placeholder("Enter limit").
+		Required(false).
+		HelpText("Maximum number of tasks to return (1-100).")
+
+	schema := form.Build()
+
+	return schema
+
 }
 
-func (a *ListTasksAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"folderId": shared.GetFoldersInput(),
-		"status": autoform.NewSelectField().
-			SetDisplayName("Status").
-			SetDescription("Filter tasks by their status.").
-			SetRequired(false).
-			SetOptions([]*sdkcore.AutoFormSchema{
-				{
-					Title: "Active",
-					Const: "Active",
-				},
-				{
-					Title: "Completed",
-					Const: "Completed",
-				},
-				{
-					Title: "Deferred",
-					Const: "Deferred",
-				},
-				{
-					Title: "Cancelled",
-					Const: "Cancelled",
-				},
-				{
-					Title: "All",
-					Const: "All",
-				},
-			}).
-			SetDefaultValue("Active").
-			Build(),
-		"limit": autoform.NewNumberField().
-			SetDisplayName("Limit").
-			SetDescription("Maximum number of tasks to return (1-100).").
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (a *ListTasksAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[listTasksActionProps](ctx.BaseContext)
+func (a *ListTasksAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[listTasksActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
 
 	var endpoint string
 	var queryParams []string
@@ -108,7 +113,7 @@ func (a *ListTasksAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) 
 		endpoint = endpoint + "?" + strings.Join(queryParams, "&")
 	}
 
-	response, err := shared.GetWrikeClient(ctx.Auth.AccessToken, endpoint)
+	response, err := shared.GetWrikeClient(token, endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -116,37 +121,8 @@ func (a *ListTasksAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) 
 	return response, nil
 }
 
-func (a *ListTasksAction) Auth() *sdk.Auth {
+func (a *ListTasksAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *ListTasksAction) SampleData() sdkcore.JSON {
-	return []interface{}{
-		map[string]interface{}{
-			"id":          "IEADTSKYA5CKABJN",
-			"accountId":   "IEADTSKY",
-			"title":       "Example Task 1",
-			"description": "This is an example task",
-			"status":      "Active",
-			"importance":  "Normal",
-			"createdDate": "2023-03-15T10:30:45.000Z",
-			"updatedDate": "2023-03-15T15:20:15.000Z",
-		},
-		map[string]interface{}{
-			"id":          "IEADTSKYA5CKABJ2",
-			"accountId":   "IEADTSKY",
-			"title":       "Example Task 2",
-			"description": "This is another example task",
-			"status":      "Active",
-			"importance":  "High",
-			"createdDate": "2023-03-16T09:15:30.000Z",
-			"updatedDate": "2023-03-16T14:45:22.000Z",
-		},
-	}
-}
-
-func (a *ListTasksAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewListTasksAction() sdk.Action {
