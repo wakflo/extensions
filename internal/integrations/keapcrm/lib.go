@@ -20,7 +20,8 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/keapcrm/actions"
 	"github.com/wakflo/extensions/internal/integrations/keapcrm/shared"
 	"github.com/wakflo/extensions/internal/integrations/keapcrm/triggers"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -29,12 +30,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
+var Integration = sdk.Register(NewKeapCrm())
+
 type KeapCrm struct{}
 
-func (n *KeapCrm) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *KeapCrm) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *KeapCrm) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.KeapSharedAuth,
+		Schema:   shared.KeapSharedAuth,
 	}
 }
 
@@ -57,5 +64,3 @@ func (n *KeapCrm) Actions() []sdk.Action {
 func NewKeapCrm() sdk.Integration {
 	return &KeapCrm{}
 }
-
-var Integration = sdk.Register(NewKeapCrm(), Flow, ReadME)

@@ -4,10 +4,12 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
+
 	"github.com/wakflo/extensions/internal/integrations/keapcrm/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type getContactActionProps struct {
@@ -16,39 +18,65 @@ type getContactActionProps struct {
 
 type GetContactAction struct{}
 
-func (a *GetContactAction) Name() string {
-	return "Get Contact"
-}
-
-func (a *GetContactAction) Description() string {
-	return "Retrieve detailed information about a specific contact in Keap"
-}
-
-func (a *GetContactAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetContactAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"contact_id": autoform.NewShortTextField().
-			SetDisplayName("Contact ID").
-			SetDescription("Unique identifier of the contact to retrieve").
-			SetRequired(true).Build(),
+func (a *GetContactAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		DisplayName:   "Get Contact",
+		Description:   "Retrieve detailed information about a specific contact in Keap",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: getContactDocs,
+		SampleOutput: map[string]any{
+			"id":          "12345",
+			"given_name":  "John",
+			"family_name": "Doe",
+			"email_addresses": []map[string]string{
+				{
+					"email": "john.doe@example.com",
+					"type":  "PRIMARY",
+				},
+			},
+			"phone_numbers": []map[string]string{
+				{
+					"number": "+1-555-123-4567",
+					"type":   "MOBILE",
+				},
+			},
+			"last_updated": "2023-06-15T10:30:00Z",
+		},
 	}
 }
 
-func (a *GetContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getContactActionProps](ctx.BaseContext)
+func (a *GetContactAction) Properties() *smartform.FormSchema {
+
+	form := smartform.NewForm("get_contact", "Get Contact")
+
+	form.TextField("contact_id", "Contact ID").
+		Placeholder("contact ID").
+		Required(true).
+		HelpText("Unique identifier of the contact to retrieve")
+
+	schema := form.Build()
+
+	return schema
+}
+
+func (a *GetContactAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getContactActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
 
 	if input.ContactID == "" {
 		return nil, errors.New("contact ID is required")
 	}
 	endpoint := "/contacts/" + input.ContactID
 
-	contact, err := shared.MakeKeapRequest(ctx.Auth.AccessToken, http.MethodGet, endpoint, nil)
+	contact, err := shared.MakeKeapRequest(token, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -56,46 +84,10 @@ func (a *GetContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	return contact, nil
 }
 
-func (a *GetContactAction) Auth() *sdk.Auth {
+func (a *GetContactAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *GetContactAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getContactDocs,
-	}
-}
-
-func (a *GetContactAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"id":          "12345",
-		"given_name":  "John",
-		"family_name": "Doe",
-		"email_addresses": []map[string]string{
-			{
-				"email": "john.doe@example.com",
-				"type":  "PRIMARY",
-			},
-		},
-		"phone_numbers": []map[string]string{
-			{
-				"number": "+1-555-123-4567",
-				"type":   "MOBILE",
-			},
-		},
-		"last_updated": "2023-06-15T10:30:00Z",
-	}
-}
-
-func (a *GetContactAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetContactAction() sdk.Action {
 	return &GetContactAction{}
-}
-
-func (a *GetContactAction) Icon() *string {
-	icon := "mdi:account-search"
-	return &icon
 }

@@ -2,58 +2,84 @@ package triggers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
+
 	"github.com/wakflo/extensions/internal/integrations/keapcrm/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type ContactUpdatedTrigger struct{}
 
-func (t *ContactUpdatedTrigger) Name() string {
-	return "Contact Updated"
-}
-
-func (t *ContactUpdatedTrigger) Description() string {
-	return "Trigger a workflow when a contact is updated in Keap"
+func (t *ContactUpdatedTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "contact_updated",
+		DisplayName:   "Contact Updated",
+		Description:   "Triggers when a contact is updated in Keap",
+		Type:          sdkcore.TriggerTypePolling,
+		Documentation: contactUpdatedDocs,
+		SampleOutput: map[string]any{
+			"contacts": []map[string]any{
+				{
+					"id":          "123",
+					"given_name":  "John",
+					"family_name": "Doe",
+					"email_addresses": []map[string]string{
+						{
+							"email": "john.doe@example.com",
+							"type":  "PRIMARY",
+						},
+					},
+					"date_created": "2023-06-15T14:30:25.039Z",
+					"last_updated": "2023-06-16T14:30:25.039Z",
+				},
+			},
+		},
+	}
 }
 
 func (t *ContactUpdatedTrigger) GetType() sdkcore.TriggerType {
 	return sdkcore.TriggerTypePolling
 }
 
-func (t *ContactUpdatedTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &contactUpdatedDocs,
-	}
+func (t *ContactUpdatedTrigger) Props() *smartform.FormSchema {
+	form := smartform.NewForm("contact_created", "Contact Created")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (t *ContactUpdatedTrigger) Icon() *string {
-	icon := "mdi:account-edit-outline"
-	return &icon
-}
-
-func (t *ContactUpdatedTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{}
-}
-
-func (t *ContactUpdatedTrigger) Start(ctx sdk.LifecycleContext) error {
+func (t *ContactUpdatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (t *ContactUpdatedTrigger) Stop(ctx sdk.LifecycleContext) error {
+func (t *ContactUpdatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
-func (t *ContactUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
+func (t *ContactUpdatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
 	// Determine the time range to check for updated contacts
-	lastRunTime := ctx.Metadata().LastRun
+	lastRunTime, err := ctx.GetMetadata("lastRun")
+	if err != nil {
+		return nil, err
+	}
+
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
+
 	var updatedSince string
 	if lastRunTime != nil {
-		updatedSince = lastRunTime.UTC().Format(time.RFC3339Nano)
+		updatedSince = lastRunTime.(*time.Time).UTC().Format(time.RFC3339Nano)
 	} else {
 		updatedSince = ""
 	}
@@ -66,7 +92,7 @@ func (t *ContactUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, e
 
 	endpoint := "/contacts?" + queryParams.Encode()
 
-	response, err := shared.MakeKeapRequest(ctx.Auth.AccessToken, "GET", endpoint, nil)
+	response, err := shared.MakeKeapRequest(token, "GET", endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching data: %v", err)
 	}
@@ -78,28 +104,8 @@ func (t *ContactUpdatedTrigger) Criteria(ctx context.Context) sdkcore.TriggerCri
 	return sdkcore.TriggerCriteria{}
 }
 
-func (t *ContactUpdatedTrigger) Auth() *sdk.Auth {
+func (t *ContactUpdatedTrigger) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (t *ContactUpdatedTrigger) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"contacts": []map[string]any{
-			{
-				"id":          "123",
-				"given_name":  "John",
-				"family_name": "Doe",
-				"email_addresses": []map[string]string{
-					{
-						"email": "john.doe@example.com",
-						"type":  "PRIMARY",
-					},
-				},
-				"date_created": "2023-06-15T14:30:25.039Z",
-				"last_updated": "2023-06-16T14:30:25.039Z",
-			},
-		},
-	}
 }
 
 func NewContactUpdatedTrigger() sdk.Trigger {

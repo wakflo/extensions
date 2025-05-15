@@ -21,18 +21,25 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wakflo/go-sdk/autoform"
+	"github.com/juicycleff/smartform/v1"
 )
 
 var (
 	// #nosec
-	tokenURL       = "https://api.infusionsoft.com/token"
-	authURL        = "https://accounts.infusionsoft.com/app/oauth/authorize"
-	KeapSharedAuth = autoform.NewOAuthField(authURL, &tokenURL, []string{
-		"full",
-	}).
-		Build()
+	tokenURL = "https://api.infusionsoft.com/token"
+	authURL  = "https://accounts.infusionsoft.com/app/oauth/authorize"
 )
+
+var form = smartform.NewAuthForm("keap-auth", "Keap Auth", smartform.AuthStrategyOAuth2)
+
+var _ = form.
+	OAuthField("oauth", "Keap Oauth").
+	AuthorizationURL(authURL).
+	TokenURL(tokenURL).
+	Scopes([]string{"full"}).
+	Build()
+
+var KeapSharedAuth = form.Build()
 
 const (
 	baseURL     = "https://api.infusionsoft.com/crm/rest/v1"
