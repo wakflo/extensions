@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	sdkcore "github.com/wakflo/go-sdk/core"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 const (

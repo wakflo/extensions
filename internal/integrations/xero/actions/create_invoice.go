@@ -1,13 +1,15 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/xero/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type createInvoiceActionProps struct {
@@ -24,97 +26,103 @@ type createInvoiceActionProps struct {
 
 type CreateInvoiceAction struct{}
 
-func (a *CreateInvoiceAction) Name() string {
-	return "Create Invoice"
-}
-
-func (a *CreateInvoiceAction) Description() string {
-	return "Create Invoice: Automatically generates and sends professional-looking invoices to customers based on predefined templates and payment terms, streamlining your accounting process and ensuring timely payments."
-}
-
-func (a *CreateInvoiceAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateInvoiceAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createInvoiceDocs,
+func (a *CreateInvoiceAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_invoice",
+		DisplayName:   "Create Invoice",
+		Description:   "Create Invoice: Automatically generates and sends professional-looking invoices to customers based on predefined templates and payment terms, streamlining your accounting process and ensuring timely payments.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: createInvoiceDocs,
+		SampleOutput: map[string]any{
+			"message": "hello world",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *CreateInvoiceAction) Icon() *string {
-	return nil
+func (a *CreateInvoiceAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_invoice", "Create Invoice")
+
+	shared.GetInvoiceProp("tenant_id", "Organization", "select organization", true, form)
+
+	form.TextField("contact-id", "Contact ID").
+		Placeholder("Contact ID").
+		Required(false).
+		HelpText("Contact ID")
+
+	form.TextField("email", "Contact Email").
+		Placeholder("Contact Email").
+		Required(false).
+		HelpText("Contact Email")
+
+	form.DateField("due_date", "Due Date").
+		Placeholder("Due date of the invoice. Format example: 2019-03-11").
+		Required(true).
+		DefaultValue(time.Now().Format("2006-01-02")).
+		HelpText("Due date of the invoice. Format example: 2019-03-11")
+
+	form.TextField("date", "Date").
+		Placeholder("Date the invoice was created. Format example: 2019-03-11").
+		Required(false).
+		HelpText("Date the invoice was created. Format example: 2019-03-11")
+
+	form.TextField("reference", "Invoice Reference").
+		Placeholder("Invoice Reference").
+		Required(false).
+		HelpText("Reference number of the Invoice")
+
+	form.TextField("contact", "Contact Full Name").
+		Placeholder("Contact Name").
+		Required(true).
+		HelpText("Contact Name")
+
+	lineItemsArray := form.ArrayField("line_items", "Line Items")
+	lineItemsArray.Placeholder("List of line items for the invoice.")
+	lineItemsArray.Required(true)
+
+	lineItemTemplate := lineItemsArray.ObjectTemplate("lineItem", "")
+	lineItemTemplate.TextField("label", "Label").
+		Placeholder("Label").
+		Required(true)
+
+	lineItemsArray.DefaultValue([]map[string]interface{}{
+		{
+			"Description": "Default item description",
+			"Quantity":    0,
+			"UnitAmount":  0,
+			"AccountCode": "200",
+			"TaxType":     "NONE",
+			"LineAmount":  0,
+		},
+	}).
+		HelpText("List of line items for the invoice.")
+
+	form.SelectField("status", "Status").
+		Placeholder("Status").
+		AddOption("DRAFT", "Draft").
+		AddOption("SUBMITTED", "Submitted").
+		AddOption("DELETED", "Deleted").
+		AddOption("AUTHORISED", "Authorised").
+		AddOption("VOIDED", "voided").
+		Required(true).
+		HelpText("Status")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *CreateInvoiceAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"tenant_id": shared.GetTenantInput("Organization", "select organization", true),
-		"contact-id": autoform.NewShortTextField().
-			SetDisplayName("Contact ID").
-			SetDescription("Contact ID").
-			SetRequired(false).
-			Build(),
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Contact Email").
-			SetDescription("Contact Email").
-			SetRequired(false).
-			Build(),
-		"due_date": autoform.NewShortTextField().
-			SetDisplayName("Due Date").
-			SetDescription("Due date of the invoice. Format example: 2019-03-11").
-			SetDefaultValue(time.Now().Format("2006-01-02")).
-			SetRequired(true).
-			Build(),
-		"date": autoform.NewShortTextField().
-			SetDisplayName("Date").
-			SetDescription("Date the invoice was created. Format example: 2019-03-11").
-			SetRequired(false).
-			Build(),
-		"reference": autoform.NewShortTextField().
-			SetDisplayName("Invoice Reference").
-			SetDescription("Reference number of the Invoice").
-			SetRequired(false).
-			Build(),
-		"contact": autoform.NewShortTextField().
-			SetDisplayName("Contact Full Name").
-			SetDescription("Contact Name").
-			SetRequired(true).
-			Build(),
-		"line_items": autoform.NewArrayField().
-			SetDisplayName("Line Items").
-			SetDescription("List of line items for the invoice.").
-			SetRequired(true).
-			SetItems(
-				autoform.NewShortTextField().
-					SetDisplayName("Label").
-					SetDescription("Label").
-					SetRequired(true).
-					Build(),
-			).
-			SetDefaultValue([]map[string]interface{}{
-				{
-					"Description": "Default item description",
-					"Quantity":    0,
-					"UnitAmount":  0,
-					"AccountCode": "200",
-					"TaxType":     "NONE",
-					"LineAmount":  0,
-				},
-			}).
-			Build(),
-		"status": autoform.NewSelectField().
-			SetDisplayName("Status").
-			SetOptions(shared.XeroInvoiceStatus).
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *CreateInvoiceAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createInvoiceActionProps](ctx.BaseContext)
+func (a *CreateInvoiceAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createInvoiceActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
 
 	body := map[string]interface{}{
 		"Invoices": []map[string]interface{}{
@@ -137,7 +145,7 @@ func (a *CreateInvoiceAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 		},
 	}
 
-	_, err = shared.CreateDraftInvoice(ctx.Auth.AccessToken, input.TenantID, body)
+	_, err = shared.CreateDraftInvoice(token, input.TenantID, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create invoice: %v", err)
 	}
@@ -147,18 +155,8 @@ func (a *CreateInvoiceAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	}, nil
 }
 
-func (a *CreateInvoiceAction) Auth() *sdk.Auth {
+func (a *CreateInvoiceAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *CreateInvoiceAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateInvoiceAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateInvoiceAction() sdk.Action {

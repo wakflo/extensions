@@ -7,10 +7,11 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/zohocrm/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type listRecordsActionProps struct {
@@ -23,72 +24,94 @@ type listRecordsActionProps struct {
 
 type ListRecordsAction struct{}
 
-func (a *ListRecordsAction) Name() string {
-	return "List Records"
-}
-
-func (a *ListRecordsAction) Description() string {
-	return "Retrieves a list of records from a specified Zoho CRM module with pagination and sorting options"
-}
-
-func (a *ListRecordsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *ListRecordsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &listRecordsDocs,
+func (a *ListRecordsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		DisplayName:   "List Records",
+		Description:   "Retrieves a list of records from a specified Zoho CRM module with pagination and sorting options",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: listRecordsDocs,
+		SampleOutput: map[string]interface{}{
+			"records": []interface{}{
+				map[string]interface{}{
+					"id":          "3477061000000419001",
+					"Last_Name":   "Smith",
+					"Email":       "john.smith@example.com",
+					"Company":     "ACME Corp",
+					"Lead_Status": "Qualified",
+				},
+				map[string]interface{}{
+					"id":          "3477061000000419002",
+					"Last_Name":   "Johnson",
+					"Email":       "sarah.johnson@example.com",
+					"Company":     "XYZ Inc",
+					"Lead_Status": "New",
+				},
+			},
+			"info": map[string]interface{}{
+				"per_page":     "100",
+				"count":        "2",
+				"page":         "1",
+				"more_records": false,
+			},
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *ListRecordsAction) Icon() *string {
-	return nil
+func (a *ListRecordsAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("list_records", "List Records")
+
+	form.SelectField("module", "Module").
+		Placeholder("Select a module").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(shared.GetModulesFunction())).
+				WithSearchSupport().
+				End().GetDynamicSource(),
+		)
+
+	form.NumberField("page", "Page").
+		Placeholder("Page number").
+		Required(false).
+		DefaultValue(1).
+		HelpText("Page number")
+
+	form.NumberField("perPage", "Records Per Page").
+		Placeholder("Records per page").
+		Required(false).
+		HelpText("Number of records to retrieve per page (max 200)")
+
+	form.TextField("fields", "Sort Field").
+		Placeholder("Sort field").
+		Required(false).
+		HelpText("Field to sort results by (e.g., Created_Time, Last_Name)")
+
+	form.SelectField("sortOrder", "Sort Order").
+		Placeholder("Sort order").
+		Required(false).
+		HelpText("Order of sorted results").
+		AddOption("asc", "Ascending").
+		AddOption("desc", "Descending")
+
+	schema := form.Build()
+
+	return schema
+
 }
 
-func (a *ListRecordsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"module": autoform.NewDynamicField(sdkcore.String).
-			SetDisplayName("Module").
-			SetDescription("The Zoho CRM module to list records from (e.g., Leads, Contacts, Accounts)").
-			SetDynamicOptions(shared.GetModulesFunction()).
-			SetRequired(true).
-			Build(),
-		"page": autoform.NewNumberField().
-			SetDisplayName("Page").
-			SetDescription("Page number for pagination (starts from 1)").
-			SetDefaultValue(1).
-			Build(),
-		"perPage": autoform.NewNumberField().
-			SetDisplayName("Records Per Page").
-			SetDescription("Number of records to retrieve per page (max 200)").
-			Build(),
-		"fields": autoform.NewShortTextField().
-			SetDisplayName("Sort Field").
-			SetDescription("Field to sort results by (e.g., Created_Time, Last_Name)").
-			Build(),
-		"sortOrder": autoform.NewSelectField().
-			SetDisplayName("Sort Order").
-			SetDescription("Order of sorted results").
-			SetOptions([]*sdkcore.AutoFormSchema{
-				{
-					Title: "Ascending",
-					Const: "asc",
-				},
-				{
-					Title: "Descending",
-					Const: "desc",
-				},
-			}).
-			SetDefaultValue("asc").
-			Build(),
-	}
-}
-
-func (a *ListRecordsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[listRecordsActionProps](ctx.BaseContext)
+func (a *ListRecordsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[listRecordsActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
 
 	// Build query parameters
 	queryParams := url.Values{}
@@ -116,7 +139,7 @@ func (a *ListRecordsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 		endpoint = fmt.Sprintf("%s?%s", endpoint, queryParams.Encode())
 	}
 
-	result, err := shared.GetZohoCRMClient(ctx.Auth.AccessToken, http.MethodGet, endpoint, nil)
+	result, err := shared.GetZohoCRMClient(token, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error calling Zoho CRM API: %v", err)
 	}
@@ -150,39 +173,8 @@ func (a *ListRecordsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error
 	return response, nil
 }
 
-func (a *ListRecordsAction) Auth() *sdk.Auth {
+func (a *ListRecordsAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *ListRecordsAction) SampleData() sdkcore.JSON {
-	return map[string]interface{}{
-		"records": []interface{}{
-			map[string]interface{}{
-				"id":          "3477061000000419001",
-				"Last_Name":   "Smith",
-				"Email":       "john.smith@example.com",
-				"Company":     "ACME Corp",
-				"Lead_Status": "Qualified",
-			},
-			map[string]interface{}{
-				"id":          "3477061000000419002",
-				"Last_Name":   "Johnson",
-				"Email":       "sarah.johnson@example.com",
-				"Company":     "XYZ Inc",
-				"Lead_Status": "New",
-			},
-		},
-		"info": map[string]interface{}{
-			"per_page":     "100",
-			"count":        "2",
-			"page":         "1",
-			"more_records": false,
-		},
-	}
-}
-
-func (a *ListRecordsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewListRecordsAction() sdk.Action {

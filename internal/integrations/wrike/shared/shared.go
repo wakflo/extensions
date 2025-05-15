@@ -23,21 +23,31 @@ import (
 	"strconv"
 
 	"github.com/gookit/goutil/arrutil"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 var (
 	// #nosec
-	tokenURL        = "https://login.wrike.com/oauth2/token"
-	WrikeSharedAuth = autoform.NewOAuthField("https://login.wrike.com/oauth2/authorize/v4", &tokenURL, []string{
-		"Default, wsReadWrite, wsReadOnly",
-	}).SetRequired(true).Build()
+	tokenURL = "https://login.wrike.com/oauth2/token"
 )
 
-func GetFoldersInput() *sdkcore.AutoFormSchema {
-	getFolders := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+var form = smartform.NewAuthForm("wrike-auth", "Wrike Oauth", smartform.AuthStrategyOAuth2)
+var _ = form.OAuthField("oauth", "Wrike Oauth").
+	AuthorizationURL("https://login.wrike.com/oauth2/authorize/v4").
+	TokenURL(tokenURL).
+	Scopes([]string{"Default, wsReadWrite, wsReadOnly"}).
+	Build()
+
+var (
+	WrikeSharedAuth = form.Build()
+)
+
+func GetFoldersProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getFolders := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		baseURL := WrikeAPIBaseURL + "/folders"
 		params := url.Values{}
 
@@ -48,8 +58,14 @@ func GetFoldersInput() *sdkcore.AutoFormSchema {
 			return nil, err
 		}
 
+		tokenSource := ctx.Auth().Token
+		if tokenSource == nil {
+			return nil, errors.New("missing authentication token")
+		}
+		token := tokenSource.AccessToken
+
 		req.Header.Add("Accept", "application/json")
-		req.Header.Add("Authorization", "Bearer "+ctx.Auth.AccessToken)
+		req.Header.Add("Authorization", "Bearer "+token)
 
 		client := &http.Client{}
 		res, err := client.Do(req)
@@ -96,23 +112,31 @@ func GetFoldersInput() *sdkcore.AutoFormSchema {
 
 		items := arrutil.Map[Folder, map[string]any](folders, func(input Folder) (target map[string]any, find bool) {
 			return map[string]any{
-				"id":   input.ID,
-				"name": input.Title,
+				"value": input.ID,
+				"label": input.Title,
 			}, true
 		})
 
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Folder").
-		SetDescription("Select a Wrike folder").
-		SetDynamicOptions(&getFolders).
-		SetRequired(false).Build()
+	return form.SelectField("folderId", "Folder Id").
+		Placeholder("Select a folder").
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getFolders)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select a folder")
 }
 
-func GetTaskInput() *sdkcore.AutoFormSchema {
-	getTask := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetTaskProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getTask := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			FolderID string `json:"folder_id,omitempty"`
 		}](ctx)
@@ -131,8 +155,14 @@ func GetTaskInput() *sdkcore.AutoFormSchema {
 			return nil, err
 		}
 
+		tokenSource := ctx.Auth().Token
+		if tokenSource == nil {
+			return nil, errors.New("missing authentication token")
+		}
+		token := tokenSource.AccessToken
+
 		req.Header.Add("Accept", "application/json")
-		req.Header.Add("Authorization", "Bearer "+ctx.Auth.AccessToken)
+		req.Header.Add("Authorization", "Bearer "+token)
 
 		client := &http.Client{}
 		res, err := client.Do(req)
@@ -183,9 +213,18 @@ func GetTaskInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Task").
-		SetDescription("Select a task from the selected folder").
-		SetDynamicOptions(&getTask).
-		SetRequired(true).Build()
+	return form.SelectField("task_id", "Task").
+		Placeholder("Select a task").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(
+					sdk.WithDynamicFunctionCalling(&getTask)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select a task")
 }

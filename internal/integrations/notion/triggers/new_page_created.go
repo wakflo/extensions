@@ -9,10 +9,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/notion/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type newPageCreatedTriggerProps struct {
@@ -22,59 +23,69 @@ type newPageCreatedTriggerProps struct {
 
 type NewPageCreatedTrigger struct{}
 
-func (t *NewPageCreatedTrigger) Name() string {
-	return "New Page Created"
-}
+// func (t *NewPageCreatedTrigger) Name() string {
+// 	return "New Page Created"
+// }
 
-func (t *NewPageCreatedTrigger) Description() string {
-	return "Triggered when a new page is created in your website or application, allowing you to automate tasks and workflows immediately after page creation."
+func (t *NewPageCreatedTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "new_page_created",
+		DisplayName:   "New Page Created",
+		Description:   "Triggers when a new page is created in your website or application, allowing you to automate tasks and workflows immediately after page creation.",
+		Type:          sdkcore.TriggerTypePolling,
+		Documentation: newPageCreatedDocs,
+		SampleOutput: map[string]any{
+			"page": map[string]any{
+				"id": "1234567890",
+			},
+		},
+	}
 }
 
 func (t *NewPageCreatedTrigger) GetType() sdkcore.TriggerType {
 	return sdkcore.TriggerTypePolling
 }
 
-func (t *NewPageCreatedTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &newPageCreatedDocs,
-	}
-}
+func (t *NewPageCreatedTrigger) Props() *smartform.FormSchema {
 
-func (t *NewPageCreatedTrigger) Icon() *string {
-	return nil
-}
+	form := smartform.NewForm("new_page_created", "New Page Created")
 
-func (t *NewPageCreatedTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"database": shared.GetNotionDatabasesInput("Database", "Select a database", true),
-		"check_interval": autoform.NewNumberField().
-			SetDisplayName("Check Interval (minutes)").
-			SetDescription("How often to check for new pages (in minutes).").
-			SetRequired(true).
-			SetDefaultValue(5).
-			Build(),
-	}
+	shared.GetNotionDatabasesProp(form)
+	form.NumberField("check_interval", "Check Interval (minutes)").
+		Required(true).
+		HelpText("How often to check for new pages (in minutes).").
+		DefaultValue(5)
+
+	schema := form.Build()
+
+	return schema
 }
 
 // Start initializes the newPageCreatedTrigger, required for event and webhook triggers in a lifecycle context.
-func (t *NewPageCreatedTrigger) Start(ctx sdk.LifecycleContext) error {
+func (t *NewPageCreatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	// Required for event and webhook triggers
 	return nil
 }
 
 // Stop shuts down the newPageCreatedTrigger, cleaning up resources and performing necessary teardown operations.
-func (t *NewPageCreatedTrigger) Stop(ctx sdk.LifecycleContext) error {
+func (t *NewPageCreatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
 // Execute performs the main action logic of newPageCreatedTrigger by processing the input context and returning a JSON response.
 // It converts the base context input into a strongly-typed structure, executes the desired logic, and generates output.
 // Returns a JSON output map with the resulting data or an error if operation fails. required for Pooling triggers
-func (t *NewPageCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[newPageCreatedTriggerProps](ctx.BaseContext)
+func (t *NewPageCreatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[newPageCreatedTriggerProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
 
 	if input.DatabaseID == "" {
 		return nil, errors.New("database_id is required")
@@ -87,8 +98,13 @@ func (t *NewPageCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, e
 	now := time.Now().UTC()
 	var timeMin time.Time
 
-	if ctx.Metadata().LastRun != nil {
-		timeMin = *ctx.Metadata().LastRun
+	lr, err := ctx.GetMetadata("lastRun")
+	if err != nil {
+		return nil, err
+	}
+
+	if lr != nil {
+		timeMin = lr.(*time.Time).UTC()
 	} else {
 		timeMin = now.Add(-time.Duration(input.CheckInterval) * time.Minute)
 	}
@@ -112,7 +128,7 @@ func (t *NewPageCreatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, e
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+ctx.Auth.Token.AccessToken)
+	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Notion-Version", "2022-06-28")
 
@@ -159,7 +175,7 @@ func (t *NewPageCreatedTrigger) Criteria(ctx context.Context) sdkcore.TriggerCri
 	return sdkcore.TriggerCriteria{}
 }
 
-func (t *NewPageCreatedTrigger) Auth() *sdk.Auth {
+func (t *NewPageCreatedTrigger) Auth() *sdkcore.AuthMetadata {
 	return nil
 }
 

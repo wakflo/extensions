@@ -14,18 +14,24 @@ import (
 
 	// #nosec
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	"github.com/juicycleff/smartform/v1"
 )
 
 var (
 	// #nosec
-	tokenURL   = baseURL + "/oauth2/token"
-	authURL    = baseURL + "/oauth2/authorize"
-	SharedAuth = autoform.NewOAuthField(authURL, &tokenURL, []string{
-		"",
-	}).
-		Build()
+	tokenURL = baseURL + "/oauth2/token"
+	authURL  = baseURL + "/oauth2/authorize"
+)
+
+var form = smartform.NewAuthForm("mailchimp-auth", "Mailchimp Oauth", smartform.AuthStrategyOAuth2)
+var _ = form.OAuthField("oauth", "Mailchimp Oauth").
+	AuthorizationURL(authURL).
+	TokenURL(tokenURL).
+	Scopes([]string{""}).
+	Build()
+
+var (
+	SharedAuth = form.Build()
 )
 
 const baseURL = "https://login.mailchimp.com"
@@ -158,17 +164,17 @@ func AddContactToList(accessToken, server, listID, email, firstName, status, las
 	return nil
 }
 
-var MailchimpStatusType = []*sdkcore.AutoFormSchema{
-	{Const: "subscribed", Title: "Subscribed"},
-	{Const: "unsubscribed", Title: "Unsubscribed"},
+var MailchimpStatusType = []*smartform.Option{
+	{Value: "subscribed", Label: "Subscribed"},
+	{Value: "unsubscribed", Label: "Unsubscribed"},
 }
 
-var MailchimpSubscriberStatus = []*sdkcore.AutoFormSchema{
-	{Const: "subscribed", Title: "Subscribed"},
-	{Const: "unsubscribed", Title: "Unsubscribed"},
-	{Const: "cleaned", Title: "Cleaned"},
-	{Const: "pending", Title: "Pending"},
-	{Const: "transactional", Title: "Transactional"},
+var MailchimpSubscriberStatus = []*smartform.Option{
+	{Value: "subscribed", Label: "Subscribed"},
+	{Value: "unsubscribed", Label: "Unsubscribed"},
+	{Value: "cleaned", Label: "Cleaned"},
+	{Value: "pending", Label: "Pending"},
+	{Value: "transactional", Label: "Transactional"},
 }
 
 func FetchMailchimpLists(accessToken, server string) (interface{}, error) {

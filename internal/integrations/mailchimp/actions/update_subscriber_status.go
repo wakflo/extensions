@@ -4,10 +4,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/mailchimp/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type updateSubscriberStatusActionProps struct {
@@ -18,65 +20,66 @@ type updateSubscriberStatusActionProps struct {
 
 type UpdateSubscriberStatusAction struct{}
 
-func (a *UpdateSubscriberStatusAction) Name() string {
-	return "Update Subscriber Status"
-}
+// func (a *UpdateSubscriberStatusAction) Name() string {
+// 	return "Update Subscriber Status"
+// }
 
-func (a *UpdateSubscriberStatusAction) Description() string {
-	return "Updates the status of a subscriber in your application or database, allowing you to reflect changes in their subscription level, account information, or other relevant details."
-}
-
-func (a *UpdateSubscriberStatusAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *UpdateSubscriberStatusAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &updateSubscriberStatusDocs,
+func (a *UpdateSubscriberStatusAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		DisplayName:   "Update Subscriber Status",
+		Description:   "Update Subscriber Status: This integration action updates the status of a subscriber in your application or database, allowing you to reflect changes in their subscription level, account information, or other relevant details.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: updateSubscriberStatusDocs,
+		SampleOutput: map[string]any{
+			"success": "Subscriber status updated!",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *UpdateSubscriberStatusAction) Icon() *string {
-	return nil
+func (a *UpdateSubscriberStatusAction) Properties() *smartform.FormSchema {
+
+	form := smartform.NewForm("update_subscriber_status", "Update Subscriber Status")
+
+	form.TextField("list-id", "List ID").
+		Placeholder("Enter a value for List ID.").
+		Required(true).
+		HelpText("The ID of the list to update the contact status for.")
+
+	form.TextField("email", "Email").
+		Placeholder("Enter a value for Email.").
+		Required(true).
+		HelpText("The email of the subscriber.")
+
+	form.SelectField("status", "Status").
+		Placeholder("Enter a value for Status.").
+		Required(true).
+		AddOptions(shared.MailchimpSubscriberStatus...).
+		HelpText("The status to update the subscriber to.")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *UpdateSubscriberStatusAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"list-id": autoform.NewShortTextField().
-			SetDisplayName(" List ID").
-			SetDescription("").
-			SetRequired(true).
-			Build(),
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Email").
-			SetDescription("Email of the subscriber").
-			SetRequired(true).
-			Build(),
-		"status": autoform.NewSelectField().
-			SetDisplayName("Status").
-			SetOptions(shared.MailchimpSubscriberStatus).
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *UpdateSubscriberStatusAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[updateSubscriberStatusActionProps](ctx.BaseContext)
+func (a *UpdateSubscriberStatusAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[updateSubscriberStatusActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.AccessToken == "" {
-		return nil, errors.New("missing mailchimp auth token")
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
 	}
-	accessToken := ctx.Auth.AccessToken
+	token := tokenSource.AccessToken
 
-	dc, err := shared.GetMailChimpServerPrefix(accessToken)
+	dc, err := shared.GetMailChimpServerPrefix(token)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get mailchimp server prefix: %w", err)
 	}
 
-	err = shared.UpdateSubscriberStatus(accessToken, dc, input.ListID, input.Email, input.Status)
+	err = shared.UpdateSubscriberStatus(token, dc, input.ListID, input.Email, input.Status)
 	if err != nil {
 		return nil, err
 	}
@@ -86,18 +89,8 @@ func (a *UpdateSubscriberStatusAction) Perform(ctx sdk.PerformContext) (sdkcore.
 	}, err
 }
 
-func (a *UpdateSubscriberStatusAction) Auth() *sdk.Auth {
+func (a *UpdateSubscriberStatusAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *UpdateSubscriberStatusAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *UpdateSubscriberStatusAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewUpdateSubscriberStatusAction() sdk.Action {

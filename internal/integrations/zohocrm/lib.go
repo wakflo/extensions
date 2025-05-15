@@ -7,7 +7,8 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/zohocrm/shared"
 	"github.com/wakflo/extensions/internal/integrations/zohocrm/triggers"
 
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -16,14 +17,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
-var Integration = sdk.Register(NewZohoCrm(), Flow, ReadME)
+var Integration = sdk.Register(NewZohoCrm())
 
 type ZohoCrm struct{}
 
-func (n *ZohoCrm) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *ZohoCrm) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *ZohoCrm) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.SharedAuth,
+		Schema:   shared.SharedAuth,
 	}
 }
 

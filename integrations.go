@@ -82,17 +82,17 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		// openai.Integration,            // OpenAI
 		// gemini.Integration,            // Gemini
 		// monday.Integration,            // Monday
-		// mailchimp.Integration,         // Mailchimp
+		// mailchimp.Integration, // Mailchimp
 		// csv.Integration,               // CSV
 		// cryptography.Integration,      // Cryptography
-		// notion.Integration,            // Notion
+		// notion.Integration, // Notion
 		// harvest.Integration,           // Harvest
 		// googlesheets.Integration,      // Google Sheets
 		// googlemail.Integration,        // Google Mail
 		// googlecalendar.Integration,    // Google Calendar
 		// googledocs.Integration,        // Google Docs
 		// todoist.Integration,           // Todoist
-		// linear.Integration,            // Linear
+		// linear.Integration, // Linear
 		// github.Integration,            // Github
 		// instagram.Integration,         // Instagram
 		// hubspot.Integration,           // Hubspot
@@ -102,7 +102,7 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		// activecampaign.Integration,    // ActiveCampaign
 		// convertkit.Integration,        // ConvertKit
 		// campaignmonitor.Integration,   // Campaign Monitor
-		// mailjet.Integration,           // Mailjet
+		// mailjet.Integration, // Mailjet
 		// clickup.Integration,           // ClickUp
 		// wrike.Integration,             // Wrike
 		// jiracloudsoftware.Integration, // Jira Cloud Software

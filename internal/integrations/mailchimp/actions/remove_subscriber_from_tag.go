@@ -1,12 +1,15 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/mailchimp/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type removeSubscriberFromTagActionProps struct {
@@ -17,64 +20,67 @@ type removeSubscriberFromTagActionProps struct {
 
 type RemoveSubscriberFromTagAction struct{}
 
-func (a *RemoveSubscriberFromTagAction) Name() string {
-	return "Remove Subscriber From Tag"
-}
+// func (a *RemoveSubscriberFromTagAction) Name() string {
+// 	return "Remove Subscriber From Tag"
+// }
 
-func (a *RemoveSubscriberFromTagAction) Description() string {
-	return "Remove Subscriber From Tag: This integration action removes a subscriber from a specific tag in your email marketing platform, ensuring that the individual is no longer associated with the designated group."
-}
-
-func (a *RemoveSubscriberFromTagAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *RemoveSubscriberFromTagAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &removeSubscriberFromTagDocs,
+func (a *RemoveSubscriberFromTagAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		DisplayName:   "Remove Subscriber From Tag",
+		Description:   "Remove Subscriber From Tag: This integration action removes a subscriber from a specific tag in your email marketing platform, ensuring that the individual is no longer associated with the designated group.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: removeSubscriberFromTagDocs,
+		SampleOutput: map[string]any{
+			"success": "Subscriber removed from tag!",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *RemoveSubscriberFromTagAction) Icon() *string {
-	return nil
+func (a *RemoveSubscriberFromTagAction) Properties() *smartform.FormSchema {
+
+	form := smartform.NewForm("remove_subscriber_from_tag", "Remove Subscriber From Tag")
+
+	form.TextField("list-id", "List ID").
+		Placeholder("Enter a value for List ID.").
+		Required(true).
+		HelpText("The ID of the list to remove the contact from.")
+
+	form.TextField("tag-names", "Tag Names").
+		Placeholder("Enter a value for Tag Names.").
+		Required(true).
+		HelpText("The tag names to remove from the subscriber.")
+
+	form.TextField("email", "Email").
+		Placeholder("Enter a value for Email.").
+		Required(true).
+		HelpText("The email of the subscriber.")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *RemoveSubscriberFromTagAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"list-id": autoform.NewShortTextField().
-			SetDisplayName(" List ID").
-			SetDescription("").
-			SetRequired(true).
-			Build(),
-		"tag-names": autoform.NewLongTextField().
-			SetDisplayName(" Tag name").
-			SetDescription("Tag name to remove from the subscriber").
-			SetRequired(true).
-			Build(),
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Email").
-			SetDescription("Email of the subscriber").
-			SetRequired(true).
-			Build(),
-	}
-}
-
-func (a *RemoveSubscriberFromTagAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[removeSubscriberFromTagActionProps](ctx.BaseContext)
+func (a *RemoveSubscriberFromTagAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[removeSubscriberFromTagActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	accessToken := ctx.Auth.AccessToken
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
 
-	dc, err := shared.GetMailChimpServerPrefix(accessToken)
+	dc, err := shared.GetMailChimpServerPrefix(token)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get mailchimp server prefix: %w", err)
 	}
 
 	tags := shared.ProcessTagNamesInput(input.Tags)
 
-	err = shared.ModifySubscriberTags(accessToken, dc, input.ListID, input.Email, tags, "inactive")
+	err = shared.ModifySubscriberTags(token, dc, input.ListID, input.Email, tags, "inactive")
 	if err != nil {
 		return nil, err
 	}
@@ -84,18 +90,8 @@ func (a *RemoveSubscriberFromTagAction) Perform(ctx sdk.PerformContext) (sdkcore
 	}, nil
 }
 
-func (a *RemoveSubscriberFromTagAction) Auth() *sdk.Auth {
+func (a *RemoveSubscriberFromTagAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *RemoveSubscriberFromTagAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *RemoveSubscriberFromTagAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewRemoveSubscriberFromTagAction() sdk.Action {

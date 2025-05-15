@@ -3,10 +3,11 @@ package actions
 import (
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/notion/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type createPageActionProps struct {
@@ -18,55 +19,53 @@ type createPageActionProps struct {
 
 type CreatePageAction struct{}
 
-func (a *CreatePageAction) Name() string {
-	return "Create Page"
-}
-
-func (a *CreatePageAction) Description() string {
-	return "Create Page: Automatically generates a new page within your website or application, allowing you to quickly create and deploy new content without manual intervention."
-}
-
-func (a *CreatePageAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreatePageAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createPageDocs,
+func (a *CreatePageAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_page",
+		DisplayName:   "Create Page",
+		Description:   "Create Page: Automatically generates a new page within your website or application, allowing you to quickly create and deploy new content without manual intervention.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: createPageDocs,
+		SampleOutput: map[string]any{
+			"object": "page",
+			"id":     "1234567890",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *CreatePageAction) Icon() *string {
-	return nil
+func (a *CreatePageAction) Properties() *smartform.FormSchema {
+
+	form := smartform.NewForm("create_page", "Create Page")
+
+	form.TextField("title", "Title").
+		Placeholder("Enter a title").
+		Required(true).
+		HelpText("The title of the page")
+
+	form.TextareaField("content", "Content").
+		Placeholder("Enter content").
+		Required(true).
+		HelpText("The content of the page")
+
+	shared.GetNotionDatabasesProp(form)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *CreatePageAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"title": autoform.NewShortTextField().
-			SetDisplayName("Title").
-			SetDescription("The title of the page").
-			SetRequired(true).
-			Build(),
-		"content": autoform.NewLongTextField().
-			SetDisplayName("Content").
-			SetDescription("The content of the page").
-			SetRequired(true).
-			Build(),
-		"database": shared.GetNotionDatabasesInput("Database", "Select a database", true),
-		"page_id":  shared.GetNotionPagesInput("Parent Page", "Select a parent page", false),
-	}
-}
-
-func (a *CreatePageAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createPageActionProps](ctx.BaseContext)
+func (a *CreatePageAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createPageActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.AccessToken == "" {
-		return nil, errors.New("missing calendly auth token")
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
 	}
-	accessToken := ctx.Auth.AccessToken
+	token := tokenSource.AccessToken
 
 	if input.Title == "" {
 		return nil, errors.New("title is required")
@@ -80,23 +79,13 @@ func (a *CreatePageAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 		return nil, errors.New("parent page is required")
 	}
 
-	notionPage, _ := shared.CreateNotionPage(accessToken, input.PageID, input.Title, input.Content)
+	notionPage, _ := shared.CreateNotionPage(token, input.PageID, input.Title, input.Content)
 
 	return notionPage, nil
 }
 
-func (a *CreatePageAction) Auth() *sdk.Auth {
+func (a *CreatePageAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *CreatePageAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreatePageAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreatePageAction() sdk.Action {

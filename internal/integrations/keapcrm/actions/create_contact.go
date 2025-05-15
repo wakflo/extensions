@@ -1,12 +1,15 @@
 package actions
 
 import (
+	"errors"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
+
 	"github.com/wakflo/extensions/internal/integrations/keapcrm/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type createContactActionProps struct {
@@ -29,50 +32,83 @@ type createContactActionProps struct {
 
 type CreateContactAction struct{}
 
-func (a *CreateContactAction) Name() string {
-	return "Create Contact"
-}
-
-func (a *CreateContactAction) Description() string {
-	return "Create a new contact in Keap with specified details"
-}
-
-func (a *CreateContactAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateContactAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createContactDocs,
+func (a *CreateContactAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		DisplayName:   "Create Contact",
+		Description:   "Create a new contact in Keap with specified details",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: createContactDocs,
+		SampleOutput: map[string]any{
+			"id":          "12345",
+			"given_name":  "John",
+			"family_name": "Doe",
+			"email":       "john.doe@example.com",
+			"phone_numbers": []map[string]string{
+				{
+					"type":   "WORK",
+					"number": "+1 555-123-4567",
+				},
+			},
+			"addresses": []map[string]string{
+				{
+					"type":        "BILLING",
+					"line1":       "123 Main St",
+					"line2":       "Suite 100",
+					"locality":    "Anytown",
+					"region":      "CA",
+					"postal_code": "12345",
+					"country":     "USA",
+				},
+			},
+			"company": map[string]string{
+				"name": "Acme Inc",
+			},
+			"job_title": "CEO",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (c CreateContactAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"given_name": autoform.NewShortTextField().
-			SetDisplayName("First Name").
-			SetDescription("Contact's first name").
-			SetRequired(true).Build(),
-		"family_name": autoform.NewShortTextField().
-			SetDisplayName("Last Name").
-			SetDescription("Contact's last name").
-			SetRequired(true).Build(),
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Work Email").
-			SetDescription("Contact's email address").
-			SetRequired(true).Build(),
-		"phone_number": autoform.NewShortTextField().
-			SetDisplayName("Phone Number").
-			SetDescription("Contact's phone number").
-			SetRequired(false).Build(),
-	}
+func (c CreateContactAction) Properties() *smartform.FormSchema {
+
+	form := smartform.NewForm("create_contact", "Create Contact")
+
+	form.TextField("given_name", "First Name").
+		Placeholder("Enter a value for First Name.").
+		Required(true).
+		HelpText("Contact's first name.")
+
+	form.TextField("family_name", "Last Name").
+		Placeholder("Enter a value for Last Name.").
+		Required(true).
+		HelpText("Contact's last name.")
+
+	form.TextField("email", "Work Email").
+		Placeholder("Enter a value for Work Email.").
+		Required(true).
+		HelpText("Contact's email address.")
+
+	form.TextField("phone_number", "Phone Number").
+		Placeholder("Enter a value for Phone Number.").
+		Required(false).
+		HelpText("Contact's phone number.")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *CreateContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createContactActionProps](ctx.BaseContext)
+func (a *CreateContactAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createContactActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
 
 	contactData := map[string]interface{}{
 		"given_name":  input.GivenName,
@@ -95,7 +131,7 @@ func (a *CreateContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	}
 
 	endpoint := "/contacts"
-	contact, err := shared.MakeKeapRequest(ctx.Auth.AccessToken, http.MethodPost, endpoint, contactData)
+	contact, err := shared.MakeKeapRequest(token, http.MethodPost, endpoint, contactData)
 	if err != nil {
 		return nil, err
 	}
@@ -103,49 +139,10 @@ func (a *CreateContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	return contact, nil
 }
 
-func (a *CreateContactAction) Auth() *sdk.Auth {
+func (a *CreateContactAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *CreateContactAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"id":          "12345",
-		"given_name":  "John",
-		"family_name": "Doe",
-		"email":       "john.doe@example.com",
-		"phone_numbers": []map[string]string{
-			{
-				"type":   "WORK",
-				"number": "+1 555-123-4567",
-			},
-		},
-		"addresses": []map[string]string{
-			{
-				"type":        "BILLING",
-				"line1":       "123 Main St",
-				"line2":       "Suite 100",
-				"locality":    "Anytown",
-				"region":      "CA",
-				"postal_code": "12345",
-				"country":     "USA",
-			},
-		},
-		"company": map[string]string{
-			"name": "Acme Inc",
-		},
-		"job_title": "CEO",
-	}
-}
-
-func (a *CreateContactAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateContactAction() sdk.Action {
 	return &CreateContactAction{}
-}
-
-func (a *CreateContactAction) Icon() *string {
-	icon := "mdi:account-plus"
-	return &icon
 }

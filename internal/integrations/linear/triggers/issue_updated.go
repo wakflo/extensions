@@ -7,9 +7,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/linear/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type issueUpdatedTriggerProps struct {
@@ -18,68 +21,79 @@ type issueUpdatedTriggerProps struct {
 
 type IssueUpdatedTrigger struct{}
 
-func (t *IssueUpdatedTrigger) Name() string {
-	return "Issue Updated"
-}
+// func (t *IssueUpdatedTrigger) Name() string {
+// 	return "Issue Updated"
+// }
 
-func (t *IssueUpdatedTrigger) Description() string {
-	return "Triggered when an issue is updated in your project management tool, such as Jira or Trello. This integration allows you to automate workflows and tasks based on changes made to issues, including status updates, comments, and attachments."
+func (t *IssueUpdatedTrigger) Metadata() sdk.TriggerMetadata {
+	return sdk.TriggerMetadata{
+		ID:            "issue_updated",
+		DisplayName:   "Issue Updated",
+		Description:   "Triggered when an issue is updated in your project management tool, such as Jira or Trello. This integration allows you to automate workflows and tasks based on changes made to issues, including status updates, comments, and attachments.",
+		Type:          sdkcore.TriggerTypePolling,
+		Documentation: issueUpdatedDocs,
+		SampleOutput: map[string]any{
+			"message": "Hello World!",
+		},
+	}
 }
 
 func (t *IssueUpdatedTrigger) GetType() sdkcore.TriggerType {
 	return sdkcore.TriggerTypePolling
 }
 
-func (t *IssueUpdatedTrigger) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &issueUpdatedDocs,
-	}
-}
+func (t *IssueUpdatedTrigger) Props() *smartform.FormSchema {
+	// return map[string]*sdkcore.AutoFormSchema{
+	// "name": autoform.NewShortTextField().
+	// 	SetLabel("Name").
+	// 	SetRequired(true).
+	// 	SetPlaceholder("Your name").
+	// 	Build(),
+	// }
 
-func (t *IssueUpdatedTrigger) Icon() *string {
-	return nil
-}
+	form := smartform.NewForm("issue_updated", "Issue Updated")
 
-func (t *IssueUpdatedTrigger) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		// "name": autoform.NewShortTextField().
-		// 	SetLabel("Name").
-		// 	SetRequired(true).
-		// 	SetPlaceholder("Your name").
-		// 	Build(),
-	}
+	schema := form.Build()
+
+	return schema
 }
 
 // Start initializes the issueUpdatedTrigger, required for event and webhook triggers in a lifecycle context.
-func (t *IssueUpdatedTrigger) Start(ctx sdk.LifecycleContext) error {
+func (t *IssueUpdatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {
 	// Required for event and webhook triggers
 	return nil
 }
 
 // Stop shuts down the issueUpdatedTrigger, cleaning up resources and performing necessary teardown operations.
-func (t *IssueUpdatedTrigger) Stop(ctx sdk.LifecycleContext) error {
+func (t *IssueUpdatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 	return nil
 }
 
 // Execute performs the main action logic of issueUpdatedTrigger by processing the input context and returning a JSON response.
 // It converts the base context input into a strongly-typed structure, executes the desired logic, and generates output.
 // Returns a JSON output map with the resulting data or an error if operation fails. required for Pooling triggers
-func (t *IssueUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, error) {
-	_, err := sdk.InputToTypeSafely[issueUpdatedTriggerProps](ctx.BaseContext)
+func (t *IssueUpdatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
+	_, err := sdk.InputToTypeSafely[issueUpdatedTriggerProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if ctx.Auth.Extra["api-key"] == "" {
-		return nil, errors.New("missing linear api key")
+	// Get the auth context
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
 	}
-	apiKEY := ctx.Auth.Extra["api-key"]
+
+	apiKEY := authCtx.Extra["api-key"]
 
 	if !strings.HasPrefix(apiKEY, "lin_api_") {
 		return nil, errors.New("invalid Linear API key: must start with 'lin_api_'")
 	}
 
-	lastRunTime := ctx.Metadata().LastRun
+	lastRunTime, err := ctx.GetMetadata("lastRun")
+	if err != nil {
+		return nil, err
+	}
 
 	var query string
 	if lastRunTime == nil {
@@ -101,7 +115,7 @@ func (t *IssueUpdatedTrigger) Execute(ctx sdk.ExecuteContext) (sdkcore.JSON, err
 						updatedAt
 					}
 				}
-			}`, lastRunTime.UTC().Format(time.RFC3339))
+			}`, lastRunTime.(*time.Time).UTC().Format(time.RFC3339))
 	}
 
 	response, err := shared.MakeGraphQLRequest(apiKEY, query)
@@ -118,14 +132,8 @@ func (t *IssueUpdatedTrigger) Criteria(ctx context.Context) sdkcore.TriggerCrite
 	return sdkcore.TriggerCriteria{}
 }
 
-func (t *IssueUpdatedTrigger) Auth() *sdk.Auth {
+func (t *IssueUpdatedTrigger) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (t *IssueUpdatedTrigger) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
 }
 
 func NewIssueUpdatedTrigger() sdk.Trigger {

@@ -1,13 +1,15 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/wakflo/extensions/internal/integrations/zohosalesiq/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	"github.com/juicycleff/smartform/v1"
 
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/extensions/internal/integrations/zohosalesiq/shared"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type getVisitorsDetailsActionProps struct {
@@ -17,61 +19,53 @@ type getVisitorsDetailsActionProps struct {
 
 type GetVisitorsDetailsAction struct{}
 
-func (c *GetVisitorsDetailsAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
-}
-
-func (c GetVisitorsDetailsAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (c GetVisitorsDetailsAction) Name() string {
-	return "Get Visitor Details"
-}
-
-func (c GetVisitorsDetailsAction) Description() string {
-	return "Get visitor details"
-}
-
-func (c GetVisitorsDetailsAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getVisitorsDetails,
+func (c *GetVisitorsDetailsAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		DisplayName:   "Get Visitor Details",
+		Description:   "Retrieve visitor details from the CRM system, providing insights into visitor behavior and preferences.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: getVisitorsDetails,
+		SampleOutput: map[string]any{
+			"message": "hello world",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (c GetVisitorsDetailsAction) Icon() *string {
+func (c GetVisitorsDetailsAction) Properties() *smartform.FormSchema {
+
+	form := smartform.NewForm("get_visitors_details", "Get Visitor Details")
+
+	form.TextField("screen_name", "Screen name").
+		Placeholder("Enter a value for Screen name.").
+		Required(true).
+		HelpText("The screen name")
+
+	form.TextField("view_id", "View ID").
+		Placeholder("Enter a value for View ID.").
+		Required(false).
+		HelpText("The view ID")
+
+	schema := form.Build()
+
+	return schema
+}
+
+func (c GetVisitorsDetailsAction) Auth() *sdkcore.AuthMetadata {
 	return nil
 }
 
-func (c GetVisitorsDetailsAction) SampleData() sdkcore.JSON {
-	return nil
-}
-
-func (c GetVisitorsDetailsAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"screen_name": autoform.NewShortTextField().
-			SetDisplayName("Screen name").
-			SetDescription("Screen name").
-			SetRequired(true).
-			Build(),
-		"view_id": autoform.NewShortTextField().
-			SetDisplayName("View ID").
-			SetRequired(false).
-			Build(),
-	}
-}
-
-func (c GetVisitorsDetailsAction) Auth() *sdk.Auth {
-	return &sdk.Auth{
-		Inherit: true,
-	}
-}
-
-func (c GetVisitorsDetailsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getVisitorsDetailsActionProps](ctx.BaseContext)
+func (c GetVisitorsDetailsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getVisitorsDetailsActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
 
 	viewID := input.ViewID
 
@@ -81,7 +75,7 @@ func (c GetVisitorsDetailsAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON,
 
 	url := fmt.Sprintf("/%s/visitorsview/%s/visitors", input.ScreenName, viewID)
 
-	visitors, err := shared.GetZohoClient(ctx.Auth.AccessToken, url)
+	visitors, err := shared.GetZohoClient(token, url)
 	if err != nil {
 		return nil, err
 	}

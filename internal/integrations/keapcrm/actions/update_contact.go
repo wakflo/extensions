@@ -4,10 +4,11 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/keapcrm/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type updateContactActionProps struct {
@@ -32,54 +33,68 @@ type updateContactActionProps struct {
 
 type UpdateContactAction struct{}
 
-func (a *UpdateContactAction) Name() string {
-	return "Update Contact"
-}
-
-func (a *UpdateContactAction) Description() string {
-	return "Update an existing contact in Keap with specified details"
-}
-
-func (a *UpdateContactAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *UpdateContactAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &updateContactDocs,
+func (a *UpdateContactAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		DisplayName:   "Update Contact",
+		Description:   "Update an existing contact in Keap with specified details",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: updateContactDocs,
+		SampleOutput: map[string]any{
+			"id":          "12345",
+			"given_name":  "John",
+			"family_name": "Doe",
+			"email":       "john.doe@example.com",
+			"status":      "ACTIVE",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *UpdateContactAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"contact_id": autoform.NewShortTextField().
-			SetDisplayName("Contact ID").
-			SetDescription("Unique identifier of the contact to update").
-			SetRequired(true).Build(),
-		"given_name": autoform.NewShortTextField().
-			SetDisplayName("First Name").
-			SetDescription("Contact's first name").
-			SetRequired(false).Build(),
-		"family_name": autoform.NewShortTextField().
-			SetDisplayName("Last Name").
-			SetDescription("Contact's last name").
-			SetRequired(false).Build(),
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Email").
-			SetDescription("Contact's email address").
-			SetRequired(false).Build(),
-		"phone_number": autoform.NewShortTextField().
-			SetDisplayName("Phone Number").
-			SetDescription("Contact's phone number").
-			SetRequired(false).Build(),
-	}
+func (a *UpdateContactAction) Properties() *smartform.FormSchema {
+
+	form := smartform.NewForm("update_contact", "Update Contact")
+
+	form.TextField("contact_id", "Contact ID").
+		Placeholder("contact ID").
+		Required(true).
+		HelpText("Unique identifier of the contact to update")
+
+	form.TextField("given_name", "First Name").
+		Required(false).
+		Placeholder("First Name").
+		HelpText("Contact's first name")
+
+	form.TextField("family_name", "Last Name").
+		Required(false).
+		Placeholder("Last Name").
+		HelpText("Contact's last name")
+
+	form.TextField("email", "Email").
+		Required(false).
+		Placeholder("Email").
+		HelpText("Contact's email address")
+
+	form.TextField("phone_number", "Phone Number").
+		Required(false).
+		Placeholder("Phone Number").
+		HelpText("Contact's phone number")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *UpdateContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[updateContactActionProps](ctx.BaseContext)
+func (a *UpdateContactAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	input, err := sdk.InputToTypeSafely[updateContactActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
+
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
 
 	if input.ContactID == "" {
 		return nil, errors.New("contact ID is required for updating a contact")
@@ -113,7 +128,7 @@ func (a *UpdateContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 
 	endpoint := "/contacts/" + input.ContactID
 
-	updatedContact, err := shared.MakeKeapRequest(ctx.Auth.AccessToken, http.MethodPatch, endpoint, contactData)
+	updatedContact, err := shared.MakeKeapRequest(token, http.MethodPatch, endpoint, contactData)
 	if err != nil {
 		return nil, err
 	}
@@ -121,29 +136,10 @@ func (a *UpdateContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	return updatedContact, nil
 }
 
-func (a *UpdateContactAction) Auth() *sdk.Auth {
+func (a *UpdateContactAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *UpdateContactAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"id":          "12345",
-		"given_name":  "John",
-		"family_name": "Doe",
-		"email":       "john.doe@example.com",
-		"status":      "ACTIVE",
-	}
-}
-
-func (a *UpdateContactAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewUpdateContactAction() sdk.Action {
 	return &UpdateContactAction{}
-}
-
-func (a *UpdateContactAction) Icon() *string {
-	icon := "mdi:account-edit"
-	return &icon
 }

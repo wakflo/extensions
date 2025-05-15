@@ -8,26 +8,24 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	"github.com/juicycleff/smartform/v1"
 )
 
-var SharedAuth = autoform.NewAuth().NewCustomAuth().
-	SetDescription("MailJet Authentication").
-	SetLabel("Authentication details for connecting to MailJet").
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"api_key": autoform.NewShortTextField().
-			SetDisplayName("API Key").
-			SetDescription("Your MailJet API Key").
-			SetRequired(true).
-			Build(),
-		"secret_key": autoform.NewShortTextField().
-			SetDisplayName("Secret Key").
-			SetDescription("Your MailJet Secret Key").
-			SetRequired(true).
-			Build(),
-	}).
-	Build()
+var (
+	form = smartform.NewAuthForm("mailjet-auth", "MailJet Authentication", smartform.AuthStrategyCustom)
+
+	_ = form.TextField("api_key", "API Key").
+		Placeholder("Enter API Key").
+		Required(true).
+		HelpText("Your MailJet API Key")
+
+	_ = form.TextField("secret_key", "Secret Key").
+		Placeholder("Enter Secret Key").
+		Required(true).
+		HelpText("Your MailJet Secret Key")
+
+	SharedAuth = form.Build()
+)
 
 const (
 	BaseURL = "https://api.mailjet.com"

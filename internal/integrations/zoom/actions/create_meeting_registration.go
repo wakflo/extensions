@@ -2,11 +2,11 @@ package actions
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/zoom/shared"
-	"github.com/wakflo/go-sdk/autoform"
 	"github.com/wakflo/go-sdk/v2"
 	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 	sdkcore "github.com/wakflo/go-sdk/v2/core"
@@ -21,114 +21,112 @@ type CreateMeetingRegistrationAction struct{}
 
 func (a *CreateMeetingRegistrationAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
-		DisplayName: "Create Meeting Registration",
-		Description: "Crea",
+		DisplayName:   "Create Meeting Registration",
+		Description:   "Create Meeting Registration: Automatically generates meeting registrations for attendees, including details such as name, email, and RSVP status. This integration action streamlines the process of tracking attendee information and reduces manual errors.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: createMeetingRegistrationDocs,
+		SampleOutput: map[string]any{
+			"message": "hello world",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
 func (a *CreateMeetingRegistrationAction) Properties() *smartform.FormSchema {
-	// TODO implement me
-	panic("implement me")
+	form := smartform.NewForm("create_meeting_registration", "Create Meeting Registration")
+
+	form.TextField("meeting_id", "Meeting ID").
+		Placeholder("Enter a value for Meeting ID.").
+		Required(true).
+		HelpText("The meeting ID")
+
+	form.TextField("first_name", "First Name").
+		Placeholder("Enter a value for First Name.").
+		Required(true).
+		HelpText("The registrant's first name")
+
+	form.TextField("last_name", "Last Name").
+		Placeholder("Enter a value for Last Name.").
+		Required(false).
+		HelpText("The registrant's last name")
+
+	form.TextField("email", "Email").
+		Placeholder("Enter a value for Email.").
+		Required(true).
+		HelpText("The registrant's email address")
+
+	form.TextField("address", "Address").
+		Placeholder("Enter a value for Address.").
+		Required(false).
+		HelpText("The registrant's address")
+
+	form.TextField("city", "City").
+		Placeholder("Enter a value for City.").
+		Required(false).
+		HelpText("The registrant's city")
+
+	form.TextField("state", "State").
+		Placeholder("Enter a value for State.").
+		Required(false).
+		HelpText("The registrant's state")
+
+	form.TextField("zip", "Zip").
+		Placeholder("Enter a value for Zip.").
+		Required(false).
+		HelpText("The registrant's zip code")
+
+	form.TextField("country", "Country").
+		Placeholder("Enter a value for Country.").
+		Required(false).
+		HelpText("The registrant's country")
+
+	form.TextField("phone", "Phone").
+		Placeholder("Enter a value for Phone.").
+		Required(false).
+		HelpText("The registrant's phone number")
+
+	form.TextareaField("comments", "Comments").
+		Placeholder("The registrant's questions and comments.").
+		Required(false).
+		HelpText("The registrant's questions and comments")
+
+	form.TextField("industry", "Industry").
+		Placeholder("Enter a value for Industry.").
+		Required(false).
+		HelpText("The registrant's industry")
+
+	form.TextField("job_title", "Job Title").
+		Placeholder("Enter a value for Job Title.").
+		Required(false).
+		HelpText("The registrant's job title")
+
+	form.TextField("no_of_employees", "Number of Employees").
+		Placeholder("Enter a value for Number of Employees.").
+		Required(false).
+		HelpText("The registrant's number of employees")
+
+	form.TextField("org", "Organization").
+		Placeholder("Enter a value for Organization.").
+		Required(false).
+		HelpText("The registrant's organization")
+
+	form.TextField("purchasing_time_frame", "Purchasing Time Frame").
+		Placeholder("Enter a value for Purchasing Time Frame.").
+		Required(false).
+		HelpText("The registrant's purchasing time frame")
+
+	form.TextField("role_in_purchase_process", "Role in Purchase Process").
+		Placeholder("Enter a value for Role in Purchase Process.").
+		Required(false).
+		HelpText("The registrant's role in the purchase process")
+
+	schema := form.Build()
+
+	return schema
 }
 
 func (a *CreateMeetingRegistrationAction) Auth() *sdkcore.AuthMetadata {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (a *CreateMeetingRegistrationAction) Name() string {
-	return "Create Meeting Registration"
-}
-
-func (a *CreateMeetingRegistrationAction) Description() string {
-	return "Create Meeting Registration: Automatically generates meeting registrations for attendees, including details such as name, email, and RSVP status. This integration action streamlines the process of tracking attendee information and reduces manual errors."
-}
-
-func (a *CreateMeetingRegistrationAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateMeetingRegistrationAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createMeetingRegistrationDocs,
-	}
-}
-
-func (a *CreateMeetingRegistrationAction) Icon() *string {
 	return nil
-}
-
-func (a *CreateMeetingRegistrationAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"meeting_id": autoform.NewShortTextField().
-			SetDisplayName("Meeting ID").
-			SetDescription("The meeting's ID").
-			SetRequired(true).Build(),
-		"first_name": autoform.NewShortTextField().
-			SetDisplayName("First Name").
-			SetDescription("First name").
-			SetRequired(true).Build(),
-		"last_name": autoform.NewShortTextField().
-			SetDisplayName("Last Name").
-			SetDescription("Last name").
-			SetRequired(false).Build(),
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Email").
-			SetDescription("The registrant's email address.").
-			SetRequired(true).Build(),
-		"address": autoform.NewShortTextField().
-			SetDisplayName("Address").
-			SetDescription("The registrant's address.").
-			SetRequired(false).Build(),
-		"city": autoform.NewShortTextField().
-			SetDisplayName("City").
-			SetDescription("The registrant's city.").
-			SetRequired(false).Build(),
-		"state": autoform.NewShortTextField().
-			SetDisplayName("State").
-			SetDescription("The registrant's state or province.").
-			SetRequired(false).Build(),
-		"zip": autoform.NewShortTextField().
-			SetDisplayName("Zip").
-			SetDescription("The registrant's zip or postal code.").
-			SetRequired(false).Build(),
-		"country": autoform.NewShortTextField().
-			SetDisplayName("Country").
-			SetDescription("The registrant's two-letter country code.").
-			SetRequired(false).Build(),
-		"phone": autoform.NewShortTextField().
-			SetDisplayName("Phone").
-			SetDescription("The registrant's phone number.").
-			SetRequired(false).Build(),
-		"comments": autoform.NewLongTextField().
-			SetDisplayName("Phone").
-			SetDescription("The registrant's questions and comments.").
-			SetRequired(false).Build(),
-		"industry": autoform.NewShortTextField().
-			SetDisplayName("Industry").
-			SetDescription("The registrant's industry").
-			SetRequired(false).Build(),
-		"job_title": autoform.NewShortTextField().
-			SetDisplayName("Job Title").
-			SetDescription("The registrant's job title").
-			SetRequired(false).Build(),
-		"no_of_employees": autoform.NewShortTextField().
-			SetDisplayName("Number of Employees").
-			SetDescription("The registrant's number of employees.").
-			SetRequired(false).Build(),
-		"org": autoform.NewShortTextField().
-			SetDisplayName("Organization").
-			SetDescription("The registrant's organization.").
-			SetRequired(false).Build(),
-		"purchasing_time_frame": autoform.NewShortTextField().
-			SetDisplayName("Purchasing time frame").
-			SetDescription("The registrant's purchasing time frame.").
-			SetRequired(false).Build(),
-		"role_in_purchase_process": autoform.NewShortTextField().
-			SetDisplayName("Role in purchase process").
-			SetDescription("The registrant's role in purchase process").
-			SetRequired(false).Build(),
-	}
 }
 
 func (a *CreateMeetingRegistrationAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
@@ -137,6 +135,12 @@ func (a *CreateMeetingRegistrationAction) Perform(ctx sdkcontext.PerformContext)
 		return nil, err
 	}
 
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
+
 	meetingRegistrant, err := json.Marshal(input)
 	if err != nil {
 		return nil, err
@@ -144,25 +148,11 @@ func (a *CreateMeetingRegistrationAction) Perform(ctx sdkcontext.PerformContext)
 
 	reqURL := fmt.Sprintf("%s/v2/meetings/%s/registrants", shared.ZoomBaseURL, input.MeetingID)
 
-	resp, err := shared.ZoomRequest(ctx.Auth().AccessToken, reqURL, meetingRegistrant)
+	resp, err := shared.ZoomRequest(token, reqURL, meetingRegistrant)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
-}
-
-func (a *CreateMeetingRegistrationAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *CreateMeetingRegistrationAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"message": "Hello World!",
-	}
-}
-
-func (a *CreateMeetingRegistrationAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateMeetingRegistrationAction() sdk.Action {

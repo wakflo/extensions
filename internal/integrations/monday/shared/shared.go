@@ -9,25 +9,38 @@ import (
 	"net/http"
 
 	"github.com/gookit/goutil/arrutil"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 var (
 	// #nosec
-	tokenURL   = "https://auth.monday.com/oauth2/token"
-	SharedAuth = autoform.NewOAuthField("https://auth.monday.com/oauth2/authorize", &tokenURL, []string{}).Build()
+	tokenURL = "https://auth.monday.com/oauth2/token"
 )
 
 const baseURL = "https://api.monday.com/v2"
 
-func MondayClient(ctx sdk.BaseContext, query string) (map[string]interface{}, error) {
-	if ctx.Auth.AccessToken == "" {
-		return nil, errors.New("missing monday.com auth token")
+var form = smartform.NewAuthForm("monday-auth", "Monday.com Oauth", smartform.AuthStrategyOAuth2)
+var _ = form.
+	OAuthField("oauth", "Monday.com Oauth").
+	AuthorizationURL("https://auth.monday.com/oauth2/authorize").
+	TokenURL("https://auth.monday.com/oauth2/token").
+	Scopes([]string{}).
+	Build()
+
+var (
+	SharedAuth = form.Build()
+)
+
+func MondayClient(ctx sdkcontext.BaseContext, query string) (map[string]interface{}, error) {
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
 	}
-	accessToken := ctx.Auth.AccessToken
+	token := tokenSource.AccessToken
 
 	payload := map[string]string{
 		"query": query,
@@ -44,7 +57,7 @@ func MondayClient(ctx sdk.BaseContext, query string) (map[string]interface{}, er
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Api-Version", "2023-07")
-	req.Header.Add("Authorization", accessToken)
+	req.Header.Add("Authorization", token)
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
@@ -66,8 +79,8 @@ func MondayClient(ctx sdk.BaseContext, query string) (map[string]interface{}, er
 	return mondayResponse, nil
 }
 
-func GetWorkspaceInput() *sdkcore.AutoFormSchema {
-	getWorkspaces := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetWorkspaceProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getWorkspaces := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		query := `{
 		 workspaces {
 		     id
@@ -88,9 +101,15 @@ func GetWorkspaceInput() *sdkcore.AutoFormSchema {
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 
+		tokenSource := ctx.Auth().Token
+		if tokenSource == nil {
+			return nil, errors.New("missing authentication token")
+		}
+		token := tokenSource.AccessToken
+
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Add("Api-Version", "2023-07")
-		req.Header.Set("Authorization", ctx.Auth.AccessToken)
+		req.Header.Set("Authorization", token)
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -119,15 +138,23 @@ func GetWorkspaceInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(teams, len(teams))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Workspaces").
-		SetDescription("Select a workspace").
-		SetDynamicOptions(&getWorkspaces).
-		SetRequired(true).Build()
+	return form.SelectField("workspace_id", "Workspace").
+		Placeholder("Select a workspace").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getWorkspaces)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select a workspace")
 }
 
-func GetBoardInput(title, description string) *sdkcore.AutoFormSchema {
-	getBoardID := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetBoardProp(id, title, description string, form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getBoardID := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			WorkspaceID string `json:"workspace_id"`
 		}](ctx)
@@ -152,9 +179,15 @@ func GetBoardInput(title, description string) *sdkcore.AutoFormSchema {
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 
+		tokenSource := ctx.Auth().Token
+		if tokenSource == nil {
+			return nil, errors.New("missing authentication token")
+		}
+		token := tokenSource.AccessToken
+
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Add("Api-Version", "2023-07")
-		req.Header.Set("Authorization", ctx.Auth.AccessToken)
+		req.Header.Set("Authorization", token)
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -183,15 +216,23 @@ func GetBoardInput(title, description string) *sdkcore.AutoFormSchema {
 		return ctx.Respond(boards, len(boards))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(description).
-		SetDynamicOptions(&getBoardID).
-		SetRequired(true).Build()
+	return form.SelectField(id, title).
+		Placeholder(description).
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getBoardID)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText(description)
 }
 
-func GetGroupInput(title, description string, required bool) *sdkcore.AutoFormSchema {
-	getGroups := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetGroupProp(id, title, description string, required bool, form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getGroups := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			BoardID string `json:"board_id"`
 		}](ctx)
@@ -219,9 +260,15 @@ func GetGroupInput(title, description string, required bool) *sdkcore.AutoFormSc
 			return nil, fmt.Errorf("failed to create request: %w", err)
 		}
 
+		tokenSource := ctx.Auth().Token
+		if tokenSource == nil {
+			return nil, errors.New("missing authentication token")
+		}
+		token := tokenSource.AccessToken
+
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Add("Api-Version", "2023-07")
-		req.Header.Set("Authorization", ctx.Auth.AccessToken)
+		req.Header.Set("Authorization", token)
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -249,59 +296,68 @@ func GetGroupInput(title, description string, required bool) *sdkcore.AutoFormSc
 
 		items := arrutil.Map[Group, map[string]any](groups, func(input Group) (target map[string]any, find bool) {
 			return map[string]any{
-				"id":   input.ID,
-				"name": input.Title,
+				"value": input.ID,
+				"label": input.Title,
 			}, true
 		})
 
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(description).
-		SetDynamicOptions(&getGroups).
-		SetRequired(required).Build()
+	return form.SelectField(id, title).
+		Placeholder(description).
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getGroups)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText(description)
 }
 
-var ColumnType = []*sdkcore.AutoFormSchema{
-	{Const: "auto_number", Title: "Auto Number"},
-	{Const: "board_relation", Title: "Board Relation"},
-	{Const: "button", Title: "Button"},
-	{Const: "checkbox", Title: "Checkbox"},
-	{Const: "color_picker", Title: "Color Picker"},
-	{Const: "country", Title: "Country"},
-	{Const: "creation_log", Title: "Creation Log"},
-	{Const: "date", Title: "Date"},
-	{Const: "dependency", Title: "Dependency"},
-	{Const: "doc", Title: "Doc"},
-	{Const: "dropdown", Title: "Dropdown"},
-	{Const: "email", Title: "Email"},
-	{Const: "file", Title: "File"},
-	{Const: "formula", Title: "Formula"},
-	{Const: "hour", Title: "Hour"},
-	{Const: "item_assignees", Title: "Item Assignees"},
-	{Const: "item_id", Title: "Item ID"},
-	{Const: "last_updated", Title: "Last Updated"},
-	{Const: "link", Title: "Link"},
-	{Const: "location", Title: "Location"},
-	{Const: "long_text", Title: "Long Text"},
-	{Const: "mirror", Title: "Mirror"},
-	{Const: "name", Title: "Name"},
-	{Const: "numbers", Title: "Numbers"},
-	{Const: "phone", Title: "Phone"},
-	{Const: "people", Title: "People"},
-	{Const: "progress", Title: "Progress"},
-	{Const: "rating", Title: "Rating"},
-	{Const: "status", Title: "Status"},
-	{Const: "subtasks", Title: "Subtasks"},
-	{Const: "tags", Title: "Tags"},
-	{Const: "team", Title: "Team"},
-	{Const: "text", Title: "Text"},
-	{Const: "timeline", Title: "Timeline"},
-	{Const: "time_tracking", Title: "Time Tracking"},
-	{Const: "vote", Title: "Vote"},
-	{Const: "week", Title: "Week"},
-	{Const: "world_clock", Title: "World Clock"},
-	{Const: "unsupported", Title: "Unsupported"},
+var ColumnType = []*smartform.Option{
+	{},
+	{Value: "auto_number", Label: "Auto Number"},
+	{Value: "board_relation", Label: "Board Relation"},
+	{Value: "button", Label: "Button"},
+	{Value: "checkbox", Label: "Checkbox"},
+	{Value: "color_picker", Label: "Color Picker"},
+	{Value: "country", Label: "Country"},
+	{Value: "creation_log", Label: "Creation Log"},
+	{Value: "date", Label: "Date"},
+	{Value: "dependency", Label: "Dependency"},
+	{Value: "doc", Label: "Doc"},
+	{Value: "dropdown", Label: "Dropdown"},
+	{Value: "email", Label: "Email"},
+	{Value: "file", Label: "File"},
+	{Value: "formula", Label: "Formula"},
+	{Value: "hour", Label: "Hour"},
+	{Value: "item_assignees", Label: "Item Assignees"},
+	{Value: "item_id", Label: "Item ID"},
+	{Value: "last_updated", Label: "Last Updated"},
+	{Value: "link", Label: "Link"},
+	{Value: "location", Label: "Location"},
+	{Value: "long_text", Label: "Long Text"},
+	{Value: "mirror", Label: "Mirror"},
+	{Value: "name", Label: "Name"},
+	{Value: "numbers", Label: "Numbers"},
+	{Value: "phone", Label: "Phone"},
+	{Value: "people", Label: "People"},
+	{Value: "progress", Label: "Progress"},
+	{Value: "rating", Label: "Rating"},
+	{Value: "status", Label: "Status"},
+	{Value: "subtasks", Label: "Subtasks"},
+	{Value: "tags", Label: "Tags"},
+	{Value: "team", Label: "Team"},
+	{Value: "text", Label: "Text"},
+	{Value: "timeline", Label: "Timeline"},
+	{Value: "time_tracking", Label: "Time Tracking"},
+	{Value: "vote", Label: "Vote"},
+	{Value: "week", Label: "Week"},
+	{Value: "world_clock", Label: "World Clock"},
+	{Value: "unsupported", Label: "Unsupported"},
 }

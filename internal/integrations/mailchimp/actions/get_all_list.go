@@ -4,75 +4,63 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/mailchimp/shared"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 type getAllTagActionProps struct{}
 
 type GetAllListAction struct{}
 
-func (a *GetAllListAction) Name() string {
-	return "Get All Tag"
-}
-
-func (a *GetAllListAction) Description() string {
-	return "Retrieves all tags associated with a specific entity or resource, allowing you to access and utilize tag metadata in your workflow automation processes."
-}
-
-func (a *GetAllListAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetAllListAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getAllTagDocs,
+func (a *GetAllListAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		DisplayName:   "Get All List",
+		Description:   "Retrieves all lists associated with a specific entity or resource, allowing you to access and utilize list metadata in your workflow automation processes.",
+		Type:          sdkcore.ActionTypeAction,
+		Documentation: getAllTagDocs,
+		SampleOutput: map[string]any{
+			"success": "List retrieved!",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
-func (a *GetAllListAction) Icon() *string {
-	return nil
+func (a *GetAllListAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_all_list", "Get All List")
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *GetAllListAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{}
-}
-
-func (a *GetAllListAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	if ctx.Auth.AccessToken == "" {
-		return nil, errors.New("missing mailchimp auth token")
+func (a *GetAllListAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
 	}
-	accessToken := ctx.Auth.AccessToken
+	token := tokenSource.AccessToken
 
-	dc, err := shared.GetMailChimpServerPrefix(accessToken)
+	dc, err := shared.GetMailChimpServerPrefix(token)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get mailchimp server prefix: %w", err)
 	}
 
 	var result interface{}
-	result, err = shared.FetchMailchimpLists(accessToken, dc)
+	result, err = shared.FetchMailchimpLists(token, dc)
 	if err != nil {
 		return nil, err
 	}
 
-	return sdk.JSON(map[string]interface{}{
+	return sdkcore.JSON(map[string]interface{}{
 		"result": result,
 	}), err
 }
 
-func (a *GetAllListAction) Auth() *sdk.Auth {
+func (a *GetAllListAction) Auth() *sdkcore.AuthMetadata {
 	return nil
-}
-
-func (a *GetAllListAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"result": "Hello World!",
-	}
-}
-
-func (a *GetAllListAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetAllListAction() sdk.Action {

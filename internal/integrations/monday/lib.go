@@ -5,7 +5,8 @@ import (
 
 	"github.com/wakflo/extensions/internal/integrations/monday/actions"
 	"github.com/wakflo/extensions/internal/integrations/monday/shared"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 //go:embed README.md
@@ -14,14 +15,18 @@ var ReadME string
 //go:embed flo.toml
 var Flow string
 
-var Integration = sdk.Register(NewMonday(), Flow, ReadME)
+var Integration = sdk.Register(NewMonday())
 
 type Monday struct{}
 
-func (n *Monday) Auth() *sdk.Auth {
-	return &sdk.Auth{
+func (n *Monday) Metadata() sdk.IntegrationMetadata {
+	return sdk.LoadMetadataFromFlo(Flow, ReadME)
+}
+
+func (n *Monday) Auth() *core.AuthMetadata {
+	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.SharedAuth,
+		Schema:   shared.SharedAuth,
 	}
 }
 

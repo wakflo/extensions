@@ -2,6 +2,7 @@ package actions
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/zoom/shared"
@@ -95,6 +96,12 @@ func (a *CreateMeetingAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JS
 		return nil, err
 	}
 
+	tokenSource := ctx.Auth().Token
+	if tokenSource == nil {
+		return nil, errors.New("missing authentication token")
+	}
+	token := tokenSource.AccessToken
+
 	data := map[string]interface{}{
 		"topic":            input.Topic,
 		"agenda":           "My Meeting",
@@ -156,7 +163,7 @@ func (a *CreateMeetingAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JS
 
 	reqURL := "/v2/users/me/meetings"
 
-	resp, err := shared.ZoomRequest(ctx.Auth().AccessToken, reqURL, meeting)
+	resp, err := shared.ZoomRequest(token, reqURL, meeting)
 	if err != nil {
 		return nil, err
 	}
