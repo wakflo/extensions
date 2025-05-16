@@ -1,0 +1,14 @@
+[integration]
+name = "Zendesk App"
+description = """Integrate your Zendesk Customer Support platform with our workflow automation software to streamline support processes and enhance customer service. Automate ticket management, monitor support activities, and improve response times. Use this integration to:
+
+* Automatically create and update support tickets based on external events
+* Track ticket status changes and alert team members
+* Add comments to tickets as part of automated workflows
+* Retrieve and search ticket information to inform decision making
+* Enhance customer satisfaction through faster, more consistent support responses
+* Generate custom reports on support performance metrics"""
+version = "0.0.1"
+icon = "logos:zendesk"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

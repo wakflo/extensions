@@ -52,6 +52,8 @@ import (
 	// "github.com/wakflo/extensions/internal/integrations/zohoinventory"
 	// "github.com/wakflo/extensions/internal/integrations/zohosalesiq"
 	// "github.com/wakflo/extensions/internal/integrations/zoom"
+	// "github.com/wakflo/extensions/internal/integrations/zendeskapp"
+
 	"github.com/wakflo/go-sdk/v2"
 )
 
@@ -108,6 +110,7 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		// jiracloudsoftware.Integration, // Jira Cloud Software
 		// gumroad.Integration,           // Gumroad Software
 		// typeform.Integration,          // Typeform Software
+		// zendeskapp.Integration, // Zendesk Software
 	}
 
 	// 🛑Do-Not-Edit
