@@ -15,7 +15,7 @@ import (
 )
 
 type taskUpdatedTriggerProps struct {
-	ProjectID string `json:"project-id,omitempty"`
+	ProjectID string `json:"project_id,omitempty"`
 }
 
 type TaskUpdatedTrigger struct{}
@@ -51,12 +51,7 @@ func (t *TaskUpdatedTrigger) GetType() sdkcore.TriggerType {
 func (t *TaskUpdatedTrigger) Props() *smartform.FormSchema {
 	form := smartform.NewForm("task_updated", "Task Updated")
 
-	// Note: These will have type errors, but we're ignoring shared errors as per the issue description
-	// form.SelectField("project-id", "Project").
-	//	Placeholder("Select a project").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The project to monitor for updated tasks")
+	shared.RegisterProjectsProps(form)
 
 	schema := form.Build()
 
@@ -106,7 +101,7 @@ func (t *TaskUpdatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSO
 
 	url += queryParams
 
-	response, err := shared.GetAsanaClient(authCtx.AccessToken, url, http.MethodGet, nil)
+	response, err := shared.GetAsanaClient(authCtx.Token.AccessToken, url, http.MethodGet, nil)
 	if err != nil {
 		return nil, errors.New("error fetching data")
 	}

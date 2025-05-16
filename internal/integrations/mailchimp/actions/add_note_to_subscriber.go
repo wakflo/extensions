@@ -33,7 +33,6 @@ func (a *AddNoteToSubscriberAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *AddNoteToSubscriberAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("add_note_to_subscriber", "Add Note To Subscriber")
 
 	form.TextField("list-id", "List ID").

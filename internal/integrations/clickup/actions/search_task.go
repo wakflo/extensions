@@ -60,7 +60,11 @@ func (o *SearchTaskOperation) Properties() *smartform.FormSchema {
 }
 
 func (o *SearchTaskOperation) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
-	accessToken := ctx.Auth().AccessToken
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+	accessToken := authCtx.Token.AccessToken
 	input, err := sdk.InputToTypeSafely[searchTaskProps](ctx)
 	if err != nil {
 		return nil, err

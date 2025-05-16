@@ -58,7 +58,6 @@ func (a *ListContactsAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *ListContactsAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("list_contacts", "List Contacts")
 
 	form.NumberField("limit", "Limit").
@@ -79,7 +78,6 @@ func (a *ListContactsAction) Properties() *smartform.FormSchema {
 	schema := form.Build()
 
 	return schema
-
 }
 
 func (a *ListContactsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {

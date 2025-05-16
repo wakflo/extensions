@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/activecampaign/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type createContactActionProps struct {
@@ -19,56 +20,70 @@ type createContactActionProps struct {
 
 type CreateContactAction struct{}
 
-func (a *CreateContactAction) Name() string {
-	return "Create Contact"
-}
-
-func (a *CreateContactAction) Description() string {
-	return "Create a new contact in your ActiveCampaign account with customizable fields."
-}
-
-func (a *CreateContactAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *CreateContactAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &createContactDocs,
+// Metadata returns metadata about the action
+func (a *CreateContactAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "create_contact",
+		DisplayName:   "Create Contact",
+		Description:   "Create a new contact in your ActiveCampaign account with customizable fields.",
+		Type:          core.ActionTypeAction,
+		Documentation: createContactDocs,
+		Icon:          "mdi:account-plus",
+		SampleOutput: map[string]any{
+			"id":        "123",
+			"email":     "new@example.com",
+			"firstName": "New",
+			"lastName":  "User",
+			"phone":     "+1234567890",
+			"cdate":     "2023-03-15T15:30:00-05:00",
+			"udate":     "2023-03-15T15:30:00-05:00",
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *CreateContactAction) Icon() *string {
-	icon := "mdi:account-plus"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *CreateContactAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("create_contact", "Create Contact")
+
+	form.TextField("email", "email").
+		Placeholder("Email").
+		HelpText("Email address of the contact").
+		Required(true)
+
+	form.TextField("first-name", "first-name").
+		Placeholder("First Name").
+		HelpText("First name of the contact").
+		Required(false)
+
+	form.TextField("last-name", "last-name").
+		Placeholder("Last Name").
+		HelpText("Last name of the contact").
+		Required(false)
+
+	form.TextField("phone", "phone").
+		Placeholder("Phone").
+		HelpText("Phone number of the contact").
+		Required(false)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *CreateContactAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"email": autoform.NewShortTextField().
-			SetDisplayName("Email").
-			SetDescription("Email address of the contact").
-			SetRequired(true).
-			Build(),
-		"first-name": autoform.NewShortTextField().
-			SetDisplayName("First Name").
-			SetDescription("First name of the contact").
-			SetRequired(false).
-			Build(),
-		"last-name": autoform.NewShortTextField().
-			SetDisplayName("Last Name").
-			SetDescription("Last name of the contact").
-			SetRequired(false).
-			Build(),
-		"phone": autoform.NewShortTextField().
-			SetDisplayName("Phone").
-			SetDescription("Phone number of the contact").
-			SetRequired(false).
-			Build(),
+// Auth returns the authentication requirements for the action
+func (a *CreateContactAction) Auth() *core.AuthMetadata {
+	return nil
+}
+
+// Perform executes the action with the given context and input
+func (a *CreateContactAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[createContactActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *CreateContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[createContactActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
@@ -103,8 +118,8 @@ func (a *CreateContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	}
 
 	response, err := shared.PostActiveCampaignClient(
-		ctx.Auth.Extra["api_url"],
-		ctx.Auth.Extra["api_key"],
+		authCtx.Extra["api_url"],
+		authCtx.Extra["api_key"],
 		"contacts",
 		payload,
 	)
@@ -113,26 +128,6 @@ func (a *CreateContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, err
 	}
 
 	return response, nil
-}
-
-func (a *CreateContactAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *CreateContactAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"id":        "123",
-		"email":     "new@example.com",
-		"firstName": "New",
-		"lastName":  "User",
-		"phone":     "+1234567890",
-		"cdate":     "2023-03-15T15:30:00-05:00",
-		"udate":     "2023-03-15T15:30:00-05:00",
-	}
-}
-
-func (a *CreateContactAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewCreateContactAction() sdk.Action {

@@ -34,7 +34,6 @@ func (a *UpdatePageAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *UpdatePageAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("update_page", "Update Page")
 
 	form.TextField("title", "Title").

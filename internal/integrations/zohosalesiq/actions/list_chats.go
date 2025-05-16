@@ -31,7 +31,6 @@ func (c *ListChatsAction) Metadata() sdk.ActionMetadata {
 }
 
 func (c ListChatsAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("list_chats", "List Chats")
 
 	form.TextField("screen_name", "Screen name").

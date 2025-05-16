@@ -59,18 +59,8 @@ func (g *GetTaskAction) Metadata() sdk.ActionMetadata {
 func (g *GetTaskAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("get_task", "Get Task")
 
-	// Note: These will have type errors, but we're ignoring shared errors as per the issue description
-	// form.SelectField("task_id", "Task").
-	//	Placeholder("Select a task").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The task to retrieve")
-
-	// form.SelectField("project_id", "Project").
-	//	Placeholder("Select a project").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The project containing the task")
+	shared.RegisterProjectsProps(form)
+	shared.RegisterTasksProps(form)
 
 	schema := form.Build()
 
@@ -79,9 +69,7 @@ func (g *GetTaskAction) Properties() *smartform.FormSchema {
 
 // Auth returns the authentication requirements for the action
 func (g *GetTaskAction) Auth() *core.AuthMetadata {
-	return &core.AuthMetadata{
-		Inherit: true,
-	}
+	return nil
 }
 
 // Perform executes the action with the given context and input
@@ -114,7 +102,7 @@ func (g *GetTaskAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error
 	}
 
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer "+authCtx.AccessToken)
+	req.Header.Add("Authorization", "Bearer "+authCtx.Token.AccessToken)
 
 	client := &http.Client{}
 	res, err := client.Do(req)

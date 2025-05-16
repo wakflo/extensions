@@ -35,7 +35,6 @@ func (a *CreatePageAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *CreatePageAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("create_page", "Create Page")
 
 	form.TextField("title", "Title").

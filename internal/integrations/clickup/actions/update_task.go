@@ -110,7 +110,7 @@ func (o *UpdateTaskOperation) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 		return nil, err
 	}
 
-	accessToken := authCtx.AccessToken
+	accessToken := authCtx.Token.AccessToken
 	updatedTaskData := map[string]interface{}{}
 
 	if input.Name != "" {

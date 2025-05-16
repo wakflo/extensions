@@ -82,7 +82,6 @@ func (t *ContactUpdatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 }
 
 func (t *ContactUpdatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
-
 	input, err := sdk.InputToTypeSafely[contactUpdatedTriggerProps](ctx)
 	if err != nil {
 		return nil, err

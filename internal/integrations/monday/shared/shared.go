@@ -16,24 +16,22 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
-var (
-	// #nosec
-	tokenURL = "https://auth.monday.com/oauth2/token"
-)
+// #nosec
+var tokenURL = "https://auth.monday.com/oauth2/token"
 
 const baseURL = "https://api.monday.com/v2"
 
-var form = smartform.NewAuthForm("monday-auth", "Monday.com Oauth", smartform.AuthStrategyOAuth2)
-var _ = form.
-	OAuthField("oauth", "Monday.com Oauth").
-	AuthorizationURL("https://auth.monday.com/oauth2/authorize").
-	TokenURL("https://auth.monday.com/oauth2/token").
-	Scopes([]string{}).
-	Build()
-
 var (
-	SharedAuth = form.Build()
+	form = smartform.NewAuthForm("monday-auth", "Monday.com Oauth", smartform.AuthStrategyOAuth2)
+	_    = form.
+		OAuthField("oauth", "Monday.com Oauth").
+		AuthorizationURL("https://auth.monday.com/oauth2/authorize").
+		TokenURL("https://auth.monday.com/oauth2/token").
+		Scopes([]string{}).
+		Build()
 )
+
+var SharedAuth = form.Build()
 
 func MondayClient(ctx sdkcontext.BaseContext, query string) (map[string]interface{}, error) {
 	tokenSource := ctx.Auth().Token
@@ -226,6 +224,7 @@ func GetBoardProp(id, title, description string, form *smartform.FormBuilder) *s
 				WithSearchSupport().
 				WithPagination(10).
 				End().
+				RefreshOn("workspace_id").
 				GetDynamicSource(),
 		).
 		HelpText(description)
@@ -314,6 +313,7 @@ func GetGroupProp(id, title, description string, required bool, form *smartform.
 				WithSearchSupport().
 				WithPagination(10).
 				End().
+				RefreshOn("board_id").
 				GetDynamicSource(),
 		).
 		HelpText(description)

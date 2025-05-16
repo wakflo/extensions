@@ -32,7 +32,6 @@ func (a *ListInvoicesAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *ListInvoicesAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("list_invoices", "Lisrt Invoices")
 
 	shared.GetOrganizationsProp(form)

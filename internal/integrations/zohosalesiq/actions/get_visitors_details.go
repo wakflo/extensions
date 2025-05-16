@@ -33,7 +33,6 @@ func (c *GetVisitorsDetailsAction) Metadata() sdk.ActionMetadata {
 }
 
 func (c GetVisitorsDetailsAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("get_visitors_details", "Get Visitor Details")
 
 	form.TextField("screen_name", "Screen name").

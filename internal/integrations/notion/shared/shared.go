@@ -18,11 +18,10 @@ import (
 
 const BaseURL = "https://api.notion.com/v1"
 
-var (
-	// #nosec
-	tokenURL = BaseURL + "oauth/token"
-	// SharedAuth = autoform.NewOAuthField(BaseURL+"/oauth/authorize", &tokenURL, []string{}).Build()
-)
+// #nosec
+var tokenURL = BaseURL + "oauth/token"
+
+// SharedAuth = autoform.NewOAuthField(BaseURL+"/oauth/authorize", &tokenURL, []string{}).Build()
 
 var form = smartform.NewAuthForm("notion-auth", "Notion Oauth", smartform.AuthStrategyOAuth2)
 
@@ -33,9 +32,7 @@ var _ = form.
 	Scopes([]string{}).
 	Build()
 
-var (
-	SharedNotionAuth = form.Build()
-)
+var SharedNotionAuth = form.Build()
 
 func GetNotionPagesProp(title string, desc string, required bool, form *smartform.FormBuilder) *smartform.FieldBuilder {
 	getPages := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {

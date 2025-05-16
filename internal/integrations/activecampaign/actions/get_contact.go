@@ -3,10 +3,11 @@ package actions
 import (
 	"errors"
 
+	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/activecampaign/shared"
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	"github.com/wakflo/go-sdk/v2/core"
 )
 
 type getContactActionProps struct {
@@ -15,41 +16,59 @@ type getContactActionProps struct {
 
 type GetContactAction struct{}
 
-func (a *GetContactAction) Name() string {
-	return "Get Contact"
-}
-
-func (a *GetContactAction) Description() string {
-	return "Retrieve a specific contact by ID from your ActiveCampaign account."
-}
-
-func (a *GetContactAction) GetType() sdkcore.ActionType {
-	return sdkcore.ActionTypeNormal
-}
-
-func (a *GetContactAction) Documentation() *sdk.OperationDocumentation {
-	return &sdk.OperationDocumentation{
-		Documentation: &getContactDocs,
+// Metadata returns metadata about the action
+func (a *GetContactAction) Metadata() sdk.ActionMetadata {
+	return sdk.ActionMetadata{
+		ID:            "get_contact",
+		DisplayName:   "Get Contact",
+		Description:   "Retrieve a specific contact by ID from your ActiveCampaign account.",
+		Type:          core.ActionTypeAction,
+		Documentation: getContactDocs,
+		Icon:          "mdi:account-search",
+		SampleOutput: map[string]any{
+			"id":        "123",
+			"email":     "sample@example.com",
+			"firstName": "John",
+			"lastName":  "Doe",
+			"phone":     "+1234567890",
+			"cdate":     "2023-01-15T15:30:00-05:00",
+			"udate":     "2023-02-20T10:15:00-05:00",
+			"links": map[string]string{
+				"lists": "https://api.example.com/contacts/123/lists",
+				"deals": "https://api.example.com/contacts/123/deals",
+			},
+		},
+		Settings: core.ActionSettings{},
 	}
 }
 
-func (a *GetContactAction) Icon() *string {
-	icon := "mdi:account-search"
-	return &icon
+// Properties returns the schema for the action's input configuration
+func (a *GetContactAction) Properties() *smartform.FormSchema {
+	form := smartform.NewForm("get_contact", "Get Contact")
+
+	form.TextField("contact-id", "contact-id").
+		Placeholder("Contact ID").
+		HelpText("The ID of the contact you want to retrieve").
+		Required(true)
+
+	schema := form.Build()
+
+	return schema
 }
 
-func (a *GetContactAction) Properties() map[string]*sdkcore.AutoFormSchema {
-	return map[string]*sdkcore.AutoFormSchema{
-		"contact-id": autoform.NewShortTextField().
-			SetDisplayName("Contact ID").
-			SetDescription("The ID of the contact you want to retrieve").
-			SetRequired(true).
-			Build(),
+// Auth returns the authentication requirements for the action
+func (a *GetContactAction) Auth() *core.AuthMetadata {
+	return nil
+}
+
+// Perform executes the action with the given context and input
+func (a *GetContactAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	input, err := sdk.InputToTypeSafely[getContactActionProps](ctx)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (a *GetContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error) {
-	input, err := sdk.InputToTypeSafely[getContactActionProps](ctx.BaseContext)
+	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
 	}
@@ -61,8 +80,8 @@ func (a *GetContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	endpoint := "contacts/" + input.ContactID
 
 	response, err := shared.GetActiveCampaignClient(
-		ctx.Auth.Extra["api_url"],
-		ctx.Auth.Extra["api_key"],
+		authCtx.Extra["api_url"],
+		authCtx.Extra["api_key"],
 		endpoint,
 	)
 	if err != nil {
@@ -70,30 +89,6 @@ func (a *GetContactAction) Perform(ctx sdk.PerformContext) (sdkcore.JSON, error)
 	}
 
 	return response, nil
-}
-
-func (a *GetContactAction) Auth() *sdk.Auth {
-	return nil
-}
-
-func (a *GetContactAction) SampleData() sdkcore.JSON {
-	return map[string]any{
-		"id":        "123",
-		"email":     "sample@example.com",
-		"firstName": "John",
-		"lastName":  "Doe",
-		"phone":     "+1234567890",
-		"cdate":     "2023-01-15T15:30:00-05:00",
-		"udate":     "2023-02-20T10:15:00-05:00",
-		"links": map[string]string{
-			"lists": "https://api.example.com/contacts/123/lists",
-			"deals": "https://api.example.com/contacts/123/deals",
-		},
-	}
-}
-
-func (a *GetContactAction) Settings() sdkcore.ActionSettings {
-	return sdkcore.ActionSettings{}
 }
 
 func NewGetContactAction() sdk.Action {

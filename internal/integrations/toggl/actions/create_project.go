@@ -88,9 +88,7 @@ func (c *CreateProjectAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 }
 
 func (c *CreateProjectAction) Auth() *core.AuthMetadata {
-	return &core.AuthMetadata{
-		Inherit: true,
-	}
+	return nil
 }
 
 func NewCreateProjectAction() sdk.Action {

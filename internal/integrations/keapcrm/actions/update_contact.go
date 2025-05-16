@@ -51,7 +51,6 @@ func (a *UpdateContactAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *UpdateContactAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("update_contact", "Update Contact")
 
 	form.TextField("contact_id", "Contact ID").

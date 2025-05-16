@@ -7,35 +7,40 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	"github.com/juicycleff/smartform/v1"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
-var SharedAuth = autoform.NewAuth().NewCustomAuth().
-	SetDescription("ActiveCampaign API Authentication").
-	SetLabel("ActiveCampaign Authentication").
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"api-key": autoform.NewShortTextField().
-			SetDisplayName("API Key").
-			SetDescription("Your Campaign Monitor API key").
-			SetRequired(true).
-			Build(),
-		"client-id": autoform.NewShortTextField().
-			SetDisplayName("Client ID").
-			SetDescription("Your Campaign Monitor Client ID").
-			SetRequired(true).
-			Build(),
-	}).
-	Build()
+var (
+	form = smartform.NewAuthForm("campaignmonitor-auth", "Campaign Monitor API Authentication", smartform.AuthStrategyCustom)
 
-func GetCreateSendSubscriberListsInput() *sdkcore.AutoFormSchema {
-	getLists := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		clientID, clientIDExists := ctx.Auth.Extra["client-id"]
-		apiKey, apiKeyExists := ctx.Auth.Extra["api-key"]
+	_ = form.TextField("api-key", "API Key (Required)").
+		Required(true).
+		HelpText("Your Campaign Monitor API key")
+
+	_ = form.TextField("client-id", "Client ID (Required)").
+		Required(true).
+		HelpText("Your Campaign Monitor Client ID")
+
+	CampaignMonitorSharedAuth = form.Build()
+)
+
+func RegisterCreateSendSubscriberListsProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getLists := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
+		clientID, clientIDExists := authCtx.Extra["client-id"]
+		apiKey, apiKeyExists := authCtx.Extra["api-key"]
 
 		if !clientIDExists || !apiKeyExists || clientID == "" || apiKey == "" {
 			return nil, errors.New("client ID and API Key are required")
 		}
+
 		apiURL := fmt.Sprintf("https://api.createsend.com/api/v3.3/clients/%s/lists.json", clientID)
 
 		req, err := http.NewRequest(http.MethodGet, apiURL, nil)
@@ -82,13 +87,20 @@ func GetCreateSendSubscriberListsInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Subscriber Lists").
-		SetDescription("Select CreateSend subscriber list").
-		SetDynamicOptions(&getLists).
-		SetRequired(false).Build()
+	return form.SelectField("subscriber_list", "Subscriber Lists").
+		Placeholder("Select a subscriber list").
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getLists)).
+				WithSearchSupport().
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select CreateSend subscriber list")
 }
 
 type EmailItem struct {
-	Value string `json:"value"` // The actual field name may be different
+	Value string `json:"value"`
 }

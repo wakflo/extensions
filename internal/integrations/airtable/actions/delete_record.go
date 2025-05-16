@@ -44,18 +44,9 @@ func (a *DeleteRecordAction) Properties() *smartform.FormSchema {
 		Required(true).
 		HelpText("The ID of the record you want to delete. You can find the record ID by clicking on the record and then clicking on the share button. The ID will be in the URL.")
 
-	// Note: These will have type errors, but we're ignoring shared errors as per the issue description
-	// form.SelectField("bases", "Bases").
-	//	Placeholder("Select a base").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The base to delete the record from")
+	shared.RegisterBasesProps(form)
 
-	// form.SelectField("table", "Table").
-	//	Placeholder("Select a table").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The table to delete the record from")
+	shared.RegisterTablesProps(form)
 
 	schema := form.Build()
 

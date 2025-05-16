@@ -62,7 +62,6 @@ func (t *RecordUpdatedTrigger) Props() *smartform.FormSchema {
 	schema := form.Build()
 
 	return schema
-
 }
 
 func (t *RecordUpdatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {

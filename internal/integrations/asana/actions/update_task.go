@@ -63,18 +63,8 @@ func (u *UpdateTaskAction) Metadata() sdk.ActionMetadata {
 func (u *UpdateTaskAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("update_task", "Update Task")
 
-	// Note: These will have type errors, but we're ignoring shared errors as per the issue description
-	// form.SelectField("project_id", "Project").
-	//	Placeholder("Select a project").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The project containing the task")
-
-	// form.SelectField("task_id", "Task").
-	//	Placeholder("Select a task").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The task to update")
+	shared.RegisterProjectsProps(form)
+	shared.RegisterTasksProps(form)
 
 	form.TextField("name", "Name").
 		Placeholder("Enter a new name").
@@ -97,9 +87,7 @@ func (u *UpdateTaskAction) Properties() *smartform.FormSchema {
 
 // Auth returns the authentication requirements for the action
 func (u *UpdateTaskAction) Auth() *core.AuthMetadata {
-	return &core.AuthMetadata{
-		Inherit: true,
-	}
+	return nil
 }
 
 // Perform executes the action with the given context and input
@@ -152,7 +140,7 @@ func (u *UpdateTaskAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, er
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer "+authCtx.AccessToken)
+	req.Header.Add("Authorization", "Bearer "+authCtx.Token.AccessToken)
 
 	client := &http.Client{}
 	res, err := client.Do(req)

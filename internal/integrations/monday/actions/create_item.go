@@ -42,7 +42,6 @@ func (a *CreateItemAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *CreateItemAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("create_item", "Create Item")
 
 	shared.GetWorkspaceProp(form)

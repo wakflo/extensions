@@ -23,9 +23,7 @@ func (n *Calculator) Metadata() sdk.IntegrationMetadata {
 }
 
 func (n *Calculator) Auth() *core.AuthMetadata {
-	return &core.AuthMetadata{
-		Required: false,
-	}
+	return nil
 }
 
 func (n *Calculator) Triggers() []sdk.Trigger {

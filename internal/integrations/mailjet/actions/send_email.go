@@ -53,7 +53,6 @@ func (a *SendEmailAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *SendEmailAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("send_email", "Send Email")
 
 	form.TextField("from_email", "From Email").

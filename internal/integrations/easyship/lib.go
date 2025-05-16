@@ -40,7 +40,7 @@ func (n *EasyShip) Metadata() sdk.IntegrationMetadata {
 func (n *EasyShip) Auth() *core.AuthMetadata {
 	return &core.AuthMetadata{
 		Required: true,
-		Schema:   shared.EasyShipSharedAuthV2,
+		Schema:   shared.EasyShipSharedAuth,
 	}
 }
 

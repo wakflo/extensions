@@ -66,9 +66,7 @@ func (c *ListSheetsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, er
 }
 
 func (c *ListSheetsAction) Auth() *core.AuthMetadata {
-	return &core.AuthMetadata{
-		Inherit: true,
-	}
+	return nil
 }
 
 func NewListSheetAction() sdk.Action {

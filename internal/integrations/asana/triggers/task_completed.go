@@ -15,8 +15,8 @@ import (
 )
 
 type taskCompletedTriggerProps struct {
-	WorkspaceID string `json:"workspace-id"`
-	ProjectID   string `json:"project-id,omitempty"`
+	WorkspaceID string `json:"workspace"`
+	ProjectID   string `json:"project_id,omitempty"`
 }
 
 type TaskCompletedTrigger struct{}
@@ -114,7 +114,7 @@ func (t *TaskCompletedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.J
 
 	url += queryParams
 
-	response, err := shared.GetAsanaClient(authCtx.AccessToken, url, http.MethodGet, nil)
+	response, err := shared.GetAsanaClient(authCtx.Token.AccessToken, url, http.MethodGet, nil)
 	if err != nil {
 		return nil, errors.New("error fetching data")
 	}
