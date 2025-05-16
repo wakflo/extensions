@@ -2,16 +2,8 @@ package extensions
 
 import (
 	"github.com/gosimple/slug"
-	// "github.com/wakflo/extensions/internal/integrations/activecampaign"
-	// "github.com/wakflo/extensions/internal/integrations/aftership"
-	// "github.com/wakflo/extensions/internal/integrations/asana"
-	// "github.com/wakflo/extensions/internal/integrations/calculator"
 	// "github.com/wakflo/extensions/internal/integrations/calendly"
-	// "github.com/wakflo/extensions/internal/integrations/campaignmonitor"
-	// "github.com/wakflo/extensions/internal/integrations/cryptography"
 	// "github.com/wakflo/extensions/internal/integrations/csv"
-	// "github.com/wakflo/extensions/internal/integrations/aftership"
-	// "github.com/wakflo/extensions/internal/integrations/airtable"
 
 	"github.com/wakflo/extensions/internal/integrations/activecampaign"
 	"github.com/wakflo/extensions/internal/integrations/aftership"
