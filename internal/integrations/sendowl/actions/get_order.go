@@ -56,7 +56,6 @@ func (a *GetOrderAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *GetOrderAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("get_order", "Get Order")
 
 	shared.GetOrderProp("order_id", "Order ID", "Enter the ID of the order you want to retrieve.", true, form)
@@ -64,7 +63,6 @@ func (a *GetOrderAction) Properties() *smartform.FormSchema {
 	schema := form.Build()
 
 	return schema
-
 }
 
 func (a *GetOrderAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {

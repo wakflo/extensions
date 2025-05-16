@@ -74,7 +74,6 @@ func (a *ListOrdersAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *ListOrdersAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("list_order", "List Orders")
 
 	form.TextField("page", "Page").

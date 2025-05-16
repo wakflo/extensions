@@ -37,6 +37,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/notion"
 	"github.com/wakflo/extensions/internal/integrations/openai"
 	"github.com/wakflo/extensions/internal/integrations/prisync"
+	"github.com/wakflo/extensions/internal/integrations/sendowl"
 	"github.com/wakflo/extensions/internal/integrations/shopify"
 	"github.com/wakflo/extensions/internal/integrations/smartsheet"
 	"github.com/wakflo/extensions/internal/integrations/square"
@@ -48,6 +49,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/woocommerce"
 	"github.com/wakflo/extensions/internal/integrations/wrike"
 	"github.com/wakflo/extensions/internal/integrations/xero"
+	"github.com/wakflo/extensions/internal/integrations/zendeskapp"
 	"github.com/wakflo/extensions/internal/integrations/zohocrm"
 	"github.com/wakflo/extensions/internal/integrations/zohoinventory"
 
@@ -113,6 +115,8 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		dropbox.Integration,           // Dropbox
 		cin7.Integration,              // Cin7
 		facebookpages.Integration,     // Facebook Pages
+		zendeskapp.Integration,        // Zendesk
+		sendowl.Integration,           // SendOwl
 	}
 
 	// 🛑Do-Not-Edit

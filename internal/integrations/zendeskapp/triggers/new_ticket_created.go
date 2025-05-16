@@ -54,7 +54,6 @@ func (t *TicketCreatedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 // Execute performs the main action logic of TicketCreatedTrigger by processing the input context and returning a JSON response.
 // It checks for new tickets in Zendesk and returns them.
 func (t *TicketCreatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
-
 	authData := ctx.Auth()
 	if authData == nil {
 		return nil, errors.New("missing authentication data")
