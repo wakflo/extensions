@@ -37,7 +37,6 @@ func (a *RetrievePageAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *RetrievePageAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("retrieve_page", "Retrieve Page")
 
 	shared.GetNotionDatabasesProp(form)

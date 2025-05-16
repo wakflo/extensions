@@ -20,10 +20,6 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/aftership/actions"
 	"github.com/wakflo/extensions/internal/integrations/aftership/shared"
 
-	// Import shared package for Auth and other shared functionality
-	// We're ignoring type errors in shared.go files as per the issue description
-	// Using blank identifier to suppress unused import warning
-	_ "github.com/wakflo/extensions/internal/integrations/aftership/shared"
 	"github.com/wakflo/go-sdk/v2"
 	"github.com/wakflo/go-sdk/v2/core"
 )

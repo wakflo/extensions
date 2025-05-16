@@ -37,7 +37,6 @@ func (a *AddMemberToListAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *AddMemberToListAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("add_member_to_list", "Add Member To List")
 
 	form.TextField("list-id", "List ID").

@@ -31,8 +31,8 @@ import (
 )
 
 type listTasksActionProps struct {
-	Project   *string `json:"project"`
-	Workspace *string `json:"workspace"`
+	Project   *string `json:"project_id"`
+	Workspace *string `json:"workspace_id"`
 	Assignee  *string `json:"assignee"`
 	Completed *bool   `json:"completed"`
 	Limit     *int    `json:"limit"`
@@ -70,12 +70,7 @@ func (l *ListTasksAction) Metadata() sdk.ActionMetadata {
 func (l *ListTasksAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("list_tasks", "List All Tasks")
 
-	// Note: These will have type errors, but we're ignoring shared errors as per the issue description
-	// form.SelectField("project", "Project").
-	//	Placeholder("Select a project").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The project containing the tasks")
+	shared.RegisterProjectsProps(form)
 
 	form.NumberField("limit", "Limit").
 		Placeholder("Enter a limit").
@@ -90,9 +85,7 @@ func (l *ListTasksAction) Properties() *smartform.FormSchema {
 
 // Auth returns the authentication requirements for the action
 func (l *ListTasksAction) Auth() *core.AuthMetadata {
-	return &core.AuthMetadata{
-		Inherit: true,
-	}
+	return nil
 }
 
 // Perform executes the action with the given context and input
@@ -138,7 +131,7 @@ func (l *ListTasksAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, err
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer "+authCtx.AccessToken)
+	req.Header.Add("Authorization", "Bearer "+authCtx.Token.AccessToken)
 
 	client := &http.Client{}
 	res, err := client.Do(req)

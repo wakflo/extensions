@@ -30,21 +30,19 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
-var (
-	// #nosec
-	tokenURL = "https://login.wrike.com/oauth2/token"
-)
-
-var form = smartform.NewAuthForm("wrike-auth", "Wrike Oauth", smartform.AuthStrategyOAuth2)
-var _ = form.OAuthField("oauth", "Wrike Oauth").
-	AuthorizationURL("https://login.wrike.com/oauth2/authorize/v4").
-	TokenURL(tokenURL).
-	Scopes([]string{"Default, wsReadWrite, wsReadOnly"}).
-	Build()
+// #nosec
+var tokenURL = "https://login.wrike.com/oauth2/token"
 
 var (
-	WrikeSharedAuth = form.Build()
+	form = smartform.NewAuthForm("wrike-auth", "Wrike Oauth", smartform.AuthStrategyOAuth2)
+	_    = form.OAuthField("oauth", "Wrike Oauth").
+		AuthorizationURL("https://login.wrike.com/oauth2/authorize/v4").
+		TokenURL(tokenURL).
+		Scopes([]string{"Default, wsReadWrite, wsReadOnly"}).
+		Build()
 )
+
+var WrikeSharedAuth = form.Build()
 
 func GetFoldersProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
 	getFolders := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {

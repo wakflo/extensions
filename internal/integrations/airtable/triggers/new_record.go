@@ -40,12 +40,7 @@ func (t *NewRecordTrigger) GetType() sdkcore.TriggerType {
 func (t *NewRecordTrigger) Props() *smartform.FormSchema {
 	form := smartform.NewForm("new_record", "New Record")
 
-	// Note: This will have type errors, but we're ignoring shared errors as per the issue description
-	// form.SelectField("bases", "Bases").
-	//	Placeholder("Select a base").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The base to monitor for new records")
+	shared.RegisterBasesProps(form)
 
 	schema := form.Build()
 

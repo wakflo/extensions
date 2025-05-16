@@ -27,7 +27,7 @@ func (a *ActiveCampaign) Metadata() sdk.IntegrationMetadata {
 func (a *ActiveCampaign) Auth() *core.AuthMetadata {
 	return &core.AuthMetadata{
 		Required: true,
-		Schema:   shared.SharedAuth,
+		Schema:   shared.ActiveCampaignSharedAuth,
 	}
 }
 

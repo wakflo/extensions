@@ -38,7 +38,6 @@ func (a *RemoveSubscriberFromTagAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *RemoveSubscriberFromTagAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("remove_subscriber_from_tag", "Remove Subscriber From Tag")
 
 	form.TextField("list-id", "List ID").

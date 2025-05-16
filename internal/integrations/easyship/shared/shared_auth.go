@@ -13,4 +13,4 @@ var (
 			Build()
 )
 
-var EasyShipSharedAuthV2 = authForm.Build()
+var EasyShipSharedAuth = authForm.Build()

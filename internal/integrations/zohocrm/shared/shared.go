@@ -34,16 +34,16 @@ var (
 	authURL  = "https://accounts.zoho.com/oauth/v2/auth"
 )
 
-var form = smartform.NewAuthForm("zoho-crm-auth", "Zoho CRM Oauth", smartform.AuthStrategyOAuth2)
-var _ = form.OAuthField("oauth", "Zoho CRM Oauth").
-	AuthorizationURL(authURL).
-	TokenURL(tokenURL).
-	Scopes([]string{"ZohoCRM.modules.ALL", "ZohoCRM.settings.ALL"}).
-	Build()
-
 var (
-	SharedAuth = form.Build()
+	form = smartform.NewAuthForm("zoho-crm-auth", "Zoho CRM Oauth", smartform.AuthStrategyOAuth2)
+	_    = form.OAuthField("oauth", "Zoho CRM Oauth").
+		AuthorizationURL(authURL).
+		TokenURL(tokenURL).
+		Scopes([]string{"ZohoCRM.modules.ALL", "ZohoCRM.settings.ALL"}).
+		Build()
 )
+
+var SharedAuth = form.Build()
 
 const BaseURL = "https://www.zohoapis.com/crm/v7/"
 

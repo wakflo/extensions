@@ -112,9 +112,7 @@ func (c *TrackAPackageAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 }
 
 func (c *TrackAPackageAction) Auth() *core.AuthMetadata {
-	return &core.AuthMetadata{
-		Inherit: true,
-	}
+	return nil
 }
 
 func NewTrackAPackageAction() sdk.Action {

@@ -66,7 +66,7 @@ func (a *AddCommentAction) Properties() *smartform.FormSchema {
 
 	shared.RegisterIssuesProps(form)
 
-	form.TextField("commentText", "Comment").
+	form.TextareaField("commentText", "Comment").
 		Required(true).
 		HelpText("Text of the comment to add")
 

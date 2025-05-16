@@ -21,29 +21,36 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/juicycleff/smartform/v1"
 	fastshot "github.com/opus-domini/fast-shot"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
-var SharedAuth = autoform.NewCustomAuthField().
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"api-key": autoform.NewLongTextField().
-			SetDisplayName("Personal Access Token").
-			SetDescription("Personal Access Token").
-			SetRequired(true).
-			Build(),
-	}).
-	Build()
+var (
+	form = smartform.NewAuthForm("airtable-auth", "Airtable API Authentication", smartform.AuthStrategyCustom)
+
+	_ = form.TextField("api-key", "Personal Access Token (Required)").
+		Required(true).
+		HelpText("Personal Access Token")
+
+	AirtableSharedAuth = form.Build()
+)
 
 var BaseAPI = "https://api.airtable.com"
 
-func GetBasesInput() *sdkcore.AutoFormSchema {
-	getBases := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterBasesProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getBases := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		client := fastshot.NewClient(BaseAPI).
-			Auth().BearerToken(ctx.Auth.Extra["api-key"]).
+			Auth().BearerToken(authCtx.Extra["api-key"]).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -71,21 +78,33 @@ func GetBasesInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(baseRsp.Bases, len(baseRsp.Bases))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Bases").
-		SetDescription("Bases").
-		SetDependsOn([]string{"connection"}).
-		SetDynamicOptions(&getBases).
-		SetRequired(true).Build()
+	return form.SelectField("bases", "Bases").
+		Placeholder("Select a base").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getBases)).
+				WithSearchSupport().
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Bases")
 }
 
-func GetTablesInput() *sdkcore.AutoFormSchema {
-	getTables := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterTablesProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getTables := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		input := sdk.DynamicInputToType[struct {
 			Bases string `json:"bases"`
 		}](ctx)
+
 		client := fastshot.NewClient(BaseAPI).
-			Auth().BearerToken(ctx.Auth.Extra["api-key"]).
+			Auth().BearerToken(authCtx.Extra["api-key"]).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -115,22 +134,36 @@ func GetTablesInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(bases.Tables, len(bases.Tables))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Tables").
-		SetDescription("Tables").
-		SetDependsOn([]string{"connection"}).
-		SetDynamicOptions(&getTables).
-		SetRequired(true).Build()
+	return form.SelectField("table", "Tables").
+		Placeholder("Select a table").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getTables)).
+				WithFieldReference("bases", "bases").
+				WithSearchSupport().
+				End().
+				RefreshOn("bases").
+				GetDynamicSource(),
+		).
+		HelpText("Tables")
 }
 
-func GetFieldsInput() *sdkcore.AutoFormSchema {
-	getFields := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterFieldsProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getFields := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		input := sdk.DynamicInputToType[struct {
 			Bases string `json:"bases"`
 			Table string `json:"table"`
 		}](ctx)
+
 		client := fastshot.NewClient(BaseAPI).
-			Auth().BearerToken(ctx.Auth.Extra["api-key"]).
+			Auth().BearerToken(authCtx.Extra["api-key"]).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -168,21 +201,37 @@ func GetFieldsInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(selectedTable.Fields, len(selectedTable.Fields))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Search Fields").
-		SetDescription("Fields for selected Table").
-		SetDynamicOptions(&getFields).
-		SetRequired(true).Build()
+	return form.SelectField("fields", "Search Fields").
+		Placeholder("Select fields").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getFields)).
+				WithFieldReference("bases", "bases").
+				WithFieldReference("table", "table").
+				WithSearchSupport().
+				End().
+				RefreshOn("table").
+				GetDynamicSource(),
+		).
+		HelpText("Fields for selected Table")
 }
 
-func GetViewsInput() *sdkcore.AutoFormSchema {
-	getViews := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterViewsProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getViews := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		input := sdk.DynamicInputToType[struct {
 			Bases string `json:"bases"`
 			Table string `json:"table"`
 		}](ctx)
+
 		client := fastshot.NewClient(BaseAPI).
-			Auth().BearerToken(ctx.Auth.Extra["api-key"]).
+			Auth().BearerToken(authCtx.Extra["api-key"]).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -220,11 +269,21 @@ func GetViewsInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(selectedTable.Views, len(selectedTable.Views))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("View").
-		SetDescription("view for selected Table").
-		SetDynamicOptions(&getViews).
-		SetRequired(true).Build()
+	return form.SelectField("view", "View").
+		Placeholder("Select a view").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getViews)).
+				WithFieldReference("bases", "bases").
+				WithFieldReference("table", "table").
+				WithSearchSupport().
+				End().
+				RefreshOn("table").
+				GetDynamicSource(),
+		).
+		HelpText("View for selected Table")
 }
 
 func AirtableRequest(accessToken, reqURL, requestType string) (interface{}, error) {

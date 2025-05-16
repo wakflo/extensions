@@ -29,18 +29,18 @@ var (
 	authURL  = "https://accounts.zoho.com/oauth/v2/auth"
 )
 
-var form = smartform.NewAuthForm("zoho-auth", "Zoho Oauth", smartform.AuthStrategyOAuth2)
-var _ = form.OAuthField("oauth", "Zoho Oauth").
-	AuthorizationURL(authURL).
-	TokenURL(tokenURL).
-	Scopes([]string{
-		"SalesIQ.chatdetails.UPDATE SalesIQ.chatdetails.READ SalesIQ.visitordetails.UPDATE SalesIQ.visitordetails.READ",
-	}).
-	Build()
-
 var (
-	ZohoSalesSharedAuth = form.Build()
+	form = smartform.NewAuthForm("zoho-auth", "Zoho Oauth", smartform.AuthStrategyOAuth2)
+	_    = form.OAuthField("oauth", "Zoho Oauth").
+		AuthorizationURL(authURL).
+		TokenURL(tokenURL).
+		Scopes([]string{
+			"SalesIQ.chatdetails.UPDATE SalesIQ.chatdetails.READ SalesIQ.visitordetails.UPDATE SalesIQ.visitordetails.READ",
+		}).
+		Build()
 )
+
+var ZohoSalesSharedAuth = form.Build()
 
 const baseURL = "https://salesiq.zoho.com/api/v1"
 

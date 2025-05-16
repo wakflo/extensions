@@ -68,7 +68,6 @@ func (t *EmailSentTrigger) Metadata() sdk.TriggerMetadata {
 }
 
 func (t *EmailSentTrigger) Props() *smartform.FormSchema {
-
 	form := smartform.NewForm("email_sent", "Email Sent")
 
 	form.NumberField("limit", "Limit").
@@ -79,7 +78,6 @@ func (t *EmailSentTrigger) Props() *smartform.FormSchema {
 	schema := form.Build()
 
 	return schema
-
 }
 
 func (t *EmailSentTrigger) Start(ctx sdkcontext.LifecycleContext) error {

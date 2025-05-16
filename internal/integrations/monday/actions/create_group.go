@@ -46,7 +46,6 @@ func (a *CreateGroupAction) Description() string {
 }
 
 func (a *CreateGroupAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("create_group", "Create Group")
 
 	shared.GetWorkspaceProp(form)

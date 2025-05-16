@@ -59,12 +59,7 @@ func (a *ListContactsAction) Properties() *smartform.FormSchema {
 		Required(false).
 		HelpText("Filter contacts by email address")
 
-	// Note: This will have type errors, but we're ignoring shared errors as per the issue description
-	// form.SelectField("list_id", "List").
-	//	Placeholder("Select a list").
-	//	Required(false).
-	//	WithDynamicOptions(...).
-	//	HelpText("Filter contacts by list")
+	shared.RegisterActiveCampaignListsProps(form)
 
 	form.TextField("tag-id", "Tag ID").
 		Placeholder("Enter a tag ID").

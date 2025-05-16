@@ -27,7 +27,7 @@ func (n *CampaignMonitor) Metadata() sdk.IntegrationMetadata {
 func (n *CampaignMonitor) Auth() *core.AuthMetadata {
 	return &core.AuthMetadata{
 		Required: true,
-		Schema:   *shared.SharedAuth,
+		Schema:   shared.CampaignMonitorSharedAuth,
 	}
 }
 

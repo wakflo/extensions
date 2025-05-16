@@ -38,7 +38,6 @@ func (t *UnsubscriberTrigger) GetType() sdkcore.TriggerType {
 }
 
 func (t *UnsubscriberTrigger) Props() *smartform.FormSchema {
-
 	form := smartform.NewForm("unsubscriber", "Unsubscriber")
 
 	form.TextField("list_id", "List ID").

@@ -36,10 +36,11 @@ func (o *DeleteTaskOperation) Metadata() sdk.ActionMetadata {
 func (o *DeleteTaskOperation) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("delete_task", "Delete Task")
 
-	form.TextField("task-id", "task-id").
-		Placeholder("Task ID").
-		HelpText("The ID of the task to delete").
-		Required(true)
+	shared.RegisterWorkSpaceInput(form, "Workspaces", "select a workspace", true)
+	shared.RegisterSpacesInput(form, "Spaces", "select a space", true)
+	shared.RegisterFoldersInput(form, "Folders", "select a folder", true)
+	shared.RegisterListsInput(form, "Lists", "select a list to create task in", true)
+	shared.RegisterTasksInput(form, "Tasks", "select a task to update", true)
 
 	schema := form.Build()
 

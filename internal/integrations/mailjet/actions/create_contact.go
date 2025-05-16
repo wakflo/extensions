@@ -48,7 +48,6 @@ func (a *CreateContactAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *CreateContactAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("create_contact", "Create Contact")
 
 	form.TextField("email", "Email").

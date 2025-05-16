@@ -42,7 +42,6 @@ func (a *GetInvoiceAction) Properties() *smartform.FormSchema {
 	schema := form.Build()
 
 	return schema
-
 }
 
 func (a *GetInvoiceAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {

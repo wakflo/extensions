@@ -47,7 +47,6 @@ func (t *NewPageCreatedTrigger) GetType() sdkcore.TriggerType {
 }
 
 func (t *NewPageCreatedTrigger) Props() *smartform.FormSchema {
-
 	form := smartform.NewForm("new_page_created", "New Page Created")
 
 	shared.GetNotionDatabasesProp(form)

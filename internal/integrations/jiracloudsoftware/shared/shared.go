@@ -271,7 +271,7 @@ func RegisterIssueTypeProps(form *smartform.FormBuilder, required bool) *smartfo
 				WithSearchSupport().
 				WithPagination(10).
 				End().
-				RefreshOn("state").
+				RefreshOn("projectId").
 				GetDynamicSource(),
 		).
 		HelpText("Select an issue type")
@@ -444,16 +444,3 @@ func RegisterIssuesProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
 		).
 		HelpText("Select an issue")
 }
-
-// var PriorityLevels = []*sdkcore.AutoFormSchema{
-// 	{Const: "1", Title: "Highest"},
-// 	{Const: "2", Title: "High"},
-// 	{Const: "3", Title: "Medium"},
-// 	{Const: "4", Title: "Low"},
-// 	{Const: "5", Title: "Lowest"},
-// }
-
-// var OrderBy = []*sdkcore.AutoFormSchema{
-// 	{Const: "-created", Title: "Created (Descending)"},
-// 	{Const: "+created", Title: "Created (Ascending)"},
-// }

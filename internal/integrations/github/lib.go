@@ -25,7 +25,7 @@ func (n *Github) Metadata() sdk.IntegrationMetadata {
 
 func (n *Github) Auth() *core.AuthMetadata {
 	return &core.AuthMetadata{
-		Required: false,
+		Required: true,
 		Schema:   shared.SharedGithubAuth,
 	}
 }

@@ -39,7 +39,6 @@ func (t *IssueCreatedTrigger) GetType() sdkcore.TriggerType {
 }
 
 func (t *IssueCreatedTrigger) Props() *smartform.FormSchema {
-
 	form := smartform.NewForm("issue_created", "Issue Created")
 
 	schema := form.Build()

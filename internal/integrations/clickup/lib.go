@@ -43,6 +43,18 @@ func (n *ClickUp) Actions() []sdk.Action {
 		actions.NewGetSpacesAction(),
 		actions.NewGetTaskAction(),
 		actions.NewGetTasksAction(),
+		actions.NewCreateTaskAction(),
+		actions.NewUpdateTaskOperation(),
+		actions.NewCreateFolderOperation(),
+		actions.NewCreateFolderlessListOperation(),
+		actions.NewDeleteTaskOperation(),
+		actions.NewGetFolderOperation(),
+		actions.NewSearchTaskAction(),
+		actions.NewGetSpaceOperation(),
+		actions.NewCreateSpaceOperation(),
+		actions.NewGetListOperation(),
+		actions.NewUpdateSpaceOperation(),
+		actions.NewUpdateTaskOperation(),
 	}
 }
 

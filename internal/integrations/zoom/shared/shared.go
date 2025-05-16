@@ -24,21 +24,19 @@ import (
 	"github.com/juicycleff/smartform/v1"
 )
 
-var (
-	// #nosec
-	tokenURL = ZoomBaseURL + "/oauth/token"
-)
-
-var form = smartform.NewAuthForm("zoom-auth", "Zoom Oauth", smartform.AuthStrategyOAuth2)
-var _ = form.OAuthField("oauth", "Zoom Oauth").
-	AuthorizationURL(ZoomBaseURL + "/oauth/authorize").
-	TokenURL(tokenURL).
-	Scopes([]string{}).
-	Build()
+// #nosec
+var tokenURL = ZoomBaseURL + "/oauth/token"
 
 var (
-	ZoomSharedAuth = form.Build()
+	form = smartform.NewAuthForm("zoom-auth", "Zoom Oauth", smartform.AuthStrategyOAuth2)
+	_    = form.OAuthField("oauth", "Zoom Oauth").
+		AuthorizationURL(ZoomBaseURL + "/oauth/authorize").
+		TokenURL(tokenURL).
+		Scopes([]string{}).
+		Build()
 )
+
+var ZoomSharedAuth = form.Build()
 
 const ZoomBaseURL = "https://api.zoom.us"
 

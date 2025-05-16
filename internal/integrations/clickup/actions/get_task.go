@@ -82,7 +82,7 @@ func (a *GetTaskAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error
 
 	url := "/v2/task/" + input.TaskID
 
-	tasks, err := shared.GetData(authCtx.AccessToken, url)
+	tasks, err := shared.GetData(authCtx.Token.AccessToken, url)
 	if err != nil {
 		return nil, err
 	}

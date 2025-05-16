@@ -13,7 +13,7 @@ import (
 var (
 	form = smartform.NewAuthForm("woocommerce-auth", "WooCommerce API Authentication", smartform.AuthStrategyCustom)
 
-	_ = form.TextField("shop-url", "ShopUrl (Required)").
+	_ = form.TextField("shop-url", "Shop Url (Required)").
 		Required(true).
 		HelpText("The base URL of your app (e.g https://mystore.com) and it should start with HTTPS only")
 

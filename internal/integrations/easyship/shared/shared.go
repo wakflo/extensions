@@ -20,19 +20,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
 )
-
-var EasyShipSharedAuth = autoform.NewCustomAuthField().
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"api-key": autoform.NewShortTextField().SetDisplayName("API Key").
-			SetDescription("API Application Key").
-			SetRequired(true).
-			Build(),
-	}).
-	Build()
 
 const baseURL = "https://api.easyship.com"
 
@@ -69,7 +57,7 @@ func PostRequest(endpoint, apiKey string, labelData map[string]interface{}) (map
 	}
 
 	var result map[string]interface{}
-	if newErr := json.Unmarshal(body, &result); err != nil {
+	if newErr := json.Unmarshal(body, &result); newErr != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON: %v", newErr)
 	}
 
