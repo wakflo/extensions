@@ -47,7 +47,7 @@ import (
 	// "github.com/wakflo/extensions/internal/integrations/trello"
 	// "github.com/wakflo/extensions/internal/integrations/typeform"
 	// "github.com/wakflo/extensions/internal/integrations/woocommerce"
-	"github.com/wakflo/extensions/internal/integrations/sendowl"
+	// "github.com/wakflo/extensions/internal/integrations/sendowl"
 	"github.com/wakflo/extensions/internal/integrations/wrike"
 	"github.com/wakflo/extensions/internal/integrations/xero"
 	"github.com/wakflo/extensions/internal/integrations/zohocrm"
@@ -110,7 +110,7 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		// jiracloudsoftware.Integration, // Jira Cloud Software
 		// gumroad.Integration,           // Gumroad Software
 		// typeform.Integration,          // Typeform Software
-		sendowl.Integration, // SendOwl
+		// sendowl.Integration, // SendOwl
 	}
 
 	// 🛑Do-Not-Edit
