@@ -68,9 +68,7 @@ func (c *GetPaymentsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, e
 }
 
 func (c *GetPaymentsAction) Auth() *core.AuthMetadata {
-	return &core.AuthMetadata{
-		Inherit: true,
-	}
+	return nil
 }
 
 func NewGetPaymentsAction() sdk.Action {

@@ -44,9 +44,7 @@ func (e *NewPaymentTrigger) Metadata() sdk.TriggerMetadata {
 }
 
 func (e *NewPaymentTrigger) Auth() *core.AuthMetadata {
-	return &core.AuthMetadata{
-		Inherit: true,
-	}
+	return nil
 }
 
 func (e *NewPaymentTrigger) Props() *smartform.FormSchema {

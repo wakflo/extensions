@@ -37,9 +37,7 @@ func (n *TextToJSON) Metadata() sdk.IntegrationMetadata {
 }
 
 func (n *TextToJSON) Auth() *core.AuthMetadata {
-	return &core.AuthMetadata{
-		Required: false,
-	}
+	return nil
 }
 
 func (n *TextToJSON) Triggers() []sdk.Trigger {

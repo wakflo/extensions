@@ -46,18 +46,9 @@ func (a *FindRecordAction) Properties() *smartform.FormSchema {
 		Required(true).
 		HelpText("The ID of the record")
 
-	// Note: These will have type errors, but we're ignoring shared errors as per the issue description
-	// form.SelectField("bases", "Bases").
-	//	Placeholder("Select a base").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The base to find the record in")
+	shared.RegisterBasesProps(form)
 
-	// form.SelectField("table", "Table").
-	//	Placeholder("Select a table").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The table to find the record in")
+	shared.RegisterTablesProps(form)
 
 	schema := form.Build()
 

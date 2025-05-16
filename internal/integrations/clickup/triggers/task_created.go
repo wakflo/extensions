@@ -118,7 +118,7 @@ func (t *TaskCreatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (core.JSON, 
 		return nil, err
 	}
 
-	response, err := shared.GetClickUpClient(authCtx.AccessToken, endpoint, http.MethodGet, nil)
+	response, err := shared.GetClickUpClient(authCtx.Token.AccessToken, endpoint, http.MethodGet, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching data: %v", err)
 	}

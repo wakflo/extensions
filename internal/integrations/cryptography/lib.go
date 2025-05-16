@@ -23,9 +23,7 @@ func (n *Cryptography) Metadata() sdk.IntegrationMetadata {
 }
 
 func (n *Cryptography) Auth() *core.AuthMetadata {
-	return &core.AuthMetadata{
-		Required: false,
-	}
+	return nil
 }
 
 func (n *Cryptography) Triggers() []sdk.Trigger {

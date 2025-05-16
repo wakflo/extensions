@@ -18,10 +18,8 @@ import (
 	"github.com/aftership/tracking-sdk-go/v5"
 	"github.com/aftership/tracking-sdk-go/v5/model"
 	"github.com/juicycleff/smartform/v1"
-	// Import shared package for Auth and other shared functionality
-	// We're ignoring type errors in shared.go files as per the issue description
-	// Using blank identifier to suppress unused import warning
-	_ "github.com/wakflo/extensions/internal/integrations/aftership/shared"
+
+	"github.com/wakflo/extensions/internal/integrations/aftership/shared"
 	"github.com/wakflo/go-sdk/v2"
 	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 	"github.com/wakflo/go-sdk/v2/core"
@@ -56,14 +54,7 @@ func (c CreateATrackingAction) Properties() *smartform.FormSchema {
 		Required(true).
 		HelpText("tracking number of the shipment")
 
-	// Note: This will have type errors, but we're ignoring shared errors as per the issue description
-	// shared.CourierCodes is of type []*sdkcore.AutoFormSchema, but AddOptions expects []*Option
-	// We're commenting out this line as per the issue description to ignore shared errors
-	form.SelectField("slug", "Slug").
-		Placeholder("Select a courier").
-		Required(true).
-		// AddOptions(shared.CourierCodes...).
-		HelpText("Unique courier code.")
+	shared.RegisterSlugProps(form)
 
 	schema := form.Build()
 
@@ -72,9 +63,7 @@ func (c CreateATrackingAction) Properties() *smartform.FormSchema {
 
 // Auth returns the authentication requirements for the action
 func (c CreateATrackingAction) Auth() *core.AuthMetadata {
-	return &core.AuthMetadata{
-		Inherit: true,
-	}
+	return nil
 }
 
 // Perform executes the action with the given context and input

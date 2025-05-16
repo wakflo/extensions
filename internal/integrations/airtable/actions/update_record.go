@@ -47,24 +47,13 @@ func (a *UpdateRecordAction) Properties() *smartform.FormSchema {
 		Required(true).
 		HelpText("The record's ID")
 
-	// Note: These will have type errors, but we're ignoring shared errors as per the issue description
-	// form.SelectField("bases", "Bases").
-	//	Placeholder("Select a base").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The base to update the record in")
+	shared.RegisterBasesProps(form)
 
-	// form.SelectField("table", "Table").
-	//	Placeholder("Select a table").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The table to update the record in")
+	shared.RegisterTablesProps(form)
 
-	// form.SelectField("fields", "Fields").
-	//	Placeholder("Select fields").
-	//	Required(false).
-	//	WithDynamicOptions(...).
-	//	HelpText("The fields to update")
+	shared.RegisterFieldsProps(form)
+
+	shared.RegisterViewsProps(form)
 
 	// form.SelectField("views", "Views").
 	//	Placeholder("Select views").

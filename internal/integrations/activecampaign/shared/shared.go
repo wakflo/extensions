@@ -6,27 +6,25 @@ import (
 	"strconv"
 
 	"github.com/juicycleff/smartform/v1"
-	"github.com/wakflo/go-sdk/autoform"
 	"github.com/wakflo/go-sdk/v2"
-	"github.com/wakflo/go-sdk/v2/core"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
-var SharedAuth = autoform.NewAuth().NewCustomAuth().
-	SetDescription("ActiveCampaign API Authentication").
-	SetLabel("ActiveCampaign Authentication").
-	SetFields(map[string]*sdkcore.AutoFormSchema{
-		"api_url": autoform.NewShortTextField().
-			SetDisplayName("API URL").
-			SetDescription("Your ActiveCampaign API URL (e.g., https://youraccountname.api-us1.com)").
-			SetRequired(true).
-			Build(),
-		"api_key": autoform.NewShortTextField().
-			SetDisplayName("API Key").
-			SetDescription("Your ActiveCampaign API Key").
-			SetRequired(true).
-			Build(),
-	}).
-	Build()
+var (
+	form = smartform.NewAuthForm("activecampaign-auth", "ActiveCampaign API Authentication", smartform.AuthStrategyCustom)
+
+	_ = form.TextField("api_url", "API URL (Required)").
+		Required(true).
+		HelpText("Your ActiveCampaign API URL (e.g., https://youraccountname.api-us1.com)")
+
+	_ = form.TextField("api_key", "API Key (Required)").
+		Required(true).
+		HelpText("Your ActiveCampaign API Key.")
+
+	ActiveCampaignSharedAuth = form.Build()
+)
 
 func RegisterActiveCampaignListsProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
 	getLists := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
@@ -91,7 +89,7 @@ func RegisterActiveCampaignListsProps(form *smartform.FormBuilder) *smartform.Fi
 		return ctx.Respond(items, len(items))
 	}
 
-	return form.SelectField("list", "ActiveCampaign List").
+	return form.SelectField("list-id", "ActiveCampaign List").
 		Placeholder("Select an ActiveCampaign list").
 		Required(false).
 		WithDynamicOptions(

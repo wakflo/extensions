@@ -43,7 +43,6 @@ func (a *DeleteRecordAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *DeleteRecordAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("delete_record", "Delete Record")
 
 	form.SelectField("module", "Module").

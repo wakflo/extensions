@@ -20,10 +20,7 @@ import (
 	"github.com/aftership/tracking-sdk-go/v5"
 	"github.com/aftership/tracking-sdk-go/v5/model"
 	"github.com/juicycleff/smartform/v1"
-	// Import shared package for Auth and other shared functionality
-	// We're ignoring type errors in shared.go files as per the issue description
-	// Using blank identifier to suppress unused import warning
-	_ "github.com/wakflo/extensions/internal/integrations/aftership/shared"
+
 	"github.com/wakflo/go-sdk/v2"
 	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 	"github.com/wakflo/go-sdk/v2/core"
@@ -64,9 +61,7 @@ func (c GetAllTrackingsAction) Properties() *smartform.FormSchema {
 
 // Auth returns the authentication requirements for the action
 func (c GetAllTrackingsAction) Auth() *core.AuthMetadata {
-	return &core.AuthMetadata{
-		Inherit: true,
-	}
+	return nil
 }
 
 // Perform executes the action with the given context and input

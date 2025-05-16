@@ -38,7 +38,6 @@ func (t *NewSubscriberTrigger) GetType() sdkcore.TriggerType {
 }
 
 func (t *NewSubscriberTrigger) Props() *smartform.FormSchema {
-
 	form := smartform.NewForm("new_subscriber", "New Subscriber")
 
 	form.TextField("list_id", "List ID").

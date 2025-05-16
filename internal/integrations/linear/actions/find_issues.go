@@ -42,7 +42,6 @@ func (a *FindIssuesAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *FindIssuesAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("find_issues", "Find Issues")
 
 	form.TextField("title", "Filter by Issue Name").

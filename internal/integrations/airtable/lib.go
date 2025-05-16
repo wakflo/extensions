@@ -4,6 +4,7 @@ import (
 	_ "embed"
 
 	"github.com/wakflo/extensions/internal/integrations/airtable/actions"
+	"github.com/wakflo/extensions/internal/integrations/airtable/shared"
 	"github.com/wakflo/extensions/internal/integrations/airtable/triggers"
 	"github.com/wakflo/go-sdk/v2"
 	"github.com/wakflo/go-sdk/v2/core"
@@ -26,7 +27,7 @@ func (n *Airtable) Metadata() sdk.IntegrationMetadata {
 func (n *Airtable) Auth() *core.AuthMetadata {
 	return &core.AuthMetadata{
 		Required: true,
-		Schema:   nil, // shared.SharedAuth, // Ignoring shared errors as per instructions
+		Schema:   shared.AirtableSharedAuth,
 	}
 }
 
@@ -38,7 +39,7 @@ func (n *Airtable) Triggers() []sdk.Trigger {
 
 func (n *Airtable) Actions() []sdk.Action {
 	return []sdk.Action{
-		actions.NewUpdateRecordAction(),
+		// actions.NewUpdateRecordAction(),
 		actions.NewFindRecordAction(),
 		actions.NewDeleteRecordAction(),
 	}

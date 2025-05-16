@@ -77,7 +77,6 @@ func (a *ListTasksAction) Properties() *smartform.FormSchema {
 	schema := form.Build()
 
 	return schema
-
 }
 
 func (a *ListTasksAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {

@@ -73,7 +73,7 @@ func (a *UnlockIssueAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, e
 	    }
 	}`, input.IssueNumber)
 
-	response, err := shared.GithubGQL(authCtx.AccessToken, mutation)
+	response, err := shared.GithubGQL(authCtx.Token.AccessToken, mutation)
 	if err != nil {
 		return nil, errors.New("error making graphQL request")
 	}

@@ -36,16 +36,16 @@ var (
 	authURL  = "https://accounts.zoho.com/oauth/v2/auth"
 )
 
-var form = smartform.NewAuthForm("zoho-auth", "Zoho Inventory Oauth", smartform.AuthStrategyOAuth2)
-var _ = form.OAuthField("oauth", "Zoho Inventory Oauth").
-	AuthorizationURL(authURL).
-	TokenURL(tokenURL).
-	Scopes([]string{"ZohoInventory.FullAccess.all"}).
-	Build()
-
 var (
-	SharedAuth = form.Build()
+	form = smartform.NewAuthForm("zoho-auth", "Zoho Inventory Oauth", smartform.AuthStrategyOAuth2)
+	_    = form.OAuthField("oauth", "Zoho Inventory Oauth").
+		AuthorizationURL(authURL).
+		TokenURL(tokenURL).
+		Scopes([]string{"ZohoInventory.FullAccess.all"}).
+		Build()
 )
+
+var SharedAuth = form.Build()
 
 const BaseURL = "https://www.zohoapis.com/inventory"
 
@@ -86,7 +86,6 @@ func GetZohoClient(accessToken, endpoint string) (map[string]interface{}, error)
 
 func GetOrganizationsProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
 	getOrganizations := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-
 		tokenSource := ctx.Auth().Token
 		if tokenSource == nil {
 			return nil, errors.New("missing authentication token")

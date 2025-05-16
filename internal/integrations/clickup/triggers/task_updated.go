@@ -107,7 +107,12 @@ func (t *TaskUpdatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSO
 		endpoint += queryParams
 	}
 
-	response, err := shared.GetClickUpClient(ctx.Auth().AccessToken, endpoint, http.MethodGet, nil)
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := shared.GetClickUpClient(authCtx.Token.AccessToken, endpoint, http.MethodGet, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching data: %v", err)
 	}

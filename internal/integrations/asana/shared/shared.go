@@ -25,21 +25,32 @@ import (
 	"strconv"
 
 	"github.com/gookit/goutil/arrutil"
+	"github.com/juicycleff/smartform/v1"
 	fastshot "github.com/opus-domini/fast-shot"
 
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+
+	"github.com/wakflo/go-sdk/v2"
+
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
+const BaseAPI = "https://app.asana.com/api/1.0"
+
 var (
-	// #nosec
-	tokenURL        = "https://app.asana.com/-/oauth_token"
-	AsanaSharedAuth = autoform.NewOAuthField("https://app.asana.com/-/oauth_authorize", &tokenURL, []string{
-		"default",
-	}).SetRequired(true).Build()
+	asanaForm = smartform.NewAuthForm("asana-auth", "Asana OAuth", smartform.AuthStrategyOAuth2)
+	_         = asanaForm.
+			OAuthField("oauth", "Asana OAuth").
+			AuthorizationURL("https://app.asana.com/-/oauth_authorize").
+			TokenURL("https://app.asana.com/-/oauth_token").
+			Scopes([]string{
+			"default",
+		}).
+		Required(true).
+		Build()
 )
-var BaseAPI = "https://app.asana.com/api/1.0"
+
+var AsanaSharedAuth = asanaForm.Build()
 
 func GetAsanaClient(accessToken string, endpoint string, method string, payload interface{}) (map[string]interface{}, error) {
 	client := &http.Client{}
@@ -93,10 +104,15 @@ func GetAsanaClient(accessToken string, endpoint string, method string, payload 
 	return result, nil
 }
 
-func GetWorkspacesInput() *sdkcore.AutoFormSchema {
-	getWorkspaces := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterWorkspacesProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getWorkspaces := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		client := fastshot.NewClient(BaseAPI).
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(authCtx.AccessToken).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -131,18 +147,31 @@ func GetWorkspacesInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Workspace").
-		SetDescription("Task workspace ID.").
-		SetDependsOn([]string{"connection"}).
-		SetDynamicOptions(&getWorkspaces).
-		SetRequired(false).Build()
+	return form.SelectField("workspace_id", "Workspace").
+		Placeholder("Select a workspace").
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getWorkspaces)).
+				WithFieldReference("connection", "connection").
+				WithSearchSupport().
+				End().
+				// RefreshOn("connection").
+				GetDynamicSource(),
+		).
+		HelpText("Task workspace ID.")
 }
 
-func GetProjectsInput() *sdkcore.AutoFormSchema {
-	getProjects := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterProjectsProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getProjects := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		qu := fastshot.NewClient(BaseAPI).
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(authCtx.AccessToken).
 			Header().
 			AddAccept("application/json").
 			Build().GET("/projects")
@@ -180,23 +209,35 @@ func GetProjectsInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Project").
-		SetDescription("A project to create the task under").
-		SetDynamicOptions(&getProjects).
-		SetRequired(false).Build()
+	return form.SelectField("project_id", "Project").
+		Placeholder("Select a project").
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getProjects)).
+				WithSearchSupport().
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("A project to create the task under")
 }
 
-func GetTasksInput() *sdkcore.AutoFormSchema {
-	getTasks := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func RegisterTasksProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getTasks := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
 		input := sdk.DynamicInputToType[struct {
 			ProjectID string `json:"project_id,omitempty"`
 		}](ctx)
+
 		baseURL := BaseAPI + "/tasks"
 		params := url.Values{}
 
 		params.Add("project", input.ProjectID)
-
 		params.Add("opt_fields", "gid,name")
 
 		reqURL := baseURL + "?" + params.Encode()
@@ -207,7 +248,7 @@ func GetTasksInput() *sdkcore.AutoFormSchema {
 		}
 
 		req.Header.Add("Accept", "application/json")
-		req.Header.Add("Authorization", "Bearer "+ctx.Auth.AccessToken)
+		req.Header.Add("Authorization", "Bearer "+authCtx.AccessToken)
 
 		client := &http.Client{}
 		res, err := client.Do(req)
@@ -252,10 +293,18 @@ func GetTasksInput() *sdkcore.AutoFormSchema {
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName("Task").
-		SetDescription("Select a task to retrieve").
-		SetDependsOn([]string{"project"}).
-		SetDynamicOptions(&getTasks).
-		SetRequired(true).Build()
+	return form.SelectField("task_id", "Tasks").
+		Placeholder("Select a task").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getTasks)).
+				WithFieldReference("project_id", "project_id").
+				WithSearchSupport().
+				End().
+				RefreshOn("project_id").
+				GetDynamicSource(),
+		).
+		HelpText("Select a task to retrieve")
 }

@@ -92,9 +92,7 @@ func (c *CreateTrackingsAction) Perform(ctx sdkcontext.PerformContext) (core.JSO
 }
 
 func (c *CreateTrackingsAction) Auth() *core.AuthMetadata {
-	return &core.AuthMetadata{
-		Inherit: true,
-	}
+	return nil
 }
 
 func NewCreateTrackingsAction() sdk.Action {

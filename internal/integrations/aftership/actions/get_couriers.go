@@ -55,9 +55,7 @@ func (c GetCouriersAction) Properties() *smartform.FormSchema {
 
 // Auth returns the authentication requirements for the action
 func (c GetCouriersAction) Auth() *core.AuthMetadata {
-	return &core.AuthMetadata{
-		Inherit: true,
-	}
+	return nil
 }
 
 // Perform executes the action with the given context and input

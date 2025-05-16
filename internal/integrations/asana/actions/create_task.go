@@ -30,8 +30,8 @@ import (
 
 type createTaskActionProps struct {
 	Name      string  `json:"name"`
-	Project   *string `json:"projects"`
-	Workspace *string `json:"workspace"`
+	Project   *string `json:"project_id"`
+	Workspace *string `json:"workspace_id"`
 }
 
 type CreateTaskAction struct{}
@@ -60,18 +60,8 @@ func (c *CreateTaskAction) Properties() *smartform.FormSchema {
 		Required(true).
 		HelpText("The name task's Name.")
 
-	// Note: These will have type errors, but we're ignoring shared errors as per the issue description
-	// form.SelectField("workspace", "Workspace").
-	//	Placeholder("Select a workspace").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The workspace to create the task in")
-
-	// form.SelectField("projects", "Project").
-	//	Placeholder("Select a project").
-	//	Required(false).
-	//	WithDynamicOptions(...).
-	//	HelpText("The project to create the task in")
+	shared.RegisterWorkspacesProps(form)
+	shared.RegisterProjectsProps(form)
 
 	schema := form.Build()
 
@@ -80,9 +70,7 @@ func (c *CreateTaskAction) Properties() *smartform.FormSchema {
 
 // Auth returns the authentication requirements for the action
 func (c *CreateTaskAction) Auth() *core.AuthMetadata {
-	return &core.AuthMetadata{
-		Inherit: true,
-	}
+	return nil
 }
 
 // Perform executes the action with the given context and input
@@ -126,7 +114,7 @@ func (c *CreateTaskAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, er
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer "+authCtx.AccessToken)
+	req.Header.Add("Authorization", "Bearer "+authCtx.Token.AccessToken)
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {

@@ -53,7 +53,7 @@ func (a *CreateIssueAction) Properties() *smartform.FormSchema {
 	form.TextField("summary", "Summary").
 		Required(true)
 
-	form.TextField("description", "Description").
+	form.TextareaField("description", "Description").
 		Required(false)
 
 	shared.RegisterUsersProps(form)

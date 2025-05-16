@@ -23,16 +23,16 @@ var (
 	authURL  = baseURL + "/oauth2/authorize"
 )
 
-var form = smartform.NewAuthForm("mailchimp-auth", "Mailchimp Oauth", smartform.AuthStrategyOAuth2)
-var _ = form.OAuthField("oauth", "Mailchimp Oauth").
-	AuthorizationURL(authURL).
-	TokenURL(tokenURL).
-	Scopes([]string{""}).
-	Build()
-
 var (
-	SharedAuth = form.Build()
+	form = smartform.NewAuthForm("mailchimp-auth", "Mailchimp Oauth", smartform.AuthStrategyOAuth2)
+	_    = form.OAuthField("oauth", "Mailchimp Oauth").
+		AuthorizationURL(authURL).
+		TokenURL(tokenURL).
+		Scopes([]string{""}).
+		Build()
 )
+
+var SharedAuth = form.Build()
 
 const baseURL = "https://login.mailchimp.com"
 

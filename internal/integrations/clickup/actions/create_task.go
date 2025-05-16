@@ -113,7 +113,7 @@ func (a *CreateTaskAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, er
 		return nil, err
 	}
 
-	accessToken := authCtx.AccessToken
+	accessToken := authCtx.Token.AccessToken
 
 	taskData := map[string]interface{}{
 		"name":        input.Name,

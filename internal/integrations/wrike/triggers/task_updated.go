@@ -55,7 +55,6 @@ func (t *TaskUpdatedTrigger) Props() *smartform.FormSchema {
 	schema := form.Build()
 
 	return schema
-
 }
 
 func (t *TaskUpdatedTrigger) Start(ctx sdkcontext.LifecycleContext) error {

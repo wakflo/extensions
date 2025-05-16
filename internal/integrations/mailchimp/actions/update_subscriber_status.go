@@ -38,7 +38,6 @@ func (a *UpdateSubscriberStatusAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *UpdateSubscriberStatusAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("update_subscriber_status", "Update Subscriber Status")
 
 	form.TextField("list-id", "List ID").

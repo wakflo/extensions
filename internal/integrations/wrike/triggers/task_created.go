@@ -54,7 +54,6 @@ func (t *TaskCreatedTrigger) Props() *smartform.FormSchema {
 	schema := form.Build()
 
 	return schema
-
 }
 
 // Start initializes the trigger, required for event and webhook triggers in a lifecycle context.

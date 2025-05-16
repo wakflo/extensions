@@ -68,7 +68,6 @@ func (a *ListContactsAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *ListContactsAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("list_contacts", "List Contacts")
 
 	form.NumberField("limit", "Limit").
@@ -113,13 +112,13 @@ func (a *ListContactsAction) Properties() *smartform.FormSchema {
 		HelpText("Direction of ordering.").
 		AddOptions([]*smartform.Option{
 			{Value: "ascending", Label: "Ascending"},
-			{Value: "descending", Label: "Descending"}}...).
+			{Value: "descending", Label: "Descending"},
+		}...).
 		DefaultValue("ascending")
 
 	schema := form.Build()
 
 	return schema
-
 }
 
 func (a *ListContactsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {

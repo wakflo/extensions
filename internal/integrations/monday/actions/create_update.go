@@ -35,7 +35,6 @@ func (a *CreateUpdateAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *CreateUpdateAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("create_update", "Create Update")
 
 	form.TextField("item_id", "Item ID").

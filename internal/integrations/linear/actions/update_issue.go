@@ -41,7 +41,6 @@ func (a *UpdateIssueAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *UpdateIssueAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("update_issue", "Update Issue")
 
 	form.TextField("title", "Issue Name").

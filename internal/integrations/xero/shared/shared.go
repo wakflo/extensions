@@ -40,16 +40,16 @@ var (
 	authURL  = "https://login.xero.com/identity/connect/authorize"
 )
 
-var form = smartform.NewAuthForm("xero-auth", "Xero Oauth", smartform.AuthStrategyOAuth2)
-var _ = form.OAuthField("oauth", "Xero Oauth").
-	AuthorizationURL(authURL).
-	TokenURL(tokenURL).
-	Scopes([]string{"openid profile email accounting.transactions accounting.contacts accounting.attachments offline_access"}).
-	Build()
-
 var (
-	SharedAuth = form.Build()
+	form = smartform.NewAuthForm("xero-auth", "Xero Oauth", smartform.AuthStrategyOAuth2)
+	_    = form.OAuthField("oauth", "Xero Oauth").
+		AuthorizationURL(authURL).
+		TokenURL(tokenURL).
+		Scopes([]string{"openid profile email accounting.transactions accounting.contacts accounting.attachments offline_access"}).
+		Build()
 )
+
+var SharedAuth = form.Build()
 
 // GetXeroNewClient sends a request to the Xero API using the provided access token.
 func GetXeroNewClient(accessToken, endpoint, tenant string) (map[string]interface{}, error) {
@@ -93,7 +93,6 @@ func GetXeroNewClient(accessToken, endpoint, tenant string) (map[string]interfac
 
 func GetTenantProps(id string, title string, desc string, required bool, form *smartform.FormBuilder) *smartform.FieldBuilder {
 	getTenantID := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-
 		tokenSource := ctx.Auth().Token
 		if tokenSource == nil {
 			return nil, errors.New("missing authentication token")
