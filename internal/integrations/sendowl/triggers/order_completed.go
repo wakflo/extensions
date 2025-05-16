@@ -72,7 +72,6 @@ func (t *OrderCompletedTrigger) Stop(ctx sdkcontext.LifecycleContext) error {
 }
 
 func (t *OrderCompletedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, error) {
-
 	// Get the auth context
 	authCtx, err := ctx.AuthContext()
 	if err != nil {

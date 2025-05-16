@@ -12,8 +12,7 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
-type getGroupsActionProps struct {
-}
+type getGroupsActionProps struct{}
 
 type GetGroupsAction struct{}
 

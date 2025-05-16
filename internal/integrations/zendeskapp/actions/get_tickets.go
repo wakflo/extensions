@@ -13,8 +13,7 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
-type getTicketsActionProps struct {
-}
+type getTicketsActionProps struct{}
 
 type GetTicketsAction struct{}
 

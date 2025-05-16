@@ -41,9 +41,7 @@ var _ = form.TextField("subdomain", "Organization").
 	Placeholder("e.g. wakflohelp").
 	HelpText("The subdomain of your Zendesk instance")
 
-var (
-	SharedAuth = form.Build()
-)
+var SharedAuth = form.Build()
 
 func ZendeskRequest(method, fullURL, email, apiToken string, request []byte) (map[string]interface{}, error) {
 	req, err := http.NewRequest(method, fullURL, bytes.NewBuffer(request))

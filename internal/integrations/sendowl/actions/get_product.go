@@ -40,7 +40,6 @@ func (a *GetProductAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *GetProductAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("get_product", "Get Product")
 
 	shared.GetProductProp("product_id", "Product ID", "Select the ID of the product you want to retrieve.", true, form)
@@ -48,7 +47,6 @@ func (a *GetProductAction) Properties() *smartform.FormSchema {
 	schema := form.Build()
 
 	return schema
-
 }
 
 func (a *GetProductAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
