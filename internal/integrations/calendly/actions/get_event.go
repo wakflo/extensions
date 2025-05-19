@@ -36,17 +36,9 @@ func (a *GetEventAction) Metadata() sdk.ActionMetadata {
 func (a *GetEventAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("get_event", "Get Event")
 
-	// Note: These will have type errors, but we're ignoring shared errors as per the issue description
-	// form.SelectField("user", "User").
-	//	Placeholder("Select a user").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The user to get events for")
+	shared.GetCurrentCalendlyUserProp("user", "User", "The user to create the schedule link for", true, form)
 
-	form.TextField("event-id", "Event ID").
-		Placeholder("Enter an event ID").
-		Required(true).
-		HelpText("The ID of the event to retrieve")
+	shared.GetCalendlyEventProp("event-id", "Event", "The ID of the event to retrieve", true, form)
 
 	schema := form.Build()
 

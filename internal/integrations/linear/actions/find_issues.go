@@ -23,10 +23,6 @@ type findIssuesActionProps struct {
 
 type FindIssuesAction struct{}
 
-// func (a *FindIssuesAction) Name() string {
-// 	return "Find Issues"
-// }
-
 func (a *FindIssuesAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
 		ID:            "find_issues",

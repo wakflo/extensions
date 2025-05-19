@@ -17,6 +17,7 @@ type GetOrderAction struct{}
 
 func (a *GetOrderAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "get_order",
 		DisplayName:   "Get Order",
 		Description:   "Retrieve detailed information about a specific order from your SendOwl account using the order ID.",
 		Type:          sdkcore.ActionTypeAction,

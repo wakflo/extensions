@@ -21,10 +21,6 @@ type issueUpdatedTriggerProps struct {
 
 type IssueUpdatedTrigger struct{}
 
-// func (t *IssueUpdatedTrigger) Name() string {
-// 	return "Issue Updated"
-// }
-
 func (t *IssueUpdatedTrigger) Metadata() sdk.TriggerMetadata {
 	return sdk.TriggerMetadata{
 		ID:            "issue_updated",

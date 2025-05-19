@@ -23,10 +23,6 @@ type newPageCreatedTriggerProps struct {
 
 type NewPageCreatedTrigger struct{}
 
-// func (t *NewPageCreatedTrigger) Name() string {
-// 	return "New Page Created"
-// }
-
 func (t *NewPageCreatedTrigger) Metadata() sdk.TriggerMetadata {
 	return sdk.TriggerMetadata{
 		ID:            "new_page_created",

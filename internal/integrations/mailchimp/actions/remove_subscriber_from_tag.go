@@ -20,12 +20,9 @@ type removeSubscriberFromTagActionProps struct {
 
 type RemoveSubscriberFromTagAction struct{}
 
-// func (a *RemoveSubscriberFromTagAction) Name() string {
-// 	return "Remove Subscriber From Tag"
-// }
-
 func (a *RemoveSubscriberFromTagAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "remove_subscriber_from_tag",
 		DisplayName:   "Remove Subscriber From Tag",
 		Description:   "Remove Subscriber From Tag: This integration action removes a subscriber from a specific tag in your email marketing platform, ensuring that the individual is no longer associated with the designated group.",
 		Type:          sdkcore.ActionTypeAction,

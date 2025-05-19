@@ -23,8 +23,8 @@ type RecordUpdatedTrigger struct{}
 
 func (t *RecordUpdatedTrigger) Metadata() sdk.TriggerMetadata {
 	return sdk.TriggerMetadata{
-		ID:            "record_updated",
-		DisplayName:   "Record Updated",
+		ID:            "new_record_updated",
+		DisplayName:   "New record Updated",
 		Description:   "Triggers when an existing record is updated in a specified Zoho CRM module",
 		Type:          sdkcore.TriggerTypePolling,
 		Documentation: newRecordDocs,
@@ -46,7 +46,7 @@ func (t *RecordUpdatedTrigger) Metadata() sdk.TriggerMetadata {
 }
 
 func (t *RecordUpdatedTrigger) Props() *smartform.FormSchema {
-	form := smartform.NewForm("new_record", "New Record")
+	form := smartform.NewForm("new_record_updated", "New record updated")
 
 	form.SelectField("module", "Module").
 		Placeholder("Select a module").

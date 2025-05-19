@@ -22,6 +22,7 @@ type GetInvoiceAction struct{}
 
 func (a *GetInvoiceAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "get_invoice",
 		DisplayName:   "Get Invoice",
 		Description:   "Retrieves an invoice from the accounting system, allowing you to automate tasks that require access to invoice data.",
 		Type:          sdkcore.ActionTypeAction,

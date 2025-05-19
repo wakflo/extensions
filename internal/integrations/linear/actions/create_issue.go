@@ -25,10 +25,6 @@ type createIssueActionProps struct {
 
 type CreateIssueAction struct{}
 
-// func (a *CreateIssueAction) Name() string {
-// 	return "Create Issue"
-// }
-
 func (a *CreateIssueAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
 		ID:            "create_issue",

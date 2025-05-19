@@ -26,18 +26,21 @@ type CreateMeetingAction struct{}
 
 func (a *CreateMeetingAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "create_meeting",
 		DisplayName:   "Create Meeting",
 		Description:   "Create a new meeting with specified details, including title, start and end dates, duration, and attendees. This action allows you to schedule meetings with ease, streamlining your workflow and reducing manual errors.",
 		HelpText:      "Create a new meeting with specified details, including title, start and end dates, duration, and attendees. This action allows you to schedule meetings with ease, streamlining your workflow and reducing manual errors.",
 		Type:          sdkcore.ActionTypeAction,
 		Documentation: createMeetingDocs,
-		SampleOutput:  nil,
-		Tags:          nil,
+		SampleOutput: map[string]any{
+			"message": "hello world",
+		},
+		Settings: sdkcore.ActionSettings{},
 	}
 }
 
 func (a *CreateMeetingAction) Properties() *smartform.FormSchema {
-	form := smartform.NewForm("create-meeting", "Creat Meeting")
+	form := smartform.NewForm("create_meeting", "Creat Meeting")
 
 	form.TextField("topic", "Topic").
 		Placeholder("Meeting's topic").
@@ -79,7 +82,9 @@ func (a *CreateMeetingAction) Properties() *smartform.FormSchema {
 		HelpText("URL for participants to join the meeting.").
 		Required(false)
 
-	return form.Build()
+	schema := form.Build()
+
+	return schema
 }
 
 func (a *CreateMeetingAction) Auth() *sdkcore.AuthMetadata {

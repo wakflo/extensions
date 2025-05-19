@@ -22,6 +22,7 @@ type TicketCreatedTrigger struct{}
 
 func (t *TicketCreatedTrigger) Metadata() sdk.TriggerMetadata {
 	return sdk.TriggerMetadata{
+		ID:            "new_ticket_created",
 		DisplayName:   "New Ticket Added",
 		Description:   "Triggers workflow when a new ticket is added",
 		Type:          sdkcore.TriggerTypePolling,

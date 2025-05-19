@@ -21,6 +21,7 @@ type AddSubscriberToTagAction struct{}
 
 func (a *AddSubscriberToTagAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "add_subscriber_to_tag",
 		DisplayName:   "Add Subscriber To Tag",
 		Description:   "Adds a subscriber to a specific tag in your email marketing platform, allowing you to easily manage and segment your audience.",
 		Type:          sdkcore.ActionTypeAction,

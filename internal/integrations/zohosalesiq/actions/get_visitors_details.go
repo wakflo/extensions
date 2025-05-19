@@ -21,6 +21,7 @@ type GetVisitorsDetailsAction struct{}
 
 func (c *GetVisitorsDetailsAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "get_visitors_details",
 		DisplayName:   "Get Visitor Details",
 		Description:   "Retrieve visitor details from the CRM system, providing insights into visitor behavior and preferences.",
 		Type:          sdkcore.ActionTypeAction,

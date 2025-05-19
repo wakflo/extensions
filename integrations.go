@@ -2,7 +2,8 @@ package extensions
 
 import (
 	"github.com/gosimple/slug"
-	// "github.com/wakflo/extensions/internal/integrations/calendly"
+	"github.com/wakflo/extensions/internal/integrations/calendly"
+
 	// "github.com/wakflo/extensions/internal/integrations/csv"
 
 	"github.com/wakflo/extensions/internal/integrations/activecampaign"
@@ -41,6 +42,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/shopify"
 	"github.com/wakflo/extensions/internal/integrations/smartsheet"
 	"github.com/wakflo/extensions/internal/integrations/square"
+	surveyMonkey "github.com/wakflo/extensions/internal/integrations/surveymonkey"
 	"github.com/wakflo/extensions/internal/integrations/todoist"
 	"github.com/wakflo/extensions/internal/integrations/toggl"
 	"github.com/wakflo/extensions/internal/integrations/trackingmore"
@@ -52,6 +54,8 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/zendeskapp"
 	"github.com/wakflo/extensions/internal/integrations/zohocrm"
 	"github.com/wakflo/extensions/internal/integrations/zohoinventory"
+	"github.com/wakflo/extensions/internal/integrations/zohosalesiq"
+	"github.com/wakflo/extensions/internal/integrations/zoom"
 
 	// "github.com/wakflo/extensions/internal/integrations/gemini"
 	"github.com/wakflo/extensions/internal/integrations/googledrive"
@@ -68,14 +72,12 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		aftership.Integration,     // AfterShip
 		smartsheet.Integration,    // SmartSheet
 		jsonconverter.Integration, // JsonConverter
-		// zohosalesiq.Integration, // ZohoSales iq
-		toggl.Integration,        // Toggl
-		square.Integration,       // Square
-		trackingmore.Integration, // TrackingMore
-		// zoom.Integration, // Zoom
-		easyship.Integration, // EasyShip
-		airtable.Integration, // Airtable
-		// calendly.Integration,          // Calendly
+		toggl.Integration,         // Toggl
+		square.Integration,        // Square
+		trackingmore.Integration,  // TrackingMore
+		easyship.Integration,      // EasyShip
+		airtable.Integration,      // Airtable
+		calendly.Integration,      // Calendly
 		calculator.Integration,    // Calculator
 		zohoinventory.Integration, // ZohoInventory
 		xero.Integration,          // Xero
@@ -117,6 +119,9 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		facebookpages.Integration,     // Facebook Pages
 		zendeskapp.Integration,        // Zendesk
 		sendowl.Integration,           // SendOwl
+		zoom.Integration,              // Zoom
+		zohosalesiq.Integration,       // ZohoSales iq
+		surveyMonkey.Integration,      // Survey Monkey
 	}
 
 	// 🛑Do-Not-Edit

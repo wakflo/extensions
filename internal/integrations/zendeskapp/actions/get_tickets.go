@@ -19,6 +19,7 @@ type GetTicketsAction struct{}
 
 func (a *GetTicketsAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "get_tickets",
 		DisplayName:   "Get Tickets",
 		Description:   "Get Tickets: Retrieves all support tickets from your Zendesk account, allowing you to manage and track customer inquiries and issues.",
 		Type:          sdkcore.ActionTypeAction,

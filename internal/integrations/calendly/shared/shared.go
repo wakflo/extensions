@@ -10,25 +10,42 @@ import (
 	"regexp"
 
 	"github.com/gookit/goutil/arrutil"
+	"github.com/juicycleff/smartform/v1"
 	fastshot "github.com/opus-domini/fast-shot"
-
-	"github.com/wakflo/go-sdk/autoform"
-	sdkcore "github.com/wakflo/go-sdk/core"
-	"github.com/wakflo/go-sdk/sdk"
+	"github.com/wakflo/go-sdk/v2"
+	sdkcontext "github.com/wakflo/go-sdk/v2/context"
+	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
 var (
 	// #nosec
-	tokenURL   = "https://auth.calendly.com/oauth/token"
-	SharedAuth = autoform.NewOAuthField("https://auth.calendly.com/oauth/authorize", &tokenURL, []string{}).Build()
+	tokenURL = "https://auth.calendly.com/oauth/token"
 )
+
+var (
+	form = smartform.NewAuthForm("calendly-auth", "Calendly Auth", smartform.AuthStrategyOAuth2)
+	_    = form.OAuthField("oauth", "Calendly Auth").
+		AuthorizationURL("https://auth.calendly.com/oauth/authorize").
+		TokenURL(tokenURL).
+		Scopes([]string{}).
+		Build()
+)
+
+var SharedCalendlyAuth = form.Build()
 
 const BaseURL = "https://api.calendly.com"
 
-func GetCurrentCalendlyUserInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getCurrentUser := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetCurrentCalendlyUserProp(id string, title string, desc string, required bool, form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getCurrentUser := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+
+		tokenSource := ctx.Auth().Token
+		if tokenSource == nil {
+			return nil, errors.New("missing authentication token")
+		}
+		token := tokenSource.AccessToken
+
 		client := fastshot.NewClient(BaseURL).
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(token).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -60,27 +77,41 @@ func GetCurrentCalendlyUserInput(title string, desc string, required bool) *sdkc
 
 		return ctx.Respond([]map[string]any{
 			{
-				"id":   user.URI,
-				"name": user.Name,
+				"value": user.URI,
+				"label": user.Name,
 			},
 		}, 1)
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getCurrentUser).
-		SetRequired(required).Build()
+	return form.SelectField(id, title).
+		Placeholder("Select user").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getCurrentUser)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText(desc)
 }
 
-func GetCalendlyEventInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getEvents := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetCalendlyEventProp(id string, title string, desc string, required bool, form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getEvents := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			User string `json:"user"`
 		}](ctx)
 
+		tokenSource := ctx.Auth().Token
+		if tokenSource == nil {
+			return nil, errors.New("missing authentication token")
+		}
+		token := tokenSource.AccessToken
+
 		client := fastshot.NewClient(BaseURL).
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(token).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -114,8 +145,8 @@ func GetCalendlyEventInput(title string, desc string, required bool) *sdkcore.Au
 
 		items := arrutil.Map[Event, map[string]any](events, func(input Event) (target map[string]any, find bool) {
 			return map[string]any{
-				"id":    input.URI,
-				"name":  input.Name,
+				"value": input.URI,
+				"label": input.Name,
 				"start": input.StartTime,
 				"end":   input.EndTime,
 			}, true
@@ -124,22 +155,35 @@ func GetCalendlyEventInput(title string, desc string, required bool) *sdkcore.Au
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getEvents).
-		SetRequired(required).
-		Build()
+	return form.SelectField(id, title).
+		Placeholder("Select event").
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getEvents)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText(desc)
 }
 
-func GetCalendlyEventTypeInput(title string, desc string, required bool) *sdkcore.AutoFormSchema {
-	getEventTypes := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+func GetCalendlyEventTypeProp(id string, title string, desc string, required bool, form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getEventTypes := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		input := sdk.DynamicInputToType[struct {
 			User string `json:"user"`
 		}](ctx)
 
+		tokenSource := ctx.Auth().Token
+		if tokenSource == nil {
+			return nil, errors.New("missing authentication token")
+		}
+		token := tokenSource.AccessToken
+
 		client := fastshot.NewClient(BaseURL).
-			Auth().BearerToken(ctx.Auth.AccessToken).
+			Auth().BearerToken(token).
 			Header().
 			AddAccept("application/json").
 			Build()
@@ -172,20 +216,27 @@ func GetCalendlyEventTypeInput(title string, desc string, required bool) *sdkcor
 
 		items := arrutil.Map[EventType, map[string]any](body.Collection, func(input EventType) (target map[string]any, find bool) {
 			return map[string]any{
-				"id":   input.URI,
-				"name": input.Name,
+				"value": input.URI,
+				"label": input.Name,
 			}, true
 		})
 
 		return ctx.Respond(items, len(items))
 	}
 
-	return autoform.NewDynamicField(sdkcore.String).
-		SetDisplayName(title).
-		SetDescription(desc).
-		SetDynamicOptions(&getEventTypes).
-		SetRequired(required).
-		Build()
+	return form.SelectField(id, title).
+		Placeholder("Select event type").
+		Required(false).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getEventTypes)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText(desc)
 }
 
 func ListEvents(accessToken, url string, status string, user string) (map[string]interface{}, error) {
@@ -293,9 +344,9 @@ func CreateSingleUseLink(accessToken, eventTypeURI string, maxEventCount int) (m
 	return response, nil
 }
 
-var CalendlyEventStatusType = []*sdkcore.AutoFormSchema{
-	{Const: "active", Title: "Active"},
-	{Const: "canceled", Title: "Canceled"},
+var CalendlyEventStatusType = []*smartform.Option{
+	{Value: "active", Label: "Active"},
+	{Value: "canceled", Label: "Canceled"},
 }
 
 func getEventID(url string) string {

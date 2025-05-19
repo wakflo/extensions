@@ -17,6 +17,7 @@ type GetProductAction struct{}
 
 func (a *GetProductAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "get_product",
 		DisplayName:   "Get Product",
 		Description:   "Retrieve detailed information about a specific product from your SendOwl account using the product ID.",
 		Type:          sdkcore.ActionTypeAction,
