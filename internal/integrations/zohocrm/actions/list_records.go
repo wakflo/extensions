@@ -26,6 +26,7 @@ type ListRecordsAction struct{}
 
 func (a *ListRecordsAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "list_records",
 		DisplayName:   "List Records",
 		Description:   "Retrieves a list of records from a specified Zoho CRM module with pagination and sorting options",
 		Type:          sdkcore.ActionTypeAction,

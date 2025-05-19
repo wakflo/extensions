@@ -35,6 +35,7 @@ type UpdateContactAction struct{}
 
 func (a *UpdateContactAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "update_contact",
 		DisplayName:   "Update Contact",
 		Description:   "Update an existing contact in Keap with specified details",
 		Type:          sdkcore.ActionTypeAction,

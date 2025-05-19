@@ -34,6 +34,7 @@ type CreateContactAction struct{}
 
 func (a *CreateContactAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "create_contact",
 		DisplayName:   "Create Contact",
 		Description:   "Create a new contact in Keap with specified details",
 		Type:          sdkcore.ActionTypeAction,

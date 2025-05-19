@@ -25,6 +25,7 @@ type ListOrdersAction struct{}
 
 func (a *ListOrdersAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "list_orders",
 		DisplayName:   "List Orders",
 		Description:   "Retrieve a list of orders from your SendOwl account with optional filtering by date range, status, and other criteria.",
 		Type:          sdkcore.ActionTypeAction,

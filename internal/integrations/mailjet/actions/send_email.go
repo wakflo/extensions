@@ -33,10 +33,6 @@ type sendEmailActionProps struct {
 
 type SendEmailAction struct{}
 
-// func (a *SendEmailAction) Name() string {
-// 	return "Send Email"
-// }
-
 func (a *SendEmailAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
 		ID:            "send_email",

@@ -27,6 +27,7 @@ type ListContactsAction struct{}
 
 func (a *ListContactsAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "list_contacts",
 		DisplayName:   "List Contacts",
 		Description:   "Retrieve a list of contacts from Keap with optional filtering and sorting",
 		Type:          sdkcore.ActionTypeAction,

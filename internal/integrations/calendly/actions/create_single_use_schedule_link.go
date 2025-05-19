@@ -37,25 +37,14 @@ func (a *CreateSingleUseScheduleLinkAction) Metadata() sdk.ActionMetadata {
 func (a *CreateSingleUseScheduleLinkAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("create_single_use_schedule_link", "Create Single Use Schedule Link")
 
-	// Note: These will have type errors, but we're ignoring shared errors as per the issue description
-	// form.SelectField("user", "User").
-	//	Placeholder("Select a user").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The user to create the schedule link for")
+	shared.GetCurrentCalendlyUserProp("user", "User", "The user to create the schedule link for", true, form)
 
 	form.NumberField("max_event_count", "Max Event Count").
 		Placeholder("Enter a number").
 		Required(true).
 		HelpText("Maximum number of events that can be scheduled using the schedule link")
 
-	// Note: These will have type errors, but we're ignoring shared errors as per the issue description
-	// form.SelectField("owner", "Event Type").
-	//	Placeholder("Select an event type").
-	//	Required(false).
-	//	WithDynamicOptions(...).
-	//	HelpText("The event type to create the schedule link for")
-
+	shared.GetCalendlyEventTypeProp("owner", "Event Type", "The event type to create the schedule link for", false, form)
 	schema := form.Build()
 
 	return schema

@@ -19,6 +19,7 @@ type ListProductsAction struct{}
 
 func (a *ListProductsAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "list_products",
 		DisplayName:   "List Products",
 		Description:   "Retrieve a comprehensive list of all products from your SendOwl account, allowing you to access product information for reporting, analysis, or to trigger subsequent workflow steps.",
 		Type:          sdkcore.ActionTypeAction,

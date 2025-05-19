@@ -17,6 +17,7 @@ type GetAllListAction struct{}
 
 func (a *GetAllListAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "get_all_list",
 		DisplayName:   "Get All List",
 		Description:   "Retrieves all lists associated with a specific entity or resource, allowing you to access and utilize list metadata in your workflow automation processes.",
 		Type:          sdkcore.ActionTypeAction,

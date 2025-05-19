@@ -19,6 +19,7 @@ type ListChatsAction struct{}
 
 func (c *ListChatsAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "list_chats",
 		DisplayName:   "List Chats",
 		Description:   "Retrieve a list of chats from the CRM system, providing insights into customer interactions and conversations.",
 		Type:          sdkcore.ActionTypeAction,

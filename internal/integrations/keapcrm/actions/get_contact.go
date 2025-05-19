@@ -20,6 +20,7 @@ type GetContactAction struct{}
 
 func (a *GetContactAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "get_contact",
 		DisplayName:   "Get Contact",
 		Description:   "Retrieve detailed information about a specific contact in Keap",
 		Type:          sdkcore.ActionTypeAction,

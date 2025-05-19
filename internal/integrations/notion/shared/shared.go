@@ -21,8 +21,6 @@ const BaseURL = "https://api.notion.com/v1"
 // #nosec
 var tokenURL = BaseURL + "oauth/token"
 
-// SharedAuth = autoform.NewOAuthField(BaseURL+"/oauth/authorize", &tokenURL, []string{}).Build()
-
 var form = smartform.NewAuthForm("notion-auth", "Notion Oauth", smartform.AuthStrategyOAuth2)
 
 var _ = form.

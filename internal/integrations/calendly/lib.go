@@ -25,8 +25,8 @@ func (n *Calendly) Metadata() sdk.IntegrationMetadata {
 
 func (n *Calendly) Auth() *core.AuthMetadata {
 	return &core.AuthMetadata{
-		Required: false,
-		Schema:   *shared.SharedAuth,
+		Required: true,
+		Schema:   shared.SharedCalendlyAuth,
 	}
 }
 

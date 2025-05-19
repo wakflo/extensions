@@ -20,12 +20,9 @@ type updateSubscriberStatusActionProps struct {
 
 type UpdateSubscriberStatusAction struct{}
 
-// func (a *UpdateSubscriberStatusAction) Name() string {
-// 	return "Update Subscriber Status"
-// }
-
 func (a *UpdateSubscriberStatusAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "update_subscriber_status",
 		DisplayName:   "Update Subscriber Status",
 		Description:   "Update Subscriber Status: This integration action updates the status of a subscriber in your application or database, allowing you to reflect changes in their subscription level, account information, or other relevant details.",
 		Type:          sdkcore.ActionTypeAction,

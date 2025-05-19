@@ -23,8 +23,8 @@ type RecordCreatedTrigger struct{}
 
 func (t *RecordCreatedTrigger) Metadata() sdk.TriggerMetadata {
 	return sdk.TriggerMetadata{
-		ID:            "record_created",
-		DisplayName:   "Record Created",
+		ID:            "new_record_created",
+		DisplayName:   "New Record Created",
 		Description:   "Triggers when a new record is created in a specified Zoho CRM module",
 		Type:          sdkcore.TriggerTypePolling,
 		Documentation: recordCreatedDocs,
@@ -50,7 +50,7 @@ func (t *RecordCreatedTrigger) Metadata() sdk.TriggerMetadata {
 }
 
 func (t *RecordCreatedTrigger) Props() *smartform.FormSchema {
-	form := smartform.NewForm("record_created", "Record Created")
+	form := smartform.NewForm("new_record_created", "New Record Created")
 
 	form.SelectField("module", "Module").
 		Placeholder("Select a module").

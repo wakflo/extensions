@@ -36,19 +36,13 @@ func (a *ListEventsAction) Metadata() sdk.ActionMetadata {
 func (a *ListEventsAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("list_events", "List Events")
 
-	// Note: These will have type errors, but we're ignoring shared errors as per the issue description
-	// form.SelectField("user", "User").
-	//	Placeholder("Select a user").
-	//	Required(true).
-	//	WithDynamicOptions(...).
-	//	HelpText("The user to list events for")
+	shared.GetCurrentCalendlyUserProp("user", "User", "The user to create the schedule link for", true, form)
 
 	form.SelectField("status", "Status").
 		Placeholder("Select a status").
 		Required(true).
 		AddOptions(
-			&smartform.Option{Value: "active", Label: "Active"},
-			&smartform.Option{Value: "canceled", Label: "Canceled"},
+			shared.CalendlyEventStatusType...,
 		).
 		HelpText("Event Status")
 

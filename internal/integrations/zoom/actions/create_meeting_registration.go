@@ -21,6 +21,7 @@ type CreateMeetingRegistrationAction struct{}
 
 func (a *CreateMeetingRegistrationAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "create_meeting_registration",
 		DisplayName:   "Create Meeting Registration",
 		Description:   "Create Meeting Registration: Automatically generates meeting registrations for attendees, including details such as name, email, and RSVP status. This integration action streamlines the process of tracking attendee information and reduces manual errors.",
 		Type:          sdkcore.ActionTypeAction,

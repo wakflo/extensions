@@ -1,0 +1,14 @@
+[integration]
+name = "SurveyMonkey"
+description = """Integrate SurveyMonkey with your workflow automation to streamline survey management and data collection. Connect your SurveyMonkey account to automatically create surveys, manage collectors, track responses, and analyze results within your existing workflows. Key features include:
+
+* Create and manage surveys programmatically
+* Set up automated response collection
+* Trigger workflows based on new survey responses
+* Extract and analyze survey data in real-time
+* Integrate survey data with other business systems
+* Send automated follow-ups based on specific survey answers"""
+version = "0.0.1"
+icon = "simple-icons:surveymonkey"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

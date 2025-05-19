@@ -18,6 +18,7 @@ type GetGroupsAction struct{}
 
 func (a *GetGroupsAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "get_groups",
 		DisplayName:   "Get Groups",
 		Description:   "Get Groups: Retrieves all the groups from your Zendesk account, providing access to team structures and organization information.",
 		Type:          sdkcore.ActionTypeAction,

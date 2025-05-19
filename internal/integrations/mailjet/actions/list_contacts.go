@@ -70,10 +70,9 @@ func (a *ListContactsAction) Properties() *smartform.FormSchema {
 		Required(false).
 		HelpText("Number of contacts to skip (for pagination)")
 
-	// "filter": autoform.NewShortTextField().
-	// 	SetDisplayName("Filter").
-	// 	SetDescription("Filter contacts (e.g., IsExcludedFromCampaigns=true)").
-	// 	SetRequired(false).Build(),
+	form.CheckboxField("filter", "Filter").
+		Required(false).
+		HelpText("Filter contacts (e.g., IsExcludedFromCampaigns=true)")
 
 	schema := form.Build()
 
