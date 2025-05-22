@@ -46,23 +46,23 @@ func (a *GetTicketsAction) Properties() *smartform.FormSchema {
 
 func (a *GetTicketsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
 	// Extract authentication details
-	authData := ctx.Auth()
-	if authData == nil {
-		return nil, errors.New("missing authentication data")
+	authCtx, err := ctx.AuthContext()
+	if err != nil {
+		return nil, err
 	}
 
 	// Check if required auth details are present
-	email, ok := authData.Extra["email"]
+	email, ok := authCtx.Extra["email"]
 	if !ok || email == "" {
 		return nil, errors.New("missing zendesk email")
 	}
 
-	apiToken, ok := authData.Extra["api-token"]
+	apiToken, ok := authCtx.Extra["api-token"]
 	if !ok || apiToken == "" {
 		return nil, errors.New("missing zendesk api-token")
 	}
 
-	subdomain, ok := authData.Extra["subdomain"]
+	subdomain, ok := authCtx.Extra["subdomain"]
 	if !ok || subdomain == "" {
 		return nil, errors.New("missing zendesk subdomain")
 	}
