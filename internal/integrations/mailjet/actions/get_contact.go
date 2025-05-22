@@ -1,9 +1,9 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/mailjet/shared"
@@ -13,8 +13,7 @@ import (
 )
 
 type getContactActionProps struct {
-	ContactID int    `json:"contact_id,omitempty"`
-	Email     string `json:"email,omitempty"`
+	ContactID string `json:"contact_id,omitempty"`
 }
 
 type GetContactAction struct{}
@@ -50,15 +49,7 @@ func (a *GetContactAction) Metadata() sdk.ActionMetadata {
 func (a *GetContactAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("get_contact", "Get Contact")
 
-	form.TextField("contact_id", "Contact ID").
-		Placeholder("contact ID").
-		Required(false).
-		HelpText("ID of the contact to retrieve.")
-
-	form.TextField("email", "Email").
-		Placeholder("email").
-		Required(false).
-		HelpText("Email address of the contact to retrieve.")
+	shared.GetContactProp("contact_id", "Contact ID", "ID of the contact to retrieve.", false, form)
 
 	schema := form.Build()
 
@@ -82,17 +73,13 @@ func (a *GetContactAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON,
 		return nil, err
 	}
 
-	if input.ContactID <= 0 && input.Email == "" {
-		return nil, fmt.Errorf("either Contact ID or Email must be provided")
+	if input.ContactID == "" {
+		return nil, errors.New("name is required")
 	}
 
 	var path string
-	if input.ContactID > 0 {
-		path = fmt.Sprintf("/v3/REST/contact/%d", input.ContactID)
-	} else {
-		path = "/v3/REST/contact"
-		path += "?Email=" + url.QueryEscape(input.Email)
-	}
+
+	path = "/v3/REST/contact/" + input.ContactID
 
 	var result map[string]interface{}
 	err = client.Request(http.MethodGet, path, nil, &result)

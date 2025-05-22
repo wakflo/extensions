@@ -13,7 +13,6 @@ import (
 
 type listContactsActionProps struct {
 	Limit  int    `json:"limit,omitempty"`
-	Offset int    `json:"offset,omitempty"`
 	Filter string `json:"filter,omitempty"`
 }
 
@@ -65,11 +64,6 @@ func (a *ListContactsAction) Properties() *smartform.FormSchema {
 		Required(false).
 		HelpText("Maximum number of contacts to return (default: 10, max: 1000)")
 
-	form.NumberField("offset", "Offset").
-		Placeholder("0").
-		Required(false).
-		HelpText("Number of contacts to skip (for pagination)")
-
 	form.CheckboxField("filter", "Filter").
 		Required(false).
 		HelpText("Filter contacts (e.g., IsExcludedFromCampaigns=true)")
@@ -106,13 +100,8 @@ func (a *ListContactsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSO
 		}
 	}
 
-	offset := 0
-	if input.Offset > 0 {
-		offset = input.Offset
-	}
-
 	path := "/v3/REST/contact"
-	queryParams := fmt.Sprintf("?Limit=%d&Offset=%d", limit, offset)
+	queryParams := fmt.Sprintf("?Limit=%d", limit)
 
 	if input.Filter != "" {
 		queryParams += "&" + input.Filter
