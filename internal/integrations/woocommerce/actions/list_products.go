@@ -28,7 +28,7 @@ func (a *ListProductsAction) Metadata() sdk.ActionMetadata {
 func (a *ListProductsAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("list_products", "List Products")
 
-	form.TextareaField("projectId", "Limit").
+	form.TextField("projectId", "Limit").
 		Placeholder("").
 		HelpText("")
 

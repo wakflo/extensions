@@ -1,6 +1,9 @@
 package actions
 
 import (
+	"errors"
+	"strconv"
+
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/woocommerce/shared"
 	"github.com/wakflo/go-sdk/v2"
@@ -9,7 +12,7 @@ import (
 )
 
 type getCustomerByIDActionProps struct {
-	CustomerID int `json:"customer-id"`
+	CustomerID string `json:"customer-id"`
 }
 
 type GetCustomerByIDAction struct{}
@@ -31,10 +34,7 @@ func (a *GetCustomerByIDAction) Metadata() sdk.ActionMetadata {
 func (a *GetCustomerByIDAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("get_customer_by_id", "Get Customer By ID")
 
-	form.NumberField("customer-id", "Customer ID").
-		Placeholder("Enter customer ID").
-		Required(true).
-		HelpText("Enter customer ID")
+	shared.GetCustomersProp("customer-id", "Customer ID", "Enter customer ID", true, form)
 
 	schema := form.Build()
 
@@ -52,7 +52,13 @@ func (a *GetCustomerByIDAction) Perform(ctx sdkcontext.PerformContext) (core.JSO
 		return nil, err
 	}
 
-	customer, err := wooClient.Services.Customer.One(input.CustomerID)
+	// convert ID from string to int
+	customerId, err := strconv.Atoi(input.CustomerID)
+	if err != nil {
+		return nil, errors.New("Error converting to int:")
+	}
+
+	customer, err := wooClient.Services.Customer.One(customerId)
 	if err != nil {
 		return nil, err
 	}

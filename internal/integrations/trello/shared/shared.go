@@ -138,7 +138,7 @@ func RegisterBoardListsProp(form *smartform.FormBuilder) *smartform.FieldBuilder
 		}
 
 		input := sdk.DynamicInputToType[struct {
-			BoardID string `json:"board_id"`
+			BoardID string `json:"boards"`
 			ListID  string `json:"idList"`
 		}](ctx)
 
@@ -165,6 +165,7 @@ func RegisterBoardListsProp(form *smartform.FormBuilder) *smartform.FieldBuilder
 		}
 
 		var lists []BoardList
+
 		err = json.Unmarshal(newBytes, &lists)
 		if err != nil {
 			return nil, err
@@ -173,7 +174,7 @@ func RegisterBoardListsProp(form *smartform.FormBuilder) *smartform.FieldBuilder
 		return ctx.Respond(lists, len(lists))
 	}
 
-	return form.SelectField("lists", "Lists").
+	return form.SelectField("list", "Lists").
 		Placeholder("Select a list.").
 		Required(true).
 		WithDynamicOptions(
@@ -183,51 +184,68 @@ func RegisterBoardListsProp(form *smartform.FormBuilder) *smartform.FieldBuilder
 				WithSearchSupport().
 				WithPagination(10).
 				End().
+				RefreshOn("boards").
 				GetDynamicSource(),
 		).
 		HelpText("Select a list")
 }
 
-// func getCardsInput() *sdkcore.AutoFormSchema {
-//	getCards := func(ctx *sdkcore.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-//		input := sdk.DynamicInputToType[struct {
-//			BoardID string `json:"board_id"`
-//			ListID  string `json:"idList"`
-//		}](ctx)
-//
-//		fullURL := fmt.Sprintf("%s/lists/%s/cards?key=%s&token=%s", baseURL, input.ListID, ctx.Auth.Extra["api-key"], ctx.Auth.Extra["api-token"])
-//
-//		req, err := http.NewRequest(http.MethodGet, fullURL, nil)
-//		if err != nil {
-//			return nil, err
-//		}
-//
-//		req.Header.Set("Accept", "application/json")
-//
-//		client := &http.Client{}
-//		rsp, err := client.Do(req)
-//		if err != nil {
-//			return nil, err
-//		}
-//		defer rsp.Body.Close()
-//
-//		newBytes, err := io.ReadAll(rsp.Body)
-//		if err != nil {
-//			return nil, err
-//		}
-//
-//		var lists []Cards
-//		err = json.Unmarshal(newBytes, &lists)
-//		if err != nil {
-//			return nil, err
-//		}
-//
-//		return lists, nil
-//	}
-//
-//	return autoform.NewDynamicField(sdkcore.String).
-//		SetDisplayName("Cards").
-//		SetDescription("Select a list").
-//		SetDynamicOptions(&getCards).
-//		SetRequired(true).Build()
-// }
+func RegisterCardsProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getCards := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
+		input := sdk.DynamicInputToType[struct {
+			BoardID string `json:"boards"`
+			ListID  string `json:"list"`
+		}](ctx)
+
+		endpoint := fmt.Sprintf("/lists/%s/cards", input.ListID)
+		fullURL := fmt.Sprintf("%s%s?key=%s&token=%s", BaseURL, endpoint, authCtx.Extra["api-key"], authCtx.Extra["api-token"])
+
+		req, err := http.NewRequest(http.MethodGet, fullURL, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		req.Header.Set("Accept", "application/json")
+
+		client := &http.Client{}
+		rsp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer rsp.Body.Close()
+
+		newBytes, err := io.ReadAll(rsp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		var cards []Card
+
+		err = json.Unmarshal(newBytes, &cards)
+		if err != nil {
+			return nil, err
+		}
+
+		return ctx.Respond(cards, len(cards))
+	}
+
+	return form.SelectField("cardId", "Cards").
+		Placeholder("Select a card.").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getCards)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				RefreshOn("list").
+				GetDynamicSource(),
+		).
+		HelpText("Select a card")
+}
