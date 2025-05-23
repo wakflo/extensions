@@ -1,6 +1,9 @@
 package actions
 
 import (
+	"errors"
+	"strconv"
+
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/woocommerce/shared"
 	"github.com/wakflo/go-sdk/v2"
@@ -9,7 +12,7 @@ import (
 )
 
 type findProductActionProps struct {
-	ProductID int `json:"productId"`
+	ProductID string `json:"productId"`
 }
 
 type FindProductAction struct{}
@@ -31,10 +34,7 @@ func (a *FindProductAction) Metadata() sdk.ActionMetadata {
 func (a *FindProductAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("find_product", "Find Product")
 
-	form.NumberField("productId", "Product ID").
-		Placeholder("Enter product ID").
-		Required(true).
-		HelpText("Enter product ID")
+	shared.GetProductsProp("productId", "Product ID", "Enter product ID", true, form)
 
 	schema := form.Build()
 
@@ -52,7 +52,13 @@ func (a *FindProductAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, e
 		return nil, err
 	}
 
-	product, err := wooClient.Services.Product.One(input.ProductID)
+	// convert ID from string to int
+	productId, err := strconv.Atoi(input.ProductID)
+	if err != nil {
+		return nil, errors.New("Error converting to int:")
+	}
+
+	product, err := wooClient.Services.Product.One(productId)
 	if err != nil {
 		return nil, err
 	}

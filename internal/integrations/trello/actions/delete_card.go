@@ -35,10 +35,11 @@ func (a *DeleteCardAction) Metadata() sdk.ActionMetadata {
 func (a *DeleteCardAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("delete_card", "Delete Card")
 
-	form.TextField("cardId", "Card ID").
-		Placeholder("The id of the card to delete").
-		Required(true).
-		HelpText("The id of the card to delete")
+	shared.RegisterBoardsProp(form)
+
+	shared.RegisterBoardListsProp(form)
+
+	shared.RegisterCardsProp(form)
 
 	schema := form.Build()
 	return schema
