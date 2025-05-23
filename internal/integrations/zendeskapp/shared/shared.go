@@ -31,7 +31,7 @@ var _ = form.TextField("email", "Agent Email").
 	Placeholder("Enter your Zendesk email").
 	HelpText("The email address you use to login to Zendesk")
 
-var _ = form.TextField("api_token", "API Token").
+var _ = form.TextField("api-token", "API Token").
 	Required(true).
 	Placeholder("Enter your API token").
 	HelpText("The API token you can generate in Zendesk")
@@ -49,7 +49,7 @@ func ZendeskRequest(method, fullURL, email, apiToken string, request []byte) (ma
 		return nil, err
 	}
 
-	req.SetBasicAuth(apiToken+"%s/token", email)
+	req.SetBasicAuth(email+"/token", apiToken)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
