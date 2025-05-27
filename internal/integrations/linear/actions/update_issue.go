@@ -34,7 +34,13 @@ func (a *UpdateIssueAction) Metadata() sdk.ActionMetadata {
 		Type:          sdkcore.ActionTypeAction,
 		Documentation: updateIssueDocs,
 		SampleOutput: map[string]any{
-			"message": "Hello World!",
+			"success": true,
+			"issue": map[string]any{
+				"id":            "issue-123",
+				"title":         "Updated Issue Title",
+				"priorityLabel": "High",
+				"priority":      1,
+			},
 		},
 		Settings: sdkcore.ActionSettings{},
 	}
@@ -71,48 +77,67 @@ func (a *UpdateIssueAction) Properties() *smartform.FormSchema {
 }
 
 func (a *UpdateIssueAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
+	// Parse input
 	input, err := sdk.InputToTypeSafely[updateIssueActionProps](ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse input: %w", err)
+	}
+
+	// Validate required fields
+	if input.IssueID == "" {
+		return nil, errors.New("issue ID is required")
+	}
+
+	// Check if at least one field to update is provided
+	if input.Title == "" && input.StateID == "" && input.Description == "" &&
+		input.LabelID == "" && input.Priority == "" && input.AssigneeID == "" {
+		return nil, errors.New("at least one field must be provided to update")
 	}
 
 	// Get the auth context
 	authCtx, err := ctx.AuthContext()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get auth context: %w", err)
 	}
 
-	apiKEY := authCtx.Extra["api-key"]
+	// Validate API key exists
+	apiKEY, ok := authCtx.Extra["api-key"]
+	if !ok || apiKEY == "" {
+		return nil, errors.New("Linear API key not found in auth context")
+	}
 
 	if !strings.HasPrefix(apiKEY, "lin_api_") {
 		return nil, errors.New("invalid Linear API key: must start with 'lin_api_'")
 	}
 
+	// Build mutation
 	mutation := fmt.Sprintf(`mutation IssueUpdate {
       issueUpdate(
         id: "%s",
         input: {`, input.IssueID)
 
+	updateFields := []string{}
+
 	if input.Title != "" {
-		mutation += fmt.Sprintf(`title: "%s",`, input.Title)
+		updateFields = append(updateFields, fmt.Sprintf(`title: "%s"`, escapeQuotes(input.Title)))
 	}
 	if input.StateID != "" {
-		mutation += fmt.Sprintf(`stateId: "%s",`, input.StateID)
+		updateFields = append(updateFields, fmt.Sprintf(`stateId: "%s"`, input.StateID))
 	}
 	if input.Description != "" {
-		mutation += fmt.Sprintf(`description: "%s",`, input.Description)
+		updateFields = append(updateFields, fmt.Sprintf(`description: "%s"`, escapeQuotes(input.Description)))
 	}
 	if input.LabelID != "" {
-		mutation += fmt.Sprintf(`labelIds: "%s",`, input.LabelID)
+		updateFields = append(updateFields, fmt.Sprintf(`labelIds: ["%s"]`, input.LabelID))
 	}
 	if input.Priority != "" {
-		mutation += fmt.Sprintf(`priority: %s,`, input.Priority)
+		updateFields = append(updateFields, fmt.Sprintf(`priority: %s`, input.Priority))
 	}
 	if input.AssigneeID != "" {
-		mutation += fmt.Sprintf(`assigneeId: "%s",`, input.AssigneeID)
+		updateFields = append(updateFields, fmt.Sprintf(`assigneeId: "%s"`, input.AssigneeID))
 	}
 
-	mutation = strings.TrimSuffix(mutation, ",")
+	mutation += strings.Join(updateFields, ", ")
 	mutation += `}) {
         success
         issue {
@@ -124,6 +149,7 @@ func (a *UpdateIssueAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON
       }
     }`
 
+	// Make GraphQL request
 	response, err := shared.MakeGraphQLRequest(apiKEY, mutation)
 	if err != nil {
 		return nil, fmt.Errorf("error making GraphQL request: %w", err)
@@ -139,6 +165,24 @@ func (a *UpdateIssueAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON
 
 func (a *UpdateIssueAction) Auth() *sdkcore.AuthMetadata {
 	return nil
+}
+
+// Helper function to escape quotes in strings for GraphQL
+func escapeQuotes(s string) string {
+	s = strings.ReplaceAll(s, `\`, `\\`)
+	s = strings.ReplaceAll(s, `"`, `\"`)
+	s = strings.ReplaceAll(s, "\n", `\n`)
+	s = strings.ReplaceAll(s, "\r", `\r`)
+	s = strings.ReplaceAll(s, "\t", `\t`)
+	return s
+}
+
+// Helper function for min
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func NewUpdateIssueAction() sdk.Action {

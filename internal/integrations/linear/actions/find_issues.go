@@ -14,6 +14,7 @@ import (
 )
 
 type findIssuesActionProps struct {
+	TeamID      string `json:"team-id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	AssigneeID  string `json:"assignee-id"`
@@ -31,7 +32,21 @@ func (a *FindIssuesAction) Metadata() sdk.ActionMetadata {
 		Type:          sdkcore.ActionTypeAction,
 		Documentation: findIssuesDocs,
 		SampleOutput: map[string]any{
-			"message": "Hello World!",
+			"nodes": []map[string]any{
+				{
+					"id":          "issue-123",
+					"title":       "Sample Issue",
+					"description": "Issue description",
+					"state": map[string]any{
+						"name": "In Progress",
+					},
+					"priority":  1,
+					"createdAt": "2024-01-01T00:00:00.000Z",
+					"assignee": map[string]any{
+						"name": "John Doe",
+					},
+				},
+			},
 		},
 		Settings: sdkcore.ActionSettings{},
 	}
@@ -40,6 +55,8 @@ func (a *FindIssuesAction) Metadata() sdk.ActionMetadata {
 func (a *FindIssuesAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("find_issues", "Find Issues")
 
+	shared.GetTeamsProp(form)
+
 	form.TextField("title", "Filter by Issue Name").
 		Placeholder("Issue Name").
 		HelpText("Filter issue by name").
@@ -47,7 +64,7 @@ func (a *FindIssuesAction) Properties() *smartform.FormSchema {
 
 	form.TextareaField("description", "Filter by Description").
 		Placeholder("Filter by Description").
-		HelpText("Return issues wth certain keywords in the issue description").
+		HelpText("Return issues with certain keywords in the issue description").
 		Required(false)
 
 	shared.GetLabelsProp("label-id", "Filter by label", "Filter issue by label", form)
@@ -64,68 +81,107 @@ func (a *FindIssuesAction) Properties() *smartform.FormSchema {
 func (a *FindIssuesAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON, error) {
 	input, err := sdk.InputToTypeSafely[findIssuesActionProps](ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse input: %w", err)
 	}
 
 	// Get the auth context
 	authCtx, err := ctx.AuthContext()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get auth context: %w", err)
 	}
 
-	apiKEY := authCtx.Extra["api-key"]
+	// Validate API key exists
+	apiKEY, ok := authCtx.Extra["api-key"]
+	if !ok || apiKEY == "" {
+		return nil, errors.New("Linear API key not found in auth context")
+	}
 
+	// Validate API key format
 	if !strings.HasPrefix(apiKEY, "lin_api_") {
 		return nil, errors.New("invalid Linear API key: must start with 'lin_api_'")
 	}
 
 	var filters []string
 
+	// Add team filter if provided
+	if input.TeamID != "" {
+		filters = append(filters, fmt.Sprintf(`team: {
+			id: {
+				eq: "%s"
+			}
+		}`, input.TeamID))
+	}
+
 	if input.AssigneeID != "" {
 		filters = append(filters, fmt.Sprintf(`assignee: {
-      id: {
-        eq:"%s"
-      }
-    }`, input.AssigneeID))
+			id: {
+				eq: "%s"
+			}
+		}`, input.AssigneeID))
 	}
+
 	if input.Description != "" {
-		filters = append(filters, fmt.Sprintf(`description:{
-      containsIgnoreCase: "%s"
-    }`, input.Description))
+		filters = append(filters, fmt.Sprintf(`description: {
+			containsIgnoreCase: "%s"
+		}`, escapeQuotes(input.Description)))
 	}
+
 	if input.Title != "" {
-		filters = append(filters, fmt.Sprintf(`title:{
-      containsIgnoreCase: "%s"
-    }`, input.Title))
+		filters = append(filters, fmt.Sprintf(`title: {
+			containsIgnoreCase: "%s"
+		}`, escapeQuotes(input.Title)))
 	}
+
 	if input.LabelID != "" {
-		filters = append(filters, fmt.Sprintf(`labelIds: ["%s"]`, input.LabelID))
+		filters = append(filters, fmt.Sprintf(`labels: {
+			some: {
+				id: {
+					eq: "%s"
+				}
+			}
+		}`, input.LabelID))
 	}
+
 	if input.StateID != "" {
-		filters = append(filters, fmt.Sprintf(`  state: {
-        id: {
-			eq: "%s"
-		}
-
-
-      }`, input.StateID))
+		filters = append(filters, fmt.Sprintf(`state: {
+			id: {
+				eq: "%s"
+			}
+		}`, input.StateID))
 	}
 
-	filterString := strings.Join(filters, ", ")
+	// Build query
+	filterString := ""
+	if len(filters) > 0 {
+		filterString = strings.Join(filters, ", ")
+	}
 
-	query := fmt.Sprintf(`
-	{
+	query := fmt.Sprintf(`{
 		issues(filter: {%s}) {
 			nodes {
 				id
 				title
 				description
 				state {
+					id
 					name
 				}
 				priority
+				priorityLabel
 				createdAt
+				updatedAt
 				assignee {
+					id
+					name
+				}
+				labels {
+					nodes {
+						id
+						name
+					}
+				}
+				team {
+					id
 					name
 				}
 			}

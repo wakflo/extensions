@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/juicycleff/smartform/v1"
@@ -12,7 +11,7 @@ import (
 )
 
 type getSubscriberActionProps struct {
-	SubscriberID int `json:"subscriber_id"`
+	SubscriberID string `json:"subscriber_id"`
 }
 
 type GetSubscriberAction struct{}
@@ -48,10 +47,7 @@ func (a *GetSubscriberAction) Metadata() sdk.ActionMetadata {
 func (a *GetSubscriberAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("get_subscriber", "Get Subscriber")
 
-	form.NumberField("subscriber_id", "Subscriber ID").
-		Placeholder("Enter subscriber ID").
-		Required(true).
-		HelpText("ID of the subscriber to retrieve")
+	shared.RegisterSubscribersProps(form)
 
 	schema := form.Build()
 
@@ -77,7 +73,7 @@ func (a *GetSubscriberAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 		return nil, err
 	}
 
-	path := fmt.Sprintf("/subscribers/%d?api_secret=%s", input.SubscriberID, authCtx.Extra["api-secret"])
+	path := "/subscribers/" + input.SubscriberID + "?api_secret=" + authCtx.Extra["api-secret"]
 
 	response, err := shared.GetConvertKitClient(path, http.MethodGet, nil)
 	if err != nil {

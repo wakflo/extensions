@@ -7,7 +7,7 @@ import (
 var (
 	authForm = smartform.NewAuthForm("easyship-auth", "EasyShip Auth", smartform.AuthStrategyCustom)
 	_        = authForm.
-			CustomField("api-key", "API Key").
+			TextField("api-key", "API Key").
 			Required(true).
 			HelpText("API Application Key").
 			Build()

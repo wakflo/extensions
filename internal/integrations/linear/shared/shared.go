@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/gookit/goutil/arrutil"
 
@@ -17,7 +18,7 @@ import (
 )
 
 var (
-	form = smartform.NewAuthForm("linear-auth", "Linear Oauth", smartform.AuthStrategyOAuth2)
+	form = smartform.NewAuthForm("linear-auth", "Linear Oauth", smartform.AuthStrategyCustom)
 
 	_ = form.TextField("api-key", "Api Key").
 		HelpText("The api key used to authenticate linear.").
@@ -213,8 +214,8 @@ func GetIssuesProp(id string, title string, description string, form *smartform.
 
 		items := arrutil.Map[Issue, map[string]any](issues, func(input Issue) (target map[string]any, find bool) {
 			return map[string]any{
-				"value": input.ID,
-				"label": input.Title,
+				"id":   input.ID,
+				"name": input.Title,
 			}, true
 		})
 		return ctx.Respond(items, len(items))
@@ -230,6 +231,7 @@ func GetIssuesProp(id string, title string, description string, form *smartform.
 				WithSearchSupport().
 				WithPagination(10).
 				End().
+				RefreshOn("team-id").
 				GetDynamicSource(),
 		).
 		HelpText(description)
@@ -307,8 +309,8 @@ func GetPriorityProp(id string, title string, description string, form *smartfor
 		},
 		) (target map[string]any, find bool) {
 			return map[string]any{
-				"value": input.Priority,
-				"label": input.Label,
+				"id":   strconv.Itoa(input.Priority),
+				"name": input.Label,
 			}, true
 		})
 		return ctx.Respond(items, len(items))
@@ -410,6 +412,7 @@ func GetTeamLabelsProp(id string, title string, description string, form *smartf
 				WithSearchSupport().
 				WithPagination(10).
 				End().
+				RefreshOn("team-id").
 				GetDynamicSource(),
 		).
 		HelpText(description)
@@ -417,17 +420,23 @@ func GetTeamLabelsProp(id string, title string, description string, form *smartf
 
 func GetAssigneesProp(id string, title string, description string, form *smartform.FormBuilder) *smartform.FieldBuilder {
 	getAssignees := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		query := `
-		query Assignees {
-		  issues {
-		    nodes {
-		      assignee {
-		        id
-		        name
-		      }
-		    }
-		  }
-		}`
+		// Get the team ID from the form context
+		input := sdk.DynamicInputToType[struct {
+			TeamID string `json:"team-id"`
+		}](ctx)
+
+		// Query for team members instead of issue assignees
+		query := fmt.Sprintf(`{
+			team(id: "%s") {
+				members {
+					nodes {
+						id
+						name
+						email
+					}
+				}
+			}
+		}`, input.TeamID)
 
 		queryBody := map[string]string{
 			"query": query,
@@ -465,11 +474,15 @@ func GetAssigneesProp(id string, title string, description string, form *smartfo
 
 		var response struct {
 			Data struct {
-				Issues struct {
-					Nodes []struct {
-						Assignee Assignee `json:"assignee"`
-					} `json:"nodes"`
-				} `json:"issues"`
+				Team struct {
+					Members struct {
+						Nodes []struct {
+							ID    string `json:"id"`
+							Name  string `json:"name"`
+							Email string `json:"email"`
+						} `json:"nodes"`
+					} `json:"members"`
+				} `json:"team"`
 			} `json:"data"`
 		}
 
@@ -478,19 +491,15 @@ func GetAssigneesProp(id string, title string, description string, form *smartfo
 			return nil, err
 		}
 
-		// Create a unique set of assignees to avoid duplicates
-		assigneeMap := make(map[string]Assignee)
-		for _, node := range response.Data.Issues.Nodes {
-			if node.Assignee.ID != "" {
-				assigneeMap[node.Assignee.ID] = node.Assignee
-			}
+		// Convert to Assignee type
+		var assignees []Assignee
+		for _, member := range response.Data.Team.Members.Nodes {
+			assignees = append(assignees, Assignee{
+				ID:   member.ID,
+				Name: member.Name,
+			})
 		}
 
-		// Convert map to slice
-		var assignees []Assignee
-		for _, assignee := range assigneeMap {
-			assignees = append(assignees, assignee)
-		}
 		return ctx.Respond(assignees, len(assignees))
 	}
 
@@ -504,6 +513,7 @@ func GetAssigneesProp(id string, title string, description string, form *smartfo
 				WithSearchSupport().
 				WithPagination(10).
 				End().
+				RefreshOn("team-id").
 				GetDynamicSource(),
 		).
 		HelpText(description)
@@ -511,14 +521,23 @@ func GetAssigneesProp(id string, title string, description string, form *smartfo
 
 func GetIssueStatesProp(id string, title string, description string, required bool, form *smartform.FormBuilder) *smartform.FieldBuilder {
 	getIssueStates := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-		query := `{
-          workflowStates {
-    		nodes {
-              id
-              name
-            }
-		  }
-        }`
+		// Get the team ID from the form context
+		input := sdk.DynamicInputToType[struct {
+			TeamID string `json:"team-id"`
+		}](ctx)
+
+		// Query for team-specific workflow states
+		query := fmt.Sprintf(`{
+			team(id: "%s") {
+				states {
+					nodes {
+						id
+						name
+						type
+					}
+				}
+			}
+		}`, input.TeamID)
 
 		queryBody := map[string]string{
 			"query": query,
@@ -556,9 +575,11 @@ func GetIssueStatesProp(id string, title string, description string, required bo
 
 		var response struct {
 			Data struct {
-				WorkflowStates struct {
-					Nodes []WorkflowState `json:"nodes"`
-				} `json:"workflowStates"`
+				Team struct {
+					States struct {
+						Nodes []WorkflowState `json:"nodes"`
+					} `json:"states"`
+				} `json:"team"`
 			} `json:"data"`
 		}
 
@@ -567,7 +588,7 @@ func GetIssueStatesProp(id string, title string, description string, required bo
 			return nil, err
 		}
 
-		issueStates := response.Data.WorkflowStates.Nodes
+		issueStates := response.Data.Team.States.Nodes
 		return ctx.Respond(issueStates, len(issueStates))
 	}
 
@@ -581,6 +602,7 @@ func GetIssueStatesProp(id string, title string, description string, required bo
 				WithSearchSupport().
 				WithPagination(10).
 				End().
+				RefreshOn("team-id").
 				GetDynamicSource(),
 		).
 		HelpText(description)

@@ -16,6 +16,7 @@ package actions
 
 import (
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/juicycleff/smartform/v1"
@@ -26,7 +27,7 @@ import (
 )
 
 type createProjectActionProps struct {
-	WorkspaceID string `json:"workspaces"`
+	WorkspaceID int    `json:"workspaces"`
 	Name        string `json:"name"`
 	Active      bool   `json:"active"`
 }
@@ -79,7 +80,9 @@ func (c *CreateProjectAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 		return nil, err
 	}
 
-	response, err := shared.CreateProjects(apiKey, input.WorkspaceID, input.Name, input.Active)
+	workspaceIDStr := fmt.Sprintf("%d", input.WorkspaceID)
+
+	response, err := shared.CreateProjects(apiKey, workspaceIDStr, input.Name, input.Active)
 	if err != nil {
 		log.Fatalf("error fetching data: %v", err)
 	}

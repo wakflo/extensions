@@ -41,14 +41,11 @@ func (a *FindRecordAction) Metadata() sdk.ActionMetadata {
 func (a *FindRecordAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("find_record", "Find Record")
 
-	form.TextField("record-id", "Record ID").
-		Placeholder("Enter the record ID").
-		Required(true).
-		HelpText("The ID of the record")
-
 	shared.RegisterBasesProps(form)
 
 	shared.RegisterTablesProps(form)
+
+	shared.RegisterRecordsProps(form)
 
 	schema := form.Build()
 

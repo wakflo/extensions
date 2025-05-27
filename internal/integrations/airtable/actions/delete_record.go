@@ -39,14 +39,11 @@ func (a *DeleteRecordAction) Metadata() sdk.ActionMetadata {
 func (a *DeleteRecordAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("delete_record", "Delete Record")
 
-	form.TextField("record-id", "Record ID").
-		Placeholder("Enter the record ID").
-		Required(true).
-		HelpText("The ID of the record you want to delete. You can find the record ID by clicking on the record and then clicking on the share button. The ID will be in the URL.")
-
 	shared.RegisterBasesProps(form)
 
 	shared.RegisterTablesProps(form)
+
+	shared.RegisterRecordsProps(form)
 
 	schema := form.Build()
 

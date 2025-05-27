@@ -286,6 +286,100 @@ func RegisterViewsProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
 		HelpText("View for selected Table")
 }
 
+func RegisterRecordsProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getRecords := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
+		input := sdk.DynamicInputToType[struct {
+			BasesID string `json:"bases"`
+			TableID string `json:"table"`
+		}](ctx)
+
+		// Build the full URL
+		fullURL := fmt.Sprintf("%s/v0/%s/%s", BaseAPI, input.BasesID, input.TableID)
+
+		// Use the existing AirtableRequest helper function
+		response, err := AirtableRequest(authCtx.Extra["api-key"], fullURL, "GET")
+		if err != nil {
+			return nil, err
+		}
+
+		// Convert response to our expected structure
+		responseMap, ok := response.(map[string]interface{})
+		if !ok {
+			return nil, errors.New("unexpected response format")
+		}
+
+		// Extract records array
+		recordsInterface, exists := responseMap["records"]
+		if !exists {
+			return nil, errors.New("no records field in response")
+		}
+
+		recordsArray, ok := recordsInterface.([]interface{})
+		if !ok {
+			return nil, errors.New("records field is not an array")
+		}
+
+		// Transform records into selectable options
+		options := make([]interface{}, 0, len(recordsArray))
+
+		for _, recordInterface := range recordsArray {
+			record, ok := recordInterface.(map[string]interface{})
+			if !ok {
+				continue
+			}
+
+			// Extract record ID
+			recordID, ok := record["id"].(string)
+			if !ok {
+				continue
+			}
+
+			// Extract fields
+			fields, ok := record["fields"].(map[string]interface{})
+			if !ok {
+				fields = make(map[string]interface{})
+			}
+
+			// Get the task name for display
+			displayName := fmt.Sprintf("Record %s", recordID) // Default fallback
+
+			if taskName, ok := fields["Task Name"].(string); ok && taskName != "" {
+				displayName = taskName
+			}
+
+			option := map[string]interface{}{
+				"id":   recordID,
+				"name": displayName,
+			}
+
+			options = append(options, option)
+		}
+
+		return ctx.Respond(options, len(options))
+	}
+
+	return form.SelectField("record-id", "Record").
+		Placeholder("Select a record").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getRecords)).
+				WithFieldReference("bases", "bases").
+				WithFieldReference("table", "table").
+				WithSearchSupport().
+				End().
+				RefreshOn("bases", "table").
+				GetDynamicSource(),
+		).
+		HelpText("Select a record from the table")
+}
+
 func AirtableRequest(accessToken, reqURL, requestType string) (interface{}, error) {
 	req, err := http.NewRequest(requestType, reqURL, nil)
 	if err != nil {

@@ -77,18 +77,6 @@ func (a *ListOrdersAction) Metadata() sdk.ActionMetadata {
 func (a *ListOrdersAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("list_order", "List Orders")
 
-	form.TextField("page", "Page").
-		Required(false).
-		HelpText("Page number for pagination, defaults to 1").
-		Placeholder("1").
-		DefaultValue("1")
-
-	form.TextField("limit", "Limit").
-		Required(false).
-		HelpText("Number of orders per page, defaults to 50").
-		Placeholder("50").
-		DefaultValue("50")
-
 	form.TextField("status", "Order Status").
 		Required(false).
 		HelpText("Filter orders by status").

@@ -35,8 +35,10 @@ func (a *GetProductAction) Metadata() sdk.ActionMetadata {
 func (a *GetProductAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("get_product", "Get Product")
 
-	form.TextField("id", "Product ID").
-		Required(true)
+	// form.TextField("id", "Product ID").
+	// 	Required(true)
+
+	shared.GetProductProp("id", "Product ID", "The ID of the product", true, form)
 
 	schema := form.Build()
 
@@ -60,7 +62,7 @@ func (a *GetProductAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, er
 		return nil, err
 	}
 
-	endpoint := "/api/v2/get/product/" + input.ProductID
+	endpoint := "/api/v2/get/product/id/" + input.ProductID
 	resp, err := shared.PrisyncRequest(authCtx.Extra["api-key"], authCtx.Extra["api-token"], endpoint, http.MethodGet, nil)
 	if err != nil {
 		return nil, err

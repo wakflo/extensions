@@ -44,16 +44,6 @@ func (a *ListProductsAction) Metadata() sdk.ActionMetadata {
 func (a *ListProductsAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("list_products", "List Products")
 
-	form.NumberField("page", "Page").
-		Placeholder("1").
-		Required(false).
-		HelpText("Page number for pagination, defaults to 1")
-
-	form.NumberField("limit", "Limit").
-		Placeholder("50").
-		Required(false).
-		HelpText("Number of products per page, defaults to 50")
-
 	schema := form.Build()
 
 	return schema

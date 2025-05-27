@@ -50,10 +50,7 @@ func (a *UpdateContactAction) Metadata() sdk.ActionMetadata {
 func (a *UpdateContactAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("update_contact", "Update Contact")
 
-	form.TextField("contact-id", "contact-id").
-		Placeholder("Contact ID").
-		HelpText("The ID of the contact you want to update").
-		Required(true)
+	shared.RegisterContactsProp(form)
 
 	form.TextField("email", "email").
 		Placeholder("Email").

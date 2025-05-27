@@ -70,8 +70,8 @@ func GetProductProp(id string, title string, desc string, required bool, form *s
 				}
 
 				options = append(options, map[string]interface{}{
-					"value": idStr,
-					"label": name,
+					"id":   idStr,
+					"name": name,
 				})
 
 			}
@@ -152,8 +152,8 @@ func GetOrderProp(id string, title string, desc string, required bool, form *sma
 				}
 
 				options = append(options, map[string]interface{}{
-					"value": idStr,
-					"label": "#SO" + idStr,
+					"id":   idStr,
+					"name": "#SO" + idStr,
 				})
 
 			}
