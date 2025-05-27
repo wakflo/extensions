@@ -1,6 +1,9 @@
 package actions
 
 import (
+	"errors"
+	"strconv"
+
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/woocommerce/shared"
 	"github.com/wakflo/go-sdk/v2"
@@ -9,7 +12,7 @@ import (
 )
 
 type findCouponActionProps struct {
-	CouponID int `json:"couponId"`
+	CouponID string `json:"couponId"`
 }
 
 type FindCouponAction struct{}
@@ -31,10 +34,7 @@ func (a *FindCouponAction) Metadata() sdk.ActionMetadata {
 func (a *FindCouponAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("find_coupon", "Find Coupon")
 
-	form.NumberField("couponId", "Coupon ID").
-		Placeholder("Enter the coupon ID").
-		Required(true).
-		HelpText("Enter the coupon ID")
+	shared.GetCouponsProp("couponId", "Coupon ID", "Enter the coupon ID", true, form)
 
 	schema := form.Build()
 
@@ -52,7 +52,13 @@ func (a *FindCouponAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, er
 		return nil, err
 	}
 
-	coupon, err := wooClient.Services.Coupon.One(input.CouponID)
+	// convert ID from string to int
+	couponId, err := strconv.Atoi(input.CouponID)
+	if err != nil {
+		return nil, errors.New("Error converting to int:")
+	}
+
+	coupon, err := wooClient.Services.Coupon.One(couponId)
 	if err != nil {
 		return nil, err
 	}

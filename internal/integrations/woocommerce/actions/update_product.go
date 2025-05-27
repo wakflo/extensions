@@ -1,6 +1,9 @@
 package actions
 
 import (
+	"errors"
+	"strconv"
+
 	"github.com/hiscaler/woocommerce-go"
 	"github.com/hiscaler/woocommerce-go/entity"
 	"github.com/juicycleff/smartform/v1"
@@ -11,7 +14,7 @@ import (
 )
 
 type updateProductActionProps struct {
-	ProductID        int     `json:"productId"`
+	ProductID        string  `json:"productId"`
 	Name             string  `json:"name"`
 	RegularPrice     float64 `json:"regular_price"`
 	SalePrice        float64 `json:"sale_price"`
@@ -43,10 +46,7 @@ func (a *UpdateProductAction) Metadata() sdk.ActionMetadata {
 func (a *UpdateProductAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("update_product", "Update Product")
 
-	form.NumberField("productId", "Product ID").
-		Placeholder("Enter the product ID").
-		Required(true).
-		HelpText("Enter the product ID")
+	shared.GetProductsProp("productId", "Product ID", "Enter the product ID", true, form)
 
 	form.TextField("name", "Product Name").
 		Placeholder("Enter product Name").
@@ -151,7 +151,13 @@ func (a *UpdateProductAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 		}
 	}
 
-	updatedProduct, err := wooClient.Services.Product.Update(input.ProductID, params)
+	// convert ID from string to int
+	productId, err := strconv.Atoi(input.ProductID)
+	if err != nil {
+		return nil, errors.New("Error converting to int:")
+	}
+
+	updatedProduct, err := wooClient.Services.Product.Update(productId, params)
 	if err != nil {
 		return nil, err
 	}

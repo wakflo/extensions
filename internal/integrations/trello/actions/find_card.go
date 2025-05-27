@@ -13,7 +13,9 @@ import (
 )
 
 type findCardActionProps struct {
-	CardID string `json:"cardId"`
+	BoardID string `json:"boards"`
+	ListID  string `json:"list"`
+	CardID  string `json:"cardId"`
 }
 
 type FindCardAction struct{}
@@ -35,10 +37,11 @@ func (a *FindCardAction) Metadata() sdk.ActionMetadata {
 func (a *FindCardAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("find_card", "Find Card")
 
-	form.TextField("cardId", "Card ID").
-		Placeholder("The id of the card to find").
-		Required(true).
-		HelpText("The id of the card to find")
+	shared.RegisterBoardsProp(form)
+
+	shared.RegisterBoardListsProp(form)
+
+	shared.RegisterCardsProp(form)
 
 	schema := form.Build()
 	return schema

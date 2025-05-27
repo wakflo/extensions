@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/trello/shared"
@@ -64,7 +65,14 @@ func (a *CreateListAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, er
 	apiKey := authExtra["api-key"]
 	apiToken := authExtra["api-token"]
 
-	fullURL := fmt.Sprintf("%s/lists?name=%s&idBoard=%s&key=%s&token=%s", shared.BaseURL, input.Name, input.IDBoard, apiKey, apiToken)
+	// Build query parameters
+	params := url.Values{}
+	params.Add("name", input.Name)
+	params.Add("idBoard", input.IDBoard)
+	params.Add("key", apiKey)
+	params.Add("token", apiToken)
+
+	fullURL := fmt.Sprintf("%s/lists?%s", shared.BaseURL, params.Encode())
 
 	response, err := shared.TrelloRequest(http.MethodPost, fullURL, nil)
 	if err != nil {
