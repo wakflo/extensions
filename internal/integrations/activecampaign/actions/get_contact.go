@@ -46,10 +46,12 @@ func (a *GetContactAction) Metadata() sdk.ActionMetadata {
 func (a *GetContactAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("get_contact", "Get Contact")
 
-	form.TextField("contact-id", "contact-id").
-		Placeholder("Contact ID").
-		HelpText("The ID of the contact you want to retrieve").
-		Required(true)
+	// form.TextField("contact-id", "contact-id").
+	// 	Placeholder("Contact ID").
+	// 	HelpText("The ID of the contact you want to retrieve").
+	// 	Required(true)
+
+	shared.RegisterContactsProp(form)
 
 	schema := form.Build()
 

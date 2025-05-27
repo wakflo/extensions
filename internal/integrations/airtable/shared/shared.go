@@ -365,7 +365,7 @@ func RegisterRecordsProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
 
 	return form.SelectField("record-id", "Record").
 		Placeholder("Select a record").
-		Required(false).
+		Required(true).
 		WithDynamicOptions(
 			smartform.NewOptionsBuilder().
 				Dynamic().

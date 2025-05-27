@@ -103,3 +103,84 @@ func RegisterActiveCampaignListsProps(form *smartform.FormBuilder) *smartform.Fi
 		).
 		HelpText("Select an ActiveCampaign list")
 }
+
+func RegisterContactsProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	getContacts := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
+		apiURL, apiURLExists := authCtx.Extra["api_url"]
+		apiKey, apiKeyExists := authCtx.Extra["api_key"]
+		if !apiURLExists || !apiKeyExists || apiURL == "" || apiKey == "" {
+			return nil, errors.New("API URL and API Key are required")
+		}
+
+		result, err := GetActiveCampaignClient(apiURL, apiKey, "contacts")
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch contacts: %v", err)
+		}
+
+		resultMap, ok := result.(map[string]interface{})
+		if !ok {
+			return nil, errors.New("unexpected result format from API")
+		}
+
+		contactsData, ok := resultMap["contacts"]
+		if !ok {
+			return nil, errors.New("no contacts found in response")
+		}
+
+		contactItems, ok := contactsData.([]interface{})
+		if !ok {
+			return nil, errors.New("unexpected format for contacts data")
+		}
+
+		items := make([]map[string]any, 0, len(contactItems))
+		for _, item := range contactItems {
+			contact, ok := item.(map[string]interface{})
+			if !ok {
+				continue
+			}
+
+			var id string
+			var email string
+
+			// Extract ID
+			if idStr, ok := contact["id"].(string); ok {
+				id = idStr
+			} else if idNum, ok := contact["id"].(float64); ok {
+				id = strconv.Itoa(int(idNum))
+			}
+
+			// Extract email
+			if emailStr, ok := contact["email"].(string); ok {
+				email = emailStr
+			}
+
+			if id != "" && email != "" {
+				items = append(items, map[string]any{
+					"id":   id,
+					"name": email,
+				})
+			}
+		}
+
+		return ctx.Respond(items, len(items))
+	}
+
+	return form.SelectField("contact-id", "Contact").
+		Placeholder("Select contact").
+		Required(true).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getContacts)).
+				WithSearchSupport().
+				WithPagination(10).
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Select a contact")
+}
