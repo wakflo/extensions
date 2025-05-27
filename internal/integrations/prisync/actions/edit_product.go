@@ -42,9 +42,7 @@ func (a *EditProductAction) Metadata() sdk.ActionMetadata {
 func (a *EditProductAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("edit_product", "Edit Product")
 
-	form.TextField("id", "Product ID").
-		Required(true).
-		HelpText("ID of product")
+	shared.GetProductProp("id", "Product ID", "ID of product", true, form)
 
 	form.TextField("name", "Product Name").
 		Required(false).

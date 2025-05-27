@@ -51,18 +51,15 @@ func (a *CreateCourierPickupAction) Metadata() sdk.ActionMetadata {
 func (a *CreateCourierPickupAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("create_courier_pickup", "Create Courier Pickup")
 
-	// Add courier-id field
-	form.TextField("courier-id", "Courier ID").
-		Placeholder("Enter a courier ID").
-		Required(true).
-		HelpText("Courier ID in case you need to overwrite the one suggested by default")
+	shared.RegisterCourierProps(form)
 
 	// Add shipment_ids field
-	form.ArrayField("shipment_ids", "Shipment IDs").
-		Required(false).
-		HelpText("All shipments to be requested. Shipments must have the same courier and their labels must be pending or generated.")
+	shipmentsArray := form.ArrayField("shipment_ids", "Shipment IDs")
 
-	// Add selected-date field
+	shipmentGroup := shipmentsArray.ObjectTemplate("shipment", "")
+
+	shipmentGroup.TextField("shipment_id", "Shipment ID")
+
 	form.DateTimeField("dueDate", "Selected date").
 		Required(true).
 		HelpText("Selected date for pickup")

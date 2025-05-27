@@ -54,11 +54,7 @@ func (a *CreateNewLabelAction) Properties() *smartform.FormSchema {
 		Required(true).
 		HelpText("Readable identifier prefixed with ES (Easyship) and destination country code")
 
-	// Add courier_id field
-	form.TextField("courier_id", "Courier ID").
-		Placeholder("Enter a courier ID").
-		Required(false).
-		HelpText("Courier ID in case you need to overwrite the one suggested by default")
+	shared.RegisterCourierProps(form)
 
 	schema := form.Build()
 

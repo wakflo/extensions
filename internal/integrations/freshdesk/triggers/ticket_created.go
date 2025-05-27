@@ -2,6 +2,7 @@ package triggers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/juicycleff/smartform/v1"
@@ -45,7 +46,6 @@ func (t *TicketCreatedTrigger) Props() *smartform.FormSchema {
 	form := smartform.NewForm("freshdesk-ticket-created", "Ticket Created")
 
 	// No properties needed for this trigger
-
 	schema := form.Build()
 
 	return schema
@@ -68,20 +68,22 @@ func (t *TicketCreatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.J
 		return nil, err
 	}
 
+	// Get last run time from metadata
 	var lastRunTime *time.Time
 	lastRun, err := ctx.GetMetadata("lastRun")
 	if err == nil && lastRun != nil {
 		lastRunTime = lastRun.(*time.Time)
 	}
 
-	var createdSince string
+	var endpoint string
 	if lastRunTime != nil {
-		createdSince = lastRunTime.UTC().Format(time.RFC3339)
+		updatedSince := lastRunTime.UTC().Format(time.RFC3339)
+		endpoint = fmt.Sprintf("/tickets?order_by=created_at&order_type=desc&updated_since=%s", updatedSince)
 	} else {
-		createdSince = ""
+		// If no lastRunTime, just get recent tickets
+		endpoint = "/tickets?order_by=created_at&order_type=desc"
 	}
 
-	endpoint := "/tickets?order_by=created_at&order_type=desc&created_since=" + createdSince
 	domain := authCtx.Extra["domain"]
 	freshdeskDomain := "https://" + domain + ".freshdesk.com"
 

@@ -53,3 +53,8 @@ type TicketUpdate struct {
 	Tags        string `json:"tags"`
 	Type        string `json:"type"`
 }
+
+type TicketResponse struct {
+	ID      int    `json:"id"`
+	Subject string `json:"subject"`
+}

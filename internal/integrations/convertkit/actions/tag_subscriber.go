@@ -14,7 +14,7 @@ import (
 )
 
 type tagSubscriberActionProps struct {
-	TagID int    `json:"tag_id"`
+	TagID string `json:"tag_id"`
 	Email string `json:"email"`
 }
 
@@ -51,10 +51,7 @@ func (a *TagSubscriberAction) Metadata() sdk.ActionMetadata {
 func (a *TagSubscriberAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("tag_subscriber", "Tag Subscriber")
 
-	form.NumberField("tag_id", "Tag ID").
-		Placeholder("Enter tag ID").
-		Required(true).
-		HelpText("ID of the tag to apply")
+	shared.RegisterTagsProps(form)
 
 	form.TextField("email", "Email").
 		Placeholder("Enter email address").
@@ -95,7 +92,7 @@ func (a *TagSubscriberAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 		return nil, fmt.Errorf("error marshaling request body: %v", err)
 	}
 
-	path := fmt.Sprintf("/tags/%d/subscribe", input.TagID)
+	path := "/tags/" + input.TagID + "/subscribe"
 
 	response, err := shared.GetConvertKitClient(path, http.MethodPost, bytes.NewBuffer(payloadBytes))
 	if err != nil {

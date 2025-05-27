@@ -428,7 +428,7 @@ func RegisterIssuesProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
 		return ctx.Respond(items, len(items))
 	}
 
-	return form.SelectField("issues", "Issues").
+	return form.SelectField("issueId", "Issues").
 		Placeholder("Select an issue").
 		Required(false).
 		WithDynamicOptions(

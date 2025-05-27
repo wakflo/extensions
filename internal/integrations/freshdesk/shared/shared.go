@@ -29,8 +29,6 @@ import (
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/go-sdk/v2"
 
-	"github.com/gookit/goutil/arrutil"
-
 	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
@@ -275,20 +273,21 @@ func RegisterTicketProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
 			return nil, err
 		}
 
-		var tickets []Ticket
+		var tickets []TicketResponse
 		err = json.Unmarshal(bytes, &tickets)
 		if err != nil {
 			return nil, err
 		}
 
-		items := arrutil.Map[Ticket, map[string]any](tickets, func(input Ticket) (target map[string]any, find bool) {
-			return map[string]any{
-				"id":   input.ID,
-				"name": input.Subject,
-			}, true
-		})
+		var options []map[string]interface{}
+		for _, ticket := range tickets {
+			options = append(options, map[string]interface{}{
+				"id":   fmt.Sprintf("%d", ticket.ID),
+				"name": ticket.Subject,
+			})
+		}
 
-		return ctx.Respond(items, len(items))
+		return ctx.Respond(options, len(options))
 	}
 
 	return form.SelectField("ticketId", "Ticket").
