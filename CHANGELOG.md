@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.13.0](https://github.com/wakflo/extensions/compare/v0.12.0...v0.13.0) (2025-03-31)
+
+
+### Features
+
+* migrate typeform connector ([9000a07](https://github.com/wakflo/extensions/commit/9000a075e8f8198935896b0cdeb551012bc1fb99))
+
+
+### Bug Fixes
+
+* remove logs ([ba63dc8](https://github.com/wakflo/extensions/commit/ba63dc8f3e4a5907ffae1d07cfebc5f10ce84787))
+
 ## [0.12.0](https://github.com/wakflo/extensions/compare/v0.11.1...v0.12.0) (2025-03-26)
 
 
