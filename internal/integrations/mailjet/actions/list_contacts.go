@@ -6,6 +6,7 @@ import (
 
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/mailjet/shared"
+	sdkcore2 "github.com/wakflo/go-sdk/core"
 	"github.com/wakflo/go-sdk/v2"
 	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 	sdkcore "github.com/wakflo/go-sdk/v2/core"
@@ -84,6 +85,8 @@ func (a *ListContactsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSO
 	if err != nil {
 		return nil, err
 	}
+
+	sdkcore2.PrettyPrint(authCtx)
 
 	client, err := shared.GetMailJetClient(authCtx.Extra["api_key"], authCtx.Extra["secret_key"])
 	if err != nil {

@@ -26,7 +26,6 @@ import (
 	"github.com/wakflo/go-sdk/v2"
 	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 
-	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
@@ -243,12 +242,6 @@ func RegisterSheetTitleProps(form *smartform.FormBuilder, required bool) *smartf
 		).
 		HelpText("Select a sheet title")
 }
-
-var IncludeTeamFieldInput = autoform.NewBooleanField().
-	SetDisplayName("Include Team Drives Sheets").
-	SetDescription("Determines if sheets from Team Drives sheets should be included in the results.").
-	SetDefaultValue(false).
-	Build()
 
 func ConvertToInt64(s string) int64 {
 	convertedString, err := strconv.ParseInt(s, 10, 64)

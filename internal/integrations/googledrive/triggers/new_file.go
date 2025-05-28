@@ -101,11 +101,8 @@ func (t *NewFileTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, e
 		qarr = append(qarr, fmt.Sprintf("'%v' in parents", *input.ParentFolder))
 	}
 	if input.CreatedTime == nil {
-		lr, err := ctx.GetMetadata("lastRun")
-		if err != nil {
-			return nil, err
-		}
-		input.CreatedTime = lr.(*time.Time)
+		lr := ctx.LastRun()
+		input.CreatedTime = lr
 	}
 	if input.CreatedTime != nil {
 		op := ">"
@@ -117,6 +114,8 @@ func (t *NewFileTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, e
 
 	qarr = append(qarr, "trashed = false")
 	q := fmt.Sprintf("%v %v", "mimeType!='application/vnd.google-apps.folder'  and ", strings.Join(qarr, " and "))
+
+	fmt.Println("------------------z", q)
 
 	req := driveService.Files.List().
 		IncludeItemsFromAllDrives(input.IncludeTeamDrives).

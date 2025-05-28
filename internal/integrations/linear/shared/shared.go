@@ -18,9 +18,9 @@ import (
 )
 
 var (
-	form = smartform.NewAuthForm("linear-auth", "Linear Oauth", smartform.AuthStrategyCustom)
+	form = smartform.NewAuthForm("linear-auth", "Linear Oauth", smartform.AuthStrategyAPIKey)
 
-	_ = form.TextField("api-key", "Api Key").
+	_ = form.APIKeyField("key", "Api Key").
 		HelpText("The api key used to authenticate linear.").
 		Required(true).
 		Build()

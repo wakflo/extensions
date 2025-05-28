@@ -93,11 +93,8 @@ func (t *NewFolderTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON,
 	}
 
 	if input.CreatedTime == nil {
-		lr, err := ctx.GetMetadata("lastRun")
-		if err != nil {
-			return nil, err
-		}
-		input.CreatedTime = lr.(*time.Time)
+		lr := ctx.LastRun()
+		input.CreatedTime = lr
 	}
 
 	if input.CreatedTime != nil {

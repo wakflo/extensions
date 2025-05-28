@@ -48,7 +48,7 @@ func (a *ListFoldersAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("list_folders", "List Folders")
 
 	// Add folder ID field
-	shared.RegisterFoldersProp(form, "folderId", "Folder ID coming from | New Folder -> id | (or any other source)", false)
+	shared.RegisterFoldersProp(form, "Folder Id", "Folder ID coming from | New Folder -> id | (or any other source)", false)
 
 	// Add include team drives field
 	form.CheckboxField("includeTeamDrives", "Include Team Drives").
@@ -92,10 +92,11 @@ func (a *ListFoldersAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, e
 	qarr = append(qarr, "trashed = false")
 	q := fmt.Sprintf("%v %v", "mimeType=='application/vnd.google-apps.folder'  and ", strings.Join(qarr, " and "))
 
+	fmt.Println(q)
 	req := driveService.Files.List().
 		Fields("files(id, name, mimeType, webViewLink, kind, createdTime)").
-		SupportsAllDrives(input.IncludeTeamDrives).
-		Q(q)
+		SupportsAllDrives(input.IncludeTeamDrives)
+	// Q(q)
 
 	result, err := req.Do()
 	if err != nil {

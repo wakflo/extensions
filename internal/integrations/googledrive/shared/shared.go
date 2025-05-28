@@ -29,7 +29,6 @@ import (
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 
-	"github.com/wakflo/go-sdk/autoform"
 	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
@@ -387,25 +386,17 @@ func RegisterFoldersProp(form *smartform.FormBuilder, label string, hint string,
 		return ctx.Respond(fileList.Files, len(fileList.Files))
 	}
 
-	form.SelectField(label, label).
+	form.SelectField("folderId", label).
 		Placeholder("Enter a value.").
 		Required(required).
 		WithDynamicOptions(
 			smartform.NewOptionsBuilder().
 				Dynamic().
 				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getParentFolders)).
-				WithFieldReference("state", "state").
 				WithSearchSupport().
 				WithPagination(10).
 				End().
-				RefreshOn("state").
 				GetDynamicSource(),
 		).
 		HelpText(hint)
 }
-
-var IncludeTeamFieldInput = autoform.NewBooleanField().
-	SetDisplayName("Include Team Drives").
-	SetDescription("Determines if folders from Team Drives should be included in the results.").
-	SetDefaultValue(false).
-	Build()
