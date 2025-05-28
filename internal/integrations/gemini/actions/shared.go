@@ -14,7 +14,7 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
-func CreateGeminiClient(ctx context.Context, auth *sdkcore.AuthContext) (*genai.Client, error) {
+func CreateGeminiClient(ctx context.Context, auth *sdkcontext.AuthContext) (*genai.Client, error) {
 	return genai.NewClient(ctx, option.WithAPIKey(auth.Secret))
 }
 
