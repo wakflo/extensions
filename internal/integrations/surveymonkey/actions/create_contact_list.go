@@ -31,7 +31,6 @@ func (a *CreateContactListAction) Metadata() sdk.ActionMetadata {
 }
 
 func (a *CreateContactListAction) Properties() *smartform.FormSchema {
-
 	form := smartform.NewForm("create_contact_list", "Create Contact List")
 
 	form.TextField("name", "Contact List Name").
