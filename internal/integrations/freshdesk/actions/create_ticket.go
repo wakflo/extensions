@@ -117,7 +117,8 @@ func (a *CreateTicketAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, 
 	}
 
 	domain := authCtx.Extra["domain"]
-	freshdeskDomain := "https://" + domain + ".freshdesk.com"
+	// freshdeskDomain := "https://" + domain + ".freshdesk.com"
+	freshdeskDomain := shared.BuildFreshdeskURL(domain)
 
 	ticketData := map[string]interface{}{
 		"description": input.Description,

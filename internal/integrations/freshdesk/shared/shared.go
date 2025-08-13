@@ -23,6 +23,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	fastshot "github.com/opus-domini/fast-shot"
 
@@ -316,4 +317,13 @@ var FreshdeskStatusType = []*smartform.Option{
 	{Value: "3", Label: "Pending"},
 	{Value: "4", Label: "Resolved"},
 	{Value: "5", Label: "Closed"},
+}
+
+func BuildFreshdeskURL(domain string) string {
+	// First, extract just the domain name
+	domain = strings.TrimPrefix(domain, "https://")
+	domain = strings.TrimSuffix(domain, ".freshdesk.com")
+
+	// Then build the full URL
+	return "https://" + domain + ".freshdesk.com"
 }

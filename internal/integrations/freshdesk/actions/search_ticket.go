@@ -137,7 +137,8 @@ func (a *SearchTicketsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 
 	// Construct full endpoint
 	domain := authCtx.Extra["domain"]
-	freshdeskDomain := "https://" + domain + ".freshdesk.com"
+	// freshdeskDomain := "https://" + domain + ".freshdesk.com"
+	freshdeskDomain := shared.BuildFreshdeskURL(domain)
 
 	response, err := shared.GetTickets(endpoint+queryParams, freshdeskDomain, authCtx.Extra["api-key"])
 	if err != nil {

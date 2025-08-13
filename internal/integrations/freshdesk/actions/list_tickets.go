@@ -96,7 +96,8 @@ func (a *ListTicketsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, e
 	}
 
 	domain := authCtx.Extra["domain"]
-	freshdeskDomain := "https://" + domain + ".freshdesk.com"
+	// freshdeskDomain := "https://" + domain + ".freshdesk.com"
+	freshdeskDomain := shared.BuildFreshdeskURL(domain)
 
 	response, err := shared.GetTickets(endpoint, freshdeskDomain, authCtx.Extra["api-key"])
 	if err != nil {
