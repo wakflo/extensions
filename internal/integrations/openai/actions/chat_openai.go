@@ -59,7 +59,17 @@ func (a *ChatOpenAIAction) Properties() *smartform.FormSchema {
 			return nil, err
 		}
 
-		return ctx.Respond(models, len(models))
+		// Map the models to the required format
+		var options []map[string]interface{}
+		for _, model := range models {
+
+			options = append(options, map[string]interface{}{
+				"id":   model.ID,
+				"name": model.ID,
+			})
+		}
+
+		return ctx.Respond(options, len(options))
 	}
 
 	form.SelectField("model", "Model").
