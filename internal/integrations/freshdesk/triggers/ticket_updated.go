@@ -84,7 +84,8 @@ func (t *TicketUpdatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.J
 	endpoint := "/tickets?order_by=updated_at&order_type=desc&updated_since=" + updatedSince
 
 	domain := authCtx.Extra["domain"]
-	freshdeskDomain := "https://" + domain + ".freshdesk.com"
+	// freshdeskDomain := "https://" + domain + ".freshdesk.com"
+	freshdeskDomain := shared.BuildFreshdeskURL(domain)
 
 	response, err := shared.GetTickets(endpoint, freshdeskDomain, authCtx.Extra["api-key"])
 	if err != nil {
