@@ -17,7 +17,7 @@ package actions
 import (
 	"errors"
 	"fmt"
-	"time"
+	"strings"
 
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/easyship/shared"
@@ -27,9 +27,9 @@ import (
 )
 
 type createCourierPickupActionProps struct {
-	CourierID    string     `json:"courier-id"`
-	ShipmentIDs  []string   `json:"shipment_ids"`
-	SelectedDate *time.Time `json:"dueDate"`
+	CourierServiceID string `json:"courier_service_id"`
+	ShipmentIDs      string `json:"easyship_shipment_ids"`
+	SelectedDate     string `json:"selected_date"`
 }
 
 type CreateCourierPickupAction struct{}
@@ -47,36 +47,56 @@ func (a *CreateCourierPickupAction) Metadata() sdk.ActionMetadata {
 	}
 }
 
-// Properties returns the schema for the action's input configuration
 func (a *CreateCourierPickupAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("create_courier_pickup", "Create Courier Pickup")
 
-	shared.RegisterCourierProps(form)
+	form.TextField("courier_service_id", "Courier Service ID").
+		Placeholder("01563646-58c1-4607-8fe0-cae3e33c0001").
+		Required(true).
+		HelpText("Courier service ID (UUID format)")
 
-	// Add shipment_ids field
-	shipmentsArray := form.ArrayField("shipment_ids", "Shipment IDs")
+	form.TextareaField("easyship_shipment_ids", "Shipment IDs").
+		Required(true).
+		HelpText("Enter shipment IDs separated by commas or new lines").
+		Placeholder("ESSG10006001, ESSG10006002, ESSG10006003")
 
-	shipmentGroup := shipmentsArray.ObjectTemplate("shipment", "")
-
-	shipmentGroup.TextField("shipment_id", "Shipment ID")
-
-	form.DateTimeField("dueDate", "Selected date").
+	form.DateField("selected_date", "Pickup Date").
 		Required(true).
 		HelpText("Selected date for pickup")
 
 	schema := form.Build()
-
 	return schema
 }
 
-// Auth returns the authentication requirements for the action
 func (a *CreateCourierPickupAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-// Perform executes the action with the given context and input
+func parseShipmentIDs(text string) ([]string, error) {
+	if strings.TrimSpace(text) == "" {
+		return nil, errors.New("shipment IDs text cannot be empty")
+	}
+
+	var result []string
+	parts := strings.FieldsFunc(text, func(c rune) bool {
+		return c == ',' || c == '\n' || c == '\r' || c == ';'
+	})
+
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+
+	if len(result) == 0 {
+		return nil, errors.New("no valid shipment IDs found")
+	}
+
+	return result, nil
+}
+
 func (a *CreateCourierPickupAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
-	// Get the auth context
 	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
@@ -86,23 +106,27 @@ func (a *CreateCourierPickupAction) Perform(ctx sdkcontext.PerformContext) (core
 		return nil, errors.New("missing easyship api key")
 	}
 
-	// Use the InputToTypeSafely helper function to convert the input to our struct
 	input, err := sdk.InputToTypeSafely[createCourierPickupActionProps](ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse input: %v", err)
+	}
+
+	shipmentIDStrings, err := parseShipmentIDs(input.ShipmentIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse shipment IDs: %v", err)
 	}
 
 	endpoint := "/pickups"
 
 	shipmentData := map[string]interface{}{
-		"courier_id":            input.CourierID,
-		"easyship_shipment_ids": input.ShipmentIDs,
+		"courier_service_id":    input.CourierServiceID,
+		"easyship_shipment_ids": shipmentIDStrings,
 		"selected_date":         input.SelectedDate,
 	}
 
 	response, err := shared.PostRequest(endpoint, authCtx.Extra["api-key"], shipmentData)
 	if err != nil {
-		return nil, fmt.Errorf("error requesting pickup:  %v", err)
+		return nil, fmt.Errorf("error requesting pickup: %v", err)
 	}
 
 	return response, nil
