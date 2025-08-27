@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0](https://github.com/wakflo/extensions/compare/v0.13.2...v0.14.0) (2025-08-27)
+
+
+### Features
+
+* add ID field for retrieve form response action ([2a4a397](https://github.com/wakflo/extensions/commit/2a4a39705e9a24417a5d55790e10d81ea1d7e412))
+
 ## [0.13.2](https://github.com/wakflo/extensions/compare/v0.13.1...v0.13.2) (2025-06-04)
 
 
