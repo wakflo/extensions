@@ -18,6 +18,7 @@ type RetrieveFormResponseAction struct{}
 
 func (a *RetrieveFormResponseAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
+		ID:            "retrieve_form_response",
 		DisplayName:   "Retrieve a form response",
 		Description:   "Retrieve a from response from Typeform using the form ID",
 		Type:          core.ActionTypeAction,
