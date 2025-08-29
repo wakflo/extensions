@@ -1,0 +1,13 @@
+[integration]
+name = "Pinterest"
+description = """Integrate your Pinterest marketing and content creation with our workflow automation software. Connect your Pinterest account to automatically create pins, manage boards, and track engagement metrics. Use this integration to:
+
+* Create and schedule pins automatically from your content workflow
+* Organize boards based on triggers from other integrated systems
+* Track engagement metrics and sync with your analytics tools
+* Automate marketing campaigns between multiple platforms
+* Keep your social media strategy consistent with automated pin creation"""
+version = "0.0.1"
+icon = "simple-icons:pinterest"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]
