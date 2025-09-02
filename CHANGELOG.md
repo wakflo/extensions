@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.1](https://github.com/wakflo/extensions/compare/v0.14.0...v0.14.1) (2025-09-02)
+
+
+### Bug Fixes
+
+* update smartform and go-sdk versions ([c627769](https://github.com/wakflo/extensions/commit/c627769e80d7e40d4a78a3864b6f852c30869cf9))
+
 ## [0.14.0](https://github.com/wakflo/extensions/compare/v0.13.2...v0.14.0) (2025-08-27)
 
 
