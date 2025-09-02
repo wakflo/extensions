@@ -16,11 +16,11 @@ require (
 	github.com/gookit/goutil v0.6.18
 	github.com/gosimple/slug v1.15.0
 	github.com/hiscaler/woocommerce-go v1.0.3
-	github.com/juicycleff/smartform v0.10.5
+	github.com/juicycleff/smartform v0.10.6
 	github.com/opus-domini/fast-shot v1.1.4
 	github.com/rs/zerolog v1.33.0
 	github.com/shopspring/decimal v1.4.0
-	github.com/wakflo/go-sdk v0.11.2
+	github.com/wakflo/go-sdk v0.11.4
 	google.golang.org/api v0.221.0
 )
 
