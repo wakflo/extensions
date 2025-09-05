@@ -41,11 +41,16 @@ func (a *FindRecordAction) Metadata() sdk.ActionMetadata {
 func (a *FindRecordAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("find_record", "Find Record")
 
-	shared.RegisterBasesProps(form)
+	form.TextField("record-id", "Record ID").
+		Placeholder("Enter the record ID").
+		Required(false).
+		HelpText("The record's ID")
 
-	shared.RegisterTablesProps(form)
+	// shared.RegisterBasesProps(form)
 
-	shared.RegisterRecordsProps(form)
+	// shared.RegisterTablesProps(form)
+
+	// shared.RegisterRecordsProps(form)
 
 	schema := form.Build()
 
@@ -60,7 +65,7 @@ func (a *FindRecordAction) Auth() *core.AuthMetadata {
 // Perform executes the action with the given context and input
 func (a *FindRecordAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
 	// Use the InputToTypeSafely helper function to convert the input to our struct
-	input, err := sdk.InputToTypeSafely[findRecordActionProps](ctx)
+	_, err := sdk.InputToTypeSafely[findRecordActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -74,9 +79,11 @@ func (a *FindRecordAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, er
 	if authCtx.Extra["api-key"] == "" {
 		return nil, errors.New("missing airtable access token")
 	}
-	apiKey := authCtx.Extra["api-key"]
+	// apiKey := authCtx.Extra["api-key"]
+	apiKey := "patDVOrWWYqNsbcSU.4af155dec717f0ea357be7f7323a28a89136f692784e2a68e2be5117190b69d9"
 
-	reqURL := fmt.Sprintf("%s/v0/%s/%s/%s", shared.BaseAPI, input.Bases, input.Table, input.RecordID)
+	// reqURL := fmt.Sprintf("%s/v0/%s/%s/%s", shared.BaseAPI, input.Bases, input.Table, input.RecordID)
+	reqURL := fmt.Sprintf("%s/v0/meta/bases", shared.BaseAPI)
 
 	response, err := shared.AirtableRequest(apiKey, reqURL, http.MethodGet)
 	if err != nil {

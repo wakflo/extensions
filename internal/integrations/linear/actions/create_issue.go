@@ -77,7 +77,7 @@ func (a *CreateIssueAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON
 		return nil, err
 	}
 
-	apiKEY := authCtx.Extra["api-key"]
+	apiKEY := authCtx.Key
 
 	if !strings.HasPrefix(apiKEY, "lin_api_") {
 		return nil, errors.New("invalid Linear API key: must start with 'lin_api_'")

@@ -17,10 +17,12 @@ require (
 	github.com/gosimple/slug v1.15.0
 	github.com/hiscaler/woocommerce-go v1.0.3
 	github.com/juicycleff/smartform v0.10.6
+	github.com/ledongthuc/pdf v0.0.0-20250511090121-5959a4027728
 	github.com/opus-domini/fast-shot v1.1.4
 	github.com/rs/zerolog v1.33.0
 	github.com/shopspring/decimal v1.4.0
 	github.com/wakflo/go-sdk v0.11.4
+	golang.org/x/net v0.37.0
 	google.golang.org/api v0.221.0
 )
 
@@ -79,7 +81,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.34.0 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/exp v0.0.0-20250506013437-ce4c2cf36ca6 // indirect
-	golang.org/x/net v0.37.0 // indirect
 	golang.org/x/oauth2 v0.26.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect

@@ -1,0 +1,17 @@
+[integration]
+name = "Document OCR"
+description = """Extract text and convert documents from various formats including images (OCR), PDFs, Word documents, PowerPoint presentations, and more. DocConv provides powerful document processing capabilities with support for:
+
+* OCR text extraction from images (PNG, JPEG, TIFF, etc.)
+* PDF text extraction and conversion
+* Microsoft Office document processing (Word, Excel, PowerPoint)
+* HTML conversion from various document formats
+* OpenDocument format support (ODT, ODS, ODP)
+* RTF and plain text document processing
+* Batch processing capabilities
+* Metadata extraction from documents
+* Language detection and text analysis"""
+version = "0.0.1"
+icon = "material-symbols:text-fields"
+categories = ["core"]
+authors = ["Wakflo <integrations@wakflo.com>"]

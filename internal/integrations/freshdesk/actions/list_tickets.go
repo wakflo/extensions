@@ -52,7 +52,7 @@ func (a *ListTicketsAction) Metadata() sdk.ActionMetadata {
 func (a *ListTicketsAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("list_tickets", "List Tickets")
 
-	form.NumberField("per_page", "per_page").
+	form.NumberField("per_page", "Per Page").
 		Placeholder("Results Per Page").
 		HelpText("Number of results per page (max 100)").
 		Required(false)
