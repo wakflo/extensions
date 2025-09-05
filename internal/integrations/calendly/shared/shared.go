@@ -17,10 +17,8 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
-var (
-	// #nosec
-	tokenURL = "https://auth.calendly.com/oauth/token"
-)
+// #nosec
+var tokenURL = "https://auth.calendly.com/oauth/token"
 
 var (
 	form = smartform.NewAuthForm("calendly-auth", "Calendly Auth", smartform.AuthStrategyOAuth2)
@@ -37,7 +35,6 @@ const BaseURL = "https://api.calendly.com"
 
 func GetCurrentCalendlyUserProp(id string, title string, desc string, required bool, form *smartform.FormBuilder) *smartform.FieldBuilder {
 	getCurrentUser := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-
 		tokenSource := ctx.Auth().Token
 		if tokenSource == nil {
 			return nil, errors.New("missing authentication token")
