@@ -9,16 +9,26 @@ import (
 	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 )
 
+var markdown = `
+1. • Login to your Shopify account
+2. • Go to Settings → Apps
+3. • Click on Develop apps
+4. • Create an App
+5. • Fill the app name
+6. • Click on Configure Admin API Scopes (Select the following scopes: 'read_orders', 'write_orders', 'write_customers', 'read_customers', 'write_products', 'read_products', 'write_draft_orders', 'read_draft_orders')
+7. • Click on Install app
+8. • Copy the Admin Access Token`
+
 var (
 	form = smartform.NewAuthForm("shopify-auth", "Shopify API Authentication", smartform.AuthStrategyCustom)
 
 	_ = form.TextField("domain", "Domain Name(Required)").
 		Required(true).
-		HelpText("The domain name of the shopify app. eg. xyz.myshopify.com, type in only 'xyz'")
+		HelpText(`You can find your shop name in the url For example, if the URL is ` + "`" + `https://example.myshopify.com/admin` + "`" + `, then your shop name is **example**.`)
 
-	_ = form.TextField("token", "Consumer Key (Required)").
+	_ = form.TextField("token", "Admin Token (Required)").
 		Required(true).
-		HelpText("The consumer key generated from your app.")
+		HelpText(markdown)
 
 	ShopifySharedAuth = form.Build()
 )
