@@ -85,7 +85,8 @@ func (t *TicketCreatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.J
 	}
 
 	domain := authCtx.Extra["domain"]
-	freshdeskDomain := "https://" + domain + ".freshdesk.com"
+	// freshdeskDomain := "https://" + domain + ".freshdesk.com"
+	freshdeskDomain := shared.BuildFreshdeskURL(domain)
 
 	response, err := shared.GetTickets(endpoint, freshdeskDomain, authCtx.Extra["api-key"])
 	if err != nil {

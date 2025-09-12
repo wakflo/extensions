@@ -3,6 +3,8 @@ package extensions
 import (
 	"github.com/gosimple/slug"
 	"github.com/wakflo/extensions/internal/integrations/calendly"
+	"github.com/wakflo/extensions/internal/integrations/discord"
+	"github.com/wakflo/extensions/internal/integrations/docconverter"
 
 	// "github.com/wakflo/extensions/internal/integrations/csv"
 
@@ -124,6 +126,8 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		zohosalesiq.Integration,       // ZohoSales iq
 		surveyMonkey.Integration,      // Survey Monkey
 		youtube.Integration,           // Youtube
+		discord.Integration,           // Discord
+		docconverter.Integration,      // Doc Converter
 	}
 
 	// 🛑Do-Not-Edit

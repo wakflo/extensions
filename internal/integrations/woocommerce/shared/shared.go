@@ -72,7 +72,6 @@ func InitClient(ctx sdkcontext.BaseContext) (*woocommerce.WooCommerce, error) {
 
 func GetProductsProp(id string, title, desc string, required bool, form *smartform.FormBuilder) *smartform.FieldBuilder {
 	getProducts := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-
 		wooClient, err := InitClient(ctx)
 		if err != nil {
 			return nil, err
@@ -114,7 +113,6 @@ func GetProductsProp(id string, title, desc string, required bool, form *smartfo
 
 func GetCustomersProp(id string, title string, desc string, required bool, form *smartform.FormBuilder) *smartform.FieldBuilder {
 	getCustomers := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-
 		// Initialize WooCommerce client
 		wooClient, err := InitClient(ctx)
 		if err != nil {
@@ -161,7 +159,6 @@ func GetCustomersProp(id string, title string, desc string, required bool, form 
 
 func GetCouponsProp(id string, title, desc string, required bool, form *smartform.FormBuilder) *smartform.FieldBuilder {
 	getCoupons := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-
 		// Initialize WooCommerce client
 		wooClient, err := InitClient(ctx)
 		if err != nil {

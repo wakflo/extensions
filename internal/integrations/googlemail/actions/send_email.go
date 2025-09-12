@@ -137,7 +137,9 @@ func (a *SendEmailAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, err
 		return nil, err
 	}
 
-	return "Message sent successfully!", nil
+	return map[string]interface{}{
+		"Message": "Message Sent Successfully",
+	}, nil
 }
 
 func NewSendEmailAction() sdk.Action {
