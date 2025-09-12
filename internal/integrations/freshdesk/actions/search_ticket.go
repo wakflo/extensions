@@ -2,7 +2,6 @@ package actions
 
 import (
 	"errors"
-	"strconv"
 
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/freshdesk/shared"
@@ -12,15 +11,11 @@ import (
 )
 
 type searchTicketsActionProps struct {
-	Query    *string `json:"query,omitempty"`
-	Page     *int    `json:"page,omitempty"`
-	PerPage  *int    `json:"per_page,omitempty"`
-	FilterBy *string `json:"filter_by,omitempty"`
+	Query *string `json:"query,omitempty"`
 }
 
 type SearchTicketsAction struct{}
 
-// Metadata returns metadata about the action
 func (a *SearchTicketsAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
 		ID:            "search_tickets",
@@ -51,48 +46,23 @@ func (a *SearchTicketsAction) Metadata() sdk.ActionMetadata {
 	}
 }
 
-// Properties returns the schema for the action's input configuration
 func (a *SearchTicketsAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("search_tickets", "Search Tickets")
 
 	form.TextareaField("query", "query").
 		Placeholder("Search Query").
-		HelpText("Search query string (e.g., 'status:open priority:high')").
+		HelpText(`Search query string (e.g. ""status:2"", "priority:1")`).
 		Required(true)
-
-	form.SelectField("filter_by", "filter_by").
-		Placeholder("Filter By").
-		HelpText("Optional filter to narrow down search results").
-		AddOptions([]*smartform.Option{
-			{Label: "All Tickets", Value: "all_tickets"},
-			{Label: "Open Tickets", Value: "open"},
-			{Label: "Pending Tickets", Value: "pending"},
-			{Label: "Resolved Tickets", Value: "resolved"},
-			{Label: "Closed Tickets", Value: "closed"},
-		}...).
-		Required(false)
-
-	form.NumberField("page", "page").
-		Placeholder("Page").
-		HelpText("Page number for pagination").
-		Required(false)
-
-	form.NumberField("per_page", "per_page").
-		Placeholder("Results Per Page").
-		HelpText("Number of results per page (max 100)").
-		Required(false)
 
 	schema := form.Build()
 
 	return schema
 }
 
-// Auth returns the authentication requirements for the action
 func (a *SearchTicketsAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-// Perform executes the action with the given context and input
 func (a *SearchTicketsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
 	input, err := sdk.InputToTypeSafely[searchTicketsActionProps](ctx)
 	if err != nil {
@@ -104,7 +74,6 @@ func (a *SearchTicketsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 		return nil, err
 	}
 
-	// Validate required inputs
 	if input.Query == nil || *input.Query == "" {
 		return nil, errors.New("search query is required")
 	}
@@ -118,24 +87,10 @@ func (a *SearchTicketsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 	queryParams := "?"
 	queryParams += "query=" + *input.Query + "&"
 
-	if input.FilterBy != nil && *input.FilterBy != "" {
-		queryParams += "filter=" + *input.FilterBy + "&"
-	}
-
-	if input.Page != nil {
-		queryParams += "page=" + strconv.Itoa(*input.Page) + "&"
-	}
-
-	if input.PerPage != nil {
-		queryParams += "per_page=" + strconv.Itoa(*input.PerPage) + "&"
-	}
-
-	// Remove trailing &
 	if queryParams[len(queryParams)-1] == '&' {
 		queryParams = queryParams[:len(queryParams)-1]
 	}
 
-	// Construct full endpoint
 	domain := authCtx.Extra["domain"]
 	// freshdeskDomain := "https://" + domain + ".freshdesk.com"
 	freshdeskDomain := shared.BuildFreshdeskURL(domain)
