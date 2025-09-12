@@ -1,0 +1,14 @@
+[integration]
+name = "YouTube"
+description = """Integrate YouTube with your workflow automation software to streamline video management and analysis. This integration connects your YouTube channel with our platform, allowing you to automate tasks related to video publishing, monitoring, and analysis. Use this integration to:
+
+* Automatically upload videos based on your workflow triggers
+* Monitor new video uploads and comments
+* Track video performance metrics and engagement
+* Update video metadata, titles, descriptions, and privacy settings
+* Create automated responses to comments based on specific criteria
+* Sync video data with other systems and applications"""
+version = "0.0.1"
+icon = "logos:youtube-icon"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]
