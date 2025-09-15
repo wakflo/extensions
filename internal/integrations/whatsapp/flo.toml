@@ -1,0 +1,7 @@
+[integration]
+name = "WhatsApp Business"
+version = "0.0.1"
+icon = "logos:whatsapp-icon"
+description = "Manage your WhatsApp business account."
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

@@ -1,0 +1,14 @@
+[integration]
+name = "Telegram Bot"
+description = """Integrate your Telegram bot with our workflow automation software to streamline communication and notifications. Connect your Telegram bot to your workflows, enabling automated message sending and responding based on events. Use this integration to:
+
+* Send automatic notifications to channels, groups, or individual users
+* Respond to user messages with customized templates
+* Share files, images, and documents through your bot
+* Create interactive polls and questionnaires
+* Monitor channel activities and trigger workflows based on specific messages
+* Build conversational bots with advanced logic"""
+version = "0.0.1"
+icon = "logos:telegram"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

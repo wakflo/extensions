@@ -11,7 +11,7 @@ To obtain a token, follow these steps:
 `
 
 var (
-	form = smartform.NewAuthForm("discord-auth", "Discord Authentication", smartform.AuthStrategyAPIKey)
+	form = smartform.NewAuthForm("discord-auth", "Discord Authentication", smartform.AuthStrategyCustom)
 
 	_ = form.
 		TextField("token", "Bot Token").

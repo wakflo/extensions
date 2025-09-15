@@ -5,6 +5,8 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/calendly"
 	"github.com/wakflo/extensions/internal/integrations/discord"
 	"github.com/wakflo/extensions/internal/integrations/docconverter"
+	"github.com/wakflo/extensions/internal/integrations/telegrambot"
+	"github.com/wakflo/extensions/internal/integrations/whatsapp"
 
 	// "github.com/wakflo/extensions/internal/integrations/csv"
 
@@ -128,6 +130,8 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		youtube.Integration,           // Youtube
 		discord.Integration,           // Discord
 		docconverter.Integration,      // Doc Converter
+		whatsapp.Integration,          // Whatsapp Business
+		telegrambot.Integration,       // Telegram Bot
 	}
 
 	// 🛑Do-Not-Edit
