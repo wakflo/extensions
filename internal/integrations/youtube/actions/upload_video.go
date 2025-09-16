@@ -1,12 +1,13 @@
 package actions
 
 import (
+	"bytes"
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -21,24 +22,74 @@ import (
 )
 
 type uploadVideoActionProps struct {
-	ChannelID               string `json:"channel_id"`
-	VideoFile               string `json:"video_file"`
-	Title                   string `json:"title"`
-	Description             string `json:"description"`
-	Tags                    string `json:"tags"`
-	CategoryID              string `json:"category_id"`
-	PrivacyStatus           string `json:"privacy_status"`
-	Embeddable              bool   `json:"embeddable"`
-	PublicStatsViewable     bool   `json:"public_stats_viewable"`
-	MadeForKids             bool   `json:"made_for_kids"`
-	SelfDeclaredMadeForKids bool   `json:"self_declared_made_for_kids"`
-	License                 string `json:"license"`
-	RecordingDate           string `json:"recording_date"`
-	DefaultLanguage         string `json:"default_language"`
-	DefaultAudioLanguage    string `json:"default_audio_language"`
-	NotifySubscribers       bool   `json:"notify_subscribers"`
-	AutoLevels              bool   `json:"auto_levels"`
-	Stabilize               bool   `json:"stabilize"`
+	ChannelID               string      `json:"channel_id"`
+	VideoFile               interface{} `json:"video_file"` // Can be string (URL) or map
+	Title                   string      `json:"title"`
+	Description             string      `json:"description"`
+	Tags                    string      `json:"tags"`
+	CategoryID              string      `json:"category_id"`
+	PrivacyStatus           string      `json:"privacy_status"`
+	Embeddable              bool        `json:"embeddable"`
+	PublicStatsViewable     bool        `json:"public_stats_viewable"`
+	MadeForKids             bool        `json:"made_for_kids"`
+	SelfDeclaredMadeForKids bool        `json:"self_declared_made_for_kids"`
+	License                 string      `json:"license"`
+	RecordingDate           string      `json:"recording_date"`
+	DefaultLanguage         string      `json:"default_language"`
+	DefaultAudioLanguage    string      `json:"default_audio_language"`
+	NotifySubscribers       bool        `json:"notify_subscribers"`
+	AutoLevels              bool        `json:"auto_levels"`
+	Stabilize               bool        `json:"stabilize"`
+	PlaylistID              string      `json:"playlist_id"` // New field for playlist
+}
+
+// FileInput structure from Wakflo
+type FileInput struct {
+	ID          string      `json:"id,omitempty"`
+	Ext         string      `json:"ext"`
+	FileName    string      `json:"fileName"`
+	MimeType    string      `json:"mimeType"`
+	Path        string      `json:"path"`
+	URL         string      `json:"url,omitempty"`
+	DownloadURL string      `json:"downloadUrl,omitempty"`
+	Size        interface{} `json:"size"`
+	SizeBytes   int64       `json:"sizeBytes,omitempty"`
+	Src         string      `json:"src,omitempty"`
+	UploadedAt  string      `json:"uploadedAt"`
+	StorageKey  string      `json:"storageKey,omitempty"`
+	IsPublic    bool        `json:"isPublic,omitempty"`
+}
+
+func (f *FileInput) GetSize() (int64, error) {
+	if f.SizeBytes > 0 {
+		return f.SizeBytes, nil
+	}
+
+	switch v := f.Size.(type) {
+	case float64:
+		return int64(v), nil
+	case int64:
+		return v, nil
+	case int:
+		return int64(v), nil
+	case string:
+		var size int64
+		_, err := fmt.Sscanf(v, "%d", &size)
+		return size, err
+	default:
+		return 0, fmt.Errorf("unexpected size type: %T", v)
+	}
+}
+
+func (f *FileInput) GetDownloadURL() string {
+	// Priority: DownloadURL > URL > Path
+	if f.DownloadURL != "" {
+		return f.DownloadURL
+	}
+	if f.URL != "" {
+		return f.URL
+	}
+	return f.Path
 }
 
 type UploadVideoAction struct{}
@@ -47,7 +98,7 @@ func (a *UploadVideoAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
 		ID:            "youtube_upload_video",
 		DisplayName:   "Upload YouTube Video",
-		Description:   "Upload a new video to YouTube with metadata including title, description, tags, privacy settings, and more.",
+		Description:   "Upload a new video to YouTube with metadata including title, description, tags, privacy settings, and optionally add it to a playlist.",
 		Type:          core.ActionTypeAction,
 		Documentation: uploadVideoDocs,
 		Icon:          "youtube",
@@ -72,6 +123,11 @@ func (a *UploadVideoAction) Metadata() sdk.ActionMetadata {
 			"processingDetails": map[string]any{
 				"processingStatus": "processing",
 			},
+			"playlistItem": map[string]any{
+				"id":         "UExMOGg5Ym5heGdVVjNzTGFjVUF3aVBxLkNKcGJOdDl6cWJpTQ",
+				"playlistId": "PLMOHg5YnaxgUV3sLacUAwiPq",
+				"position":   0,
+			},
 		},
 		Settings: core.ActionSettings{},
 	}
@@ -91,9 +147,6 @@ func (a *UploadVideoAction) Properties() *smartform.FormSchema {
 			[]string{"mp4", "avi", "mov", "wmv", "flv", "3gpp", "webm"},
 			"Please upload a supported video format",
 		))
-
-	// Basic Information Section
-	form.SectionField("basicInfo", "Video Information")
 
 	form.TextField("title", "Title").
 		Placeholder("Enter video title").
@@ -132,9 +185,6 @@ func (a *UploadVideoAction) Properties() *smartform.FormSchema {
 		HelpText("Select a category for your video").
 		Required(false)
 
-	// Privacy and Publishing Section
-	form.SectionField("privacyPublishing", "Privacy and Publishing Settings")
-
 	form.SelectField("privacy_status", "Privacy Status").
 		AddOption("private", "Private").
 		AddOption("unlisted", "Unlisted").
@@ -158,8 +208,9 @@ func (a *UploadVideoAction) Properties() *smartform.FormSchema {
 		HelpText("Allow the video's statistics to be publicly viewable").
 		Required(false)
 
-	// Content Settings Section
-	form.SectionField("contentSettings", "Content Settings")
+	// Add playlist selection using the shared helper
+	shared.RegisterPlaylistProps(form, "playlist_id", "Add to Playlist", false).
+		HelpText("Select a playlist to add this video to after upload (optional)")
 
 	form.CheckboxField("made_for_kids", "Made for Kids").
 		DefaultValue(false).
@@ -178,9 +229,6 @@ func (a *UploadVideoAction) Properties() *smartform.FormSchema {
 		HelpText("Choose the license for your video").
 		Required(false)
 
-	// Advanced Settings Section
-	form.SectionField("advancedSettings", "Advanced Settings")
-
 	form.DateTimeField("recording_date", "Recording Date").
 		Placeholder("2023-01-01T00:00:00Z").
 		HelpText("The date and time when the video was recorded (RFC 3339 format)").
@@ -195,9 +243,6 @@ func (a *UploadVideoAction) Properties() *smartform.FormSchema {
 		Placeholder("en").
 		HelpText("The language of the video's default audio track (ISO 639-1 two-letter code)").
 		Required(false)
-
-	// Processing Options Section
-	form.SectionField("processingOptions", "Processing Options")
 
 	form.CheckboxField("auto_levels", "Auto-levels").
 		DefaultValue(false).
@@ -224,12 +269,56 @@ func (a *UploadVideoAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, e
 		return nil, err
 	}
 
-	if input.VideoFile == "" {
+	if input.VideoFile == nil {
 		return nil, errors.New("video file is required")
 	}
 
 	if input.Title == "" {
 		return nil, errors.New("video title is required")
+	}
+
+	// Convert map to FileInput or handle string URL
+	fileInput := &FileInput{}
+
+	switch v := input.VideoFile.(type) {
+	case string:
+		// Direct URL passed
+		fileInput.URL = v
+		fileInput.DownloadURL = v
+	case map[string]interface{}:
+		// Map structure passed
+		if id, ok := v["id"].(string); ok {
+			fileInput.ID = id
+		}
+		if ext, ok := v["ext"].(string); ok {
+			fileInput.Ext = ext
+		}
+		if fileName, ok := v["fileName"].(string); ok {
+			fileInput.FileName = fileName
+		}
+		if mimeType, ok := v["mimeType"].(string); ok {
+			fileInput.MimeType = mimeType
+		}
+		if path, ok := v["path"].(string); ok {
+			fileInput.Path = path
+		}
+		if url, ok := v["url"].(string); ok {
+			fileInput.URL = url
+		}
+		if downloadURL, ok := v["downloadUrl"].(string); ok {
+			fileInput.DownloadURL = downloadURL
+		}
+		if src, ok := v["src"].(string); ok {
+			fileInput.Src = src
+		}
+		if size, ok := v["size"]; ok {
+			fileInput.Size = size
+		}
+		if sizeBytes, ok := v["sizeBytes"].(float64); ok {
+			fileInput.SizeBytes = int64(sizeBytes)
+		}
+	default:
+		return nil, fmt.Errorf("video_file must be either a URL string or file object")
 	}
 
 	authCtx, err := ctx.AuthContext()
@@ -240,6 +329,50 @@ func (a *UploadVideoAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, e
 	youtubeService, err := youtube.NewService(context.Background(), option.WithTokenSource(*authCtx.TokenSource))
 	if err != nil {
 		return nil, err
+	}
+
+	// Get the video content
+	var videoContent []byte
+
+	// Method 1: Check if Src contains base64 data
+	if fileInput.Src != "" {
+		if strings.HasPrefix(fileInput.Src, "data:") {
+			// Extract from data URL
+			parts := strings.Split(fileInput.Src, ",")
+			if len(parts) == 2 {
+				decoded, err := base64.StdEncoding.DecodeString(parts[1])
+				if err == nil {
+					videoContent = decoded
+				}
+			}
+		} else if !strings.HasPrefix(fileInput.Src, "http") {
+			// Try as raw base64
+			decoded, err := base64.StdEncoding.DecodeString(fileInput.Src)
+			if err == nil {
+				videoContent = decoded
+			}
+		}
+	}
+
+	// Method 2: Download from URL if no content yet
+	if len(videoContent) == 0 {
+		downloadURL := fileInput.GetDownloadURL()
+		if downloadURL != "" {
+			videoContent, err = downloadFileWithContext(ctx, downloadURL)
+			if err != nil {
+				return nil, fmt.Errorf("failed to retrieve video file: %v", err)
+			}
+		}
+	}
+
+	if len(videoContent) == 0 {
+		return nil, errors.New("no video content could be retrieved")
+	}
+
+	// Get file size
+	fileSize := int64(len(videoContent))
+	if fileInput.SizeBytes > 0 {
+		fileSize = fileInput.SizeBytes
 	}
 
 	// Create the video resource
@@ -284,18 +417,8 @@ func (a *UploadVideoAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, e
 		}
 	}
 
-	// Open the video file
-	file, err := os.Open(input.VideoFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open video file: %v", err)
-	}
-	defer file.Close()
-
-	// Get file info for progress tracking
-	fileInfo, err := file.Stat()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get file info: %v", err)
-	}
+	// Create a reader from the video content
+	videoReader := bytes.NewReader(videoContent)
 
 	// Create the API call
 	call := youtubeService.Videos.Insert([]string{"snippet", "status", "recordingDetails"}, upload)
@@ -311,15 +434,10 @@ func (a *UploadVideoAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, e
 		call = call.Stabilize(input.Stabilize)
 	}
 
-	// Set channel ID if provided
-	if input.ChannelID != "" {
-		call = call.OnBehalfOfContentOwnerChannel(input.ChannelID)
-	}
-
 	// Create a progress reporter
 	progressReader := &progressReader{
-		Reader: file,
-		Total:  fileInfo.Size(),
+		Reader: videoReader,
+		Total:  fileSize,
 		ctx:    ctx,
 	}
 
@@ -366,7 +484,38 @@ func (a *UploadVideoAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, e
 		}
 	}
 
+	// Add video to playlist if specified
+	if input.PlaylistID != "" && response.Id != "" {
+		playlistItem, err := addVideoToPlaylist(youtubeService, input.PlaylistID, response.Id)
+		if err != nil {
+			// Log the error but don't fail the entire operation since the video was uploaded successfully
+			result["playlistError"] = fmt.Sprintf("Video uploaded successfully but failed to add to playlist: %v", err)
+		} else {
+			result["playlistItem"] = map[string]any{
+				"id":         playlistItem.Id,
+				"playlistId": playlistItem.Snippet.PlaylistId,
+				"position":   playlistItem.Snippet.Position,
+			}
+		}
+	}
+
 	return result, nil
+}
+
+// addVideoToPlaylist adds an uploaded video to a playlist
+func addVideoToPlaylist(service *youtube.Service, playlistID, videoID string) (*youtube.PlaylistItem, error) {
+	playlistItem := &youtube.PlaylistItem{
+		Snippet: &youtube.PlaylistItemSnippet{
+			PlaylistId: playlistID,
+			ResourceId: &youtube.ResourceId{
+				Kind:    "youtube#video",
+				VideoId: videoID,
+			},
+		},
+	}
+
+	call := service.PlaylistItems.Insert([]string{"snippet"}, playlistItem)
+	return call.Do()
 }
 
 // progressReader wraps an io.Reader to report upload progress
@@ -402,14 +551,44 @@ func downloadFileWithContext(ctx sdkcontext.PerformContext, url string) ([]byte,
 		return nil, fmt.Errorf("invalid URL: %s", url)
 	}
 
+	// Handle Google Drive URLs
+	if strings.Contains(url, "drive.google.com") {
+		// Convert sharing URL to direct download URL
+		if strings.Contains(url, "/file/d/") {
+			// Extract file ID from URL like: https://drive.google.com/file/d/FILE_ID/view
+			parts := strings.Split(url, "/")
+			for i, part := range parts {
+				if part == "d" && i+1 < len(parts) {
+					fileID := parts[i+1]
+					url = fmt.Sprintf("https://drive.google.com/uc?export=download&id=%s", fileID)
+					break
+				}
+			}
+		}
+	}
+
 	client := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: 5 * time.Minute, // Increased timeout for large video files
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			// Allow up to 10 redirects (default is 10)
+			if len(via) >= 10 {
+				return fmt.Errorf("too many redirects")
+			}
+			// Copy headers to redirected request
+			if len(via) > 0 {
+				req.Header = via[len(via)-1].Header
+			}
+			return nil
+		},
 	}
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %v", err)
 	}
+
+	// Add common headers to handle various file hosting services
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -422,7 +601,23 @@ func downloadFileWithContext(ctx sdkcontext.PerformContext, url string) ([]byte,
 		return nil, fmt.Errorf("HTTP %d - %s", resp.StatusCode, string(body))
 	}
 
-	return io.ReadAll(resp.Body)
+	// Check if we got HTML instead of video content
+	contentType := resp.Header.Get("Content-Type")
+	if strings.Contains(contentType, "text/html") {
+		return nil, fmt.Errorf("received HTML instead of video content - the URL may require authentication or is not a direct download link")
+	}
+
+	// Read the video content
+	content, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	if len(content) == 0 {
+		return nil, fmt.Errorf("downloaded file is empty")
+	}
+
+	return content, nil
 }
 
 func NewUploadVideoAction() sdk.Action {

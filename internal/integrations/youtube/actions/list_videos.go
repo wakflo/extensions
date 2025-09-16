@@ -3,7 +3,9 @@ package actions
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/youtube/shared"
@@ -118,14 +120,12 @@ func (a *ListVideosAction) Properties() *smartform.FormSchema {
 		HelpText("Filter by video type").
 		Required(false)
 
-	form.DateTimeField("published_after", "Published After").
-		Placeholder("2023-01-01T00:00:00Z").
-		HelpText("Filter videos published after this date (RFC 3339 format)").
+	form.DateField("published_after", "Published After").
+		HelpText("Filter videos published after this date").
 		Required(false)
 
-	form.DateTimeField("published_before", "Published Before").
-		Placeholder("2023-12-31T23:59:59Z").
-		HelpText("Filter videos published before this date (RFC 3339 format)").
+	form.DateField("published_before", "Published Before").
+		HelpText("Filter videos published before this date").
 		Required(false)
 
 	schema := form.Build()
@@ -217,20 +217,30 @@ func searchVideos(service *youtube.Service, input *listVideosActionProps) ([]map
 		searchCall = searchCall.Order(input.Order)
 	}
 
-	if input.VideoDuration != "" {
+	if input.VideoDuration != "" && input.VideoDuration != "any" {
 		searchCall = searchCall.VideoDuration(input.VideoDuration)
 	}
 
-	if input.VideoType != "" {
+	if input.VideoType != "" && input.VideoType != "any" {
 		searchCall = searchCall.VideoDefinition(input.VideoType)
 	}
 
 	if input.PublishedAfter != "" {
-		searchCall = searchCall.PublishedAfter(input.PublishedAfter)
+		// Convert date to RFC3339 format (start of day)
+		rfcDate, err := dateToRFC3339(input.PublishedAfter, true)
+		if err != nil {
+			return nil, "", 0, fmt.Errorf("invalid published_after date: %v", err)
+		}
+		searchCall = searchCall.PublishedAfter(rfcDate)
 	}
 
 	if input.PublishedBefore != "" {
-		searchCall = searchCall.PublishedBefore(input.PublishedBefore)
+		// Convert date to RFC3339 format (end of day)
+		rfcDate, err := dateToRFC3339(input.PublishedBefore, false)
+		if err != nil {
+			return nil, "", 0, fmt.Errorf("invalid published_before date: %v", err)
+		}
+		searchCall = searchCall.PublishedBefore(rfcDate)
 	}
 
 	searchResponse, err := searchCall.Do()
@@ -344,6 +354,26 @@ func getVideosByIDs(service *youtube.Service, videoIDs []string) ([]map[string]a
 	}
 
 	return videos, nil
+}
+
+// dateToRFC3339 converts a date string (YYYY-MM-DD) to RFC3339 format
+// If startOfDay is true, sets time to 00:00:00, otherwise sets to 23:59:59
+func dateToRFC3339(dateStr string, startOfDay bool) (string, error) {
+	// Parse the date string
+	date, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return "", fmt.Errorf("invalid date format: %v", err)
+	}
+
+	// YouTube API expects UTC time zone
+	if startOfDay {
+		// Start of day in UTC
+		return date.UTC().Format(time.RFC3339), nil
+	}
+
+	// End of day in UTC (23:59:59)
+	endOfDay := date.Add(23*time.Hour + 59*time.Minute + 59*time.Second).UTC()
+	return endOfDay.Format(time.RFC3339), nil
 }
 
 func NewListVideosAction() sdk.Action {
