@@ -48,6 +48,10 @@ func (n *GoogleMail) Actions() []sdk.Action {
 		actions.NewGetThreadAction(),
 
 		actions.NewGetMailAction(),
+
+		actions.NewExtractMailTextAction(),
+
+		actions.NewExtractDocumentsFromEmailAction(),
 	}
 }
 

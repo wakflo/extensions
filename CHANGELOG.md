@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.15.0](https://github.com/wakflo/extensions/compare/v0.14.1...v0.15.0) (2025-09-12)
+
+
+### Features
+
+* update integrations implemenation ([224f66e](https://github.com/wakflo/extensions/commit/224f66ebdc8d36dd6590bb76f4ada369d0b7c3ba))
+* update integrations implemenation ([6f92b88](https://github.com/wakflo/extensions/commit/6f92b885fa05143582f9376239d937843f34c56e))
+
+
+### Bug Fixes
+
+* integrations update ([54fc660](https://github.com/wakflo/extensions/commit/54fc6606f398731dcd6a868d6c26611405e71012))
+
+## [0.14.1](https://github.com/wakflo/extensions/compare/v0.14.0...v0.14.1) (2025-09-02)
+
+
+### Bug Fixes
+
+* update smartform and go-sdk versions ([c627769](https://github.com/wakflo/extensions/commit/c627769e80d7e40d4a78a3864b6f852c30869cf9))
+
+## [0.14.0](https://github.com/wakflo/extensions/compare/v0.13.2...v0.14.0) (2025-08-27)
+
+
+### Features
+
+* add ID field for retrieve form response action ([2a4a397](https://github.com/wakflo/extensions/commit/2a4a39705e9a24417a5d55790e10d81ea1d7e412))
+
 ## [0.13.2](https://github.com/wakflo/extensions/compare/v0.13.1...v0.13.2) (2025-06-04)
 
 

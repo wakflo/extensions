@@ -11,7 +11,6 @@ Search for tickets using various parameters like keywords, statuses, and priorit
 | query | string | Yes | Search query string (e.g., 'status:open priority:high') |
 | page | number | No | Page number for pagination (default: 1) |
 | per_page | number | No | Number of results per page (default: 30, max: 100) |
-| filter_by| string | No | Optional filter to narrow down search results |
 
 ## Details
 

@@ -1,0 +1,14 @@
+[integration]
+name = "Discord"
+description = """Integrate Discord with your workflow automation software to streamline communication and moderation. This integration allows you to automate Discord server management, notifications, and event handling. Use this integration to:
+
+* Send automated messages to channels or users
+* Create, manage, and organize channels automatically
+* Monitor and respond to server events like new members or messages
+* Build interactive workflows triggered by Discord activities
+* Update role assignments and permissions based on external events
+* Deliver real-time notifications from your applications to Discord"""
+version = "0.0.1"
+icon = "skill-icons:discord"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

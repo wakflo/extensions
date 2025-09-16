@@ -100,11 +100,7 @@ func (a *UpdateIssueAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON
 		return nil, fmt.Errorf("failed to get auth context: %w", err)
 	}
 
-	// Validate API key exists
-	apiKEY, ok := authCtx.Extra["api-key"]
-	if !ok || apiKEY == "" {
-		return nil, errors.New("Linear API key not found in auth context")
-	}
+	apiKEY := authCtx.Key
 
 	if !strings.HasPrefix(apiKEY, "lin_api_") {
 		return nil, errors.New("invalid Linear API key: must start with 'lin_api_'")
