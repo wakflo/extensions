@@ -41,6 +41,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/monday"
 	"github.com/wakflo/extensions/internal/integrations/notion"
 	"github.com/wakflo/extensions/internal/integrations/openai"
+	"github.com/wakflo/extensions/internal/integrations/pinterest"
 	"github.com/wakflo/extensions/internal/integrations/prisync"
 	"github.com/wakflo/extensions/internal/integrations/sendowl"
 	"github.com/wakflo/extensions/internal/integrations/shopify"
@@ -128,6 +129,7 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		zohosalesiq.Integration,       // ZohoSales iq
 		surveyMonkey.Integration,      // Survey Monkey
 		youtube.Integration,           // Youtube
+		pinterest.Integration,         // Pinterest
 		discord.Integration,           // Discord
 		docconverter.Integration,      // Doc Converter
 		whatsapp.Integration,          // Whatsapp Business
