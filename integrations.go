@@ -64,6 +64,7 @@ import (
 
 	// "github.com/wakflo/extensions/internal/integrations/gemini"
 	"github.com/wakflo/extensions/internal/integrations/googledrive"
+	"github.com/wakflo/extensions/internal/integrations/youtube"
 
 	"github.com/wakflo/go-sdk/v2"
 )
@@ -127,6 +128,7 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		zoom.Integration,              // Zoom
 		zohosalesiq.Integration,       // ZohoSales iq
 		surveyMonkey.Integration,      // Survey Monkey
+		youtube.Integration,           // Youtube
 		pinterest.Integration,         // Pinterest
 		discord.Integration,           // Discord
 		docconverter.Integration,      // Doc Converter
