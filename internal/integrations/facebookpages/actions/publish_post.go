@@ -62,7 +62,7 @@ func (c *PublishPostAction) Properties() *smartform.FormSchema {
 		DefaultValue(true).
 		Required(false)
 
-	form.DateTimeField("scheduled_publish_time", "scheduled_publish_time").
+	form.DateField("scheduled_publish_time", "scheduled_publish_time").
 		Placeholder("Scheduled Publish Time").
 		HelpText("When to publish the post. Can be a UNIX timestamp, ISO 8601 timestamp, or relative time (e.g. '+2 weeks'). Required if not publishing immediately.").
 		Required(false)

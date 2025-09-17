@@ -38,7 +38,7 @@ var (
 				AuthorizationURL("https://graph.facebook.com/oauth/authorize").
 				TokenURL("https://graph.facebook.com/oauth/access_token").
 				Scopes([]string{
-			"pages_show_list pages_manage_posts business_management pages_read_engagement publish_video pages_manage_engagement pages_read_user_engagement",
+			"pages_show_list pages_manage_posts business_management pages_read_engagement publish_video pages_manage_engagement",
 		}).
 		Build()
 )
