@@ -54,37 +54,37 @@ func (a *UpdateEventAction) Properties() *smartform.FormSchema {
 
 	shared.RegisterCalendarEventProps(form)
 
-	form.TextField("title", "title").
+	form.TextField("title", "Title").
 		Placeholder("Event Title").
 		HelpText("The title of the event.").
 		Required(true)
 
-	form.TextareaField("description", "description").
+	form.TextareaField("description", "Description").
 		Placeholder("Event Description").
 		HelpText("The description of the event").
 		Required(true)
 
-	form.TextField("location", "location").
+	form.TextField("location", "Location").
 		Placeholder("Event Location").
 		HelpText("The location of the event").
-		Required(true)
+		Required(false)
 
-	form.DateField("start_date", "start_date").
+	form.DateField("start_date", "Start Date").
 		Placeholder("Event Start Date").
 		HelpText("The start date of the event (YYYY-MM-DD)").
 		Required(true)
 
-	form.TextField("start_time", "start_time").
+	form.TextField("start_time", "Start Time").
 		Placeholder("Event Start Time").
 		HelpText("The start time of the event (e.g., 3pm, 10:30am, 14:00)").
 		Required(true)
 
-	form.DateField("end_date", "end_date").
+	form.DateField("end_date", "End Date").
 		Placeholder("Event End Date").
 		HelpText("The end date of the event (YYYY-MM-DD)").
 		Required(true)
 
-	form.TextField("end_time", "end_time").
+	form.TextField("end_time", "End Time").
 		Placeholder("Event End Time").
 		HelpText("The end time of the event (e.g., 5pm, 11:30am, 16:00)").
 		Required(true)

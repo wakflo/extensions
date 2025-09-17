@@ -51,20 +51,20 @@ func (a *CreateEventAction) Properties() *smartform.FormSchema {
 
 	shared.RegisterCalendarProps(form)
 
-	form.TextField("title", "title").
+	form.TextField("title", "Title").
 		Placeholder("Event Title").
 		HelpText("The title of the event.").
 		Required(true)
 
-	form.TextareaField("description", "description").
+	form.TextareaField("description", "Description").
 		Placeholder("Event Description").
 		HelpText("The description of the event").
 		Required(true)
 
-	form.TextField("location", "location").
+	form.TextField("Location", "Location").
 		Placeholder("Event Location").
 		HelpText("The location of the event").
-		Required(true)
+		Required(false)
 
 	form.DateField("start_date", "Start Date").
 		Placeholder("Event Start Date").
