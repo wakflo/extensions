@@ -3,6 +3,9 @@ package actions
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
+	"time"
 
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googlecalendar/shared"
@@ -19,8 +22,10 @@ type updateEventActionProps struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Location    string `json:"location"`
-	Start       string `json:"start"`
-	End         string `json:"end"`
+	StartDate   string `json:"start_date"`
+	StartTime   string `json:"start_time"`
+	EndDate     string `json:"end_date"`
+	EndTime     string `json:"end_time"`
 }
 
 type UpdateEventAction struct{}
@@ -64,15 +69,25 @@ func (a *UpdateEventAction) Properties() *smartform.FormSchema {
 		HelpText("The location of the event").
 		Required(true)
 
-	form.DateTimeField("start", "start").
-		Placeholder("Event Start Time").
-		HelpText("The start time of the event").
-		Required(false)
+	form.DateField("start_date", "start_date").
+		Placeholder("Event Start Date").
+		HelpText("The start date of the event (YYYY-MM-DD)").
+		Required(true)
 
-	form.DateTimeField("end", "end").
-		Placeholder("Event end time").
-		HelpText("The end time of the event").
-		Required(false)
+	form.TextField("start_time", "start_time").
+		Placeholder("Event Start Time").
+		HelpText("The start time of the event (e.g., 3pm, 10:30am, 14:00)").
+		Required(true)
+
+	form.DateField("end_date", "end_date").
+		Placeholder("Event End Date").
+		HelpText("The end date of the event (YYYY-MM-DD)").
+		Required(true)
+
+	form.TextField("end_time", "end_time").
+		Placeholder("Event End Time").
+		HelpText("The end time of the event (e.g., 5pm, 11:30am, 16:00)").
+		Required(true)
 
 	schema := form.Build()
 
@@ -121,23 +136,79 @@ func (a *UpdateEventAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, e
 		return nil, errors.New("location is required")
 	}
 
-	if input.Start == "" {
+	if input.StartDate == "" {
+		return nil, errors.New("start date is required")
+	}
+
+	if input.StartTime == "" {
 		return nil, errors.New("start time is required")
 	}
 
-	if input.End == "" {
+	if input.EndDate == "" {
+		return nil, errors.New("end date is required")
+	}
+
+	if input.EndTime == "" {
 		return nil, errors.New("end time is required")
 	}
+
+	// Parse time inputs
+	startTime, err := parseTimeInput(input.StartTime)
+	if err != nil {
+		return nil, fmt.Errorf("invalid start time: %v", err)
+	}
+
+	endTime, err := parseTimeInput(input.EndTime)
+	if err != nil {
+		return nil, fmt.Errorf("invalid end time: %v", err)
+	}
+
+	// Extract just the date part from the input (in case it's a full datetime)
+	startDateStr := input.StartDate
+	if strings.Contains(startDateStr, "T") {
+		startDateStr = strings.Split(startDateStr, "T")[0]
+	}
+
+	endDateStr := input.EndDate
+	if strings.Contains(endDateStr, "T") {
+		endDateStr = strings.Split(endDateStr, "T")[0]
+	}
+
+	// Parse the date strings
+	startDateParsed, err := time.Parse("2006-01-02", startDateStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid start date format: %v", err)
+	}
+
+	endDateParsed, err := time.Parse("2006-01-02", endDateStr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid end date format: %v", err)
+	}
+
+	// Parse the time components
+	startHour, startMin, _ := parseTime(startTime)
+	endHour, endMin, _ := parseTime(endTime)
+
+	// Create full datetime with UTC timezone
+	startDateTime := time.Date(
+		startDateParsed.Year(), startDateParsed.Month(), startDateParsed.Day(),
+		startHour, startMin, 0, 0, time.UTC,
+	).Format(time.RFC3339)
+
+	endDateTime := time.Date(
+		endDateParsed.Year(), endDateParsed.Month(), endDateParsed.Day(),
+		endHour, endMin, 0, 0, time.UTC,
+	).Format(time.RFC3339)
 
 	event, err := eventService.Events.Update(input.CalendarID, input.EventID, &calendar.Event{
 		Summary:     input.Title,
 		Description: input.Description,
 		Location:    input.Location,
 		Start: &calendar.EventDateTime{
-			DateTime: shared.FormatTimeString(input.Start),
+			DateTime: startDateTime,
 		},
 		End: &calendar.EventDateTime{
-			DateTime: shared.FormatTimeString(input.End),
+			DateTime: endDateTime,
 		},
 	}).Do()
 	return event, err
