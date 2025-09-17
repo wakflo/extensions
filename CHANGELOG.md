@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.2](https://github.com/wakflo/extensions/compare/v0.15.1...v0.15.2) (2025-09-17)
+
+
+### Bug Fixes
+
+* version bump ([c634017](https://github.com/wakflo/extensions/commit/c634017e9050b389bcc7d592f633f696e365d38f))
+
 ## [0.15.1](https://github.com/wakflo/extensions/compare/v0.15.0...v0.15.1) (2025-09-17)
 
 
