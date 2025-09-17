@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.15.1](https://github.com/wakflo/extensions/compare/v0.15.0...v0.15.1) (2025-09-17)
+
+
+### Bug Fixes
+
+* facebook pages integration ([2e98a41](https://github.com/wakflo/extensions/commit/2e98a411c8d754e4f4de271710d2a01b9612294c))
+* facebook pages integration ([5b0b88f](https://github.com/wakflo/extensions/commit/5b0b88f447397d28bc5bc7810fae7e29a9b3d33e))
+
 ## [0.15.0](https://github.com/wakflo/extensions/compare/v0.14.1...v0.15.0) (2025-09-12)
 
 
