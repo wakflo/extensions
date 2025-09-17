@@ -68,7 +68,7 @@ func (a *CreateEventAction) Properties() *smartform.FormSchema {
 
 	form.DateField("start_date", "Start Date").
 		Placeholder("Event Start Date").
-		HelpText("The start date of the event (YYYY-MM-DD)").
+		HelpText("The start date of the event (YYYY-MM-DD).").
 		Required(true)
 
 	form.TextField("start_time", "Start Time").
