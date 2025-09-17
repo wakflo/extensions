@@ -72,12 +72,10 @@ func (c *PublishPostAction) Properties() *smartform.FormSchema {
 	return schema
 }
 
-// Auth returns the authentication requirements for the action
 func (c *PublishPostAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-// Perform executes the action with the given context and input
 func (c *PublishPostAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
 	input, err := sdk.InputToTypeSafely[publishPostActionProps](ctx)
 	if err != nil {
