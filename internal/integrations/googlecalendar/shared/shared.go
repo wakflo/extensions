@@ -3,8 +3,10 @@ package shared
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/gookit/goutil/arrutil"
@@ -167,4 +169,28 @@ func RegisterCalendarEventProps(form *smartform.FormBuilder) *smartform.FieldBui
 				GetDynamicSource(),
 		).
 		HelpText("Select a calendar event")
+}
+
+func ParseDateTime(dateTimeStr string) (time.Time, error) {
+	dateTimeStr = strings.TrimSpace(dateTimeStr)
+
+	formats := []string{
+		"2006-01-02T15:04:05Z",
+		"2006-01-02T15:04:05.000Z",
+		"2006-01-02T15:04:05",
+		"2006-01-02T15:04:00",
+		time.RFC3339,
+		"2006-01-02T15:04:05-07:00",
+	}
+
+	var lastErr error
+	for _, format := range formats {
+		if t, err := time.Parse(format, dateTimeStr); err == nil {
+			return t, nil
+		} else {
+			lastErr = err
+		}
+	}
+
+	return time.Time{}, fmt.Errorf("unable to parse datetime '%s': %v", dateTimeStr, lastErr)
 }

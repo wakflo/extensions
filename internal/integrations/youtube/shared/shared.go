@@ -38,10 +38,8 @@ var SharedYoutubeAuuth = form.Build()
 // RegisterChannelProps adds a dynamic channel selector field to the form
 func RegisterChannelProps(form *smartform.FormBuilder, fieldName, label string, required bool) *smartform.FieldBuilder {
 	getChannelID := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-
 		authCtx, err := ctx.AuthContext()
 		if err != nil {
-
 			return nil, err
 		}
 
@@ -160,7 +158,6 @@ func RegisterChannelProps(form *smartform.FormBuilder, fieldName, label string, 
 // RegisterPlaylistProps adds a dynamic playlist selector field to the form
 func RegisterPlaylistProps(form *smartform.FormBuilder, fieldName, label string, required bool) *smartform.FieldBuilder {
 	getPlaylistID := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-
 		authCtx, err := ctx.AuthContext()
 		if err != nil {
 			return nil, err
@@ -305,7 +302,6 @@ func RegisterPlaylistProps(form *smartform.FormBuilder, fieldName, label string,
 // RegisterVideoProps adds a dynamic video selector field to the form
 func RegisterVideoProps(form *smartform.FormBuilder, fieldName, label string, required bool) *smartform.FieldBuilder {
 	getVideoID := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-
 		authCtx, err := ctx.AuthContext()
 		if err != nil {
 			return nil, err
@@ -409,7 +405,6 @@ func RegisterVideoProps(form *smartform.FormBuilder, fieldName, label string, re
 // RegisterMultiPlaylistProps adds a multi-select dynamic playlist field to the form
 func RegisterMultiPlaylistProps(form *smartform.FormBuilder, fieldName, label string, required bool) *smartform.FieldBuilder {
 	getPlaylistID := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
-
 		authCtx, err := ctx.AuthContext()
 		if err != nil {
 			return nil, err

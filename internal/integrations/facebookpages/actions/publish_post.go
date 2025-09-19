@@ -56,16 +56,17 @@ func (c *PublishPostAction) Properties() *smartform.FormSchema {
 		HelpText("URL to attach to the post").
 		Required(false)
 
-	form.CheckboxField("published", "published").
+	form.CheckboxField("published", "Published").
 		Placeholder("Publish Immediately").
 		HelpText("Set to false to schedule the post for later").
 		DefaultValue(true).
 		Required(false)
 
-	form.DateField("scheduled_publish_time", "scheduled_publish_time").
+	form.DateField("scheduled_publish_time", "Scheduled Publish Time").
 		Placeholder("Scheduled Publish Time").
 		HelpText("When to publish the post. Can be a UNIX timestamp, ISO 8601 timestamp, or relative time (e.g. '+2 weeks'). Required if not publishing immediately.").
-		Required(false)
+		Required(true).
+		VisibleWhenEquals("published", false)
 
 	schema := form.Build()
 

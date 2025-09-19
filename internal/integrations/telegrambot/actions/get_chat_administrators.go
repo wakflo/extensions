@@ -65,7 +65,7 @@ func (a *GetChatAdministratorsAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("get_chat_administrators", "Get Chat Administrators")
 
 	form.TextField("chat_id", "Chat ID").
-		Placeholder("Enter chat ID or @username").
+		Placeholder("Enter chat ID").
 		Required(true).
 		HelpText("Unique identifier for the target chat or username of the target channel/group")
 

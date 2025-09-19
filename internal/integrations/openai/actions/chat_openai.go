@@ -59,10 +59,8 @@ func (a *ChatOpenAIAction) Properties() *smartform.FormSchema {
 			return nil, err
 		}
 
-		// Map the models to the required format
 		var options []map[string]interface{}
 		for _, model := range models {
-
 			options = append(options, map[string]interface{}{
 				"id":   model.ID,
 				"name": model.ID,
@@ -85,7 +83,7 @@ func (a *ChatOpenAIAction) Properties() *smartform.FormSchema {
 				GetDynamicSource(),
 		)
 
-	form.TextField("prompt", "Prompt").
+	form.TextareaField("prompt", "Prompt").
 		Required(true).
 		HelpText("What would you like to ask ChatGPT?")
 
@@ -118,12 +116,10 @@ func (a *ChatOpenAIAction) Properties() *smartform.FormSchema {
 	return schema
 }
 
-// Auth returns the authentication requirements for the action
 func (a *ChatOpenAIAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-// Perform executes the action with the given context and input
 func (a *ChatOpenAIAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
 	input, err := sdk.InputToTypeSafely[chatOpenAIActionProps](ctx)
 	if err != nil {
@@ -135,15 +131,13 @@ func (a *ChatOpenAIAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, er
 		return nil, err
 	}
 
-	// Validate inputs
 	if err := validateInput(input); err != nil {
 		return nil, err
 	}
 
-	// Build request body
 	requestBody := buildRequestBody(input)
 
-	client, err := getOpenAiClient(authCtx.Secret)
+	client, err := getOpenAiClient(authCtx.Extra["token"])
 	if err != nil {
 		return nil, err
 	}
