@@ -141,7 +141,7 @@ func (t *PinCreatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (core.JSON, e
 		pageSize = 25
 	}
 
-	var BASE_URL = "https://api.pinterest.com/v5"
+	BASE_URL := "https://api.pinterest.com/v5"
 
 	// Build the API URL
 	var url string

@@ -54,7 +54,7 @@ func (a *CreateInviteLinkAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("create_invite_link", "Create Invite Link")
 
 	form.TextField("chat_id", "Chat ID").
-		Placeholder("Enter chat ID or @username").
+		Placeholder("Enter chat ID").
 		Required(true).
 		HelpText(`Unique identifier for the target chat or username of the target channel/supergroup.
 		

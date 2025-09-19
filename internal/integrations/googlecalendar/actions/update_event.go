@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/juicycleff/smartform/v1"
@@ -17,15 +16,13 @@ import (
 )
 
 type updateEventActionProps struct {
-	CalendarID  string `json:"calendar_id"`
-	EventID     string `json:"event_id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Location    string `json:"location"`
-	StartDate   string `json:"start_date"`
-	StartTime   string `json:"start_time"`
-	EndDate     string `json:"end_date"`
-	EndTime     string `json:"end_time"`
+	CalendarID    string `json:"calendar_id"`
+	EventID       string `json:"event_id"`
+	Title         string `json:"title"`
+	Description   string `json:"description"`
+	Location      string `json:"location"`
+	StartDateTime string `json:"start_datetime"`
+	EndDateTime   string `json:"end_datetime"`
 }
 
 type UpdateEventAction struct{}
@@ -40,7 +37,15 @@ func (a *UpdateEventAction) Metadata() sdk.ActionMetadata {
 		Documentation: updateEventDocs,
 		Icon:          "",
 		SampleOutput: map[string]any{
-			"message": "Hello World!",
+			"id":      "event_123",
+			"summary": "Updated Meeting",
+			"start": map[string]any{
+				"dateTime": "2025-09-23T10:00:00Z",
+			},
+			"end": map[string]any{
+				"dateTime": "2025-09-23T11:00:00Z",
+			},
+			"htmlLink": "https://calendar.google.com/event?eid=...",
 		},
 		Settings: core.ActionSettings{},
 	}
@@ -51,55 +56,42 @@ func (a *UpdateEventAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("update_event", "Update Event")
 
 	shared.RegisterCalendarProps(form)
-
 	shared.RegisterCalendarEventProps(form)
 
 	form.TextField("title", "Title").
 		Placeholder("Event Title").
-		HelpText("The title of the event.").
-		Required(true)
+		HelpText("The title of the event").
+		Required(false)
 
 	form.TextareaField("description", "Description").
 		Placeholder("Event Description").
 		HelpText("The description of the event").
-		Required(true)
+		Required(false)
 
 	form.TextField("location", "Location").
 		Placeholder("Event Location").
 		HelpText("The location of the event").
 		Required(false)
 
-	form.DateField("start_date", "Start Date").
-		Placeholder("Event Start Date").
-		HelpText("The start date of the event (YYYY-MM-DD)").
-		Required(true)
+	form.DateField("start_datetime", "Start Date & Time").
+		Placeholder("Select start date and time").
+		HelpText("The start date and time of the event").
+		Required(false)
 
-	form.TextField("start_time", "Start Time").
-		Placeholder("Event Start Time").
-		HelpText("The start time of the event (e.g., 3pm, 10:30am, 14:00)").
-		Required(true)
-
-	form.DateField("end_date", "End Date").
-		Placeholder("Event End Date").
-		HelpText("The end date of the event (YYYY-MM-DD)").
-		Required(true)
-
-	form.TextField("end_time", "End Time").
-		Placeholder("Event End Time").
-		HelpText("The end time of the event (e.g., 5pm, 11:30am, 16:00)").
-		Required(true)
+	form.DateField("end_datetime", "End Date & Time").
+		Placeholder("Select end date and time").
+		HelpText("The end date and time of the event").
+		Required(false)
 
 	schema := form.Build()
 
 	return schema
 }
 
-// Auth returns the authentication requirements for the action
 func (a *UpdateEventAction) Auth() *core.AuthMetadata {
 	return nil
 }
 
-// Perform executes the action with the given context and input
 func (a *UpdateEventAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
 	input, err := sdk.InputToTypeSafely[updateEventActionProps](ctx)
 	if err != nil {
@@ -124,94 +116,39 @@ func (a *UpdateEventAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, e
 		return nil, errors.New("event id is required")
 	}
 
-	if input.Title == "" {
-		return nil, errors.New("summary is required")
-	}
-
-	if input.Description == "" {
-		return nil, errors.New("description is required")
-	}
-
-	if input.Location == "" {
-		return nil, errors.New("location is required")
-	}
-
-	if input.StartDate == "" {
-		return nil, errors.New("start date is required")
-	}
-
-	if input.StartTime == "" {
-		return nil, errors.New("start time is required")
-	}
-
-	if input.EndDate == "" {
-		return nil, errors.New("end date is required")
-	}
-
-	if input.EndTime == "" {
-		return nil, errors.New("end time is required")
-	}
-
-	// Parse time inputs
-	startTime, err := parseTimeInput(input.StartTime)
+	startDateTime, err := shared.ParseDateTime(input.StartDateTime)
 	if err != nil {
-		return nil, fmt.Errorf("invalid start time: %v", err)
+		return nil, fmt.Errorf("invalid start datetime: %v", err)
 	}
 
-	endTime, err := parseTimeInput(input.EndTime)
+	endDateTime, err := shared.ParseDateTime(input.EndDateTime)
 	if err != nil {
-		return nil, fmt.Errorf("invalid end time: %v", err)
+		return nil, fmt.Errorf("invalid end datetime: %v", err)
 	}
 
-	// Extract just the date part from the input (in case it's a full datetime)
-	startDateStr := input.StartDate
-	if strings.Contains(startDateStr, "T") {
-		startDateStr = strings.Split(startDateStr, "T")[0]
+	if endDateTime.Before(startDateTime) {
+		return nil, errors.New("end datetime must be after start datetime")
 	}
 
-	endDateStr := input.EndDate
-	if strings.Contains(endDateStr, "T") {
-		endDateStr = strings.Split(endDateStr, "T")[0]
-	}
-
-	// Parse the date strings
-	startDateParsed, err := time.Parse("2006-01-02", startDateStr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid start date format: %v", err)
-	}
-
-	endDateParsed, err := time.Parse("2006-01-02", endDateStr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid end date format: %v", err)
-	}
-
-	// Parse the time components
-	startHour, startMin, _ := parseTime(startTime)
-	endHour, endMin, _ := parseTime(endTime)
-
-	// Create full datetime with UTC timezone
-	startDateTime := time.Date(
-		startDateParsed.Year(), startDateParsed.Month(), startDateParsed.Day(),
-		startHour, startMin, 0, 0, time.UTC,
-	).Format(time.RFC3339)
-
-	endDateTime := time.Date(
-		endDateParsed.Year(), endDateParsed.Month(), endDateParsed.Day(),
-		endHour, endMin, 0, 0, time.UTC,
-	).Format(time.RFC3339)
+	startDateTimeStr := startDateTime.Format(time.RFC3339)
+	endDateTimeStr := endDateTime.Format(time.RFC3339)
 
 	event, err := eventService.Events.Update(input.CalendarID, input.EventID, &calendar.Event{
 		Summary:     input.Title,
 		Description: input.Description,
 		Location:    input.Location,
 		Start: &calendar.EventDateTime{
-			DateTime: startDateTime,
+			DateTime: startDateTimeStr,
 		},
 		End: &calendar.EventDateTime{
-			DateTime: endDateTime,
+			DateTime: endDateTimeStr,
 		},
 	}).Do()
-	return event, err
+	if err != nil {
+		return nil, fmt.Errorf("failed to update event: %v", err)
+	}
+
+	return event, nil
 }
 
 func NewUpdateEventAction() sdk.Action {
