@@ -154,7 +154,7 @@ func RegisterSheetIDProps(form *smartform.FormBuilder, required bool) *smartform
 		sheet := body.Sheets
 		items := arrutil.Map[Sheet, map[string]any](sheet, func(input Sheet) (target map[string]any, find bool) {
 			return map[string]any{
-				"id":   input.Properties.SheetID,
+				"id":   strconv.FormatInt(input.Properties.SheetID, 10),
 				"name": input.Properties.Title,
 			}, true
 		})

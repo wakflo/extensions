@@ -3,6 +3,7 @@ package actions
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googlesheets/shared"
@@ -14,9 +15,11 @@ import (
 )
 
 type copyWorksheetActionProps struct {
-	SpreadSheetID            string `json:"spreadsheetId"`
-	DestinationSpreadSheetID string `json:"destinationSpreadSheetId"`
-	SheetID                  string `json:"sheetId"`
+	SourceSpreadSheetID      string `json:"spreadsheetId,omitempty"`
+	SourceSheetTitle         string `json:"sheetTitle"`
+	DestinationSpreadSheetID string `json:"destinationSpreadsheetId,omitempty"`
+	NewSheetTitle            string `json:"newSheetTitle,omitempty"`
+	IncludeTeamDrives        bool   `json:"includeTeamDrives"`
 }
 
 type CopyWorksheetAction struct{}
@@ -26,12 +29,15 @@ func (a *CopyWorksheetAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
 		ID:            "copy_worksheet",
 		DisplayName:   "Copy Worksheet",
-		Description:   "Copies an existing worksheet to a new location within the same or different workbook, allowing you to duplicate and reuse worksheets with ease.",
+		Description:   "Copies a worksheet within the same spreadsheet or to a different spreadsheet. The copy includes all data, formatting, and formulas from the source worksheet.",
 		Type:          core.ActionTypeAction,
 		Documentation: copyWorksheetDocs,
 		Icon:          "",
 		SampleOutput: map[string]any{
-			"message": "Hello World!",
+			"sheetId":                  123456,
+			"title":                    "Copy of Sheet1",
+			"index":                    2,
+			"destinationSpreadsheetId": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms",
 		},
 		Settings: core.ActionSettings{},
 	}
@@ -41,11 +47,19 @@ func (a *CopyWorksheetAction) Metadata() sdk.ActionMetadata {
 func (a *CopyWorksheetAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("copy_worksheet", "Copy Worksheet")
 
-	shared.RegisterSpreadsheetsProps(form, "destinationSpreadSheetId", "SpreadSheet", "Select Spreadsheet", true)
+	shared.RegisterSpreadsheetsProps(form, "spreadsheetId", "Source Spreadsheet", "source spreadsheet ID", true)
 
-	shared.RegisterSheetIDProps(form, true)
+	shared.RegisterSheetTitleProps(form, true)
 
-	shared.RegisterSpreadsheetsProps(form, "destinationSpreadSheetId", "Destination SpreadSheet", "Destination spreadsheet to copy to", true)
+	shared.RegisterSpreadsheetsProps(form, "destinationSpreadsheetId", "Destination Spreadsheet", "destination spreadsheet ID (leave empty to copy within same spreadsheet)", false)
+
+	form.TextField("newSheetTitle", "newSheetTitle").
+		Placeholder("New Sheet Title").
+		HelpText("Title for the copied worksheet. If empty, will use 'Copy of [original name]'")
+
+	form.CheckboxField("includeTeamDrives", "includeTeamDrives").
+		Placeholder("Include Team Drives").
+		HelpText("Include files from Team Drives in results")
 
 	schema := form.Build()
 
@@ -74,20 +88,92 @@ func (a *CopyWorksheetAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 		return nil, err
 	}
 
-	sheetID := shared.ConvertToInt64(input.SheetID)
+	if input.SourceSpreadSheetID == "" {
+		return nil, errors.New("source spreadsheet ID is required")
+	}
 
-	spreadsheetCopy, err := sheetService.Spreadsheets.Sheets.CopyTo(input.SpreadSheetID, sheetID, &sheets.CopySheetToAnotherSpreadsheetRequest{
-		DestinationSpreadsheetId: input.DestinationSpreadSheetID,
-	}).Do()
+	if input.SourceSheetTitle == "" {
+		return nil, errors.New("source sheet title is required")
+	}
+
+	// Get the spreadsheet to find the sheet ID by title
+	spreadsheet, err := sheetService.Spreadsheets.Get(input.SourceSpreadSheetID).Do()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get source spreadsheet: %w", err)
+	}
+
+	var sourceSheetID int64
+	found := false
+	for _, sheet := range spreadsheet.Sheets {
+		if sheet.Properties.Title == input.SourceSheetTitle {
+			sourceSheetID = sheet.Properties.SheetId
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return nil, fmt.Errorf("sheet with title '%s' not found in source spreadsheet", input.SourceSheetTitle)
+	}
+
+	// Determine destination spreadsheet ID
+	destinationSpreadsheetID := input.DestinationSpreadSheetID
+	if destinationSpreadsheetID == "" {
+		// Copy within the same spreadsheet
+		destinationSpreadsheetID = input.SourceSpreadSheetID
+	}
+
+	// Create the copy sheet request
+	copyRequest := &sheets.CopySheetToAnotherSpreadsheetRequest{
+		DestinationSpreadsheetId: destinationSpreadsheetID,
+	}
+
+	// Execute the copy operation
+	resp, err := sheetService.Spreadsheets.Sheets.CopyTo(
+		input.SourceSpreadSheetID,
+		sourceSheetID,
+		copyRequest,
+	).Do()
+
 	if err != nil {
 		return nil, err
 	}
 
-	if spreadsheetCopy == nil {
-		return nil, errors.New("received nil response from the CopyTo operation")
+	// If a new title was specified, update it
+	if input.NewSheetTitle != "" {
+		updateRequest := &sheets.BatchUpdateSpreadsheetRequest{
+			Requests: []*sheets.Request{
+				{
+					UpdateSheetProperties: &sheets.UpdateSheetPropertiesRequest{
+						Properties: &sheets.SheetProperties{
+							SheetId: resp.SheetId,
+							Title:   input.NewSheetTitle,
+						},
+						Fields: "title",
+					},
+				},
+			},
+		}
+
+		_, err = sheetService.Spreadsheets.BatchUpdate(
+			destinationSpreadsheetID,
+			updateRequest,
+		).Do()
+
+		if err != nil {
+			fmt.Printf("Warning: Failed to rename copied sheet: %v\n", err)
+		} else {
+			resp.Title = input.NewSheetTitle
+		}
 	}
 
-	return spreadsheetCopy, err
+	return core.JSON(map[string]interface{}{
+		"sheetId":                  resp.SheetId,
+		"title":                    resp.Title,
+		"index":                    resp.Index,
+		"destinationSpreadsheetId": destinationSpreadsheetID,
+		"success":                  true,
+	}), nil
 }
 
 func NewCopyWorksheetAction() sdk.Action {
