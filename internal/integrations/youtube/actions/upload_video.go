@@ -3,7 +3,6 @@ package actions
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -22,74 +21,25 @@ import (
 )
 
 type uploadVideoActionProps struct {
-	ChannelID               string      `json:"channel_id"`
-	VideoFile               interface{} `json:"video_file"` // Can be string (URL) or map
-	Title                   string      `json:"title"`
-	Description             string      `json:"description"`
-	Tags                    string      `json:"tags"`
-	CategoryID              string      `json:"category_id"`
-	PrivacyStatus           string      `json:"privacy_status"`
-	Embeddable              bool        `json:"embeddable"`
-	PublicStatsViewable     bool        `json:"public_stats_viewable"`
-	MadeForKids             bool        `json:"made_for_kids"`
-	SelfDeclaredMadeForKids bool        `json:"self_declared_made_for_kids"`
-	License                 string      `json:"license"`
-	RecordingDate           string      `json:"recording_date"`
-	DefaultLanguage         string      `json:"default_language"`
-	DefaultAudioLanguage    string      `json:"default_audio_language"`
-	NotifySubscribers       bool        `json:"notify_subscribers"`
-	AutoLevels              bool        `json:"auto_levels"`
-	Stabilize               bool        `json:"stabilize"`
-	PlaylistID              string      `json:"playlist_id"` // New field for playlist
-}
-
-// FileInput structure from Wakflo
-type FileInput struct {
-	ID          string      `json:"id,omitempty"`
-	Ext         string      `json:"ext"`
-	FileName    string      `json:"fileName"`
-	MimeType    string      `json:"mimeType"`
-	Path        string      `json:"path"`
-	URL         string      `json:"url,omitempty"`
-	DownloadURL string      `json:"downloadUrl,omitempty"`
-	Size        interface{} `json:"size"`
-	SizeBytes   int64       `json:"sizeBytes,omitempty"`
-	Src         string      `json:"src,omitempty"`
-	UploadedAt  string      `json:"uploadedAt"`
-	StorageKey  string      `json:"storageKey,omitempty"`
-	IsPublic    bool        `json:"isPublic,omitempty"`
-}
-
-func (f *FileInput) GetSize() (int64, error) {
-	if f.SizeBytes > 0 {
-		return f.SizeBytes, nil
-	}
-
-	switch v := f.Size.(type) {
-	case float64:
-		return int64(v), nil
-	case int64:
-		return v, nil
-	case int:
-		return int64(v), nil
-	case string:
-		var size int64
-		_, err := fmt.Sscanf(v, "%d", &size)
-		return size, err
-	default:
-		return 0, fmt.Errorf("unexpected size type: %T", v)
-	}
-}
-
-func (f *FileInput) GetDownloadURL() string {
-	// Priority: DownloadURL > URL > Path
-	if f.DownloadURL != "" {
-		return f.DownloadURL
-	}
-	if f.URL != "" {
-		return f.URL
-	}
-	return f.Path
+	ChannelID               string `json:"channel_id"`
+	VideoURL                string `json:"video_url"`
+	Title                   string `json:"title"`
+	Description             string `json:"description"`
+	Tags                    string `json:"tags"`
+	CategoryID              string `json:"category_id"`
+	PrivacyStatus           string `json:"privacy_status"`
+	Embeddable              bool   `json:"embeddable"`
+	PublicStatsViewable     bool   `json:"public_stats_viewable"`
+	MadeForKids             bool   `json:"made_for_kids"`
+	SelfDeclaredMadeForKids bool   `json:"self_declared_made_for_kids"`
+	License                 string `json:"license"`
+	RecordingDate           string `json:"recording_date"`
+	DefaultLanguage         string `json:"default_language"`
+	DefaultAudioLanguage    string `json:"default_audio_language"`
+	NotifySubscribers       bool   `json:"notify_subscribers"`
+	AutoLevels              bool   `json:"auto_levels"`
+	Stabilize               bool   `json:"stabilize"`
+	PlaylistID              string `json:"playlist_id"`
 }
 
 type UploadVideoAction struct{}
@@ -98,7 +48,7 @@ func (a *UploadVideoAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
 		ID:            "youtube_upload_video",
 		DisplayName:   "Upload YouTube Video",
-		Description:   "Upload a new video to YouTube with metadata including title, description, tags, privacy settings, and optionally add it to a playlist.",
+		Description:   "Upload a new video to YouTube from a URL (Google Drive, Cloudinary, Dropbox, etc.) with metadata including title, description, tags, privacy settings, and optionally add it to a playlist.",
 		Type:          core.ActionTypeAction,
 		Documentation: uploadVideoDocs,
 		Icon:          "youtube",
@@ -140,13 +90,15 @@ func (a *UploadVideoAction) Properties() *smartform.FormSchema {
 	shared.RegisterChannelProps(form, "channel_id", "Channel", true).
 		HelpText("Select the channel where you want to upload the video")
 
-	form.FileField("video_file", "Select Video File").
+	// URL field for video
+	form.TextField("video_url", "Video URL").
+		Placeholder("https://drive.google.com/file/d/.../view").
+		HelpText("Enter the URL of the video file. Supports Google Drive, Cloudinary, Dropbox, and other direct download links. Supported formats: MP4, AVI, MOV, WMV, FLV, 3GPP, WebM").
 		Required(true).
-		HelpText("Select the video file to upload. Supported formats: MP4, AVI, MOV, WMV, FLV, 3GPP, WebM").
-		AddValidation(smartform.NewValidationBuilder().FileType(
-			[]string{"mp4", "avi", "mov", "wmv", "flv", "3gpp", "webm"},
-			"Please upload a supported video format",
-		))
+		AddValidation(
+			smartform.NewValidationBuilder().
+				Pattern(`^https?://.*`, "Please enter a valid URL starting with http:// or https://"),
+		)
 
 	form.TextField("title", "Title").
 		Placeholder("Enter video title").
@@ -181,7 +133,6 @@ func (a *UploadVideoAction) Properties() *smartform.FormSchema {
 		AddOption("26", "Howto & Style").
 		AddOption("27", "Education").
 		AddOption("28", "Science & Technology").
-		DefaultValue("22").
 		HelpText("Select a category for your video").
 		Required(false)
 
@@ -209,7 +160,7 @@ func (a *UploadVideoAction) Properties() *smartform.FormSchema {
 		Required(false)
 
 	// Add playlist selection using the shared helper
-	shared.RegisterPlaylistProps(form, "playlist_id", "Add to Playlist", false).
+	shared.RegisterPlaylistProps(form, "playlist_id", "Add to Playlist", true).
 		HelpText("Select a playlist to add this video to after upload (optional)")
 
 	form.CheckboxField("made_for_kids", "Made for Kids").
@@ -269,56 +220,21 @@ func (a *UploadVideoAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, e
 		return nil, err
 	}
 
-	if input.VideoFile == nil {
-		return nil, errors.New("video file is required")
+	if input.VideoURL == "" {
+		return nil, errors.New("video URL is required")
 	}
 
 	if input.Title == "" {
 		return nil, errors.New("video title is required")
 	}
 
-	// Convert map to FileInput or handle string URL
-	fileInput := &FileInput{}
+	if input.PlaylistID == "" {
+		return nil, errors.New("Playlist Id is required")
+	}
 
-	switch v := input.VideoFile.(type) {
-	case string:
-		// Direct URL passed
-		fileInput.URL = v
-		fileInput.DownloadURL = v
-	case map[string]interface{}:
-		// Map structure passed
-		if id, ok := v["id"].(string); ok {
-			fileInput.ID = id
-		}
-		if ext, ok := v["ext"].(string); ok {
-			fileInput.Ext = ext
-		}
-		if fileName, ok := v["fileName"].(string); ok {
-			fileInput.FileName = fileName
-		}
-		if mimeType, ok := v["mimeType"].(string); ok {
-			fileInput.MimeType = mimeType
-		}
-		if path, ok := v["path"].(string); ok {
-			fileInput.Path = path
-		}
-		if url, ok := v["url"].(string); ok {
-			fileInput.URL = url
-		}
-		if downloadURL, ok := v["downloadUrl"].(string); ok {
-			fileInput.DownloadURL = downloadURL
-		}
-		if src, ok := v["src"].(string); ok {
-			fileInput.Src = src
-		}
-		if size, ok := v["size"]; ok {
-			fileInput.Size = size
-		}
-		if sizeBytes, ok := v["sizeBytes"].(float64); ok {
-			fileInput.SizeBytes = int64(sizeBytes)
-		}
-	default:
-		return nil, fmt.Errorf("video_file must be either a URL string or file object")
+	// Validate URL
+	if !strings.HasPrefix(input.VideoURL, "http://") && !strings.HasPrefix(input.VideoURL, "https://") {
+		return nil, fmt.Errorf("invalid URL: %s", input.VideoURL)
 	}
 
 	authCtx, err := ctx.AuthContext()
@@ -331,49 +247,18 @@ func (a *UploadVideoAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, e
 		return nil, err
 	}
 
-	// Get the video content
-	var videoContent []byte
-
-	// Method 1: Check if Src contains base64 data
-	if fileInput.Src != "" {
-		if strings.HasPrefix(fileInput.Src, "data:") {
-			// Extract from data URL
-			parts := strings.Split(fileInput.Src, ",")
-			if len(parts) == 2 {
-				decoded, err := base64.StdEncoding.DecodeString(parts[1])
-				if err == nil {
-					videoContent = decoded
-				}
-			}
-		} else if !strings.HasPrefix(fileInput.Src, "http") {
-			// Try as raw base64
-			decoded, err := base64.StdEncoding.DecodeString(fileInput.Src)
-			if err == nil {
-				videoContent = decoded
-			}
-		}
-	}
-
-	// Method 2: Download from URL if no content yet
-	if len(videoContent) == 0 {
-		downloadURL := fileInput.GetDownloadURL()
-		if downloadURL != "" {
-			videoContent, err = downloadFileWithContext(ctx, downloadURL)
-			if err != nil {
-				return nil, fmt.Errorf("failed to retrieve video file: %v", err)
-			}
-		}
+	// Download the video from URL
+	videoContent, err := downloadVideoFromURL(ctx, input.VideoURL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to download video: %v", err)
 	}
 
 	if len(videoContent) == 0 {
-		return nil, errors.New("no video content could be retrieved")
+		return nil, errors.New("downloaded video content is empty")
 	}
 
 	// Get file size
 	fileSize := int64(len(videoContent))
-	if fileInput.SizeBytes > 0 {
-		fileSize = fileInput.SizeBytes
-	}
 
 	// Create the video resource
 	upload := &youtube.Video{
@@ -518,7 +403,6 @@ func addVideoToPlaylist(service *youtube.Service, playlistID, videoID string) (*
 	return call.Do()
 }
 
-// progressReader wraps an io.Reader to report upload progress
 type progressReader struct {
 	io.Reader
 	Total   int64
@@ -537,40 +421,31 @@ func (pr *progressReader) Read(p []byte) (int, error) {
 		// Only log every 10% to avoid spam
 		if pct > pr.lastPct && pct%10 == 0 {
 			pr.lastPct = pct
-			// You could emit progress events here if the SDK supports it
-			// For now, we'll just log it internally
 		}
 	}
 
 	return n, err
 }
 
-// downloadFileWithContext downloads a file with context (may have auth)
-func downloadFileWithContext(ctx sdkcontext.PerformContext, url string) ([]byte, error) {
-	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
-		return nil, fmt.Errorf("invalid URL: %s", url)
-	}
+// downloadVideoFromURL downloads a video from the provided URL with support for various platforms
+func downloadVideoFromURL(ctx sdkcontext.PerformContext, url string) ([]byte, error) {
+	// Handle different video hosting platforms
+	processedURL := url
 
 	// Handle Google Drive URLs
 	if strings.Contains(url, "drive.google.com") {
-		// Convert sharing URL to direct download URL
-		if strings.Contains(url, "/file/d/") {
-			// Extract file ID from URL like: https://drive.google.com/file/d/FILE_ID/view
-			parts := strings.Split(url, "/")
-			for i, part := range parts {
-				if part == "d" && i+1 < len(parts) {
-					fileID := parts[i+1]
-					url = fmt.Sprintf("https://drive.google.com/uc?export=download&id=%s", fileID)
-					break
-				}
-			}
-		}
+		processedURL = convertGoogleDriveURL(url)
+	} else if strings.Contains(url, "dropbox.com") {
+		processedURL = convertDropboxURL(url)
+	} else if strings.Contains(url, "cloudinary.com") {
+		// Cloudinary URLs usually work directly
+		processedURL = url
 	}
 
 	client := &http.Client{
-		Timeout: 5 * time.Minute, // Increased timeout for large video files
+		Timeout: 10 * time.Minute, // Increased timeout for large video files
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			// Allow up to 10 redirects (default is 10)
+			// Allow up to 10 redirects
 			if len(via) >= 10 {
 				return fmt.Errorf("too many redirects")
 			}
@@ -582,13 +457,14 @@ func downloadFileWithContext(ctx sdkcontext.PerformContext, url string) ([]byte,
 		},
 	}
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", processedURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %v", err)
 	}
 
-	// Add common headers to handle various file hosting services
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+	// Add headers to handle various file hosting services
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+	req.Header.Set("Accept", "*/*")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -597,7 +473,7 @@ func downloadFileWithContext(ctx sdkcontext.PerformContext, url string) ([]byte,
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024)) // Read limited error response
 		return nil, fmt.Errorf("HTTP %d - %s", resp.StatusCode, string(body))
 	}
 
@@ -607,17 +483,99 @@ func downloadFileWithContext(ctx sdkcontext.PerformContext, url string) ([]byte,
 		return nil, fmt.Errorf("received HTML instead of video content - the URL may require authentication or is not a direct download link")
 	}
 
-	// Read the video content
-	content, err := io.ReadAll(resp.Body)
+	// Read the video content with a size limit to prevent memory issues
+	const maxSize = 5 * 1024 * 1024 * 1024 // 5GB limit
+	reader := io.LimitReader(resp.Body, maxSize)
+
+	content, err := io.ReadAll(reader)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %v", err)
+		return nil, err
 	}
 
 	if len(content) == 0 {
-		return nil, fmt.Errorf("downloaded file is empty")
+		return nil, errors.New("downloaded file is empty")
+	}
+
+	// Check if we hit the size limit
+	if int64(len(content)) == maxSize {
+		return nil, errors.New("video file exceeds maximum size of 5GB")
 	}
 
 	return content, nil
+}
+
+// convertGoogleDriveURL converts a Google Drive sharing URL to a direct download URL
+func convertGoogleDriveURL(url string) string {
+	// Handle various Google Drive URL formats
+	patterns := []struct {
+		contains string
+		extract  func(string) string
+	}{
+		{
+			contains: "/file/d/",
+			extract: func(u string) string {
+				// Extract from URL like: https://drive.google.com/file/d/FILE_ID/view
+				parts := strings.Split(u, "/")
+				for i, part := range parts {
+					if part == "d" && i+1 < len(parts) {
+						fileID := strings.Split(parts[i+1], "?")[0] // Remove query params
+						return fmt.Sprintf("https://drive.google.com/uc?export=download&id=%s", fileID)
+					}
+				}
+				return u
+			},
+		},
+		{
+			contains: "id=",
+			extract: func(u string) string {
+				// Already in direct download format
+				return u
+			},
+		},
+		{
+			contains: "/open?id=",
+			extract: func(u string) string {
+				// Extract from URL like: https://drive.google.com/open?id=FILE_ID
+				if idx := strings.Index(u, "id="); idx != -1 {
+					fileID := u[idx+3:]
+					if ampIdx := strings.Index(fileID, "&"); ampIdx != -1 {
+						fileID = fileID[:ampIdx]
+					}
+					return fmt.Sprintf("https://drive.google.com/uc?export=download&id=%s", fileID)
+				}
+				return u
+			},
+		},
+	}
+
+	for _, pattern := range patterns {
+		if strings.Contains(url, pattern.contains) {
+			return pattern.extract(url)
+		}
+	}
+
+	return url
+}
+
+// convertDropboxURL converts a Dropbox sharing URL to a direct download URL
+func convertDropboxURL(url string) string {
+	// Convert Dropbox URLs to direct download format
+	if strings.Contains(url, "dropbox.com") {
+		// Replace dl=0 with dl=1 or add dl=1 if not present
+		if strings.Contains(url, "?dl=0") {
+			return strings.Replace(url, "?dl=0", "?dl=1", 1)
+		} else if strings.Contains(url, "&dl=0") {
+			return strings.Replace(url, "&dl=0", "&dl=1", 1)
+		} else if !strings.Contains(url, "dl=1") {
+			// Add dl=1 parameter
+			separator := "?"
+			if strings.Contains(url, "?") {
+				separator = "&"
+			}
+			return url + separator + "dl=1"
+		}
+	}
+	return url
 }
 
 func NewUploadVideoAction() sdk.Action {

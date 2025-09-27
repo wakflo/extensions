@@ -299,7 +299,6 @@ func RegisterPlaylistProps(form *smartform.FormBuilder, fieldName, label string,
 	return builder
 }
 
-// RegisterVideoProps adds a dynamic video selector field to the form
 func RegisterVideoProps(form *smartform.FormBuilder, fieldName, label string, required bool) *smartform.FieldBuilder {
 	getVideoID := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		authCtx, err := ctx.AuthContext()
@@ -311,79 +310,240 @@ func RegisterVideoProps(form *smartform.FormBuilder, fieldName, label string, re
 			ChannelID string `json:"channel_id"`
 		}](ctx)
 
-		// Create HTTP client
 		client := &http.Client{}
 
-		// Build URL with query parameters
-		baseURL := "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=50&order=date"
+		var allVideos []map[string]any
 
-		// Filter by channel if provided
-		if input.ChannelID != "" {
-			baseURL += "&channelId=" + input.ChannelID
+		if input.ChannelID == "" || input.ChannelID == "mine" {
+			channelURL := "https://www.googleapis.com/youtube/v3/channels?part=contentDetails&mine=true"
+
+			req, err := http.NewRequest("GET", channelURL, nil)
+			if err != nil {
+				log.Printf("[YouTube] ERROR: Failed to create channel request: %v", err)
+				return nil, err
+			}
+
+			req.Header.Set("Authorization", "Bearer "+authCtx.AccessToken)
+			req.Header.Set("Accept", "application/json")
+
+			resp, err := client.Do(req)
+			if err != nil {
+				log.Printf("[YouTube] ERROR: Failed to get channel: %v", err)
+				return nil, err
+			}
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				log.Printf("[YouTube] ERROR: Failed to read channel response: %v", err)
+				return nil, err
+			}
+
+			if resp.StatusCode != http.StatusOK {
+				log.Printf("[YouTube] ERROR channel response: %s", string(body))
+				return nil, fmt.Errorf("Channel API error %d: %s", resp.StatusCode, resp.Status)
+			}
+
+			var channelResp struct {
+				Items []struct {
+					ContentDetails struct {
+						RelatedPlaylists struct {
+							Uploads string `json:"uploads"`
+						} `json:"relatedPlaylists"`
+					} `json:"contentDetails"`
+				} `json:"items"`
+			}
+
+			err = json.Unmarshal(body, &channelResp)
+			if err != nil || len(channelResp.Items) == 0 {
+				log.Printf("[YouTube] ERROR: Failed to get uploads playlist: %v", err)
+				return nil, fmt.Errorf("could not get uploads playlist")
+			}
+
+			uploadsPlaylistID := channelResp.Items[0].ContentDetails.RelatedPlaylists.Uploads
+			log.Printf("[YouTube] INFO: Found uploads playlist: %s", uploadsPlaylistID)
+
+			var pageToken string
+			totalFetched := 0
+
+			for {
+				playlistURL := fmt.Sprintf("https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,status&playlistId=%s&maxResults=50", uploadsPlaylistID)
+
+				if pageToken != "" {
+					playlistURL += "&pageToken=" + pageToken
+				}
+
+				req, err := http.NewRequest("GET", playlistURL, nil)
+				if err != nil {
+					log.Printf("[YouTube] ERROR: Failed to create playlist request: %v", err)
+					return nil, err
+				}
+
+				req.Header.Set("Authorization", "Bearer "+authCtx.AccessToken)
+				req.Header.Set("Accept", "application/json")
+
+				resp, err := client.Do(req)
+				if err != nil {
+					log.Printf("[YouTube] ERROR: Failed to get playlist items: %v", err)
+					return nil, err
+				}
+				defer resp.Body.Close()
+
+				body, err := io.ReadAll(resp.Body)
+				if err != nil {
+					log.Printf("[YouTube] ERROR: Failed to read playlist response: %v", err)
+					return nil, err
+				}
+
+				if resp.StatusCode != http.StatusOK {
+					log.Printf("[YouTube] ERROR playlist response: %s", string(body))
+					return nil, fmt.Errorf("Playlist API error %d: %s", resp.StatusCode, resp.Status)
+				}
+
+				var playlistResp struct {
+					NextPageToken string `json:"nextPageToken"`
+					PageInfo      struct {
+						TotalResults   int `json:"totalResults"`
+						ResultsPerPage int `json:"resultsPerPage"`
+					} `json:"pageInfo"`
+					Items []struct {
+						Snippet struct {
+							Title        string `json:"title"`
+							Description  string `json:"description"`
+							PublishedAt  string `json:"publishedAt"`
+							ChannelTitle string `json:"channelTitle"`
+							ResourceId   struct {
+								VideoId string `json:"videoId"`
+							} `json:"resourceId"`
+							Thumbnails struct {
+								Default struct {
+									Url string `json:"url"`
+								} `json:"default"`
+							} `json:"thumbnails"`
+						} `json:"snippet"`
+						Status struct {
+							PrivacyStatus string `json:"privacyStatus"`
+						} `json:"status"`
+					} `json:"items"`
+				}
+
+				err = json.Unmarshal(body, &playlistResp)
+				if err != nil {
+					log.Printf("[YouTube] ERROR: Failed to unmarshal playlist response: %v", err)
+					return nil, err
+				}
+
+				log.Printf("[YouTube] INFO: Fetched %d videos in this page, total results: %d",
+					len(playlistResp.Items), playlistResp.PageInfo.TotalResults)
+
+				for _, item := range playlistResp.Items {
+					privacyEmoji := ""
+					privacyLabel := ""
+					switch item.Status.PrivacyStatus {
+					case "private":
+						privacyEmoji = "🔒"
+						privacyLabel = "Private"
+					case "unlisted":
+						privacyEmoji = "🔗"
+						privacyLabel = "Unlisted"
+					case "public":
+						privacyEmoji = "🌐"
+						privacyLabel = "Public"
+					}
+
+					videoInfo := map[string]any{
+						"id":           item.Snippet.ResourceId.VideoId,
+						"name":         fmt.Sprintf("%s %s", privacyEmoji, item.Snippet.Title),
+						"publishedAt":  item.Snippet.PublishedAt,
+						"channel":      item.Snippet.ChannelTitle,
+						"privacy":      item.Status.PrivacyStatus,
+						"privacyLabel": privacyLabel,
+						"description":  item.Snippet.Description,
+						"thumbnail":    item.Snippet.Thumbnails.Default.Url,
+					}
+
+					allVideos = append(allVideos, videoInfo)
+					totalFetched++
+				}
+
+				// Check if there are more pages
+				pageToken = playlistResp.NextPageToken
+				if pageToken == "" {
+					log.Printf("[YouTube] INFO: Finished fetching all videos. Total: %d", totalFetched)
+					break
+				}
+
+				log.Printf("[YouTube] INFO: Moving to next page, fetched so far: %d", totalFetched)
+			}
+
+			log.Printf("[YouTube] INFO: Returning %d total videos", len(allVideos))
+
 		} else {
-			// Default to user's own videos
-			baseURL += "&forMine=true"
-		}
+			log.Printf("[YouTube] INFO: Fetching videos for channel: %s", input.ChannelID)
 
-		// Create request
-		req, err := http.NewRequest("GET", baseURL, nil)
-		if err != nil {
-			log.Printf("[YouTube] ERROR: Failed to create request: %v", err)
-			return nil, err
-		}
+			baseURL := fmt.Sprintf("https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=50&order=date&channelId=%s", input.ChannelID)
 
-		// Set headers
-		req.Header.Set("Authorization", "Bearer "+authCtx.AccessToken)
-		req.Header.Set("Accept", "application/json")
-		req.Header.Set("User-Agent", "Wakflo-YouTube-Integration/1.0")
-
-		// Send request
-		resp, err := client.Do(req)
-		if err != nil {
-			log.Printf("[YouTube] ERROR: Failed to send request: %v", err)
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		// Read response body
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Printf("[YouTube] ERROR: Failed to read response body: %v", err)
-			return nil, err
-		}
-
-		if resp.StatusCode != http.StatusOK {
-			log.Printf("[YouTube] ERROR response body: %s", string(body))
-			return nil, fmt.Errorf("API error %d: %s", resp.StatusCode, resp.Status)
-		}
-
-		var videoList YouTubeVideoList
-		err = json.Unmarshal(body, &videoList)
-		if err != nil {
-			log.Printf("[YouTube] ERROR: Failed to unmarshal response: %v", err)
-			return nil, err
-		}
-
-		items := arrutil.Map[YouTubeVideo, map[string]any](videoList.Items, func(input YouTubeVideo) (target map[string]any, find bool) {
-			videoInfo := map[string]any{
-				"id":   input.ID.VideoID,
-				"name": input.Snippet.Title,
+			req, err := http.NewRequest("GET", baseURL, nil)
+			if err != nil {
+				log.Printf("[YouTube] ERROR: Failed to create request: %v", err)
+				return nil, err
 			}
 
-			// Add published date if available
-			if input.Snippet.PublishedAt != "" {
-				videoInfo["publishedAt"] = input.Snippet.PublishedAt
+			req.Header.Set("Authorization", "Bearer "+authCtx.AccessToken)
+			req.Header.Set("Accept", "application/json")
+
+			resp, err := client.Do(req)
+			if err != nil {
+				log.Printf("[YouTube] ERROR: Failed to send request: %v", err)
+				return nil, err
+			}
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				log.Printf("[YouTube] ERROR: Failed to read response body: %v", err)
+				return nil, err
 			}
 
-			// Add channel title for context
-			if input.Snippet.ChannelTitle != "" {
-				videoInfo["channel"] = input.Snippet.ChannelTitle
+			if resp.StatusCode != http.StatusOK {
+				log.Printf("[YouTube] ERROR response body: %s", string(body))
+				return nil, fmt.Errorf("API error %d: %s", resp.StatusCode, resp.Status)
 			}
 
-			return videoInfo, true
-		})
+			var searchResult struct {
+				Items []struct {
+					ID struct {
+						VideoID string `json:"videoId"`
+					} `json:"id"`
+					Snippet struct {
+						Title        string `json:"title"`
+						PublishedAt  string `json:"publishedAt"`
+						ChannelTitle string `json:"channelTitle"`
+					} `json:"snippet"`
+				} `json:"items"`
+			}
 
-		return ctx.Respond(items, len(items))
+			err = json.Unmarshal(body, &searchResult)
+			if err != nil {
+				log.Printf("[YouTube] ERROR: Failed to unmarshal response: %v", err)
+				return nil, err
+			}
+
+			// For other channels, we can only see public videos
+			for _, item := range searchResult.Items {
+				videoInfo := map[string]any{
+					"id":           item.ID.VideoID,
+					"name":         fmt.Sprintf("🌐 %s", item.Snippet.Title),
+					"publishedAt":  item.Snippet.PublishedAt,
+					"channel":      item.Snippet.ChannelTitle,
+					"privacy":      "public",
+					"privacyLabel": "Public",
+				}
+				allVideos = append(allVideos, videoInfo)
+			}
+		}
+
+		return ctx.Respond(allVideos, len(allVideos))
 	}
 
 	return form.SelectField(fieldName, label).
@@ -399,7 +559,7 @@ func RegisterVideoProps(form *smartform.FormBuilder, fieldName, label string, re
 				RefreshOn("channel_id").
 				GetDynamicSource(),
 		).
-		HelpText("Select a YouTube video")
+		HelpText("Select a YouTube video (🔒 Private, 🔗 Unlisted, 🌐 Public)")
 }
 
 // RegisterMultiPlaylistProps adds a multi-select dynamic playlist field to the form

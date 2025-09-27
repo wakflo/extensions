@@ -53,7 +53,7 @@ func (a *AddColumnInWorksheetAction) Properties() *smartform.FormSchema {
 
 	form.TextField("sheetColumnIndex", "sheetColumnIndex").
 		Placeholder("Sheet Column Index").
-		HelpText("The index of the column where the new column should be added. Index is zero based.").
+		HelpText("The index of the column where the new column should be added. Index is zero based.(E.g; 0,1 etc)").
 		Required(true)
 
 	schema := form.Build()

@@ -3,6 +3,7 @@ package actions
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googlesheets/shared"
@@ -30,7 +31,15 @@ func (a *FindWorksheetAction) Metadata() sdk.ActionMetadata {
 		Documentation: findWorksheetDocs,
 		Icon:          "",
 		SampleOutput: map[string]any{
-			"message": "Hello World!",
+			"found":     true,
+			"sheetId":   123456789,
+			"title":     "Sheet1",
+			"index":     0,
+			"sheetType": "GRID",
+			"gridProperties": map[string]any{
+				"rowCount":    1000,
+				"columnCount": 26,
+			},
 		},
 		Settings: core.ActionSettings{},
 	}
@@ -79,23 +88,63 @@ func (a *FindWorksheetAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 		return nil, errors.New("sheet title is required")
 	}
 
-	spreadsheet, err := sheetService.Spreadsheets.Get(input.SpreadSheetID).
-		Do()
+	spreadsheet, err := sheetService.Spreadsheets.Get(input.SpreadSheetID).Do()
 	if err != nil {
 		return nil, err
 	}
 
+	// Search for the sheet with matching title
 	for _, sheet := range spreadsheet.Sheets {
 		if sheet.Properties.Title == input.SheetTitle {
-			return sheet, nil
-		}
+			// Found the sheet, return its properties
+			result := map[string]interface{}{
+				"found":   true,
+				"sheetId": sheet.Properties.SheetId,
+				"title":   sheet.Properties.Title,
+				"index":   sheet.Properties.Index,
+			}
 
-		if sheet.Properties.Title != input.SheetTitle {
-			const notFound string = "not sheet found"
-			return notFound, nil
+			// Add sheet type if available
+			if sheet.Properties.SheetType != "" {
+				result["sheetType"] = sheet.Properties.SheetType
+			}
+
+			// Add grid properties if available
+			if sheet.Properties.GridProperties != nil {
+				gridProps := map[string]interface{}{
+					"rowCount":    sheet.Properties.GridProperties.RowCount,
+					"columnCount": sheet.Properties.GridProperties.ColumnCount,
+				}
+
+				if sheet.Properties.GridProperties.FrozenRowCount > 0 {
+					gridProps["frozenRowCount"] = sheet.Properties.GridProperties.FrozenRowCount
+				}
+				if sheet.Properties.GridProperties.FrozenColumnCount > 0 {
+					gridProps["frozenColumnCount"] = sheet.Properties.GridProperties.FrozenColumnCount
+				}
+
+				result["gridProperties"] = gridProps
+			}
+
+			// Add tab color if available
+			if sheet.Properties.TabColor != nil {
+				result["tabColor"] = map[string]interface{}{
+					"red":   sheet.Properties.TabColor.Red,
+					"green": sheet.Properties.TabColor.Green,
+					"blue":  sheet.Properties.TabColor.Blue,
+					"alpha": sheet.Properties.TabColor.Alpha,
+				}
+			}
+
+			return core.JSON(result), nil
 		}
 	}
-	return spreadsheet, err
+
+	// Sheet not found - return proper JSON response
+	return core.JSON(map[string]interface{}{
+		"found":   false,
+		"message": fmt.Sprintf("No sheet found with title '%s' in spreadsheet", input.SheetTitle),
+	}), nil
 }
 
 func NewFindWorksheetAction() sdk.Action {

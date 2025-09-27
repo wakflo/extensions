@@ -19,8 +19,7 @@ type readRowInWorksheetActionProps struct {
 	SheetID           string `json:"sheetId"`
 	SheetTitle        string `json:"sheetTitle"`
 	Range             string `json:"range"`
-	StartRow          string `json:"start-row"`
-	EndRow            string `json:"end-row"`
+	SheetRow          string `json:"sheetRow"`
 	IncludeTeamDrives bool   `json:"includeTeamDrives"`
 }
 
@@ -48,18 +47,11 @@ func (a *ReadRowInWorksheetAction) Properties() *smartform.FormSchema {
 
 	shared.RegisterSpreadsheetsProps(form, "spreadsheetId", "Spreadsheet", "spreadsheet ID", true)
 
-	shared.RegisterSheetIDProps(form, true)
-
 	shared.RegisterSheetTitleProps(form, true)
 
-	form.TextField("start-row", "start-row").
-		Placeholder("Start Row").
-		HelpText("The row range of the sheet in the format of A1 notation where to start.").
-		Required(true)
-
-	form.TextField("end-row", "end-row").
-		Placeholder("End Row").
-		HelpText("The row range of the sheet in the format of A1 notation where to end.").
+	form.TextField("sheetRow", "sheetRow").
+		Placeholder("Sheet Row").
+		HelpText("For adding data: use range format (e.g., A1:A100). For empty row: use row number (e.g., 5).").
 		Required(true)
 
 	form.CheckboxField("includeTeamDrives", "includeTeamDrives").
@@ -97,60 +89,55 @@ func (a *ReadRowInWorksheetAction) Perform(ctx sdkcontext.PerformContext) (core.
 		return nil, errors.New("spreadsheet ID is required")
 	}
 
-	if input.SheetID == "" {
-		return nil, errors.New("sheet ID is required")
-	}
 	if input.SheetTitle == "" {
 		return nil, errors.New("sheet title is required")
 	}
 
-	readRange := fmt.Sprintf("%s!%s:%s", input.SheetTitle, input.StartRow, input.EndRow)
+	// Construct the range for reading the row
+	readRange := fmt.Sprintf("%s!%s", input.SheetTitle, input.SheetRow)
 
-	spreadsheetCall := sheetService.Spreadsheets.Get(input.SpreadSheetID).
-		Ranges(readRange).
-		IncludeGridData(true)
-
-	spreadsheet, err := spreadsheetCall.Do()
+	resp, err := sheetService.Spreadsheets.Values.Get(input.SpreadSheetID, readRange).Do()
 	if err != nil {
 		return nil, err
 	}
 
-	var rows [][]interface{}
-	for _, sheet := range spreadsheet.Sheets {
-		if sheet.Properties.SheetId == shared.ConvertToInt64(input.SheetID) {
-			if sheet.Data != nil && len(sheet.Data) > 0 {
-				gridData := sheet.Data[0]
-				for _, rowData := range gridData.RowData {
-					var row []interface{}
-					for _, cell := range rowData.Values {
-						var value interface{}
-						if cell.UserEnteredValue != nil {
-							if cell.UserEnteredValue.NumberValue != nil {
-								value = *cell.UserEnteredValue.NumberValue
-							} else if cell.UserEnteredValue.StringValue != nil {
-								value = *cell.UserEnteredValue.StringValue
-							} else if cell.UserEnteredValue.BoolValue != nil {
-								value = *cell.UserEnteredValue.BoolValue
-							} else if cell.UserEnteredValue.FormulaValue != nil {
-								value = *cell.UserEnteredValue.FormulaValue
-							} else {
-								value = nil
-							}
-						}
-						row = append(row, value)
-					}
-					rows = append(rows, row)
-				}
-				break
+	// Check if we got any values
+	if len(resp.Values) == 0 {
+		return nil, errors.New("no data found in the specified row")
+	}
+
+	rowValues := resp.Values[0]
+
+	// Optionally, get the header row to create a key-value mapping
+	// This assumes row 1 contains headers
+	headerRange := fmt.Sprintf("%s!1:1", input.SheetTitle)
+	headerResp, err := sheetService.Spreadsheets.Values.Get(input.SpreadSheetID, headerRange).Do()
+	if err != nil {
+		// If we can't get headers, just return the row values as an array
+		return core.JSON(map[string]interface{}{
+			"values": rowValues,
+			"range":  resp.Range,
+		}), nil
+	}
+
+	// Create a map with headers as keys if available
+	result := make(map[string]interface{})
+	if len(headerResp.Values) > 0 && len(headerResp.Values[0]) > 0 {
+		headers := headerResp.Values[0]
+		for i, header := range headers {
+			if i < len(rowValues) {
+				// Convert header to string and use as key
+				key := fmt.Sprintf("%v", header)
+				result[key] = rowValues[i]
 			}
 		}
 	}
 
-	if rows == nil {
-		return nil, errors.New("no rows found in the specified range")
-	}
-
-	return core.JSON(rows), nil
+	return core.JSON(map[string]interface{}{
+		"row":    result,
+		"values": rowValues,
+		"range":  resp.Range,
+	}), nil
 }
 
 func NewReadRowInWorksheetAction() sdk.Action {
