@@ -14,11 +14,19 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
+type ValueItem struct {
+	Value string `json:"value"`
+}
+
+type ValuesWrapper struct {
+	Values []ValueItem `json:"values"`
+}
+
 type updateRowInWorksheetActionProps struct {
-	SpreadSheetID string          `json:"spreadSheetId"`
-	SheetTitle    string          `json:"sheetTitle"`
-	SheetRow      string          `json:"sheetRow"`
-	Values        [][]interface{} `json:"values"`
+	SpreadSheetID string        `json:"spreadsheetId"`
+	SheetTitle    string        `json:"sheetTitle"`
+	SheetRow      string        `json:"sheetRow"`
+	Values        ValuesWrapper `json:"values"`
 }
 
 type UpdateRowInWorksheetAction struct{}
@@ -33,38 +41,36 @@ func (a *UpdateRowInWorksheetAction) Metadata() sdk.ActionMetadata {
 		Documentation: updateRowInWorksheetDocs,
 		Icon:          "",
 		SampleOutput: map[string]any{
-			"message": "Hello World!",
+			"updatedRange":   "Sheet1!A2:E2",
+			"updatedRows":    1,
+			"updatedColumns": 5,
+			"updatedCells":   5,
 		},
 		Settings: core.ActionSettings{},
 	}
 }
 
 // Properties returns the schema for the action's input configuration
+// Keep it simple like AddRowInWorksheetAction
 func (a *UpdateRowInWorksheetAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("update_row_in_worksheet", "Update Row in Worksheet")
 
-	shared.RegisterSpreadsheetsProps(form, "spreadSheetId", "Spreadsheet", "spreadsheet ID", true)
+	shared.RegisterSpreadsheetsProps(form, "spreadsheetId", "Spreadsheet", "Select Spreadsheet", true)
 
 	shared.RegisterSheetTitleProps(form, true)
 
 	form.TextField("sheetRow", "sheetRow").
 		Placeholder("Sheet Row").
-		HelpText("The row range of the sheet in the format of A1 notation.").
+		HelpText("The row range of the sheet in the format of A1 notation (e.g., A2:E2 to update row 2).").
 		Required(true)
 
-	valuesArray := form.ArrayField("values", "Values")
-	valuesArray.HelpText("The values to be updated in the row.")
-
-	rowGroup := valuesArray.ObjectTemplate("row", "Row")
-
-	innerValuesArray := rowGroup.ArrayField("innerValues", "Values")
-	innerValuesArray.HelpText("Column values for this row")
-
-	valueGroup := innerValuesArray.ObjectTemplate("value", "Value")
-	valueGroup.TextField("value", "Value").
-		Placeholder("Enter cell value").
+	// Use the same simple structure as AddRowInWorksheetAction
+	labelsArray := form.ArrayField("values", "Values")
+	labelGroup := labelsArray.ObjectTemplate("values", "")
+	labelGroup.TextField("value", "Value").
+		Placeholder("Value").
 		Required(false).
-		HelpText("Individual cell value")
+		HelpText("The value of the cell.")
 
 	schema := form.Build()
 
@@ -103,16 +109,42 @@ func (a *UpdateRowInWorksheetAction) Perform(ctx sdkcontext.PerformContext) (cor
 		return nil, errors.New("sheet row range is required")
 	}
 
+	// Convert the Values structure to [][]interface{} for Google Sheets API
+	var rowData []interface{}
+	for _, item := range input.Values.Values {
+		rowData = append(rowData, item.Value)
+	}
+
+	// If no values provided, return error
+	if len(rowData) == 0 {
+		return nil, errors.New("at least one value is required")
+	}
+
+	// Wrap in another array since we're updating one row
+	sheetData := [][]interface{}{rowData}
+
 	range_ := fmt.Sprintf("%s!%s", input.SheetTitle, input.SheetRow)
 
 	spreadsheet, err := sheetService.Spreadsheets.Values.Update(input.SpreadSheetID, range_, &sheets.ValueRange{
 		Range:          range_,
 		MajorDimension: "ROWS",
-		Values:         input.Values,
+		Values:         sheetData,
 	}).
 		ValueInputOption("RAW").
 		Do()
-	return spreadsheet, err
+	if err != nil {
+		return nil, fmt.Errorf("failed to update row: %w", err)
+	}
+
+	// Return meaningful response
+	return map[string]interface{}{
+		"success":        true,
+		"updatedRange":   spreadsheet.UpdatedRange,
+		"updatedRows":    spreadsheet.UpdatedRows,
+		"updatedColumns": spreadsheet.UpdatedColumns,
+		"updatedCells":   spreadsheet.UpdatedCells,
+		"spreadsheetId":  spreadsheet.SpreadsheetId,
+	}, nil
 }
 
 func NewUpdateRowInWorksheetAction() sdk.Action {

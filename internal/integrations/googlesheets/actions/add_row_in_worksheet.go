@@ -15,15 +15,14 @@ import (
 )
 
 type addRowInWorksheetActionProps struct {
-	SpreadSheetID string          `json:"spreadSheetId"`
-	SheetTitle    string          `json:"sheetTitle"`
-	SheetRow      string          `json:"sheetRow"`
-	Values        [][]interface{} `json:"values"`
+	SpreadSheetID string        `json:"spreadSheetId"`
+	SheetTitle    string        `json:"sheetTitle"`
+	SheetRow      string        `json:"sheetRow"`
+	Values        ValuesWrapper `json:"values"`
 }
 
 type AddRowInWorksheetAction struct{}
 
-// Metadata returns metadata about the action
 func (a *AddRowInWorksheetAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
 		ID:            "add_row_in_worksheet",
@@ -33,13 +32,15 @@ func (a *AddRowInWorksheetAction) Metadata() sdk.ActionMetadata {
 		Documentation: addRowInWorksheetDocs,
 		Icon:          "",
 		SampleOutput: map[string]any{
-			"message": "Hello World!",
+			"updatedRange":   "Sheet1!A2:E2",
+			"updatedRows":    1,
+			"updatedColumns": 5,
+			"updatedCells":   5,
 		},
 		Settings: core.ActionSettings{},
 	}
 }
 
-// Properties returns the schema for the action's input configuration
 func (a *AddRowInWorksheetAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("add_row_in_worksheet", "Add Row in Worksheet")
 
@@ -57,7 +58,7 @@ func (a *AddRowInWorksheetAction) Properties() *smartform.FormSchema {
 	labelGroup.TextField("value", "Value").
 		Placeholder("Value").
 		Required(false).
-		HelpText("The Value of the row.")
+		HelpText("The Value of the cell.")
 
 	schema := form.Build()
 
@@ -98,21 +99,39 @@ func (a *AddRowInWorksheetAction) Perform(ctx sdkcontext.PerformContext) (core.J
 		return nil, errors.New("sheet row range is required")
 	}
 
-	// this variable concatenates the sheet ID and the sheet row range since we want to append a row in a particular range of the worksheet
-	range_ := fmt.Sprintf("%s!%s", input.SheetTitle, input.SheetRow)
+	var rowData []interface{}
+	for _, item := range input.Values.Values {
+		rowData = append(rowData, item.Value)
+	}
 
-	// sample array data to add as new row
-	sampleData := [][]interface{}{{"apple", "banana", "orange", "pineapple", "mango"}}
+	if len(rowData) == 0 {
+		return nil, errors.New("at least one value is required")
+	}
+
+	sheetData := [][]interface{}{rowData}
+
+	range_ := fmt.Sprintf("%s!%s", input.SheetTitle, input.SheetRow)
 
 	spreadsheet, err := sheetService.Spreadsheets.Values.Append(input.SpreadSheetID, range_, &sheets.ValueRange{
 		Range:          range_,
 		MajorDimension: "ROWS",
-		Values:         sampleData,
+		Values:         sheetData,
 	}).
 		ValueInputOption("RAW").
 		InsertDataOption("INSERT_ROWS").
 		Do()
-	return spreadsheet, err
+	if err != nil {
+		return nil, fmt.Errorf("failed to append row: %w", err)
+	}
+
+	return map[string]interface{}{
+		"success":        true,
+		"updatedRange":   spreadsheet.Updates.UpdatedRange,
+		"updatedRows":    spreadsheet.Updates.UpdatedRows,
+		"updatedColumns": spreadsheet.Updates.UpdatedColumns,
+		"updatedCells":   spreadsheet.Updates.UpdatedCells,
+		"spreadsheetId":  spreadsheet.SpreadsheetId,
+	}, nil
 }
 
 func NewAddRowInWorksheetAction() sdk.Action {

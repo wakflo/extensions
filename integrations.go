@@ -62,7 +62,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/zohosalesiq"
 	"github.com/wakflo/extensions/internal/integrations/zoom"
 
-	// "github.com/wakflo/extensions/internal/integrations/gemini"
+	"github.com/wakflo/extensions/internal/integrations/gemini"
 	"github.com/wakflo/extensions/internal/integrations/googledrive"
 	"github.com/wakflo/extensions/internal/integrations/youtube"
 
@@ -92,9 +92,9 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		shopify.Integration,       // Shopify
 		prisync.Integration,       // Prisync
 		openai.Integration,        // OpenAI
-		// gemini.Integration,            // Gemini
-		monday.Integration,    // Monday
-		mailchimp.Integration, // Mailchimp
+		gemini.Integration,        // Gemini
+		monday.Integration,        // Monday
+		mailchimp.Integration,     // Mailchimp
 		// csv.Integration,               // CSV
 		cryptography.Integration,   // Cryptography
 		notion.Integration,         // Notion

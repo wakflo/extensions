@@ -1,10 +1,18 @@
 
-# Chat OpenAI
+# Chat OpenAI Action
 
-## Description
+This action allows you to interact with OpenAI's chat completion API to generate AI responses.
 
-Integrate with OpenAI's chatbot API to automate conversations and generate human-like responses within your workflow. This integration enables you to leverage OpenAI's vast language model capabilities to provide personalized support, answer frequent questions, and even create custom workflows based on user input.
+## Features
+- Support for all GPT models
+- System message configuration for consistent behavior
+- JSON response format for structured output
+- Fine-tuning parameters (temperature, top_p, penalties, etc.)
 
-## Details
-
-- **Type**: sdkcore.ActionTypeNormal
+## Usage
+1. Configure your OpenAI API token in the authentication settings
+2. Select the GPT model you want to use
+3. Optionally set a system prompt to guide the AI's behavior
+4. Enter your user prompt
+5. Choose response format (text or JSON)
+6. Adjust advanced parameters as needed
