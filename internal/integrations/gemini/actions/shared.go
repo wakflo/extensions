@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/generative-ai-go/genai"
 	"github.com/juicycleff/smartform/v1"
@@ -15,7 +16,7 @@ import (
 )
 
 func CreateGeminiClient(ctx context.Context, auth *sdkcontext.AuthContext) (*genai.Client, error) {
-	return genai.NewClient(ctx, option.WithAPIKey(auth.Secret))
+	return genai.NewClient(ctx, option.WithAPIKey(auth.Extra["key"]))
 }
 
 func RegisterModelProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
@@ -44,10 +45,12 @@ func RegisterModelProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
 				return nil, err
 			}
 			models = append(models, map[string]string{
-				"id":   model.BaseModelID,
+				"id":   model.Name,
 				"name": model.DisplayName,
 			})
 		}
+
+		fmt.Println("models>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", models)
 
 		return ctx.Respond(models, len(models))
 	}
@@ -60,8 +63,21 @@ func RegisterModelProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
 				Dynamic().
 				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getModels)).
 				WithSearchSupport().
+				WithPagination(10).
 				End().
 				GetDynamicSource(),
 		).
 		HelpText("Select a Gemini model")
+}
+
+func RegisterEmbeddingModelProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
+	return form.SelectField("model", "Embedding Model").
+		Placeholder("Select an embedding model").
+		Required(true).
+		AddOptions(
+			smartform.NewOption("models/text-embedding-004", "Text Embedding 004"),
+			smartform.NewOption("models/embedding-001", "Embedding 001"),
+			smartform.NewOption("models/text-embedding-preview-0815", "Text Embedding Preview"),
+		).
+		HelpText("Select a Gemini embedding model")
 }

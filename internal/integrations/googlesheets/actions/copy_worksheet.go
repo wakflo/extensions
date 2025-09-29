@@ -134,7 +134,6 @@ func (a *CopyWorksheetAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 		sourceSheetID,
 		copyRequest,
 	).Do()
-
 	if err != nil {
 		return nil, err
 	}

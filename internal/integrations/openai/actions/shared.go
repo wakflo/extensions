@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"io"
@@ -129,4 +130,34 @@ func buildRequestBody(inputPt *chatOpenAIActionProps) map[string]interface{} {
 	}
 
 	return requestBody
+}
+
+func ObfuscateImageURL(url string) map[string]interface{} {
+	// Method 1: Split the URL into parts
+	parts := strings.Split(url, "?")
+	baseURL := parts[0]
+	queryParams := ""
+	if len(parts) > 1 {
+		queryParams = parts[1]
+	}
+
+	// Method 2: Base64 encode the URL (frontend can decode if needed)
+	encodedURL := base64.StdEncoding.EncodeToString([]byte(url))
+
+	// Method 3: Replace protocol to prevent loading
+	safeURL := strings.Replace(url, "https://", "HTTPS_PLACEHOLDER://", 1)
+	safeURL = strings.Replace(safeURL, "http://", "HTTP_PLACEHOLDER://", 1)
+
+	return map[string]interface{}{
+		"full_link":    url,        // Original, but nested deeply
+		"encoded_link": encodedURL, // Base64 encoded version
+		"safe_link":    safeURL,    // Protocol replaced
+		"link_parts": map[string]interface{}{
+			"base":         baseURL,
+			"params":       queryParams,
+			"protocol":     "https",
+			"instructions": "Combine base + '?' + params to reconstruct full URL",
+		},
+		"copy_instructions": "Copy 'full_link' value and paste in new browser tab to view image",
+	}
 }
