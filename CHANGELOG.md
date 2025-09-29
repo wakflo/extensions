@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.16.0](https://github.com/wakflo/extensions/compare/v0.15.3...v0.16.0) (2025-09-29)
+
+
+### Features
+
+* add more actions to gemini and open ai integrations. also fixed google integration array structure ([9a9e65f](https://github.com/wakflo/extensions/commit/9a9e65fd718f5c32335283102a3586b1c8c0105f))
+* add more actions to gemini and open ai integrations. also fixed google integration array structure ([5e1a441](https://github.com/wakflo/extensions/commit/5e1a441f1f377d0328ae012e40c05643af7d0043))
+
 ## [0.15.3](https://github.com/wakflo/extensions/compare/v0.15.2...v0.15.3) (2025-09-19)
 
 
