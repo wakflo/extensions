@@ -19,7 +19,7 @@ var Flow string
 // var sharedAuth = smartform.NewAuthForm().SetDisplayName("Gemini API key").SetDescription("Your Gemini api key").Build()
 
 var (
-	form = smartform.NewAuthForm("gemini-auth", "Gemini API Authentication", smartform.AuthStrategyAPIKey)
+	form = smartform.NewAuthForm("gemini-auth", "Gemini API Authentication", smartform.AuthStrategyCustom)
 
 	_ = form.TextField("key", "Gemini API Key").
 		Required(true).
@@ -50,6 +50,11 @@ func (n *Gemini) Triggers() []sdk.Trigger {
 func (n *Gemini) Actions() []sdk.Action {
 	return []sdk.Action{
 		actions.NewChatGeminiAction(),
+		actions.NewGenerateEmbeddingAction(),
+		actions.NewTranslateTextAction(),
+		actions.NewSummarizeTextAction(),
+		actions.NewAnalyzeImageAction(),
+		actions.NewFunctionCallingAction(),
 	}
 }
 

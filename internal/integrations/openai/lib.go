@@ -39,6 +39,10 @@ func (n *OpenAI) Triggers() []sdk.Trigger {
 func (n *OpenAI) Actions() []sdk.Action {
 	return []sdk.Action{
 		actions.NewChatOpenAIAction(),
+		actions.NewEmbeddingsOpenAIAction(),
+		actions.NewDataExtractorOpenAIAction(),
+		// actions.NewImageGenerationOpenAIAction(),
+		actions.NewVisionOpenAIAction(),
 	}
 }
 

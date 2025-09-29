@@ -12,15 +12,24 @@ import (
 	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
+// ============== Type Definitions ==============
+
 type chatOpenAIActionProps struct {
 	Model            string   `json:"model"`
+	SystemPrompt     string   `json:"system_prompt,omitempty"` // System message for better prompt engineering
 	Prompt           string   `json:"prompt"`
+	ResponseFormat   string   `json:"response_format,omitempty"` // "text" or "json_object"
 	MaxTokens        *int     `json:"max_tokens,omitempty"`
 	FrequencyPenalty *float64 `json:"frequency_penalty,omitempty"` // -2.0 to 2.0
 	PresencePenalty  *float64 `json:"presence_penalty,omitempty"`  // -2.0 to 2.0
 	Seed             *int     `json:"seed,omitempty"`              // random integer
 	Temperature      *float64 `json:"temperature,omitempty"`       // 0 to 2.0
 	TopP             *float64 `json:"top_p,omitempty"`             // not said, but it's an alternative to Temperature, so probably 0 to 2.0
+}
+
+type Message struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
 }
 
 type ChatOpenAIAction struct{}
@@ -34,11 +43,13 @@ func (a *ChatOpenAIAction) Metadata() sdk.ActionMetadata {
 		Type:          core.ActionTypeAction,
 		Documentation: chatOpenAIDocs,
 		SampleOutput: map[string]any{
-			"name":       "openai-prompt-chatgpt",
-			"usage_mode": "operation",
-			"prompt":     "Who won the Oscar for best actor in 2010?",
-			"max_tokens": "500",
-			"gpt_answer": "The Oscar for Best Actor at the 82nd Academy Awards, held in 2010, was won by Jeff Bridges for his role as Otis \"Bad\" Blake in the film \"Crazy Heart.\"",
+			"name":            "openai-prompt-chatgpt",
+			"usage_mode":      "operation",
+			"system_prompt":   "You are a helpful assistant that provides accurate information.",
+			"prompt":          "Who won the Oscar for best actor in 2010?",
+			"response_format": "text",
+			"max_tokens":      "500",
+			"gpt_answer":      "The Oscar for Best Actor at the 82nd Academy Awards, held in 2010, was won by Jeff Bridges for his role as Otis \"Bad\" Blake in the film \"Crazy Heart.\"",
 		},
 		Settings: core.ActionSettings{},
 	}
@@ -83,13 +94,25 @@ func (a *ChatOpenAIAction) Properties() *smartform.FormSchema {
 				GetDynamicSource(),
 		)
 
+	form.TextareaField("system_prompt", "System Prompt").
+		Required(false).
+		HelpText("Optional system message to set the behavior of the assistant. This helps guide the AI's responses and behavior.")
+
 	form.TextareaField("prompt", "Prompt").
 		Required(true).
 		HelpText("What would you like to ask ChatGPT?")
 
+	form.SelectField("response_format", "Response Format").
+		Required(false).
+		HelpText("Choose the format for the response. Use 'json_object' when you need structured data output.").
+		AddOptions([]*smartform.Option{
+			{Value: "text", Label: "Text (Default)"},
+			{Value: "json_object", Label: "JSON Object"},
+		}...)
+
 	form.NumberField("max_tokens", "Max Tokens").
 		Required(false).
-		HelpText("Max tokens that ChatGPT can use to generate it's answer.")
+		HelpText("Max tokens that ChatGPT can use to generate its answer.")
 
 	form.NumberField("frequency_penalty", "Frequency penalty").
 		Required(false).
@@ -168,14 +191,27 @@ func (a *ChatOpenAIAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, er
 		return nil, errors.New("GPT did not give an answer")
 	}
 
-	return map[string]interface{}{
+	// Build the response
+	response := map[string]interface{}{
 		"name":           "openai-prompt-chatgpt",
 		"usage_mode":     "operation",
 		"prompt":         input.Prompt,
 		"model":          input.Model,
 		"model_settings": requestBody,
 		"gpt_answer":     chatCompletion.Choices[0].Message.Content,
-	}, nil
+	}
+
+	// Include system prompt if it was provided
+	if input.SystemPrompt != "" {
+		response["system_prompt"] = input.SystemPrompt
+	}
+
+	// Include response format if it was specified
+	if input.ResponseFormat != "" {
+		response["response_format"] = input.ResponseFormat
+	}
+
+	return response, nil
 }
 
 func NewChatOpenAIAction() sdk.Action {

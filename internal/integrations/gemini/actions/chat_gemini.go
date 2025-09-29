@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+	"strings"
 
 	"github.com/google/generative-ai-go/genai"
 	"github.com/juicycleff/smartform/v1"
@@ -71,15 +72,30 @@ func (a *ChatGeminiAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, er
 	if err != nil {
 		return nil, err
 	}
+	defer client.Close()
 
-	// core.PrettyPrint(input)
+	modelName := strings.TrimPrefix(input.Model, "models/")
 
-	content, err := client.GenerativeModel(input.Model).GenerateContent(gctx, genai.Text(input.Chat), nil)
+	model := client.GenerativeModel(modelName)
+
+	content, err := model.GenerateContent(gctx, genai.Text(input.Chat))
 	if err != nil {
 		return nil, err
 	}
 
-	return content, err
+	var response string
+	if content != nil && len(content.Candidates) > 0 {
+		for _, part := range content.Candidates[0].Content.Parts {
+			if text, ok := part.(genai.Text); ok {
+				response += string(text)
+			}
+		}
+	}
+
+	return map[string]interface{}{
+		"message": response,
+		"model":   modelName,
+	}, nil
 }
 
 func NewChatGeminiAction() sdk.Action {
