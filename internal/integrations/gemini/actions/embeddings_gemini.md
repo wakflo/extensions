@@ -6,7 +6,7 @@ This action generates vector embeddings for text using Gemini's embedding models
 - Semantic search
 - Document similarity
 - Text clustering
-- RAG (Retrieval Augmented Generation) pipelines
+- RAG (Retrieval Augmented Generation) pipelines.
 
 ### Available Tasks
 - **retrieval_document**: For indexing documents
