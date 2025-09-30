@@ -3,11 +3,11 @@
 This action uses Gemini's function calling to extract structured data from text.
 
 ### Use Cases
-- Extract contact information from emails
-- Parse invoice details from documents
-- Extract product specifications from descriptions
-- Convert natural language to API parameters
-- Extract entities and relationships from text
+- Extract contact information from emails.
+- Parse invoice details from documents.
+- Extract product specifications from descriptions.
+- Convert natural language to API parameters.
+- Extract entities and relationships from text.
 
 ### Function Schema Format
 Provide a JSON schema defining the structure you want to extract.
