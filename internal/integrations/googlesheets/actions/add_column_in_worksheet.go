@@ -3,6 +3,7 @@ package actions
 import (
 	"context"
 	"errors"
+	"strconv"
 
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googlesheets/shared"
@@ -17,6 +18,7 @@ type addColumnInWorksheetActionProps struct {
 	SpreadSheetID     string `json:"spreadsheetId"`
 	SheetID           string `json:"sheetId"`
 	SheetColumnIndex  string `json:"sheetColumnIndex"`
+	ColumnName        string `json:"columnName"`
 	IncludeTeamDrives bool   `json:"includeTeamDrives"`
 }
 
@@ -51,9 +53,14 @@ func (a *AddColumnInWorksheetAction) Properties() *smartform.FormSchema {
 		Required(false).
 		HelpText("Whether to include team drives in the folder selection.")
 
-	form.TextField("sheetColumnIndex", "sheetColumnIndex").
-		Placeholder("Sheet Column Index").
-		HelpText("The index of the column where the new column should be added. Index is zero based.(E.g; 0,1 etc)").
+	form.TextField("columnName", "Column Name").
+		Placeholder("Enter column name").
+		HelpText("The name/header for the new column").
+		Required(false)
+
+	form.TextField("sheetColumnIndex", "Sheet Column Index").
+		Placeholder("0").
+		HelpText("The index of the column where the new column should be inserted BEFORE. Index is zero-based (0=A, 1=B, etc). For example, entering 5 will insert a new column before column F.").
 		Required(true)
 
 	schema := form.Build()
@@ -93,30 +100,89 @@ func (a *AddColumnInWorksheetAction) Perform(ctx sdkcontext.PerformContext) (cor
 		return nil, errors.New("sheet column index is required")
 	}
 
-	// Create the InsertDimensionRequest
+	// Parse sheet ID
+	sheetID, err := strconv.ParseInt(input.SheetID, 10, 64)
+	if err != nil {
+		return nil, errors.New("invalid sheet ID: must be a number")
+	}
+
+	// Parse column index
+	columnIndex, err := strconv.ParseInt(input.SheetColumnIndex, 10, 64)
+	if err != nil {
+		return nil, errors.New("invalid column index: must be a number")
+	}
+
+	// Validate the column index is non-negative
+	if columnIndex < 0 {
+		return nil, errors.New("column index must be 0 or greater")
+	}
+
+	// Create a batch of requests
+	requests := []*sheets.Request{}
+
+	// First request: Insert the column
 	insertDimensionRequest := &sheets.InsertDimensionRequest{
 		Range: &sheets.DimensionRange{
-			SheetId:    shared.ConvertToInt64(input.SheetID),
+			SheetId:    sheetID,
 			Dimension:  "COLUMNS",
-			StartIndex: shared.ConvertToInt64(input.SheetColumnIndex),
-			EndIndex:   shared.ConvertToInt64(input.SheetColumnIndex) + 1,
+			StartIndex: columnIndex,
+			EndIndex:   columnIndex + 1,
 		},
 		InheritFromBefore: false,
 	}
 
+	// Force send fields to ensure 0 values are sent
+	insertDimensionRequest.Range.ForceSendFields = []string{"StartIndex", "EndIndex", "SheetId"}
+
+	requests = append(requests, &sheets.Request{
+		InsertDimension: insertDimensionRequest,
+	})
+
+	// Second request: Add column name if provided
+	if input.ColumnName != "" {
+		// Update the first cell of the new column with the column name
+		updateCellRequest := &sheets.UpdateCellsRequest{
+			Range: &sheets.GridRange{
+				SheetId:          sheetID,
+				StartRowIndex:    0,
+				EndRowIndex:      1,
+				StartColumnIndex: columnIndex,
+				EndColumnIndex:   columnIndex + 1,
+			},
+			Rows: []*sheets.RowData{
+				{
+					Values: []*sheets.CellData{
+						{
+							UserEnteredValue: &sheets.ExtendedValue{
+								StringValue: &input.ColumnName,
+							},
+						},
+					},
+				},
+			},
+			Fields: "userEnteredValue",
+		}
+
+		// Force send fields for the grid range
+		updateCellRequest.Range.ForceSendFields = []string{"StartRowIndex", "EndRowIndex", "StartColumnIndex", "EndColumnIndex", "SheetId"}
+
+		requests = append(requests, &sheets.Request{
+			UpdateCells: updateCellRequest,
+		})
+	}
+
 	// Create the BatchUpdateSpreadsheetRequest
 	batchUpdateRequest := &sheets.BatchUpdateSpreadsheetRequest{
-		Requests: []*sheets.Request{
-			{
-				InsertDimension: insertDimensionRequest,
-			},
-		},
+		Requests: requests,
 	}
 
 	spreadsheet, err := sheetService.Spreadsheets.BatchUpdate(input.SpreadSheetID, batchUpdateRequest).
 		Do()
+	if err != nil {
+		return nil, err
+	}
 
-	return spreadsheet, err
+	return spreadsheet, nil
 }
 
 func NewAddColumnInWorksheetAction() sdk.Action {
