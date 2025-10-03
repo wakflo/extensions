@@ -11,6 +11,7 @@ require (
 	github.com/Khan/genqlient v0.7.0
 	github.com/aftership/tracking-sdk-go/v5 v5.0.2
 	github.com/bold-commerce/go-shopify/v4 v4.7.0
+	github.com/gabriel-vasile/mimetype v1.4.8
 	github.com/gocarina/gocsv v0.0.0-20240520201108-78e41c74b4b1
 	github.com/google/generative-ai-go v0.19.0
 	github.com/gookit/goutil v0.6.18
@@ -41,7 +42,6 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/cavaliergopher/grab/v3 v3.0.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0 // indirect
