@@ -1,7 +1,9 @@
 package actions
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 
 	"github.com/juicycleff/smartform/v1"
 	"github.com/wakflo/extensions/internal/integrations/googledrive/shared"
@@ -9,12 +11,14 @@ import (
 	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 	"github.com/wakflo/go-sdk/v2/core"
 	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
 )
 
 type createFileActionProps struct {
 	FileName          string  `json:"fileName"`
-	Content           []byte  `json:"content"`
+	Content           string  `json:"content"`
+	ContentType       string  `json:"contentType"`
 	ParentFolder      *string `json:"parentFolder"`
 	IncludeTeamDrives bool    `json:"includeTeamDrives"`
 }
@@ -31,9 +35,9 @@ func (a *CreateFileAction) Metadata() sdk.ActionMetadata {
 		Documentation: createFileDocs,
 		SampleOutput: map[string]any{
 			"kind":     "drive#file",
-			"mimeType": "image/jpeg",
+			"mimeType": "text/plain",
 			"id":       "1dpv4-sKJfKRwI9qx1vWqQhEGEn3EpbI5",
-			"name":     "example.jpg",
+			"name":     "example.txt",
 		},
 		Settings: core.ActionSettings{},
 	}
@@ -48,16 +52,22 @@ func (a *CreateFileAction) Properties() *smartform.FormSchema {
 		Required(true).
 		HelpText("The name of the new file with extension.")
 
-	form.TextField("content", "File").
-		Placeholder("file to upload.").
+	form.TextareaField("content", "Content").
+		Placeholder("Enter file content here...").
 		Required(true).
-		HelpText("The name of the new file with extension.")
+		HelpText("The content to be written to the file.")
+
+	form.SelectField("contentType", "Content Type").
+		AddOption("text", "Text").
+		AddOption("csv", "CSV").
+		AddOption("xml", "XML").
+		DefaultValue("text").
+		Required(true).
+		HelpText("The type of content being created.")
 
 	shared.RegisterParentFoldersProp(form)
 
-	// Add include team drives field
 	form.CheckboxField("includeTeamDrives", "Include Team Drives").
-		Placeholder("Enter a value for Include Team Drives.").
 		Required(false).
 		HelpText("Whether to include team drives in the folder selection.")
 
@@ -73,13 +83,11 @@ func (a *CreateFileAction) Auth() *core.AuthMetadata {
 
 // Perform executes the action with the given context and input
 func (a *CreateFileAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
-	// Use the InputToTypeSafely helper function to convert the input to our struct
 	input, err := sdk.InputToTypeSafely[createFileActionProps](ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get the token source from the auth context
 	authCtx, err := ctx.AuthContext()
 	if err != nil {
 		return nil, err
@@ -90,24 +98,39 @@ func (a *CreateFileAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, er
 		return nil, err
 	}
 
-	var parents []string
-	if input.ParentFolder != nil {
-		parents = append(parents, *input.ParentFolder)
+	// Determine MIME type based on content type
+	var mimeType string
+	switch input.ContentType {
+	case "csv":
+		mimeType = "text/csv"
+	case "xml":
+		mimeType = "text/xml"
+	default:
+		mimeType = "text/plain"
 	}
 
-	folder, err := driveService.Files.Create(&drive.File{
-		MimeType: "application/vnd.google-apps.file",
+	// Create file metadata
+	fileMetadata := &drive.File{
 		Name:     input.FileName,
-		Parents:  parents,
-	}).
+		MimeType: mimeType,
+	}
+
+	// Add parent folder if specified
+	if input.ParentFolder != nil {
+		fileMetadata.Parents = []string{*input.ParentFolder}
+	}
+
+	// Create the file with content
+	file, err := driveService.Files.Create(fileMetadata).
+		Media(bytes.NewReader([]byte(input.Content)), googleapi.ContentType(mimeType)).
 		Fields("id, name, mimeType, webViewLink, kind, createdTime").
 		SupportsAllDrives(input.IncludeTeamDrives).
 		Do()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create file: %w", err)
 	}
 
-	return folder, nil
+	return file, nil
 }
 
 func NewCreateFileAction() sdk.Action {
