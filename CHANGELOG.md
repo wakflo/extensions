@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.16.2](https://github.com/wakflo/extensions/compare/v0.16.1...v0.16.2) (2025-10-03)
+
+
+### Bug Fixes
+
+* resolve google drive create and upload file actions ([44d1e5d](https://github.com/wakflo/extensions/commit/44d1e5de0876ac307e278c6a77b383e78870716d))
+* resolve google drive create and upload file actions ([1353931](https://github.com/wakflo/extensions/commit/1353931c2806bade35e44f92808ff30e77d7fcad))
+* resolve google drive create and upload file actions ([7cc0c27](https://github.com/wakflo/extensions/commit/7cc0c27a82e27717c2e852d6aac5b3580d95bc54))
+
 ## [0.16.1](https://github.com/wakflo/extensions/compare/v0.16.0...v0.16.1) (2025-09-30)
 
 
