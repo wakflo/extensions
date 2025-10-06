@@ -95,11 +95,11 @@ func (a *SearchRecordsAction) Properties() *smartform.FormSchema {
 		Placeholder("Sort field").
 		Required(false).
 		HelpText("Field to sort results by (e.g., Created_Time, Last_Name)").
-		AddOption("", "None").
+		// AddOption("", "None").
 		AddOption("id", "ID").
 		AddOption("Created_Time", "Created Time").
-		AddOption("Modified_Time", "Modified Time").
-		DefaultValue("")
+		AddOption("Modified_Time", "Modified Time")
+		// DefaultValue("")
 
 	form.SelectField("sortOrder", "Sort Order").
 		Placeholder("Sort order").

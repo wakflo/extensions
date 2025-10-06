@@ -13,3 +13,25 @@
 // limitations under the License.
 
 package shared
+
+// ModuleListResponse represents the response from Zoho CRM modules API
+type ModuleListResponse struct {
+	Modules []Module `json:"modules"`
+}
+
+// Module represents a Zoho CRM module
+type Module struct {
+	APIName             string `json:"api_name"`
+	ModuleName          string `json:"module_name"`
+	PluralLabel         string `json:"plural_label"`
+	SingularLabel       string `json:"singular_label"`
+	ID                  string `json:"id"`
+	Visible             bool   `json:"visible"`
+	APIsupported        bool   `json:"api_supported"`
+	Creatable           bool   `json:"creatable"`
+	Deletable           bool   `json:"deletable"`
+	Editable            bool   `json:"editable"`
+	Convertable         bool   `json:"convertable"`
+	Viewable            bool   `json:"viewable"`
+	InventoryTemplateSupported bool `json:"inventory_template_supported"`
+}
