@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.17.1](https://github.com/wakflo/extensions/compare/v0.17.0...v0.17.1) (2025-10-06)
+
+
+### Bug Fixes
+
+* help text for organization selection ([e699039](https://github.com/wakflo/extensions/commit/e699039400752dae18ac7dadb55b4ec57b129695))
+* version bump ([833f325](https://github.com/wakflo/extensions/commit/833f325e81e36ac266f4da599dca61c411c683ca))
+
 ## [0.17.0](https://github.com/wakflo/extensions/compare/v0.16.2...v0.17.0) (2025-10-06)
 
 
