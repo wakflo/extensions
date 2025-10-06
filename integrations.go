@@ -3,6 +3,7 @@ package extensions
 import (
 	"github.com/gosimple/slug"
 	"github.com/wakflo/extensions/internal/integrations/calendly"
+	"github.com/wakflo/extensions/internal/integrations/claude"
 	"github.com/wakflo/extensions/internal/integrations/discord"
 	"github.com/wakflo/extensions/internal/integrations/docconverter"
 	"github.com/wakflo/extensions/internal/integrations/telegrambot"
@@ -134,6 +135,7 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		docconverter.Integration,      // Doc Converter
 		whatsapp.Integration,          // Whatsapp Business
 		telegrambot.Integration,       // Telegram Bot
+		claude.Integration,						 // Claude
 	}
 
 	// 🛑Do-Not-Edit

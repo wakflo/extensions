@@ -134,8 +134,8 @@ func GetModulesFunction() *sdk.DynamicOptionsFn {
 			}
 
 			items = append(items, map[string]any{
-				"value": apiName,
-				"label": displayName,
+				"id":   apiName,
+				"name": displayName,
 			})
 		}
 
