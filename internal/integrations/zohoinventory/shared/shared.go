@@ -141,5 +141,5 @@ func GetOrganizationsProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
 				End().
 				GetDynamicSource(),
 		).
-		HelpText("Select organization")
+		HelpText("Select an organization")
 }
