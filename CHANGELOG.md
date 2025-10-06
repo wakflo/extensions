@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/wakflo/extensions/compare/v0.16.2...v0.17.0) (2025-10-06)
+
+
+### Features
+
+* Add Claude integration with text comparison, summarization, and translation features ([306bdb6](https://github.com/wakflo/extensions/commit/306bdb6cdbc80b497fcb28f41a456970d64381ef))
+
 ## [0.16.2](https://github.com/wakflo/extensions/compare/v0.16.1...v0.16.2) (2025-10-03)
 
 
