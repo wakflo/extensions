@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.18.0](https://github.com/wakflo/extensions/compare/v0.17.1...v0.18.0) (2025-10-14)
+
+
+### Features
+
+* implement youtube caption downloader ([2987c43](https://github.com/wakflo/extensions/commit/2987c430c34f2f09e23b1b974fa4d5081a7d814d))
+* implement youtube caption downloader ([535d71d](https://github.com/wakflo/extensions/commit/535d71d83b5d62690abcfc20b71b8d0ca6d97af0))
+* implement youtube caption downloader ([3bb681b](https://github.com/wakflo/extensions/commit/3bb681bb1124ab575203cf93b2c0716093a14e49))
+* implement youtube caption downloader ([28e9329](https://github.com/wakflo/extensions/commit/28e932995b7cf606666143be5f2d570e4e365677))
+
 ## [0.17.1](https://github.com/wakflo/extensions/compare/v0.17.0...v0.17.1) (2025-10-06)
 
 
