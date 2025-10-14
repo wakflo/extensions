@@ -66,6 +66,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/gemini"
 	"github.com/wakflo/extensions/internal/integrations/googledrive"
 	"github.com/wakflo/extensions/internal/integrations/youtube"
+	captionDownloader "github.com/wakflo/extensions/internal/integrations/youtubecaptiondownloader"
 
 	"github.com/wakflo/go-sdk/v2"
 )
@@ -135,7 +136,8 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		docconverter.Integration,      // Doc Converter
 		whatsapp.Integration,          // Whatsapp Business
 		telegrambot.Integration,       // Telegram Bot
-		claude.Integration,						 // Claude
+		claude.Integration,            // Claude
+		captionDownloader.Integration, // Youtube caption downloader
 	}
 
 	// 🛑Do-Not-Edit

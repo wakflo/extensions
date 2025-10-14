@@ -1,0 +1,16 @@
+[integration]
+name = "YouTube Caption Downloader"
+description = """Extract captions and transcripts from YouTube videos without any authentication or API keys. This integration connects YouTube's public caption data with your workflow automation, enabling you to access video transcripts for various use cases. Use this integration to:
+
+* Extract captions from any public YouTube video instantly
+* Convert video content to text for accessibility purposes
+* Analyze video content through transcript extraction
+* Create searchable indexes of video content
+* Generate notes or summaries from educational videos
+* Repurpose video content into written formats
+* Support multiple languages through YouTube's caption system
+* Process videos without rate limits or API quotas"""
+version = "1.0.0"
+icon = "logos:youtube-icon"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

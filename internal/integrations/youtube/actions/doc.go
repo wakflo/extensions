@@ -13,3 +13,6 @@ var updateVideoDocs string
 
 //go:embed upload_video.go
 var uploadVideoDocs string
+
+//go:embed: download_caption.go
+var downloadCaptionDocs string
