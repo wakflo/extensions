@@ -26,6 +26,7 @@ var (
 			"https://www.googleapis.com/auth/youtube.force-ssl",
 			"https://www.googleapis.com/auth/youtube.readonly",
 			"https://www.googleapis.com/auth/youtube.upload",
+			"https://www.googleapis.com/auth/youtubepartner",
 		}).
 		Build()
 )
@@ -668,4 +669,114 @@ func min(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func RegisterLanguageProps(form *smartform.FormBuilder, fieldName, label string, required bool) *smartform.FieldBuilder {
+	getLanguages := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
+		authCtx, err := ctx.AuthContext()
+		if err != nil {
+			return nil, err
+		}
+
+		// Create HTTP client
+		client := &http.Client{}
+
+		// Use i18nLanguages API to get list of supported languages
+		url := "https://www.googleapis.com/youtube/v3/i18nLanguages?part=snippet&hl=en"
+
+		// Create request
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		// Set headers
+		req.Header.Set("Authorization", "Bearer "+authCtx.AccessToken)
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("User-Agent", "Wakflo-YouTube-Integration/1.0")
+
+		// Send request
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		// Read response body
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			// Try to parse Google API error
+			var apiError struct {
+				Error struct {
+					Code    int    `json:"code"`
+					Message string `json:"message"`
+				} `json:"error"`
+			}
+			json.Unmarshal(body, &apiError)
+			return nil, fmt.Errorf("API error %d: %s", resp.StatusCode, apiError.Error.Message)
+		}
+
+		// Parse the language list response
+		var langList struct {
+			Items []struct {
+				ID      string `json:"id"`
+				Snippet struct {
+					HL   string `json:"hl"`
+					Name string `json:"name"`
+				} `json:"snippet"`
+			} `json:"items"`
+		}
+
+		err = json.Unmarshal(body, &langList)
+		if err != nil {
+			return nil, err
+		}
+
+		// Map to options format
+		items := arrutil.Map[struct {
+			ID      string `json:"id"`
+			Snippet struct {
+				HL   string `json:"hl"`
+				Name string `json:"name"`
+			} `json:"snippet"`
+		}, map[string]any](langList.Items, func(input struct {
+			ID      string `json:"id"`
+			Snippet struct {
+				HL   string `json:"hl"`
+				Name string `json:"name"`
+			} `json:"snippet"`
+		}) (target map[string]any, find bool) {
+			return map[string]any{
+				"id":   input.ID,
+				"name": fmt.Sprintf("%s (%s)", input.Snippet.Name, input.ID),
+			}, true
+		})
+
+		// Add option for original language at the beginning
+		originalOption := map[string]any{
+			"id":   "",
+			"name": "Original Language (No Translation)",
+		}
+		items = append([]map[string]any{originalOption}, items...)
+
+		return ctx.Respond(items, len(items))
+	}
+
+	return form.SelectField(fieldName, label).
+		Placeholder("Select a language for translation").
+		Required(required).
+		WithDynamicOptions(
+			smartform.NewOptionsBuilder().
+				Dynamic().
+				WithFunctionOptions(sdk.WithDynamicFunctionCalling(&getLanguages)).
+				WithSearchSupport().
+				End().
+				GetDynamicSource(),
+		).
+		HelpText("Leave as 'Original Language' to download without translation, or select a language to translate the captions").
+		DefaultValue("")
 }

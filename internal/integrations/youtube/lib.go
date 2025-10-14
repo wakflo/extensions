@@ -40,6 +40,7 @@ func (n *Youtube) Actions() []sdk.Action {
 		actions.NewGetVideoAction(),
 		actions.NewUpdateVideoAction(),
 		actions.NewUploadVideoAction(),
+		actions.NewDownloadCaptionAction(),
 	}
 }
 
