@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.19.0](https://github.com/wakflo/extensions/compare/v0.18.1...v0.19.0) (2025-10-17)
+
+
+### Features
+
+* ghost cms integration implementation ([dd06d6d](https://github.com/wakflo/extensions/commit/dd06d6d667e28d007c16cd84b01a8aac52a3931d))
+* ghost cms integration implementation ([6e021fd](https://github.com/wakflo/extensions/commit/6e021fd024856a94f6b7d5f153a57699fb86ce58))
+
 ## [0.18.1](https://github.com/wakflo/extensions/compare/v0.18.0...v0.18.1) (2025-10-17)
 
 
