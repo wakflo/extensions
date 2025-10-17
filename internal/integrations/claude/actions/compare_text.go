@@ -163,7 +163,7 @@ func (a *CompareTextsAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, 
 	}
 
 	if input.Temperature == 0 {
-		input.Temperature = 0.2 
+		input.Temperature = 0.2
 	}
 
 	if input.DetailLevel == "" {
@@ -281,7 +281,6 @@ func getTextStatistics(text string) map[string]int {
 		"characters": characters,
 	}
 }
-
 
 func buildSimilarityComparisonPrompt(detailLevel string) string {
 	base := "Compare these two texts and analyze their similarity. Return a JSON object with:\n"

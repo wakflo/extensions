@@ -13,6 +13,7 @@ require (
 	github.com/bold-commerce/go-shopify/v4 v4.7.0
 	github.com/gabriel-vasile/mimetype v1.4.8
 	github.com/gocarina/gocsv v0.0.0-20240520201108-78e41c74b4b1
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/generative-ai-go v0.19.0
 	github.com/gookit/goutil v0.6.18
 	github.com/gosimple/slug v1.15.0
