@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.18.1](https://github.com/wakflo/extensions/compare/v0.18.0...v0.18.1) (2025-10-17)
+
+
+### Bug Fixes
+
+* fix yotube caption downloader failing in production ([4dc9021](https://github.com/wakflo/extensions/commit/4dc9021e9f6b020ddad58918404b493ee0f48a8f))
+* Implement youtube caption downloader ([ac6df82](https://github.com/wakflo/extensions/commit/ac6df82ea42cccdc91e77b631713f08f71bafc2b))
+
 ## [0.18.0](https://github.com/wakflo/extensions/compare/v0.17.1...v0.18.0) (2025-10-14)
 
 
