@@ -302,7 +302,7 @@ func saveSRTToFile(srtContent string, filename string) error {
 	}
 
 	// Write to file
-	return os.WriteFile(filename, []byte(srtContent), 0644)
+	return os.WriteFile(filename, []byte(srtContent), 0o644)
 }
 
 // NewGetVideoCaptionAction creates a new instance of the action

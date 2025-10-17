@@ -16,13 +16,13 @@ import (
 )
 
 type translateTextActionProps struct {
-	Text          string  `json:"text"`
-	TargetLang    string  `json:"target_lang"`
-	SourceLang    string  `json:"source_lang"`
-	Model         string  `json:"model"`
-	Formality     string  `json:"formality"`
-	PreserveTone  bool    `json:"preserve_tone"`
-	Temperature   float64 `json:"temperature"`
+	Text         string  `json:"text"`
+	TargetLang   string  `json:"target_lang"`
+	SourceLang   string  `json:"source_lang"`
+	Model        string  `json:"model"`
+	Formality    string  `json:"formality"`
+	PreserveTone bool    `json:"preserve_tone"`
+	Temperature  float64 `json:"temperature"`
 }
 
 type TranslateTextAction struct{}
@@ -36,12 +36,12 @@ func (a *TranslateTextAction) Metadata() sdk.ActionMetadata {
 		Documentation: translateTextDocs,
 		Icon:          "",
 		SampleOutput: map[string]any{
-			"translated_text":    "Bonjour le monde!",
-			"source_language":    "English",
-			"target_language":    "French",
-			"detected_language":  "en",
-			"confidence":         0.95,
-			"alternative":        "Salut le monde!",
+			"translated_text":   "Bonjour le monde!",
+			"source_language":   "English",
+			"target_language":   "French",
+			"detected_language": "en",
+			"confidence":        0.95,
+			"alternative":       "Salut le monde!",
 			"model":             "claude-3-5-sonnet-20241022",
 		},
 		Settings: core.ActionSettings{},
@@ -265,7 +265,7 @@ func (a *TranslateTextAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 		return nil, err
 	}
 
-	if authCtx.Extra["apiKey"] == ""{
+	if authCtx.Extra["apiKey"] == "" {
 		return nil, errors.New("please add your claude api key to continue")
 	}
 
@@ -290,7 +290,7 @@ func (a *TranslateTextAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 	}
 
 	var prompt string
-	
+
 	systemPrompt := "You are a professional translator with native-level fluency in multiple languages. "
 	systemPrompt += "Provide accurate, natural-sounding translations that preserve meaning, context, and cultural nuances. "
 	systemPrompt += "When translating, consider idiomatic expressions and provide culturally appropriate equivalents rather than literal translations."
@@ -298,7 +298,7 @@ func (a *TranslateTextAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 	if input.SourceLang == "auto" {
 		prompt = fmt.Sprintf("Translate the following text to %s.", getLanguageName(input.TargetLang))
 	} else {
-		prompt = fmt.Sprintf("Translate the following %s text to %s.", 
+		prompt = fmt.Sprintf("Translate the following %s text to %s.",
 			getLanguageName(input.SourceLang), getLanguageName(input.TargetLang))
 	}
 
@@ -362,7 +362,7 @@ func (a *TranslateTextAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 			"translated_text": responseText,
 			"source_language": getLanguageName(input.SourceLang),
 			"target_language": getLanguageName(input.TargetLang),
-			"model":          response.Model,
+			"model":           response.Model,
 			"usage": map[string]int{
 				"input_tokens":  response.Usage.InputTokens,
 				"output_tokens": response.Usage.OutputTokens,
@@ -374,8 +374,8 @@ func (a *TranslateTextAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 	result := map[string]interface{}{
 		"source_language": getLanguageName(input.SourceLang),
 		"target_language": getLanguageName(input.TargetLang),
-		"formality":      input.Formality,
-		"model":         response.Model,
+		"formality":       input.Formality,
+		"model":           response.Model,
 		"usage": map[string]int{
 			"input_tokens":  response.Usage.InputTokens,
 			"output_tokens": response.Usage.OutputTokens,

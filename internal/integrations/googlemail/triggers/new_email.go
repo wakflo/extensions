@@ -18,24 +18,24 @@ import (
 type TriggerMode string
 
 const (
-	ModeNewEmail         TriggerMode = "new_email"
-	ModeSearchMatch      TriggerMode = "search_match"
-	ModeNewAttachment    TriggerMode = "new_attachment"
-	ModeNewLabeled       TriggerMode = "new_labeled"
-	ModeNewStarred       TriggerMode = "new_starred"
-	ModeNewConversation  TriggerMode = "new_conversation"
+	ModeNewEmail        TriggerMode = "new_email"
+	ModeSearchMatch     TriggerMode = "search_match"
+	ModeNewAttachment   TriggerMode = "new_attachment"
+	ModeNewLabeled      TriggerMode = "new_labeled"
+	ModeNewStarred      TriggerMode = "new_starred"
+	ModeNewConversation TriggerMode = "new_conversation"
 )
 
 type newEmailTriggerProps struct {
-	Mode           TriggerMode `json:"mode"`
-	SearchQuery    string      `json:"searchQuery"`    // For search mode
-	Label          string      `json:"label"`          // For labeled mode
-	IncludeSpam    bool        `json:"includeSpam"`    
-	IncludeTrash   bool        `json:"includeTrash"`
-	MaxResults     int         `json:"maxResults"`
+	Mode         TriggerMode `json:"mode"`
+	SearchQuery  string      `json:"searchQuery"` // For search mode
+	Label        string      `json:"label"`       // For labeled mode
+	IncludeSpam  bool        `json:"includeSpam"`
+	IncludeTrash bool        `json:"includeTrash"`
+	MaxResults   int         `json:"maxResults"`
 	// Legacy fields for backward compatibility
-	Subject        string      `json:"subject"`
-	From           string      `json:"from"`
+	Subject string `json:"subject"`
+	From    string `json:"from"`
 }
 
 type NewEmailTrigger struct{}
@@ -49,14 +49,14 @@ func (t *NewEmailTrigger) Metadata() sdk.TriggerMetadata {
 		Type:          sdkcore.TriggerTypePolling,
 		Documentation: newEmailDocs,
 		SampleOutput: map[string]any{
-			"id":           "12345abcde",
-			"threadId":     "thread123",
-			"subject":      "Important Message",
-			"from":         "sender@example.com",
-			"to":           "recipient@example.com",
-			"date":         "Mon, 01 Jan 2025 10:00:00 -0700",
-			"snippet":      "This is the beginning of the email...",
-			"labels":       []string{"INBOX", "IMPORTANT"},
+			"id":             "12345abcde",
+			"threadId":       "thread123",
+			"subject":        "Important Message",
+			"from":           "sender@example.com",
+			"to":             "recipient@example.com",
+			"date":           "Mon, 01 Jan 2025 10:00:00 -0700",
+			"snippet":        "This is the beginning of the email...",
+			"labels":         []string{"INBOX", "IMPORTANT"},
 			"hasAttachments": true,
 			"attachments": []map[string]any{
 				{
@@ -65,9 +65,9 @@ func (t *NewEmailTrigger) Metadata() sdk.TriggerMetadata {
 					"size":     102400,
 				},
 			},
-			"isStarred":    false,
-			"isImportant":  true,
-			"isUnread":     true,
+			"isStarred":   false,
+			"isImportant": true,
+			"isUnread":    true,
 		},
 	}
 }
@@ -93,7 +93,6 @@ func (t *NewEmailTrigger) Props() *smartform.FormSchema {
 		AddOption("new_conversation", "New Conversation").
 		DefaultValue("new_email").
 		HelpText("Select what type of Gmail event should trigger this workflow")
-
 
 	form.TextField("searchQuery", "Search Query").
 		Placeholder("is:unread has:attachment from:important@example.com").
@@ -174,7 +173,7 @@ func (t *NewEmailTrigger) Execute(ctx sdkcontext.ExecuteContext) (sdkcore.JSON, 
 
 	// Configure list call
 	listCall := gmailService.Users.Messages.List("me").Q(query)
-	
+
 	if input.MaxResults > 0 {
 		listCall.MaxResults(int64(input.MaxResults))
 	} else {
@@ -218,21 +217,21 @@ func (t *NewEmailTrigger) buildQuery(input *newEmailTriggerProps, lastRunTime ti
 		if input.SearchQuery != "" {
 			queryParts = append(queryParts, input.SearchQuery)
 		}
-	
+
 	case ModeNewAttachment:
 		queryParts = append(queryParts, "has:attachment")
-	
+
 	case ModeNewLabeled:
 		if input.Label != "" {
 			queryParts = append(queryParts, fmt.Sprintf("label:%s", input.Label))
 		}
-	
+
 	case ModeNewStarred:
 		queryParts = append(queryParts, "is:starred")
-	
+
 	case ModeNewConversation:
 		queryParts = append(queryParts, "in:inbox")
-	
+
 	default:
 		queryParts = append(queryParts, "in:inbox")
 	}
@@ -248,12 +247,11 @@ func (t *NewEmailTrigger) buildQuery(input *newEmailTriggerProps, lastRunTime ti
 }
 
 func (t *NewEmailTrigger) processMessages(
-	service *gmail.Service, 
+	service *gmail.Service,
 	messages *gmail.ListMessagesResponse,
 	input *newEmailTriggerProps,
 	lastRunTime time.Time,
 ) ([]map[string]interface{}, error) {
-	
 	results := make([]map[string]interface{}, 0)
 	processedThreads := make(map[string]bool)
 
@@ -278,7 +276,7 @@ func (t *NewEmailTrigger) processMessages(
 		}
 
 		emailData := t.extractEmailData(email)
-		
+
 		if input.Mode == ModeNewAttachment {
 			if !emailData["hasAttachments"].(bool) {
 				continue
@@ -293,9 +291,9 @@ func (t *NewEmailTrigger) processMessages(
 
 func (t *NewEmailTrigger) extractEmailData(email *gmail.Message) map[string]interface{} {
 	headers := email.Payload.Headers
-	
+
 	attachments := t.extractAttachments(email.Payload)
-	
+
 	return map[string]interface{}{
 		"id":             email.Id,
 		"threadId":       email.ThreadId,
@@ -317,7 +315,7 @@ func (t *NewEmailTrigger) extractEmailData(email *gmail.Message) map[string]inte
 
 func (t *NewEmailTrigger) extractAttachments(payload *gmail.MessagePart) []map[string]interface{} {
 	attachments := []map[string]interface{}{}
-	
+
 	var findAttachments func(*gmail.MessagePart)
 	findAttachments = func(part *gmail.MessagePart) {
 		if part.Filename != "" && part.Body.AttachmentId != "" {
@@ -328,12 +326,12 @@ func (t *NewEmailTrigger) extractAttachments(payload *gmail.MessagePart) []map[s
 				"size":         part.Body.Size,
 			})
 		}
-		
+
 		for _, subPart := range part.Parts {
 			findAttachments(subPart)
 		}
 	}
-	
+
 	findAttachments(payload)
 	return attachments
 }

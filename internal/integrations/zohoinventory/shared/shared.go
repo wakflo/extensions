@@ -121,7 +121,7 @@ func GetOrganizationsProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
 		organization := organizations.Organizations
 		items := arrutil.Map[Organization, map[string]any](organization, func(input Organization) (target map[string]any, find bool) {
 			return map[string]any{
-				"id": input.OrganizationID,
+				"id":   input.OrganizationID,
 				"name": input.Name,
 			}, true
 		})

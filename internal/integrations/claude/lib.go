@@ -52,9 +52,9 @@ func (c *Claude) Actions() []sdk.Action {
 		actions.NewSummarizeTextAction(),
 		actions.NewTranslateTextAction(),
 		// actions.NewExtractStructuredDataAction(),
-		
+
 		// actions.NewGenerateCodeAction(),
-		
+
 		actions.NewAnalyzeTextAction(),
 		actions.NewCompareTextsAction(),
 	}

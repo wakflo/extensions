@@ -1,0 +1,15 @@
+[integration]
+name = "Ghost CMS"
+description = """Ghost is a powerful open-source publishing platform that enables creators to build and manage modern online publications. This integration allows you to automate your Ghost CMS workflows, including:
+
+* Create, update, and manage posts and pages programmatically
+* Manage members and subscriptions for your publication
+* Organize content with tags and authors
+* Monitor publication activity with real-time triggers
+* Upload and manage media assets
+* Synchronize content across multiple platforms
+* Automate newsletter distribution and member management"""
+version = "0.0.1"
+icon = "devicon:ghost-wordmark"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]

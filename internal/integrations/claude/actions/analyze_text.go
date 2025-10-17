@@ -16,8 +16,6 @@ import (
 	"github.com/wakflo/go-sdk/v2/core"
 )
 
-
-
 type analyzeTextActionProps struct {
 	Text         string  `json:"text"`
 	AnalysisType string  `json:"analysis_type"`
@@ -79,9 +77,9 @@ func (a *AnalyzeTextAction) Metadata() sdk.ActionMetadata {
 					"sentence_variation": "high",
 				},
 				"statistics": map[string]int{
-					"word_count":      500,
-					"sentence_count":  25,
-					"paragraph_count": 5,
+					"word_count":          500,
+					"sentence_count":      25,
+					"paragraph_count":     5,
 					"avg_sentence_length": 20,
 				},
 			},
@@ -160,7 +158,6 @@ func (a *AnalyzeTextAction) Properties() *smartform.FormSchema {
 		HelpText("Optional: Specific aspects or criteria to focus on in the analysis").
 		Required(false)
 
-
 	form.NumberField("temperature", "Temperature").
 		Placeholder("0.2").
 		HelpText("Controls analysis creativity (0=consistent, 1=creative, default: 0.2)").
@@ -184,11 +181,11 @@ func (a *AnalyzeTextAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, e
 		return nil, err
 	}
 
-		if input.Model == "" {
+	if input.Model == "" {
 		return nil, errors.New("Model is required")
 	}
 
-		if authCtx.Extra == nil {
+	if authCtx.Extra == nil {
 		return nil, errors.New("please add your claude api key to continue")
 	}
 
@@ -320,18 +317,18 @@ func getBasicTextStats(text string) map[string]int {
 		sentences = 1
 	}
 	paragraphs := strings.Count(text, "\n\n") + 1
-	
+
 	avgSentenceLength := len(words) / sentences
 	if sentences > 0 {
 		avgSentenceLength = len(words) / sentences
 	}
-	
+
 	return map[string]int{
-		"characters":           len(text),
-		"words":                len(words),
-		"sentences":            sentences,
-		"paragraphs":           paragraphs,
-		"avg_sentence_length":  avgSentenceLength,
+		"characters":          len(text),
+		"words":               len(words),
+		"sentences":           sentences,
+		"paragraphs":          paragraphs,
+		"avg_sentence_length": avgSentenceLength,
 	}
 }
 
@@ -731,7 +728,7 @@ func buildComprehensivePrompt(detailLevel string) string {
   "summary": "2-3 sentence summary"
 }`
 	}
-	
+
 	return `Perform a comprehensive analysis of the text including all aspects. Return a detailed JSON object with:
 {
   "sentiment": {
