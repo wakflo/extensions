@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -9,7 +8,7 @@ import (
 	"time"
 
 	"github.com/juicycleff/smartform/v1"
-	youtube "github.com/sh1nkey/youtube-downloader/v2"
+	caption "github.com/lincaiyong/youtube-caption"
 	"github.com/wakflo/go-sdk/v2"
 	sdkcontext "github.com/wakflo/go-sdk/v2/context"
 	"github.com/wakflo/go-sdk/v2/core"
@@ -18,7 +17,6 @@ import (
 type getVideoCaptionActionProps struct {
 	VideoURL     string `json:"videoURL"`
 	OutputFormat string `json:"outputFormat"`
-	Language     string `json:"language"`
 	SaveSRT      bool   `json:"saveSRT"`
 	SRTFilename  string `json:"srtFilename"`
 }
@@ -30,7 +28,7 @@ func (a *GetVideoCaptionAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
 		ID:            "get_video_caption",
 		DisplayName:   "Get YouTube Caption",
-		Description:   "Extract captions/transcript from a YouTube video. Supports multiple YouTube URL formats and SRT export.",
+		Description:   "Extract captions/transcript from a YouTube video in whatever language is available. Supports multiple YouTube URL formats and SRT export.",
 		Type:          core.ActionTypeAction,
 		Documentation: getVideoCaptionDocs,
 		Icon:          "youtube",
@@ -75,11 +73,6 @@ func (a *GetVideoCaptionAction) Properties() *smartform.FormSchema {
 		AddOption("srt", "SRT Format").
 		HelpText("Choose the format of the caption output")
 
-	form.TextField("language", "Language Code").
-		Required(false).
-		DefaultValue("en").
-		HelpText("Language code for captions (e.g., 'en' for English, 'es' for Spanish). Leave empty to use default.")
-
 	form.CheckboxField("saveSRT", "Save as SRT File").
 		DefaultValue(false).
 		HelpText("Save the captions as an SRT subtitle file")
@@ -106,108 +99,78 @@ func (a *GetVideoCaptionAction) Perform(ctx sdkcontext.PerformContext) (core.JSO
 	}
 
 	// Extract video ID from URL
-	videoID, err := youtube.ExtractVideoID(input.VideoURL)
+	videoID, err := extractVideoIDFallback(input.VideoURL)
 	if err != nil {
-		// If ExtractVideoID fails, try our custom extraction as fallback
-		videoID, err = extractVideoIDFallback(input.VideoURL)
-		if err != nil {
-			return nil, fmt.Errorf("failed to extract video ID: %w", err)
-		}
+		return nil, fmt.Errorf("failed to extract video ID: %w", err)
 	}
 
-	// Create YouTube client
-	client := youtube.Client{
-		HTTPClient: nil, // Uses default HTTP client
+	// Get available caption tracks to show what languages are available
+	tracks, err := caption.GetAvailableTracksWithContext(context.Background(), videoID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch caption tracks: %w", err)
 	}
 
-	// Get video metadata
-	video, err := client.GetVideoContext(context.Background(), input.VideoURL)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch video: %w", err)
+	if len(tracks) == 0 {
+		return nil, fmt.Errorf("no captions available for this video")
 	}
 
 	// Get list of available languages
-	availableLanguages := make([]string, 0, len(video.CaptionTracks))
-	for _, track := range video.CaptionTracks {
+	availableLanguages := make([]string, 0, len(tracks))
+	languageNames := make([]string, 0, len(tracks))
+	for _, track := range tracks {
 		availableLanguages = append(availableLanguages, track.LanguageCode)
+		if track.Name.SimpleText != "" {
+			languageNames = append(languageNames, track.Name.SimpleText)
+		}
 	}
 
-	// Determine language to use
-	languageCode := input.Language
-	if languageCode == "" {
-		languageCode = "en"
-	}
-
-	// Get transcript for the specified language
-	transcript, err := client.GetTranscriptCtx(context.Background(), video, languageCode)
+	// Download captions using default options (library will pick the best available)
+	opts := caption.DefaultOptions()
+	captionData, err := caption.DownloadWithContext(context.Background(), videoID, opts)
 	if err != nil {
-		// If the exact language fails, try language prefix matching
-		if err == youtube.ErrTranscriptDisabled {
-			return nil, fmt.Errorf("transcripts are disabled for this video")
-		}
+		return nil, fmt.Errorf("failed to download captions: %w", err)
+	}
 
-		// Try to find a matching language
-		foundLang := false
-		for _, track := range video.CaptionTracks {
-			if strings.HasPrefix(track.LanguageCode, languageCode) {
-				transcript, err = client.GetTranscriptCtx(context.Background(), video, track.LanguageCode)
-				if err == nil {
-					languageCode = track.LanguageCode
-					foundLang = true
-					break
-				}
-			}
-		}
+	// Get video title (placeholder for now)
+	videoTitle := fmt.Sprintf("Video_%s", videoID)
+	videoURL := fmt.Sprintf("https://www.youtube.com/watch?v=%s", videoID)
 
-		// If still not found and not English, try English as fallback
-		if !foundLang && languageCode != "en" {
-			for _, track := range video.CaptionTracks {
-				if strings.HasPrefix(track.LanguageCode, "en") {
-					transcript, err = client.GetTranscriptCtx(context.Background(), video, track.LanguageCode)
-					if err == nil {
-						languageCode = track.LanguageCode
-						foundLang = true
-						break
-					}
-				}
-			}
-		}
-
-		if !foundLang {
-			if len(availableLanguages) == 0 {
-				return nil, fmt.Errorf("no captions available for this video")
-			}
-			return nil, fmt.Errorf("captions not available in language '%s'. Available languages: %s",
-				input.Language, strings.Join(availableLanguages, ", "))
-		}
+	// Try to determine which language was actually returned
+	// Since the library doesn't tell us, we'll return the first available
+	actualLanguage := "unknown"
+	if len(availableLanguages) > 0 {
+		actualLanguage = availableLanguages[0]
 	}
 
 	// Format the response
 	result := map[string]interface{}{
 		"video_id":            videoID,
-		"video_url":           input.VideoURL,
-		"video_title":         video.Title,
-		"video_author":        video.Author,
-		"video_duration":      formatDuration(video.Duration),
-		"language":            languageCode,
-		"total_segments":      len(transcript),
+		"video_url":           videoURL,
+		"video_title":         videoTitle,
+		"language":            actualLanguage,
+		"total_segments":      len(captionData.Events),
 		"available_languages": availableLanguages,
 	}
 
-	// Generate SRT content
-	srtContent := convertToSRT(transcript)
+	// Add language names if available
+	if len(languageNames) > 0 {
+		result["available_language_names"] = languageNames
+	}
+
+	// Generate SRT content using built-in method
+	srtContent := captionData.GetSRT()
 
 	// Format output based on selected format
 	switch input.OutputFormat {
 	case "text":
-		result["full_text"] = transcript.String()
+		result["full_text"] = captionData.GetPlainText()
 	case "structured":
-		result["captions"] = buildStructuredCaptions(transcript)
+		result["captions"] = buildStructuredCaptionsFromEvents(captionData.Events)
 	case "srt":
 		result["srt_content"] = srtContent
 	case "both":
-		result["captions"] = buildStructuredCaptions(transcript)
-		result["full_text"] = transcript.String()
+		result["captions"] = buildStructuredCaptionsFromEvents(captionData.Events)
+		result["full_text"] = captionData.GetPlainText()
 	}
 
 	// Save SRT file if requested
@@ -215,7 +178,7 @@ func (a *GetVideoCaptionAction) Perform(ctx sdkcontext.PerformContext) (core.JSO
 		filename := input.SRTFilename
 		if filename == "" {
 			// Use video title as filename, sanitizing it
-			filename = sanitizeFilename(video.Title)
+			filename = sanitizeFilename(videoTitle)
 		}
 
 		err = saveSRTToFile(srtContent, filename)
@@ -233,21 +196,47 @@ func (a *GetVideoCaptionAction) Perform(ctx sdkcontext.PerformContext) (core.JSO
 	return result, nil
 }
 
-// buildStructuredCaptions converts transcript to structured format
-func buildStructuredCaptions(transcript youtube.VideoTranscript) []map[string]interface{} {
-	captions := make([]map[string]interface{}, 0, len(transcript))
+// buildStructuredCaptionsFromEvents converts caption.CaptionEvent to structured format
+func buildStructuredCaptionsFromEvents(events []caption.CaptionEvent) []map[string]interface{} {
+	structuredCaptions := make([]map[string]interface{}, 0)
 
-	for _, segment := range transcript {
-		caption := map[string]interface{}{
-			"text":        segment.Text,
-			"start_ms":    segment.StartMs,
-			"duration_ms": segment.Duration,
-			"offset_text": segment.OffsetText,
+	for _, event := range events {
+		// Each event can have multiple segments
+		if len(event.Segments) == 0 {
+			continue
 		}
-		captions = append(captions, caption)
+
+		// Combine all segments in an event into one text
+		var textBuilder strings.Builder
+		for i, segment := range event.Segments {
+			textBuilder.WriteString(segment.UTF8)
+			if i < len(event.Segments)-1 {
+				textBuilder.WriteString(" ")
+			}
+		}
+
+		// Calculate duration (approximation - until next event or default duration)
+		// Since we don't have direct duration info, we'll estimate
+		durationMs := 3000 // Default 3 seconds
+
+		structuredCaption := map[string]interface{}{
+			"text":        textBuilder.String(),
+			"start_ms":    event.TStartMs,
+			"duration_ms": durationMs,
+			"offset_text": formatTimestampFromMs(event.TStartMs),
+		}
+		structuredCaptions = append(structuredCaptions, structuredCaption)
 	}
 
-	return captions
+	return structuredCaptions
+}
+
+// formatTimestampFromMs formats milliseconds to MM:SS format
+func formatTimestampFromMs(milliseconds int) string {
+	totalSeconds := milliseconds / 1000
+	minutes := totalSeconds / 60
+	seconds := totalSeconds % 60
+	return fmt.Sprintf("%d:%02d", minutes, seconds)
 }
 
 // formatDuration formats time.Duration to human-readable string
@@ -303,39 +292,6 @@ func extractVideoIDFallback(url string) (string, error) {
 	}
 
 	return "", fmt.Errorf("unsupported YouTube URL format or invalid video ID")
-}
-
-// convertToSRT converts YouTube transcript to SRT format
-func convertToSRT(transcript youtube.VideoTranscript) string {
-	var srtBuffer bytes.Buffer
-
-	for i, segment := range transcript {
-		// SRT subtitle number (1-based)
-		srtBuffer.WriteString(fmt.Sprintf("%d\n", i+1))
-
-		// Convert timestamps to SRT format (HH:MM:SS,mmm --> HH:MM:SS,mmm)
-		startTime := formatSRTTimestamp(segment.StartMs)
-		endTime := formatSRTTimestamp(segment.StartMs + segment.Duration)
-		srtBuffer.WriteString(fmt.Sprintf("%s --> %s\n", startTime, endTime))
-
-		// Caption text
-		srtBuffer.WriteString(segment.Text)
-		srtBuffer.WriteString("\n\n") // Empty line between subtitles
-	}
-
-	return srtBuffer.String()
-}
-
-// formatSRTTimestamp converts milliseconds to SRT timestamp format (HH:MM:SS,mmm)
-func formatSRTTimestamp(milliseconds int) string {
-	totalSeconds := milliseconds / 1000
-	ms := milliseconds % 1000
-
-	hours := totalSeconds / 3600
-	minutes := (totalSeconds % 3600) / 60
-	seconds := totalSeconds % 60
-
-	return fmt.Sprintf("%02d:%02d:%02d,%03d", hours, minutes, seconds, ms)
 }
 
 // saveSRTToFile saves SRT content to a file
