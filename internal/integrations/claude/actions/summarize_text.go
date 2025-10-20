@@ -22,12 +22,12 @@ type SummarizeTextAction struct{}
 
 func (a *SummarizeTextAction) Metadata() sdk.ActionMetadata {
 	return sdk.ActionMetadata{
-		ID:          "summarize_text_claude",
-		DisplayName: "Summarize Text",
-		Description: "Generate concise summaries of documents, articles, or any long-form content.",
-		Type:        core.ActionTypeAction,
+		ID:            "summarize_text_claude",
+		DisplayName:   "Summarize Text",
+		Description:   "Generate concise summaries of documents, articles, or any long-form content.",
+		Type:          core.ActionTypeAction,
 		Documentation: summarizeTetDocs,
-		Icon: "",
+		Icon:          "",
 		SampleOutput: map[string]any{
 			"summary": "This document discusses...",
 			"model":   "claude-3-5-sonnet-20241022",
@@ -86,12 +86,12 @@ func (a *SummarizeTextAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 		return nil, err
 	}
 
-	if authCtx.Extra["apiKey"] == ""{
+	if authCtx.Extra["apiKey"] == "" {
 		return nil, errors.New("please add your claude api key to continue")
 	}
 
 	prompt := "Summarize the following text"
-	
+
 	switch input.Style {
 	case "executive":
 		prompt += " as an executive summary focusing on key business insights"

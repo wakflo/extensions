@@ -77,18 +77,18 @@ func RegisterModelProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
 			smartform.NewOption("claude-sonnet-4-0", "Claude Sonnet 4 (Alias)"),
 			smartform.NewOption("claude-opus-4-20250514", "Claude Opus 4 (Previous Flagship)"),
 			smartform.NewOption("claude-opus-4-0", "Claude Opus 4 (Alias)"),
-			
+
 			// Claude 3.7 Family
 			smartform.NewOption("claude-3-7-sonnet-20250219", "Claude Sonnet 3.7 (Extended Thinking)"),
 			smartform.NewOption("claude-3-7-sonnet-latest", "Claude Sonnet 3.7 (Alias)"),
-			
+
 			// Claude 3.5 Family
 			smartform.NewOption("claude-3-5-haiku-20241022", "Claude Haiku 3.5 (Fastest)"),
 			smartform.NewOption("claude-3-5-haiku-latest", "Claude Haiku 3.5 (Alias)"),
-			
+
 			// Claude 3 Family
 			smartform.NewOption("claude-3-haiku-20240307", "Claude Haiku 3 (Fast & Compact)"),
-			
+
 			// Legacy Models (if still supported)
 			smartform.NewOption("claude-2.1", "Claude 2.1 (Legacy)"),
 			smartform.NewOption("claude-2.0", "Claude 2.0 (Legacy)"),

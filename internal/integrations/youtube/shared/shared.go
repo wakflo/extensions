@@ -749,7 +749,8 @@ func RegisterLanguageProps(form *smartform.FormBuilder, fieldName, label string,
 				HL   string `json:"hl"`
 				Name string `json:"name"`
 			} `json:"snippet"`
-		}) (target map[string]any, find bool) {
+		},
+		) (target map[string]any, find bool) {
 			return map[string]any{
 				"id":   input.ID,
 				"name": fmt.Sprintf("%s (%s)", input.Snippet.Name, input.ID),

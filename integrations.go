@@ -6,6 +6,7 @@ import (
 	"github.com/wakflo/extensions/internal/integrations/claude"
 	"github.com/wakflo/extensions/internal/integrations/discord"
 	"github.com/wakflo/extensions/internal/integrations/docconverter"
+	"github.com/wakflo/extensions/internal/integrations/ghostcms"
 	"github.com/wakflo/extensions/internal/integrations/telegrambot"
 	"github.com/wakflo/extensions/internal/integrations/whatsapp"
 
@@ -138,6 +139,7 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		telegrambot.Integration,       // Telegram Bot
 		claude.Integration,            // Claude
 		captionDownloader.Integration, // Youtube caption downloader
+		ghostcms.Integration,          // Ghost CMS
 	}
 
 	// 🛑Do-Not-Edit

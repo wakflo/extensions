@@ -147,8 +147,8 @@ func ObfuscateImageURL(url string) map[string]interface{} {
 
 	return map[string]interface{}{
 		"full_link":    url,
-		"encoded_link": encodedURL, 
-		"safe_link":    safeURL,   
+		"encoded_link": encodedURL,
+		"safe_link":    safeURL,
 		"link_parts": map[string]interface{}{
 			"base":         baseURL,
 			"params":       queryParams,
