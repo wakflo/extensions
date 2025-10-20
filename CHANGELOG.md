@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.1](https://github.com/wakflo/extensions/compare/v0.19.0...v0.19.1) (2025-10-20)
+
+
+### Bug Fixes
+
+* add borwser like headers to resolve failire ini production ([b3ff7c6](https://github.com/wakflo/extensions/commit/b3ff7c62d1a5a2a71dfd20b689edb12c929939f9))
+
 ## [0.19.0](https://github.com/wakflo/extensions/compare/v0.18.1...v0.19.0) (2025-10-17)
 
 
