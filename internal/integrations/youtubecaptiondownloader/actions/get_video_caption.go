@@ -3,8 +3,11 @@ package actions
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/juicycleff/smartform/v1"
@@ -93,6 +96,8 @@ func (a *GetVideoCaptionAction) Auth() *core.AuthMetadata {
 
 // Perform executes the action
 func (a *GetVideoCaptionAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, error) {
+	// Ensure HTTP client respects proxy env and sets a user-agent commonly accepted by YouTube
+	configureGlobalHTTPClient()
 	input, err := sdk.InputToTypeSafely[getVideoCaptionActionProps](ctx)
 	if err != nil {
 		return nil, err
@@ -105,9 +110,20 @@ func (a *GetVideoCaptionAction) Perform(ctx sdkcontext.PerformContext) (core.JSO
 	}
 
 	// Get available caption tracks to show what languages are available
-	tracks, err := caption.GetAvailableTracksWithContext(context.Background(), videoID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch caption tracks: %w", err)
+	tracksCtx, tracksCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer tracksCancel()
+
+	var tracks []caption.CaptionTrack
+	operationErr := retry(3, 500*time.Millisecond, func(attempt int) error {
+		var innerErr error
+		tracks, innerErr = caption.GetAvailableTracksWithContext(tracksCtx, videoID)
+		if innerErr != nil {
+			return fmt.Errorf("attempt %d: get available tracks: %w", attempt, innerErr)
+		}
+		return nil
+	})
+	if operationErr != nil {
+		return nil, fmt.Errorf("failed to fetch caption tracks (network/egress/proxy/TLS issues common in prod): %w", operationErr)
 	}
 
 	if len(tracks) == 0 {
@@ -125,10 +141,20 @@ func (a *GetVideoCaptionAction) Perform(ctx sdkcontext.PerformContext) (core.JSO
 	}
 
 	// Download captions using default options (library will pick the best available)
+	downloadCtx, downloadCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer downloadCancel()
 	opts := caption.DefaultOptions()
-	captionData, err := caption.DownloadWithContext(context.Background(), videoID, opts)
-	if err != nil {
-		return nil, fmt.Errorf("failed to download captions: %w", err)
+	var captionData *caption.Caption
+	operationErr = retry(3, 500*time.Millisecond, func(attempt int) error {
+		var innerErr error
+		captionData, innerErr = caption.DownloadWithContext(downloadCtx, videoID, opts)
+		if innerErr != nil {
+			return fmt.Errorf("attempt %d: download captions: %w", attempt, innerErr)
+		}
+		return nil
+	})
+	if operationErr != nil {
+		return nil, fmt.Errorf("failed to download captions (rate-limit/region/consent or blocked egress possible): %w", operationErr)
 	}
 
 	// Get video title (placeholder for now)
@@ -301,8 +327,21 @@ func saveSRTToFile(srtContent string, filename string) error {
 		filename += ".srt"
 	}
 
+	// Resolve target directory (env override -> temp dir)
+	baseDir := os.Getenv("CAPTION_SRT_DIR")
+	if strings.TrimSpace(baseDir) == "" {
+		baseDir = os.TempDir()
+	}
+	if err := os.MkdirAll(baseDir, 0755); err != nil {
+		return fmt.Errorf("create srt directory %q: %w", baseDir, err)
+	}
+	fullPath := filepath.Join(baseDir, filename)
+
 	// Write to file
-	return os.WriteFile(filename, []byte(srtContent), 0644)
+	if err := os.WriteFile(fullPath, []byte(srtContent), 0644); err != nil {
+		return fmt.Errorf("write srt to %q: %w", fullPath, err)
+	}
+	return nil
 }
 
 // NewGetVideoCaptionAction creates a new instance of the action
@@ -335,4 +374,124 @@ func sanitizeFilename(filename string) string {
 	}
 
 	return sanitized
+}
+
+// retry runs fn up to maxAttempts with a fixed delay between attempts.
+// It returns nil on first success; otherwise the last error.
+func retry(maxAttempts int, delay time.Duration, fn func(attempt int) error) error {
+	if maxAttempts <= 0 {
+		maxAttempts = 1
+	}
+	var lastErr error
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		if err := fn(attempt); err != nil {
+			lastErr = err
+			if attempt < maxAttempts {
+				time.Sleep(delay)
+				continue
+			}
+		} else {
+			return nil
+		}
+	}
+	return lastErr
+}
+
+var (
+	httpClientOnce sync.Once
+)
+
+// configureGlobalHTTPClient ensures the default http client/transport uses proxy envs and a UA.
+// The youtube-caption lib uses the default client; customizing it here helps prod egress via proxies.
+func configureGlobalHTTPClient() {
+	httpClientOnce.Do(func() {
+		// Clone default transport to not mutate shared instance unexpectedly
+		baseTransport, _ := http.DefaultTransport.(*http.Transport)
+		if baseTransport == nil {
+			baseTransport = &http.Transport{}
+		}
+		transport := baseTransport.Clone()
+		// Respect environment proxies
+		transport.Proxy = http.ProxyFromEnvironment
+		// Reasonable connection settings
+		transport.MaxIdleConns = 100
+		transport.IdleConnTimeout = 90 * time.Second
+
+		// Wrap RoundTripper to set User-Agent header
+		rt := &userAgentTransport{
+			next: transport,
+			ua:   userAgent(),
+		}
+
+		http.DefaultTransport = rt
+		http.DefaultClient = &http.Client{
+			Transport: rt,
+			Timeout:   60 * time.Second,
+		}
+	})
+}
+
+type userAgentTransport struct {
+	next http.RoundTripper
+	ua   string
+}
+
+func (t *userAgentTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	// Clone so we can safely mutate headers/url
+	r := req.Clone(req.Context())
+
+	// Set a realistic UA if missing
+	if r.Header.Get("User-Agent") == "" {
+		r.Header.Set("User-Agent", t.ua)
+	}
+
+	// Add common browser headers to reduce bot friction
+	if r.Header.Get("Accept") == "" {
+		r.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+	}
+	if r.Header.Get("Accept-Language") == "" {
+		r.Header.Set("Accept-Language", "en-US,en;q=0.9")
+	}
+	if r.Header.Get("Connection") == "" {
+		r.Header.Set("Connection", "keep-alive")
+	}
+
+	// If targeting YouTube/Google, add consent cookie and enforce hl=en
+	host := r.URL.Host
+	if strings.Contains(host, "youtube.com") || strings.Contains(host, "google.com") || strings.Contains(host, "googlevideo.com") {
+		// Add consent cookie if not present
+		// This value is commonly used to bypass EU consent interstitials
+		const consentCookie = "CONSENT=YES+cb.20210328-17-p0.en+FX; Path=/; Domain=.youtube.com"
+		if existing := r.Header.Get("Cookie"); !strings.Contains(existing, "CONSENT=") {
+			if existing != "" {
+				r.Header.Set("Cookie", existing+"; "+consentCookie)
+			} else {
+				r.Header.Set("Cookie", consentCookie)
+			}
+		}
+
+		// Add hl=en to query if missing to standardize language
+		q := r.URL.Query()
+		if q.Get("hl") == "" {
+			q.Set("hl", "en")
+			r.URL.RawQuery = q.Encode()
+		}
+		// Set a plausible Referer for some endpoints
+		if r.Header.Get("Referer") == "" {
+			r.Header.Set("Referer", "https://www.youtube.com/")
+		}
+		if r.Header.Get("Origin") == "" {
+			r.Header.Set("Origin", "https://www.youtube.com")
+		}
+	}
+
+	return t.next.RoundTrip(r)
+}
+
+func userAgent() string {
+	if ua := strings.TrimSpace(os.Getenv("CAPTION_USER_AGENT")); ua != "" {
+		return ua
+	}
+	// A common desktop UA helps avoid some bot checks
+	return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
