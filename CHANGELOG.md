@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.19.2](https://github.com/wakflo/extensions/compare/v0.19.1...v0.19.2) (2025-10-22)
+
+
+### Bug Fixes
+
+* add more consent cookies to caption request header ([48f9c79](https://github.com/wakflo/extensions/commit/48f9c794206faf0c29a868cb1f0710fe2a8a8f16))
+* add more conset cookies to caption request header ([4040911](https://github.com/wakflo/extensions/commit/4040911269904595b6b50a1998a88d35dd7ce2a7))
+
 ## [0.19.1](https://github.com/wakflo/extensions/compare/v0.19.0...v0.19.1) (2025-10-20)
 
 
