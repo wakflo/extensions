@@ -109,25 +109,52 @@ func (a *GetVideoCaptionAction) Perform(ctx sdkcontext.PerformContext) (core.JSO
 		return nil, fmt.Errorf("failed to extract video ID: %w", err)
 	}
 
+	// Validate video ID format (YouTube IDs are 11 characters)
+	if len(videoID) != 11 {
+		return nil, fmt.Errorf("invalid video ID length: %d (expected 11 characters)", len(videoID))
+	}
+
 	// Get available caption tracks to show what languages are available
 	tracksCtx, tracksCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer tracksCancel()
 
 	var tracks []caption.CaptionTrack
-	operationErr := retry(3, 500*time.Millisecond, func(attempt int) error {
-		var innerErr error
-		tracks, innerErr = caption.GetAvailableTracksWithContext(tracksCtx, videoID)
-		if innerErr != nil {
-			return fmt.Errorf("attempt %d: get available tracks: %w", attempt, innerErr)
+	var operationErr error
+
+	// Try multiple strategies for production environments
+	strategies := []string{"default", "with_consent", "with_referer"}
+
+	for _, strategy := range strategies {
+		operationErr = retry(3, 500*time.Millisecond, func(attempt int) error {
+			var innerErr error
+			tracks, innerErr = caption.GetAvailableTracksWithContext(tracksCtx, videoID)
+			if innerErr != nil {
+				return fmt.Errorf("attempt %d (%s): get available tracks: %w", attempt, strategy, innerErr)
+			}
+			// If tracks is empty but no error, this might be a region/consent issue
+			if len(tracks) == 0 {
+				return fmt.Errorf("attempt %d (%s): no tracks returned (possible region/consent/age restriction)", attempt, strategy)
+			}
+			return nil
+		})
+
+		// If we got tracks, break out of strategy loop
+		if len(tracks) > 0 {
+			break
 		}
-		return nil
-	})
+
+		// Wait a bit before trying next strategy
+		if strategy != strategies[len(strategies)-1] {
+			time.Sleep(1 * time.Second)
+		}
+	}
+
 	if operationErr != nil {
-		return nil, fmt.Errorf("failed to fetch caption tracks (network/egress/proxy/TLS issues common in prod): %w", operationErr)
+		return nil, fmt.Errorf("failed to fetch caption tracks after trying multiple strategies (prod may be region-blocked or need different headers): %w", operationErr)
 	}
 
 	if len(tracks) == 0 {
-		return nil, fmt.Errorf("no captions available for this video")
+		return nil, fmt.Errorf("no captions available for this video (video may be private, region-restricted, age-gated, or have no subtitles)")
 	}
 
 	// Get list of available languages
@@ -459,16 +486,26 @@ func (t *userAgentTransport) RoundTrip(req *http.Request) (*http.Response, error
 	// If targeting YouTube/Google, add consent cookie and enforce hl=en
 	host := r.URL.Host
 	if strings.Contains(host, "youtube.com") || strings.Contains(host, "google.com") || strings.Contains(host, "googlevideo.com") {
-		// Add consent cookie if not present
-		// This value is commonly used to bypass EU consent interstitials
-		const consentCookie = "CONSENT=YES+cb.20210328-17-p0.en+FX; Path=/; Domain=.youtube.com"
-		if existing := r.Header.Get("Cookie"); !strings.Contains(existing, "CONSENT=") {
-			if existing != "" {
-				r.Header.Set("Cookie", existing+"; "+consentCookie)
-			} else {
-				r.Header.Set("Cookie", consentCookie)
-			}
+		// Add multiple consent cookies for better coverage
+		consentCookies := []string{
+			"CONSENT=YES+cb.20210328-17-p0.en+FX",
+			"CONSENT=YES+cb.20210401-17-p0.en+FX",
+			"CONSENT=YES+cb.20210501-17-p0.en+FX",
+			"CONSENT=YES+cb.20210601-17-p0.en+FX",
 		}
+
+		existing := r.Header.Get("Cookie")
+		var cookieParts []string
+		if existing != "" {
+			cookieParts = append(cookieParts, existing)
+		}
+
+		// Add all consent cookies
+		for _, cookie := range consentCookies {
+			cookieParts = append(cookieParts, cookie)
+		}
+
+		r.Header.Set("Cookie", strings.Join(cookieParts, "; "))
 
 		// Add hl=en to query if missing to standardize language
 		q := r.URL.Query()
@@ -492,6 +529,13 @@ func userAgent() string {
 	if ua := strings.TrimSpace(os.Getenv("CAPTION_USER_AGENT")); ua != "" {
 		return ua
 	}
-	// A common desktop UA helps avoid some bot checks
-	return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+	// Rotate between different realistic UAs to avoid detection
+	userAgents := []string{
+		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+		"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+	}
+	// Use time-based selection for some randomness
+	index := int(time.Now().Unix()) % len(userAgents)
+	return userAgents[index]
 }
