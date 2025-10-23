@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.20.0](https://github.com/wakflo/extensions/compare/v0.19.2...v0.20.0) (2025-10-23)
+
+
+### Features
+
+* implement social kit integration ([bbb9aa3](https://github.com/wakflo/extensions/commit/bbb9aa3ec49e402cf7df48912ddea0641e545211))
+* implement social kit integration ([55c2b9e](https://github.com/wakflo/extensions/commit/55c2b9e992bcc44eb9a8dc7fcecd7b86ff76e073))
+
 ## [0.19.2](https://github.com/wakflo/extensions/compare/v0.19.1...v0.19.2) (2025-10-22)
 
 
