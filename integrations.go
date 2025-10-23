@@ -66,6 +66,7 @@ import (
 
 	"github.com/wakflo/extensions/internal/integrations/gemini"
 	"github.com/wakflo/extensions/internal/integrations/googledrive"
+	socialKit "github.com/wakflo/extensions/internal/integrations/socialkit"
 	"github.com/wakflo/extensions/internal/integrations/youtube"
 	captionDownloader "github.com/wakflo/extensions/internal/integrations/youtubecaptiondownloader"
 
@@ -140,6 +141,7 @@ func RegisterIntegrations() sdk.IntegrationsRegistrar {
 		claude.Integration,            // Claude
 		captionDownloader.Integration, // Youtube caption downloader
 		ghostcms.Integration,          // Ghost CMS
+		socialKit.Integration,         // SocialKit
 	}
 
 	// 🛑Do-Not-Edit

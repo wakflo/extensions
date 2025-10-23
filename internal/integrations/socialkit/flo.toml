@@ -1,0 +1,13 @@
+[integration]
+name = "SocialKit"
+description = """Integrate SocialKit's social media video analysis API with your workflow automation. Extract video summaries, transcripts, engagement metrics, and custom insights from YouTube, TikTok, and Instagram videos. Use this integration to:
+* Extract accurate transcripts from social media videos for content analysis
+* Get AI-powered video summaries with key insights and main points
+* Retrieve engagement metrics including views, likes, and comments
+* Analyze video comments with sorting and filtering options
+* Create custom AI-driven analysis with tailored prompts and response fields
+* Automate content analysis workflows across multiple platforms"""
+version = "0.0.1"
+icon = "mdi:video-outline"
+categories = ["app"]
+authors = ["Wakflo <integrations@wakflo.com>"]
