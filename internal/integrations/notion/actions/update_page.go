@@ -13,7 +13,7 @@ import (
 type updatePageActionProps struct {
 	Title      string `json:"title"`
 	Content    string `json:"content"`
-	DatabaseID string `json:"database"`
+	DatabaseID string `json:"databaseId"`
 	PageID     string `json:"page_id"`
 }
 
@@ -48,7 +48,7 @@ func (a *UpdatePageAction) Properties() *smartform.FormSchema {
 
 	shared.GetNotionDatabasesProp(form)
 
-	shared.GetNotionPagesProp("Page ID", "Select a page", false, form)
+	shared.GetNotionPagesProp("Page to Update", "Select a page to update", true, form)
 
 	schema := form.Build()
 
@@ -76,10 +76,13 @@ func (a *UpdatePageAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON,
 	}
 
 	if input.PageID == "" {
-		return nil, errors.New("parent page is required")
+		return nil, errors.New("page is required")
 	}
 
-	notionPage, _ := shared.UpdateNotionPage(token, input.PageID, input.Title, input.Content)
+	notionPage, err := shared.UpdateNotionPage(token, input.PageID, input.Title, input.Content)
+	if err != nil {
+		return nil, err
+	}
 
 	return notionPage, nil
 }
