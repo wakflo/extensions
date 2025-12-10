@@ -22,9 +22,9 @@ func (a *AddAction) Metadata() sdk.ActionMetadata {
 		Type:          core.ActionTypeAction,
 		Documentation: addDocs,
 		SampleOutput: map[string]any{
-			"first_number":  23,
-			"second_number": 37,
-			"result":        60,
+			"firstNumber":  23,
+			"secondNumber": 37,
+			"result":       60,
 		},
 		Settings: core.ActionSettings{},
 	}

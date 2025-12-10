@@ -103,9 +103,25 @@ func (c *TrackAPackageAction) Perform(ctx sdkcontext.PerformContext) (core.JSON,
 		return nil, err
 	}
 
+	// Check for API-level errors in meta field
+	if meta, ok := response["meta"].(map[string]interface{}); ok {
+		if code, exists := meta["code"]; exists {
+			// TrackingMore uses code 200 for success
+			if codeNum, ok := code.(float64); ok && codeNum != 200 {
+				message := "API error"
+				if msg, ok := meta["message"].(string); ok {
+					message = msg
+				}
+				return nil, errors.New(message)
+			}
+		}
+	}
+
+	// Handle the data field - it could be a map or could be missing/null on error
 	data, ok := response["data"].(map[string]interface{})
 	if !ok {
-		return nil, errors.New("invalid response format: data field is not an array")
+		// If data is not a map, return the full response for debugging
+		return response, nil
 	}
 
 	return core.JSON(data), nil

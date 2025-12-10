@@ -374,7 +374,7 @@ func RegisterIssuesProps(form *smartform.FormBuilder) *smartform.FieldBuilder {
 		encodedAuth := base64.StdEncoding.EncodeToString([]byte(auth))
 		authHeader := "Basic " + encodedAuth
 
-		baseAPI := authCtx.Extra["instance-url"] + "/rest/api/3/search"
+		baseAPI := authCtx.Extra["instance-url"] + "/rest/api/3/search/jql"
 
 		input := sdk.DynamicInputToType[struct {
 			ProjectID string `json:"projectId"`

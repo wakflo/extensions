@@ -132,8 +132,8 @@ func GetTenantProps(id string, title string, desc string, required bool, form *s
 		sheet := body
 		items := arrutil.Map[Tenant, map[string]any](sheet, func(input Tenant) (target map[string]any, find bool) {
 			return map[string]any{
-				"value": input.TenantID,
-				"label": input.TenantName,
+				"id":   input.TenantID,
+				"name": input.TenantName,
 			}, true
 		})
 

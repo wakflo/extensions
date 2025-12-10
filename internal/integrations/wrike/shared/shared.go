@@ -110,8 +110,8 @@ func GetFoldersProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
 
 		items := arrutil.Map[Folder, map[string]any](folders, func(input Folder) (target map[string]any, find bool) {
 			return map[string]any{
-				"value": input.ID,
-				"label": input.Title,
+				"id":   input.ID,
+				"name": input.Title,
 			}, true
 		})
 

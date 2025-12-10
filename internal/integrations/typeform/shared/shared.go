@@ -41,7 +41,7 @@ var (
 
 var SharedTypeformAuth = typeformForm.Build()
 
-func RegisterTypeformFormsProps(form *smartform.FormBuilder, label string, hint string, required bool) {
+func RegisterTypeformFormsProps(form *smartform.FormBuilder, id string, label string, hint string, required bool) {
 	getTypeformForms := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		// Define the Typeform API URL for listing forms
 		url := baseURL + "forms"
@@ -95,7 +95,7 @@ func RegisterTypeformFormsProps(form *smartform.FormBuilder, label string, hint 
 		return ctx.Respond(options, len(options))
 	}
 
-	form.SelectField(label, label).
+	form.SelectField(id, label).
 		Placeholder("Enter a value.").
 		Required(required).
 		WithDynamicOptions(

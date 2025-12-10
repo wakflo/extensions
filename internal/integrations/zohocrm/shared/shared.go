@@ -85,7 +85,8 @@ func GetZohoCRMClient(accessToken, method, endpoint string, body interface{}) (m
 		return nil, fmt.Errorf("error reading response body: %v", err)
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	// Accept both 200 OK and 201 Created as success status codes
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("API request failed with status code %d: %s", resp.StatusCode, string(responseBody))
 	}
 

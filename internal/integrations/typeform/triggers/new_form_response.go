@@ -43,7 +43,7 @@ func (t *NewResponseTrigger) Auth() *core.AuthMetadata {
 func (t *NewResponseTrigger) Props() *smartform.FormSchema {
 	form := smartform.NewForm("new-form-response", "New Form Response")
 
-	shared.RegisterTypeformFormsProps(form, "Form ID", "Select a form ID", true)
+	shared.RegisterTypeformFormsProps(form, "form_id", "Form ID", "Select a form ID", true)
 
 	form.NumberField("check_interval", "Check Interval (minutes)").
 		Placeholder("How often to check for new responses (in minutes).").

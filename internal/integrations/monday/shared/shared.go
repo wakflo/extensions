@@ -80,10 +80,10 @@ func MondayClient(ctx sdkcontext.BaseContext, query string) (map[string]interfac
 func GetWorkspaceProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
 	getWorkspaces := func(ctx sdkcontext.DynamicFieldContext) (*sdkcore.DynamicOptionsResponse, error) {
 		query := `{
-		 workspaces {
-		     id
-		     name
-		 }
+			workspaces {
+				id
+				name
+			}
 		}`
 
 		queryBody := map[string]string{

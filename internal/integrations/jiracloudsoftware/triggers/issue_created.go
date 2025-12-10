@@ -163,7 +163,7 @@ func (t *IssueCreatedTrigger) Execute(ctx sdkcontext.ExecuteContext) (core.JSON,
 	response, err := shared.JiraRequest(
 		email,
 		apiToken,
-		instanceURL+"/rest/api/3/search",
+		instanceURL+"/rest/api/3/search/jql",
 		"POST",
 		"Issues retrieved successfully",
 		jsonBody,

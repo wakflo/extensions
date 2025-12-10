@@ -31,7 +31,7 @@ func (a *RetrieveFormResponseAction) Metadata() sdk.ActionMetadata {
 
 func (a *RetrieveFormResponseAction) Properties() *smartform.FormSchema {
 	form := smartform.NewForm("retrieve_form_response", "Retrieve a form response")
-	shared.RegisterTypeformFormsProps(form, "Form ID", "Select a form", true)
+	shared.RegisterTypeformFormsProps(form, "form_id", "Form ID", "Select a form", true)
 
 	schema := form.Build()
 	return schema

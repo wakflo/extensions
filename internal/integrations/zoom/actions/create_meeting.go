@@ -47,7 +47,7 @@ func (a *CreateMeetingAction) Properties() *smartform.FormSchema {
 		HelpText("The meeting topic").
 		Required(true)
 
-	form.TextField("start_time", "Start Time").
+	form.DateField("start_time", "Start Time").
 		Placeholder("Start Time").
 		HelpText("Meeting start date-time").
 		Required(false)

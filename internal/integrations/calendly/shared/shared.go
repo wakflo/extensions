@@ -74,8 +74,8 @@ func GetCurrentCalendlyUserProp(id string, title string, desc string, required b
 
 		return ctx.Respond([]map[string]any{
 			{
-				"value": user.URI,
-				"label": user.Name,
+				"id":   user.URI,
+				"name": user.Name,
 			},
 		}, 1)
 	}
@@ -142,8 +142,8 @@ func GetCalendlyEventProp(id string, title string, desc string, required bool, f
 
 		items := arrutil.Map[Event, map[string]any](events, func(input Event) (target map[string]any, find bool) {
 			return map[string]any{
-				"value": input.URI,
-				"label": input.Name,
+				"id":    input.URI,
+				"name":  input.Name,
 				"start": input.StartTime,
 				"end":   input.EndTime,
 			}, true
@@ -213,8 +213,8 @@ func GetCalendlyEventTypeProp(id string, title string, desc string, required boo
 
 		items := arrutil.Map[EventType, map[string]any](body.Collection, func(input EventType) (target map[string]any, find bool) {
 			return map[string]any{
-				"value": input.URI,
-				"label": input.Name,
+				"id":   input.URI,
+				"name": input.Name,
 			}, true
 		})
 
