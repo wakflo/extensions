@@ -144,7 +144,7 @@ func (a *ListIssuesAction) Perform(ctx sdkcontext.PerformContext) (core.JSON, er
 	response, err := shared.JiraRequest(
 		email,
 		apiToken,
-		instanceURL+"/rest/api/3/search",
+		instanceURL+"/rest/api/3/search/jql",
 		http.MethodPost,
 		"",
 		jsonBody,

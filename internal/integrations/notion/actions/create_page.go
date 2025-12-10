@@ -13,7 +13,7 @@ import (
 type createPageActionProps struct {
 	Title      string `json:"title"`
 	Content    string `json:"content"`
-	DatabaseID string `json:"database"`
+	DatabaseID string `json:"databaseId"`
 	PageID     string `json:"page_id"`
 }
 
@@ -48,6 +48,8 @@ func (a *CreatePageAction) Properties() *smartform.FormSchema {
 		HelpText("The content of the page")
 
 	shared.GetNotionDatabasesProp(form)
+
+	shared.GetNotionPagesProp("Parent Page", "Select a parent page", true, form)
 
 	schema := form.Build()
 

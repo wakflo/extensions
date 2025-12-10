@@ -10,10 +10,8 @@ import (
 	"time"
 
 	"github.com/juicycleff/smartform/v1"
-	fastshot "github.com/opus-domini/fast-shot"
 	"github.com/wakflo/go-sdk/v2"
 	sdkcontext "github.com/wakflo/go-sdk/v2/context"
-
 	sdkcore "github.com/wakflo/go-sdk/v2/core"
 )
 
@@ -84,26 +82,30 @@ func RegisterGuildsInput(form *smartform.FormBuilder, title string, desc string,
 		if err != nil {
 			return nil, err
 		}
-		client := fastshot.NewClient("https://discord.com/api/v10").
-			Auth().BearerToken("Bot " + authCtx.Extra["token"]).
-			Header().
-			AddAccept("application/json").
-			Build()
 
-		rsp, err := client.GET("/users/@me/guilds").Send()
+		url := fmt.Sprintf("%s/users/@me/guilds", APIBaseURL)
+		req, err := http.NewRequest(http.MethodGet, url, nil)
 		if err != nil {
 			return nil, err
 		}
 
-		defer rsp.Body().Close()
+		req.Header.Set("Authorization", "Bot "+authCtx.Extra["token"])
+		req.Header.Set("Accept", "application/json")
 
-		if rsp.Status().IsError() {
-			return nil, errors.New(rsp.Status().Text())
-		}
-
-		byts, err := io.ReadAll(rsp.Body().Raw())
+		client := &http.Client{}
+		rsp, err := client.Do(req)
 		if err != nil {
 			return nil, err
+		}
+		defer rsp.Body.Close()
+
+		byts, err := io.ReadAll(rsp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		if rsp.StatusCode < 200 || rsp.StatusCode >= 300 {
+			return nil, fmt.Errorf("discord API error (status %d): %s", rsp.StatusCode, string(byts))
 		}
 
 		var guilds []Guild
@@ -141,26 +143,30 @@ func RegisterChannelsInput(form *smartform.FormBuilder, title string, desc strin
 		if err != nil {
 			return nil, err
 		}
-		client := fastshot.NewClient("https://discord.com/api/v10").
-			Auth().BearerToken("Bot " + authCtx.Extra["token"]).
-			Header().
-			AddAccept("application/json").
-			Build()
 
-		rsp, err := client.GET(fmt.Sprintf("/guilds/%s/channels", input.GuildID)).Send()
+		url := fmt.Sprintf("%s/guilds/%s/channels", APIBaseURL, input.GuildID)
+		req, err := http.NewRequest(http.MethodGet, url, nil)
 		if err != nil {
 			return nil, err
 		}
 
-		defer rsp.Body().Close()
+		req.Header.Set("Authorization", "Bot "+authCtx.Extra["token"])
+		req.Header.Set("Accept", "application/json")
 
-		if rsp.Status().IsError() {
-			return nil, errors.New(rsp.Status().Text())
-		}
-
-		byts, err := io.ReadAll(rsp.Body().Raw())
+		client := &http.Client{}
+		rsp, err := client.Do(req)
 		if err != nil {
 			return nil, err
+		}
+		defer rsp.Body.Close()
+
+		byts, err := io.ReadAll(rsp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		if rsp.StatusCode < 200 || rsp.StatusCode >= 300 {
+			return nil, fmt.Errorf("discord API error (status %d): %s", rsp.StatusCode, string(byts))
 		}
 
 		var channels []Channel
@@ -200,29 +206,33 @@ func RegisterRolesInput(form *smartform.FormBuilder, title string, desc string, 
 		if err != nil {
 			return nil, err
 		}
-		client := fastshot.NewClient("https://discord.com/api/v10").
-			Auth().BearerToken("Bot " + authCtx.Extra["token"]).
-			Header().
-			AddAccept("application/json").
-			Build()
 
-		rsp, err := client.GET(fmt.Sprintf("/guilds/%s/roles", input.GuildID)).Send()
+		url := fmt.Sprintf("%s/guilds/%s/roles", APIBaseURL, input.GuildID)
+		req, err := http.NewRequest(http.MethodGet, url, nil)
 		if err != nil {
 			return nil, err
 		}
 
-		defer rsp.Body().Close()
+		req.Header.Set("Authorization", "Bot "+authCtx.Extra["token"])
+		req.Header.Set("Accept", "application/json")
 
-		if rsp.Status().IsError() {
-			return nil, errors.New(rsp.Status().Text())
+		client := &http.Client{}
+		rsp, err := client.Do(req)
+		if err != nil {
+			return nil, err
 		}
+		defer rsp.Body.Close()
 
-		byts, err := io.ReadAll(rsp.Body().Raw())
+		byts, err := io.ReadAll(rsp.Body)
 		if err != nil {
 			return nil, err
 		}
 
-		var roles []Role // You'll need to define this struct
+		if rsp.StatusCode < 200 || rsp.StatusCode >= 300 {
+			return nil, fmt.Errorf("discord API error (status %d): %s", rsp.StatusCode, string(byts))
+		}
+
+		var roles []Role
 
 		err = json.Unmarshal(byts, &roles)
 		if err != nil {

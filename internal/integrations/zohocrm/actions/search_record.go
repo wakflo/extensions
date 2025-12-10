@@ -78,7 +78,7 @@ func (a *SearchRecordsAction) Properties() *smartform.FormSchema {
 	form.TextField("criteria", "Search Criteria").
 		Placeholder("Last_Name:equals:Smith").
 		Required(true).
-		HelpText("Search criteria in the format: field:operator:value. Example: Last_Name:equals:Smith or Email:contains:example.com")
+		HelpText("Search criteria in format: field:operator:value. Use exact Zoho API field names (case-sensitive, e.g., Last_Name, Email, Company). Common operators: equals, contains, starts_with. Example: Last_Name:equals:Smith or (Email:contains:example.com)")
 
 	form.NumberField("page", "Page").
 		Placeholder("Page number").
@@ -177,6 +177,11 @@ func (a *SearchRecordsAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JS
 
 	result, err := shared.GetZohoCRMClient(token, http.MethodGet, endpoint, nil)
 	if err != nil {
+		errMsg := err.Error()
+		// Provide more helpful error messages for common issues
+		if strings.Contains(errMsg, "INVALID_QUERY") && strings.Contains(errMsg, "not available for search") {
+			return nil, fmt.Errorf("invalid field name in search criteria. Please use exact Zoho CRM API field names (case-sensitive). Common field names: Last_Name, First_Name, Email, Company, Lead_Status. Original error: %v", err)
+		}
 		return nil, fmt.Errorf("error calling Zoho CRM API: %v", err)
 	}
 

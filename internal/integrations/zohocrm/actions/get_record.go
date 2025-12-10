@@ -62,7 +62,7 @@ func (a *GetRecordAction) Properties() *smartform.FormSchema {
 				End().GetDynamicSource(),
 		)
 
-	form.TextField("record_id", "Record ID").
+	form.TextField("recordId", "Record ID").
 		Placeholder("Enter the record ID").
 		Required(true).
 		HelpText("The unique identifier of the record to be retrieved.")

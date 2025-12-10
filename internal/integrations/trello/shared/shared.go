@@ -106,10 +106,14 @@ func RegisterBoardsProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
 			return nil, err
 		}
 
+		if rsp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("trello API error (status %d): %s", rsp.StatusCode, string(newBytes))
+		}
+
 		var boards []Board
 		err = json.Unmarshal(newBytes, &boards)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to parse boards response: %w", err)
 		}
 
 		return ctx.Respond(boards, len(boards))
@@ -164,11 +168,15 @@ func RegisterBoardListsProp(form *smartform.FormBuilder) *smartform.FieldBuilder
 			return nil, err
 		}
 
+		if rsp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("trello API error (status %d): %s", rsp.StatusCode, string(newBytes))
+		}
+
 		var lists []BoardList
 
 		err = json.Unmarshal(newBytes, &lists)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to parse lists response: %w", err)
 		}
 
 		return ctx.Respond(lists, len(lists))
@@ -224,11 +232,15 @@ func RegisterCardsProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
 			return nil, err
 		}
 
+		if rsp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("trello API error (status %d): %s", rsp.StatusCode, string(newBytes))
+		}
+
 		var cards []Card
 
 		err = json.Unmarshal(newBytes, &cards)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to parse cards response: %w", err)
 		}
 
 		return ctx.Respond(cards, len(cards))
