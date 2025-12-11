@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.20.0](https://github.com/wakflo/extensions/compare/v0.19.2...v0.20.0) (2025-12-11)
+
+
+### Features
+
+* implement social kit integration ([bbb9aa3](https://github.com/wakflo/extensions/commit/bbb9aa3ec49e402cf7df48912ddea0641e545211))
+* implement social kit integration ([55c2b9e](https://github.com/wakflo/extensions/commit/55c2b9e992bcc44eb9a8dc7fcecd7b86ff76e073))
+
+
+### Bug Fixes
+
+* correct placeholder text for team selection in Linear integration ([6e8cb48](https://github.com/wakflo/extensions/commit/6e8cb483ffdaa64cf1c4a3d705319d883cbb6924))
+* fix issues with integrations ([f931f16](https://github.com/wakflo/extensions/commit/f931f16995be71c6268f97e3f2737833b0354397))
+* update Notion integration to use correct JSON tags and improve error handling ([8828edf](https://github.com/wakflo/extensions/commit/8828edfa5859ca9e03322a2d0f5fa5cfa1088a9f))
+* update Notion integration to use correct JSON tags and improve error handling ([28c5f98](https://github.com/wakflo/extensions/commit/28c5f988f515015de5e0e1e1e4ac96f438745f5d))
+* update response handling in Linear integration to correctly extract issues and issue updates ([3692ef9](https://github.com/wakflo/extensions/commit/3692ef9d146f91326484fd8b1198be023d208903))
+
 ## [0.19.2](https://github.com/wakflo/extensions/compare/v0.19.1...v0.19.2) (2025-10-22)
 
 
