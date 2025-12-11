@@ -130,7 +130,7 @@ func GetTeamsProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
 	}
 
 	return form.SelectField("team-id", "Teams").
-		Placeholder("Select a teamsss").
+		Placeholder("Select a team").
 		Required(true).
 		WithDynamicOptions(
 			smartform.NewOptionsBuilder().
