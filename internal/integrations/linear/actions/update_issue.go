@@ -151,7 +151,7 @@ func (a *UpdateIssueAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON
 		return nil, fmt.Errorf("error making GraphQL request: %w", err)
 	}
 
-	issue, ok := response["data"].(map[string]interface{})["issueUpdate"]
+	issue, ok := response["data"].(map[string]interface{})["issueUpdate"].(map[string]interface{})["issue"].(map[string]interface{})
 	if !ok {
 		return nil, errors.New("failed to extract issue from response")
 	}
