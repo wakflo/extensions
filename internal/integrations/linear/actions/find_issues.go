@@ -90,7 +90,7 @@ func (a *FindIssuesAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON,
 		return nil, fmt.Errorf("failed to get auth context: %w", err)
 	}
 
-	apiKEY := authCtx.Key
+	apiKEY := authCtx.Extra["key"]
 
 	// Validate API key format
 	if !strings.HasPrefix(apiKEY, "lin_api_") {

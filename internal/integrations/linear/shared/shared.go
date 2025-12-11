@@ -18,9 +18,9 @@ import (
 )
 
 var (
-	form = smartform.NewAuthForm("linear-auth", "Linear Oauth", smartform.AuthStrategyAPIKey)
+	form = smartform.NewAuthForm("linear-auth", "Linear Oauth", smartform.AuthStrategyCustom)
 
-	_ = form.APIKeyField("key", "Api Key").
+	_ = form.TextField("key", "Api Key").
 		HelpText("The api key used to authenticate linear.").
 		Required(true).
 		Build()
@@ -98,7 +98,7 @@ func GetTeamsProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
 		}
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", authCtx.Extra["api-key"])
+		req.Header.Set("Authorization", authCtx.Extra["key"])
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -130,7 +130,7 @@ func GetTeamsProp(form *smartform.FormBuilder) *smartform.FieldBuilder {
 	}
 
 	return form.SelectField("team-id", "Teams").
-		Placeholder("Select a team").
+		Placeholder("Select a teamsss").
 		Required(true).
 		WithDynamicOptions(
 			smartform.NewOptionsBuilder().
@@ -181,7 +181,7 @@ func GetIssuesProp(id string, title string, description string, form *smartform.
 		}
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", authCtx.Extra["api-key"])
+		req.Header.Set("Authorization", authCtx.Extra["key"])
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -267,7 +267,7 @@ func GetPriorityProp(id string, title string, description string, form *smartfor
 		}
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", authCtx.Extra["api-key"])
+		req.Header.Set("Authorization", authCtx.Extra["key"])
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -369,7 +369,7 @@ func GetTeamLabelsProp(id string, title string, description string, form *smartf
 		}
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", authCtx.Extra["api-key"])
+		req.Header.Set("Authorization", authCtx.Extra["key"])
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -458,7 +458,7 @@ func GetAssigneesProp(id string, title string, description string, form *smartfo
 		}
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", authCtx.Extra["api-key"])
+		req.Header.Set("Authorization", authCtx.Extra["key"])
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -559,7 +559,7 @@ func GetIssueStatesProp(id string, title string, description string, required bo
 		}
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", authCtx.Extra["api-key"])
+		req.Header.Set("Authorization", authCtx.Extra["key"])
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -639,7 +639,7 @@ func GetLabelsProp(id string, title string, description string, form *smartform.
 		}
 
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", authCtx.Extra["api-key"])
+		req.Header.Set("Authorization", authCtx.Extra["key"])
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
