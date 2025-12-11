@@ -90,7 +90,7 @@ func (a *FindIssuesAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON,
 		return nil, fmt.Errorf("failed to get auth context: %w", err)
 	}
 
-	apiKEY := authCtx.Key
+	apiKEY := authCtx.Extra["key"]
 
 	// Validate API key format
 	if !strings.HasPrefix(apiKEY, "lin_api_") {
@@ -189,7 +189,7 @@ func (a *FindIssuesAction) Perform(ctx sdkcontext.PerformContext) (sdkcore.JSON,
 		return nil, fmt.Errorf("error making GraphQL request: %w", err)
 	}
 
-	nodes, ok := response["data"].(map[string]interface{})["issues"]
+	nodes, ok := response["data"].(map[string]interface{})["issues"].(map[string]interface{})["nodes"].([]interface{})
 	if !ok {
 		return nil, errors.New("failed to extract issues from response")
 	}
